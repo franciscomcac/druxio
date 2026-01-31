@@ -49,14 +49,39 @@ const Dashboard = () => {
           return;
         }
 
-        // Fetch profile
-        const { data: profileData, error: profileError } = await supabase
+        // Fetch profile - handle case where it doesn't exist
+        let { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", session.user.id)
-          .single();
+          .maybeSingle();
 
-        if (profileError) throw profileError;
+        // If profile doesn't exist, create it
+        if (!profileData && !profileError) {
+          const displayName = session.user.user_metadata?.display_name || 
+                              session.user.email?.split('@')[0] || 
+                              'User';
+          
+          const { data: newProfile, error: insertError } = await supabase
+            .from("profiles")
+            .insert({
+              id: session.user.id,
+              display_name: displayName,
+            })
+            .select()
+            .single();
+          
+          if (insertError) {
+            console.error("Error creating profile:", insertError);
+          } else {
+            profileData = newProfile;
+          }
+        }
+
+        if (profileError) {
+          console.error("Profile error:", profileError);
+        }
+        
         setProfile(profileData);
 
         // Fetch roles
@@ -65,8 +90,10 @@ const Dashboard = () => {
           .select("role")
           .eq("user_id", session.user.id);
 
-        if (rolesError) throw rolesError;
-        setRoles(rolesData as UserRole[]);
+        if (rolesError) {
+          console.error("Roles error:", rolesError);
+        }
+        setRoles((rolesData as UserRole[]) || []);
 
         // Check if user is a mentor
         const isMentor = rolesData?.some(r => r.role === 'mentor');
