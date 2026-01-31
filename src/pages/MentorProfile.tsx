@@ -149,8 +149,8 @@ const MentorProfile = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Mentor not found</h1>
-          <Button onClick={() => navigate("/search")}>Browse Mentors</Button>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Expert not found</h1>
+          <Button onClick={() => navigate("/search")}>Browse Experts</Button>
         </div>
         <Footer />
       </div>

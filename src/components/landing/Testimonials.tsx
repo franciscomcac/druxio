@@ -8,47 +8,56 @@ const testimonials = [
   {
     id: 1,
     name: "Sarah Chen",
-    role: "Full-Stack Developer",
+    role: "Startup Founder",
     avatar: "",
-    content: "Was stuck on a React state management bug for 3 hours. Connected with a mentor who solved it in 10 minutes. Worth every penny!",
+    content: "Found a marketing expert who helped me launch my product in 2 weeks. The ROI was insane — best money I ever spent!",
     rating: 5,
-    category: "React",
+    category: "Marketing",
   },
   {
     id: 2,
     name: "Marcus Johnson",
-    role: "Java Developer",
+    role: "Software Developer",
     avatar: "",
-    content: "The Spring Boot mentor helped me understand dependency injection in a way no tutorial ever could. Life-changing session.",
+    content: "Was stuck on a React bug for 3 hours. Connected with an expert who solved it in 10 minutes. Absolute lifesaver!",
     rating: 5,
-    category: "Java",
+    category: "Web Dev",
   },
   {
     id: 3,
     name: "Elena Rodriguez",
-    role: "Indie Game Dev",
+    role: "Content Creator",
     avatar: "",
-    content: "Needed help setting up my Minecraft server economy plugin. The mentor walked me through everything step by step. Amazing!",
+    content: "My streaming setup was a mess. A pro helped me optimize everything — now I have 3x more viewers!",
     rating: 5,
-    category: "Minecraft",
+    category: "Streaming",
   },
   {
     id: 4,
     name: "David Kim",
-    role: "Data Engineer",
+    role: "Aspiring Musician",
     avatar: "",
-    content: "PostgreSQL query optimization went from 30 seconds to 100ms after one session. My manager was impressed!",
+    content: "Took guitar lessons here and learned more in one month than a year of YouTube tutorials. Real mentors make a difference.",
     rating: 5,
-    category: "PostgreSQL",
+    category: "Music",
   },
   {
     id: 5,
     name: "Lisa Thompson",
-    role: "Frontend Developer",
+    role: "Fitness Enthusiast",
     avatar: "",
-    content: "TypeScript generics finally clicked after my mentor explained them with real examples. Highly recommend!",
+    content: "My nutrition coach helped me lose 20 lbs in 3 months. Personalized advice beats generic fitness apps any day.",
     rating: 5,
-    category: "TypeScript",
+    category: "Fitness",
+  },
+  {
+    id: 6,
+    name: "James Wilson",
+    role: "Small Business Owner",
+    avatar: "",
+    content: "Got legal advice that saved me from a costly mistake. The expert explained everything in plain English. Worth every penny!",
+    rating: 5,
+    category: "Legal",
   },
 ];
 
@@ -87,10 +96,10 @@ const Testimonials = () => {
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="mb-3 text-3xl font-bold text-foreground">
-            Developers Love Us
+            People Love Us
           </h2>
           <p className="text-muted-foreground">
-            83% of our users hit their goals faster with mentor support
+            Join thousands who've achieved their goals with expert help
           </p>
         </div>
 

@@ -151,9 +151,9 @@ const Search = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Search Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Find Your Mentor</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Find Your Expert</h1>
           <p className="text-muted-foreground">
-            Browse our expert mentors or describe your issue for AI-powered matching
+            Browse experts in any field or describe what you need for AI-powered matching
           </p>
         </div>
 
@@ -170,7 +170,7 @@ const Search = () => {
                   <div className="relative">
                     <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search mentors..."
+                      placeholder="Search experts..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"
@@ -181,10 +181,10 @@ const Search = () => {
                 {/* Issue Description */}
                 <div>
                   <label className="text-sm font-medium text-foreground mb-2 block">
-                    Describe Your Issue
+                    Describe What You Need
                   </label>
                   <Textarea
-                    placeholder="E.g., I need help with React state management..."
+                    placeholder="E.g., I need help learning guitar, marketing advice, fitness coaching..."
                     value={issueDescription}
                     onChange={(e) => setIssueDescription(e.target.value)}
                     className="min-h-24"
@@ -304,7 +304,7 @@ const Search = () => {
             {/* Results count */}
             <div className="mb-4 flex items-center justify-between">
               <p className="text-muted-foreground">
-                {loading ? "Loading..." : `${filteredMentors.length} mentors found`}
+                {loading ? "Loading..." : `${filteredMentors.length} experts found`}
               </p>
             </div>
 
@@ -341,7 +341,7 @@ const Search = () => {
                           </AvatarFallback>
                         </Avatar>
                         <h3 className="font-semibold text-foreground">{mentor.display_name}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{mentor.bio || "Expert mentor"}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{mentor.bio || "Expert"}</p>
                       </div>
 
                       {/* Stats */}
@@ -409,7 +409,7 @@ const Search = () => {
             ) : (
               <div className="text-center py-12">
                 <SearchIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium text-foreground mb-2">No mentors found</h3>
+                <h3 className="text-lg font-medium text-foreground mb-2">No experts found</h3>
                 <p className="text-muted-foreground">
                   Try adjusting your filters or search query
                 </p>

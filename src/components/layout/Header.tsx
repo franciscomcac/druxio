@@ -11,13 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Zap, Bell, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Users, GraduationCap } from "lucide-react";
+import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
+import { Menu, Sparkles, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Users, GraduationCap } from "lucide-react";
 
 const navLinks = [
-  { label: "Find Mentors", href: "/search" },
+  { label: "Find Experts", href: "/search" },
   { label: "Categories", href: "/#categories" },
   { label: "Pricing", href: "/#pricing" },
-  { label: "Become a Mentor", href: "/auth" },
+  { label: "Become an Expert", href: "/auth" },
 ];
 
 const Header = () => {
@@ -106,10 +107,10 @@ const Header = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Zap className="h-5 w-5" />
+            <Sparkles className="h-5 w-5" />
           </div>
           <span className="text-xl font-bold text-foreground">
-            Micro<span className="text-primary">Mentor</span>
+            Micro<span className="text-primary">Expert</span>
           </span>
         </Link>
 
@@ -135,9 +136,7 @@ const Header = () => {
                   <MessageSquare className="h-5 w-5" />
                 </Button>
               </Link>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5" />
-              </Button>
+              <NotificationsDropdown />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">

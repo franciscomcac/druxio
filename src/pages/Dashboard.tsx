@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import { 
   Target, MessageSquare, Video, DollarSign, Star, 
   Clock, TrendingUp, Users, Calendar, Settings,
@@ -36,6 +37,8 @@ const Dashboard = () => {
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'mentee' | 'mentor'>('mentee');
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -56,7 +59,7 @@ const Dashboard = () => {
           .eq("id", session.user.id)
           .maybeSingle();
 
-        // If profile doesn't exist, create it
+        // If profile doesn't exist, create it and mark as new user
         if (!profileData && !profileError) {
           const displayName = session.user.user_metadata?.display_name || 
                               session.user.email?.split('@')[0] || 
@@ -75,6 +78,14 @@ const Dashboard = () => {
             console.error("Error creating profile:", insertError);
           } else {
             profileData = newProfile;
+            setIsNewUser(true);
+            setShowOnboarding(true);
+          }
+        } else if (profileData && !profileData.skills?.length && !profileData.bio) {
+          // Existing profile but incomplete - show onboarding
+          const hasSeenOnboarding = localStorage.getItem(`onboarding_${session.user.id}`);
+          if (!hasSeenOnboarding) {
+            setShowOnboarding(true);
           }
         }
 
@@ -117,7 +128,25 @@ const Dashboard = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem("viewAsMentor");
     navigate("/");
+  };
+
+  const handleOnboardingComplete = async () => {
+    setShowOnboarding(false);
+    if (profile?.id) {
+      localStorage.setItem(`onboarding_${profile.id}`, "true");
+    }
+    // Refresh profile data
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", session.user.id)
+        .single();
+      if (data) setProfile(data);
+    }
   };
 
   const handleBecomeMentor = async () => {
@@ -157,6 +186,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {showOnboarding && profile && (
+        <OnboardingWizard
+          userId={profile.id}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -193,7 +228,7 @@ const Dashboard = () => {
             {!isMentor && (
               <Button onClick={handleBecomeMentor} variant="outline" className="gap-2">
                 <Plus className="h-4 w-4" />
-                Become a Mentor
+                Become an Expert
               </Button>
             )}
             <Button variant="outline" size="icon" onClick={() => navigate("/settings")}>
@@ -369,7 +404,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button className="w-full justify-between" onClick={() => navigate("/search")}>
-                  Find a Mentor
+                  Find an Expert
                   <ArrowRight className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/wallet")}>
