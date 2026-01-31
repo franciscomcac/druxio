@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Zap, Bell, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
+import { Menu, Zap, Bell, User, LogOut, Settings, LayoutDashboard, Wallet } from "lucide-react";
 
 const navLinks = [
   { label: "Find Mentors", href: "/search" },
@@ -121,6 +121,10 @@ const Header = () => {
                   <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/wallet")}>
+                    <Wallet className="mr-2 h-4 w-4" />
+                    Wallet
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />

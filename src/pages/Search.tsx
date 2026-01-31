@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -39,12 +40,17 @@ interface Category {
 }
 
 const Search = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [issueDescription, setIssueDescription] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [issueDescription, setIssueDescription] = useState(searchParams.get("issue") || "");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    searchParams.get("categories")?.split(",").filter(Boolean) || []
+  );
   const [priceRange, setPriceRange] = useState([0, 20]);
   const [onlineOnly, setOnlineOnly] = useState(false);
   const [minRating, setMinRating] = useState(0);
@@ -310,7 +316,11 @@ const Search = () => {
             ) : filteredMentors.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredMentors.map((mentor) => (
-                  <Card key={mentor.id} className="group relative overflow-hidden transition-all hover:shadow-lg">
+                  <Card 
+                    key={mentor.id} 
+                    className="group relative overflow-hidden transition-all hover:shadow-lg cursor-pointer"
+                    onClick={() => navigate(`/mentor/${mentor.id}`)}
+                  >
                     {/* Online indicator */}
                     {mentor.is_online && (
                       <div className="absolute right-3 top-3 z-10">
@@ -368,10 +378,26 @@ const Search = () => {
                           <span className="text-xs font-normal text-muted-foreground">/10min</span>
                         </span>
                         <div className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="h-8 w-8">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/mentor/${mentor.id}`);
+                            }}
+                          >
                             <MessageSquare className="h-4 w-4" />
                           </Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/mentor/${mentor.id}`);
+                            }}
+                          >
                             <Video className="h-4 w-4" />
                           </Button>
                         </div>

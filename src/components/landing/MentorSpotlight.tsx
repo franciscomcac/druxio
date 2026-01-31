@@ -1,3 +1,4 @@
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -63,6 +64,8 @@ const spotlightMentors = [
 ];
 
 const MentorSpotlight = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="bg-card/50 py-20">
       <div className="container mx-auto px-4">
@@ -75,14 +78,17 @@ const MentorSpotlight = () => {
               Connect with our highest-rated experts ready to help
             </p>
           </div>
-          <Button variant="outline">View All Mentors</Button>
+          <Link to="/search">
+            <Button variant="outline">View All Mentors</Button>
+          </Link>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {spotlightMentors.map((mentor) => (
             <Card
               key={mentor.id}
-              className="group relative overflow-hidden border-border bg-card transition-all hover:shadow-lg"
+              className="group relative overflow-hidden border-border bg-card transition-all hover:shadow-lg cursor-pointer"
+              onClick={() => navigate("/search")}
             >
               {/* Online indicator */}
               {mentor.isOnline && (

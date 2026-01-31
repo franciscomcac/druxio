@@ -345,12 +345,12 @@ const Dashboard = () => {
                   Find a Mentor
                   <ArrowRight className="h-4 w-4" />
                 </Button>
-                <Button variant="outline" className="w-full justify-between">
+                <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/wallet")}>
                   Top Up Wallet
                   <DollarSign className="h-4 w-4" />
                 </Button>
                 {isMentor && (
-                  <Button variant="outline" className="w-full justify-between">
+                  <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/settings")}>
                     Set Availability
                     <Calendar className="h-4 w-4" />
                   </Button>

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap, Users, Clock } from "lucide-react";
 
@@ -36,13 +37,17 @@ const Hero = () => {
           
           {/* CTA buttons */}
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" className="gap-2 px-8 py-6 text-lg">
-              Find a Mentor Now
-              <ArrowRight className="h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-lg">
-              Become a Mentor
-            </Button>
+            <Link to="/search">
+              <Button size="lg" className="gap-2 px-8 py-6 text-lg">
+                Find a Mentor Now
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link to="/auth">
+              <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-lg">
+                Become a Mentor
+              </Button>
+            </Link>
           </div>
           
           {/* Trust indicators */}
