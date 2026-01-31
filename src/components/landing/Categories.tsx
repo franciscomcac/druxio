@@ -2,56 +2,61 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
-  Code, Database, Cloud, Terminal, Gamepad2, 
-  TrendingUp, Server, Palette, ChevronDown, ChevronUp
+  Code, Briefcase, Music, Dumbbell, Camera, 
+  Palette, BookOpen, Heart, Globe, ChevronDown, ChevronUp,
+  Calculator, Utensils, Home, Car, Gamepad2, TrendingUp
 } from "lucide-react";
 
-interface Category {
-  name: string;
-  icon: React.ReactNode;
-  color: string;
-}
-
 const categoryGroups = {
-  "Frontend": [
-    { name: "React", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
-    { name: "Next.js", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
-    { name: "TypeScript", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
-    { name: "JavaScript", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
-    { name: "HTML/CSS", icon: <Palette className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
-    { name: "Tailwind CSS", icon: <Palette className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
-    { name: "Vue.js", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
-    { name: "Angular", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
+  "Technology & Development": [
+    { name: "Web Development", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
+    { name: "Mobile Apps", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
+    { name: "AI & Machine Learning", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
+    { name: "Cybersecurity", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
+    { name: "Data Science", icon: <Calculator className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
+    { name: "IT Support", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
+    { name: "Game Development", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
+    { name: "No-Code Tools", icon: <Code className="h-4 w-4" />, color: "bg-primary/10 text-primary" },
   ],
-  "Backend": [
-    { name: "Java", icon: <Terminal className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
-    { name: "Python", icon: <Terminal className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
-    { name: "Node.js", icon: <Server className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
-    { name: "Express", icon: <Server className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
-    { name: "Spring Boot", icon: <Terminal className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
-    { name: "Django", icon: <Terminal className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
-    { name: "FastAPI", icon: <Terminal className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
-    { name: "Go", icon: <Terminal className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
+  "Business & Finance": [
+    { name: "Startup Advice", icon: <Briefcase className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
+    { name: "Marketing", icon: <TrendingUp className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
+    { name: "Investing", icon: <TrendingUp className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
+    { name: "Accounting", icon: <Calculator className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
+    { name: "Legal Advice", icon: <Briefcase className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
+    { name: "E-commerce", icon: <Briefcase className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
+    { name: "Real Estate", icon: <Home className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
+    { name: "Career Coaching", icon: <Briefcase className="h-4 w-4" />, color: "bg-secondary/20 text-secondary" },
   ],
-  "Database & Cloud": [
-    { name: "PostgreSQL", icon: <Database className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
-    { name: "MongoDB", icon: <Database className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
-    { name: "Supabase", icon: <Database className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
-    { name: "Firebase", icon: <Cloud className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
-    { name: "AWS", icon: <Cloud className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
-    { name: "Docker", icon: <Server className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
-    { name: "Redis", icon: <Database className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
-    { name: "GraphQL", icon: <Database className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
+  "Creative & Arts": [
+    { name: "Graphic Design", icon: <Palette className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
+    { name: "Video Editing", icon: <Camera className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
+    { name: "Music Production", icon: <Music className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
+    { name: "Photography", icon: <Camera className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
+    { name: "Writing & Editing", icon: <BookOpen className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
+    { name: "UI/UX Design", icon: <Palette className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
+    { name: "Animation", icon: <Palette className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
+    { name: "Voice Acting", icon: <Music className="h-4 w-4" />, color: "bg-chart-1/20 text-chart-5" },
   ],
-  "Gaming & More": [
-    { name: "Valorant", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
-    { name: "CS:GO", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
-    { name: "Minecraft", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
-    { name: "Discord Bots", icon: <Terminal className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
-    { name: "Arbitrage", icon: <TrendingUp className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
-    { name: "SEO", icon: <TrendingUp className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
-    { name: "Git/CI-CD", icon: <Terminal className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
-    { name: "Testing", icon: <Code className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+  "Lifestyle & Wellness": [
+    { name: "Fitness Training", icon: <Dumbbell className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+    { name: "Nutrition", icon: <Utensils className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+    { name: "Life Coaching", icon: <Heart className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+    { name: "Relationships", icon: <Heart className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+    { name: "Mental Health", icon: <Heart className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+    { name: "Language Learning", icon: <Globe className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+    { name: "Cooking", icon: <Utensils className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+    { name: "Auto & Mechanics", icon: <Car className="h-4 w-4" />, color: "bg-destructive/10 text-destructive" },
+  ],
+  "Gaming & Entertainment": [
+    { name: "Esports Coaching", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-accent text-accent-foreground" },
+    { name: "Streaming Setup", icon: <Camera className="h-4 w-4" />, color: "bg-accent text-accent-foreground" },
+    { name: "Poker Strategy", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-accent text-accent-foreground" },
+    { name: "Chess", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-accent text-accent-foreground" },
+    { name: "Sports Betting", icon: <TrendingUp className="h-4 w-4" />, color: "bg-accent text-accent-foreground" },
+    { name: "Collectibles", icon: <Briefcase className="h-4 w-4" />, color: "bg-accent text-accent-foreground" },
+    { name: "Trivia & Quizzes", icon: <BookOpen className="h-4 w-4" />, color: "bg-accent text-accent-foreground" },
+    { name: "VR/AR", icon: <Gamepad2 className="h-4 w-4" />, color: "bg-accent text-accent-foreground" },
   ],
 };
 
@@ -62,14 +67,14 @@ const Categories = () => {
     : Object.entries(categoryGroups).slice(0, 2);
 
   return (
-    <section className="bg-background py-20">
+    <section id="categories" className="bg-background py-20">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
           <h2 className="mb-3 text-3xl font-bold text-foreground">
-            50+ Expert Categories
+            100+ Expert Categories
           </h2>
           <p className="text-muted-foreground">
-            From React debugging to Valorant strategies — we've got mentors for everything
+            From tech help to life coaching — find experts for literally anything
           </p>
         </div>
 

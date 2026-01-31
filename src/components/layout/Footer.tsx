@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
-import { Zap, Github, Twitter, Linkedin, Youtube } from "lucide-react";
+import { Sparkles, Github, Twitter, Linkedin, Youtube } from "lucide-react";
 
 const footerLinks = {
   Product: [
-    { label: "Find Mentors", href: "/search" },
-    { label: "Become a Mentor", href: "/apply" },
+    { label: "Find Experts", href: "/search" },
+    { label: "Become an Expert", href: "/apply" },
     { label: "Pricing", href: "/#pricing" },
     { label: "Categories", href: "/#categories" },
   ],
@@ -44,14 +44,14 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <Link to="/" className="mb-4 flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Zap className="h-5 w-5" />
+                <Sparkles className="h-5 w-5" />
               </div>
               <span className="text-xl font-bold text-foreground">
-                Micro<span className="text-primary">Mentor</span>
+                Micro<span className="text-primary">Expert</span>
               </span>
             </Link>
             <p className="mb-6 max-w-xs text-sm text-muted-foreground">
-              Connect with expert developers and get instant help with your coding challenges.
+              Connect with experts in any field and get instant help with anything — from coding to cooking, business to fitness.
             </p>
             <div className="flex gap-4">
               {socialLinks.map((social) => (
@@ -92,7 +92,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} MicroMentor. All rights reserved.
+            © {new Date().getFullYear()} MicroExpert. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">🌍 Global</span>

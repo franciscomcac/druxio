@@ -3,23 +3,23 @@ import { MessageSquare, Sparkles, Video, Star } from "lucide-react";
 const steps = [
   {
     icon: <MessageSquare className="h-8 w-8" />,
-    title: "Describe Your Issue",
-    description: "Tell us what you're stuck on. Share code snippets, errors, or screenshots.",
+    title: "Describe What You Need",
+    description: "Tell us what you're looking for — whether it's fixing a bug, learning guitar, or getting business advice.",
   },
   {
     icon: <Sparkles className="h-8 w-8" />,
     title: "AI Matches You",
-    description: "Our AI finds the best mentors based on your tech stack and issue.",
+    description: "Our AI instantly finds the best experts based on your needs, budget, and availability.",
   },
   {
     icon: <Video className="h-8 w-8" />,
     title: "Chat or Video Call",
-    description: "Connect instantly via real-time chat or hop on a video call.",
+    description: "Connect instantly via real-time chat or hop on a video call with your matched expert.",
   },
   {
     icon: <Star className="h-8 w-8" />,
     title: "Solve & Grow",
-    description: "Get your answer, rate your mentor, and track your learning goals.",
+    description: "Get your answer, rate your expert, and track your progress towards your goals.",
   },
 ];
 

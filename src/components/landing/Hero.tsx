@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, Users, Clock } from "lucide-react";
+import { ArrowRight, Sparkles, Users, Clock } from "lucide-react";
 
 const Hero = () => {
   return (
@@ -15,37 +15,37 @@ const Hero = () => {
         <div className="mx-auto max-w-4xl text-center">
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-2 backdrop-blur-sm">
-            <Zap className="h-4 w-4 text-primary" />
+            <Sparkles className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-foreground">
-              Expert dev help in 60 seconds
+              Find help for anything in 60 seconds
             </span>
           </div>
           
           {/* Main headline */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
-            Get Expert Dev Help{" "}
+            Get Expert Help{" "}
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Instantly
+              For Anything
             </span>
           </h1>
           
           {/* Subheadline */}
           <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-            Connect with coding mentors in real-time. From React bugs to Java algorithms, 
-            get personalized help from verified experts when you need it most.
+            From coding bugs to business advice, music lessons to fitness coaching — 
+            connect instantly with verified experts in any field. Learn, fix, or create anything.
           </p>
           
           {/* CTA buttons */}
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link to="/search">
               <Button size="lg" className="gap-2 px-8 py-6 text-lg">
-                Find a Mentor Now
+                Find an Expert Now
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
             <Link to="/auth">
               <Button variant="outline" size="lg" className="gap-2 px-8 py-6 text-lg">
-                Become a Mentor
+                Become an Expert
               </Button>
             </Link>
           </div>
@@ -54,15 +54,15 @@ const Hero = () => {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">500+ Active Mentors</span>
+              <span className="text-sm font-medium">10,000+ Experts</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium">2 min Avg. Response</span>
             </div>
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">10k+ Sessions Completed</span>
+              <Sparkles className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">100k+ Sessions Completed</span>
             </div>
           </div>
         </div>
