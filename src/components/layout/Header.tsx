@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Zap, Bell, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare } from "lucide-react";
+import { Menu, Zap, Bell, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Users, GraduationCap } from "lucide-react";
 
 const navLinks = [
   { label: "Find Mentors", href: "/search" },
@@ -24,6 +24,8 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [isMentor, setIsMentor] = useState(false);
+  const [viewAsMentor, setViewAsMentor] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +41,19 @@ const Header = () => {
           .eq("id", session.user.id)
           .single();
         setProfile(data);
+
+        // Check if user has mentor role
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id);
+        
+        const hasMentorRole = roles?.some((r) => r.role === "mentor") || false;
+        setIsMentor(hasMentorRole);
+        
+        // Load saved view preference from localStorage
+        const savedView = localStorage.getItem("viewAsMentor");
+        setViewAsMentor(savedView === "true" && hasMentorRole);
       }
     };
     
@@ -55,8 +70,18 @@ const Header = () => {
           .eq("id", session.user.id)
           .single();
         setProfile(data);
+
+        const { data: roles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", session.user.id);
+        
+        const hasMentorRole = roles?.some((r) => r.role === "mentor") || false;
+        setIsMentor(hasMentorRole);
       } else {
         setProfile(null);
+        setIsMentor(false);
+        setViewAsMentor(false);
       }
     });
 
@@ -65,7 +90,14 @@ const Header = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem("viewAsMentor");
     navigate("/");
+  };
+
+  const toggleView = () => {
+    const newView = !viewAsMentor;
+    setViewAsMentor(newView);
+    localStorage.setItem("viewAsMentor", String(newView));
   };
 
   return (
@@ -123,13 +155,27 @@ const Header = () => {
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator />
+                  {isMentor && (
+                    <>
+                      <DropdownMenuItem onClick={toggleView} className="gap-2">
+                        {viewAsMentor ? (
+                          <>
+                            <GraduationCap className="mr-2 h-4 w-4" />
+                            Switch to Mentee View
+                          </>
+                        ) : (
+                          <>
+                            <Users className="mr-2 h-4 w-4" />
+                            Switch to Mentor View
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Dashboard
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/inbox")}>
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Inbox
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/wallet")}>
                     <Wallet className="mr-2 h-4 w-4" />
