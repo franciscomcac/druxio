@@ -11,6 +11,7 @@ import Session from "./pages/Session";
 import Wallet from "./pages/Wallet";
 import MentorProfile from "./pages/MentorProfile";
 import Settings from "./pages/Settings";
+import Inbox from "./pages/Inbox";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/mentor/:mentorId" element={<MentorProfile />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/inbox" element={<Inbox />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
