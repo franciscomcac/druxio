@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu, Zap, Bell, User, LogOut, Settings, LayoutDashboard, Wallet } from "lucide-react";
+import { Menu, Zap, Bell, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare } from "lucide-react";
 
 const navLinks = [
   { label: "Find Mentors", href: "/search" },
@@ -122,6 +122,10 @@ const Header = () => {
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     Dashboard
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/inbox")}>
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Inbox
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/wallet")}>
                     <Wallet className="mr-2 h-4 w-4" />
                     Wallet
@@ -179,6 +183,12 @@ const Header = () => {
                     <Button variant="outline" className="w-full gap-2">
                       <LayoutDashboard className="h-4 w-4" />
                       Dashboard
+                    </Button>
+                  </Link>
+                  <Link to="/inbox" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Inbox
                     </Button>
                   </Link>
                   <Button variant="ghost" className="w-full gap-2" onClick={handleSignOut}>
