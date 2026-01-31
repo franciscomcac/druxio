@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import SellerConsentDialog from "@/components/onboarding/SellerConsentDialog";
 import { 
   Target, MessageSquare, Video, DollarSign, Star, 
   Clock, TrendingUp, Users, Calendar, Settings,
@@ -38,7 +39,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState<'mentee' | 'mentor'>('mentee');
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [showSellerConsent, setShowSellerConsent] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -59,7 +60,7 @@ const Dashboard = () => {
           .eq("id", session.user.id)
           .maybeSingle();
 
-        // If profile doesn't exist, create it and mark as new user
+        // If profile doesn't exist, create it and mark as new user - show onboarding
         if (!profileData && !profileError) {
           const displayName = session.user.user_metadata?.display_name || 
                               session.user.email?.split('@')[0] || 
@@ -78,14 +79,26 @@ const Dashboard = () => {
             console.error("Error creating profile:", insertError);
           } else {
             profileData = newProfile;
-            setIsNewUser(true);
-            setShowOnboarding(true);
+            // Only show onboarding for brand new users (first login ever)
+            const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+            if (!hasSeenOnboarding) {
+              setShowOnboarding(true);
+            }
           }
-        } else if (profileData && !profileData.skills?.length && !profileData.bio) {
-          // Existing profile but incomplete - show onboarding
-          const hasSeenOnboarding = localStorage.getItem(`onboarding_${session.user.id}`);
-          if (!hasSeenOnboarding) {
-            setShowOnboarding(true);
+        } else if (profileData) {
+          // Check if this is truly a first-time login (no onboarding completion flag)
+          const hasCompletedOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+          if (!hasCompletedOnboarding && !profileData.skills?.length && !profileData.bio) {
+            // Check if user is a mentor - mentors skip onboarding
+            const { data: existingRoles } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", session.user.id);
+            
+            const isMentorAlready = existingRoles?.some(r => r.role === 'mentor');
+            if (!isMentorAlready) {
+              setShowOnboarding(true);
+            }
           }
         }
 
@@ -135,7 +148,8 @@ const Dashboard = () => {
   const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
     if (profile?.id) {
-      localStorage.setItem(`onboarding_${profile.id}`, "true");
+      // Mark onboarding as completed permanently
+      localStorage.setItem(`onboarding_completed_${profile.id}`, "true");
     }
     // Refresh profile data
     const { data: { session } } = await supabase.auth.getSession();
@@ -149,29 +163,25 @@ const Dashboard = () => {
     }
   };
 
-  const handleBecomeMentor = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+  const handleBecomeSeller = () => {
+    setShowSellerConsent(true);
+  };
 
-      const { error } = await supabase
-        .from("user_roles")
-        .insert({ user_id: session.user.id, role: 'mentor' });
+  const handleSellerConsentAccept = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
 
-      if (error) throw error;
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: session.user.id, role: 'mentor' });
 
-      setRoles([...roles, { role: 'mentor' }]);
-      toast({
-        title: "You're now a mentor!",
-        description: "Set up your availability to start helping others.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+    if (error) throw error;
+
+    setRoles([...roles, { role: 'mentor' }]);
+    toast({
+      title: "Welcome to the seller community! 🎉",
+      description: "Set up your availability and start bidding on jobs.",
+    });
   };
 
   if (loading) {
@@ -192,6 +202,11 @@ const Dashboard = () => {
           onComplete={handleOnboardingComplete}
         />
       )}
+      <SellerConsentDialog
+        open={showSellerConsent}
+        onOpenChange={setShowSellerConsent}
+        onAccept={handleSellerConsentAccept}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -226,9 +241,9 @@ const Dashboard = () => {
 
           <div className="flex gap-3">
             {!isMentor && (
-              <Button onClick={handleBecomeMentor} variant="outline" className="gap-2">
+              <Button onClick={handleBecomeSeller} variant="outline" className="gap-2">
                 <Plus className="h-4 w-4" />
-                Become an Expert
+                Become a Seller
               </Button>
             )}
             <Button variant="outline" size="icon" onClick={() => navigate("/settings")}>

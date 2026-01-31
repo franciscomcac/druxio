@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import SimilarExperts from "@/components/experts/SimilarExperts";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,6 +22,9 @@ import {
   ArrowLeft,
   Users,
   Award,
+  Share2,
+  Heart,
+  Flag,
 } from "lucide-react";
 
 interface MentorProfile {
@@ -162,15 +166,28 @@ const MentorProfile = () => {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        {/* Back button */}
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)}
-          className="mb-6 gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
+        {/* Top actions bar */}
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(-1)}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Share2 className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Heart className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
+              <Flag className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
 
         <div className="grid gap-8 lg:grid-cols-3">
           {/* Profile Card */}
@@ -397,6 +414,12 @@ const MentorProfile = () => {
             </Tabs>
           </div>
         </div>
+
+        {/* Similar Experts Carousel */}
+        <SimilarExperts 
+          currentExpertId={mentorId || ""} 
+          skills={mentor.skills || []} 
+        />
       </main>
 
       <Footer />
