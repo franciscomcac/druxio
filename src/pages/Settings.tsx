@@ -12,6 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import TimezoneSelect from "@/components/settings/TimezoneSelect";
+import AvailabilitySettings from "@/components/settings/AvailabilitySettings";
 import {
   User,
   Bell,
@@ -20,6 +22,7 @@ import {
   Loader2,
   Save,
   Camera,
+  Clock,
 } from "lucide-react";
 
 interface Profile {
@@ -32,6 +35,10 @@ interface Profile {
   hourly_rate: number;
 }
 
+interface UserRole {
+  role: "admin" | "mentor" | "mentee";
+}
+
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -40,6 +47,7 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [email, setEmail] = useState("");
+  const [isMentor, setIsMentor] = useState(false);
 
   // Notification settings
   const [notifications, setNotifications] = useState({
@@ -70,6 +78,16 @@ const Settings = () => {
 
     if (profileData) {
       setProfile(profileData);
+    }
+
+    // Check if user is a mentor
+    const { data: rolesData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id);
+
+    if (rolesData?.some((r) => r.role === "mentor")) {
+      setIsMentor(true);
     }
 
     setLoading(false);
@@ -172,6 +190,12 @@ const Settings = () => {
               <User className="h-4 w-4" />
               Profile
             </TabsTrigger>
+            {isMentor && (
+              <TabsTrigger value="availability" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <Clock className="h-4 w-4" />
+                Availability
+              </TabsTrigger>
+            )}
             <TabsTrigger value="notifications" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Bell className="h-4 w-4" />
               Notifications
@@ -249,17 +273,12 @@ const Settings = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Input
-                      id="timezone"
-                      placeholder="UTC+0"
-                      value={profile?.timezone || ""}
-                      onChange={(e) =>
-                        setProfile({ ...profile!, timezone: e.target.value })
-                      }
-                    />
-                  </div>
+                  <TimezoneSelect
+                    value={profile?.timezone || "UTC"}
+                    onChange={(value) =>
+                      setProfile({ ...profile!, timezone: value })
+                    }
+                  />
                   <div className="space-y-2">
                     <Label htmlFor="rate">Hourly Rate ($/10min)</Label>
                     <Input
@@ -299,6 +318,12 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {isMentor && profile && (
+            <TabsContent value="availability">
+              <AvailabilitySettings userId={profile.id} />
+            </TabsContent>
+          )}
 
           <TabsContent value="notifications">
             <Card>
