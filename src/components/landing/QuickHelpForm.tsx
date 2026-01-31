@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ const categories = [
 ];
 
 const QuickHelpForm = () => {
+  const navigate = useNavigate();
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [issueText, setIssueText] = useState("");
 
@@ -23,8 +25,15 @@ const QuickHelpForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Will navigate to search results
-    console.log({ selectedCategories, issueText });
+    // Navigate to search with query params
+    const params = new URLSearchParams();
+    if (selectedCategories.length > 0) {
+      params.set("categories", selectedCategories.join(","));
+    }
+    if (issueText) {
+      params.set("issue", issueText);
+    }
+    navigate(`/search?${params.toString()}`);
   };
 
   return (
@@ -89,7 +98,6 @@ const QuickHelpForm = () => {
               type="submit" 
               size="lg" 
               className="w-full gap-2 py-6 text-lg"
-              disabled={selectedCategories.length === 0 && !issueText}
             >
               <Search className="h-5 w-5" />
               Find Mentors Now

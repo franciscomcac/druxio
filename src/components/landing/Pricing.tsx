@@ -1,3 +1,4 @@
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,13 +38,15 @@ const pricingOptions = [
 ];
 
 const walletBonuses = [
-  { amount: "$5", bonus: null },
-  { amount: "$10", bonus: null },
-  { amount: "$50", bonus: "+10% bonus" },
-  { amount: "$100", bonus: "+15% bonus" },
+  { amount: "$5", bonus: null, value: 5 },
+  { amount: "$10", bonus: null, value: 10 },
+  { amount: "$50", bonus: "+10% bonus", value: 50 },
+  { amount: "$100", bonus: "+15% bonus", value: 100 },
 ];
 
 const Pricing = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="bg-background py-20" id="pricing">
       <div className="container mx-auto px-4">
@@ -92,9 +95,11 @@ const Pricing = () => {
                     </li>
                   ))}
                 </ul>
-                <Button className="w-full" variant={option.popular ? "default" : "outline"}>
-                  {option.cta}
-                </Button>
+                <Link to="/search">
+                  <Button className="w-full" variant={option.popular ? "default" : "outline"}>
+                    {option.cta}
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ))}
@@ -114,6 +119,7 @@ const Pricing = () => {
                 key={wallet.amount}
                 variant="outline"
                 className="relative gap-2"
+                onClick={() => navigate("/wallet")}
               >
                 {wallet.amount}
                 {wallet.bonus && (
