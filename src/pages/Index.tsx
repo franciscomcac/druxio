@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import Hero from "@/components/landing/Hero";
 import LiveStats from "@/components/landing/LiveStats";
 import HowItWorks from "@/components/landing/HowItWorks";
+import Testimonials from "@/components/landing/Testimonials";
 import Newsletter from "@/components/landing/Newsletter";
 
 const Index = () => {
@@ -13,6 +14,7 @@ const Index = () => {
         <Hero />
         <LiveStats />
         <HowItWorks />
+        <Testimonials />
         <Newsletter />
       </main>
       <Footer />
