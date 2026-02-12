@@ -176,7 +176,7 @@ const PostRequest = () => {
   const handleBack = () => {
     if (wizardStep === "subcategory") setWizardStep("category");
     else if (wizardStep === "details") setWizardStep("subcategory");
-    else navigate(-1);
+    else navigate("/dashboard");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
