@@ -42,37 +42,42 @@ const Dashboard = () => {
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/auth"); return; }
 
-    const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", session.user.id),
-      supabase.from("expert_categories").select("category").eq("user_id", session.user.id),
-      supabase.from("jobs").select("*").eq("buyer_id", session.user.id).order("created_at", { ascending: false }).limit(20),
-    ]);
+      const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", session.user.id),
+        supabase.from("expert_categories").select("category").eq("user_id", session.user.id),
+        supabase.from("jobs").select("*").eq("buyer_id", session.user.id).order("created_at", { ascending: false }).limit(20),
+      ]);
 
-    if (!profileRes.data) {
-      const displayName = session.user.user_metadata?.display_name || session.user.email?.split("@")[0] || "User";
-      const { data: newProfile } = await supabase.from("profiles").insert({ id: session.user.id, display_name: displayName }).select().single();
-      setProfile(newProfile);
-      const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
-      if (!hasSeenOnboarding) setShowOnboarding(true);
-    } else {
-      setProfile(profileRes.data);
-      const hasCompleted = localStorage.getItem(`onboarding_completed_${session.user.id}`);
-      if (!hasCompleted && !profileRes.data.skills?.length && !profileRes.data.bio) {
-        const isMentorAlready = rolesRes.data?.some((r: any) => r.role === "mentor");
-        if (!isMentorAlready) setShowOnboarding(true);
+      if (!profileRes.data) {
+        const displayName = session.user.user_metadata?.display_name || session.user.email?.split("@")[0] || "User";
+        const { data: newProfile } = await supabase.from("profiles").upsert({ id: session.user.id, display_name: displayName }, { onConflict: "id" }).select().single();
+        setProfile(newProfile);
+        const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+        if (!hasSeenOnboarding) setShowOnboarding(true);
+      } else {
+        setProfile(profileRes.data);
+        const hasCompleted = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+        if (!hasCompleted && !profileRes.data.skills?.length && !profileRes.data.bio) {
+          const isMentorAlready = rolesRes.data?.some((r: any) => r.role === "mentor");
+          if (!isMentorAlready) setShowOnboarding(true);
+        }
       }
-    }
 
-    setRoles(rolesRes.data || []);
-    setSubscribedCategories(categoriesRes.data?.map((c: any) => c.category) || []);
-    setMyJobs(myJobsRes.data || []);
-    const isMentor = rolesRes.data?.some((r: any) => r.role === "mentor");
-    if (isMentor) setActiveView("expert");
-    setLoading(false);
+      setRoles(rolesRes.data || []);
+      setSubscribedCategories(categoriesRes.data?.map((c: any) => c.category) || []);
+      setMyJobs(myJobsRes.data || []);
+      const isMentor = rolesRes.data?.some((r: any) => r.role === "mentor");
+      if (isMentor) setActiveView("expert");
+    } catch (error) {
+      console.error("Dashboard fetchData error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleBecomeSeller = () => setShowSellerConsent(true);
