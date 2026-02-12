@@ -182,43 +182,48 @@ const PostRequest = () => {
   };
 
   const submitRequest = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { setShowAuthDialog(true); return; }
-    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setShowAuthDialog(true); return; }
+      setLoading(true);
 
-    const mainCategory = category.split(":")[0]?.trim() || category;
-    const { count } = await supabase
-      .from("expert_categories")
-      .select("*", { count: "exact", head: true })
-      .ilike("category", `%${mainCategory}%`);
-    setOnlineCount(count || 0);
+      const mainCategory = category.split(":")[0]?.trim() || category;
+      const { count } = await supabase
+        .from("expert_categories")
+        .select("*", { count: "exact", head: true })
+        .ilike("category", `%${mainCategory}%`);
+      setOnlineCount(count || 0);
 
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 3);
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 3);
 
-    const { data, error } = await supabase
-      .from("jobs")
-      .insert({
-        buyer_id: session.user.id,
-        title, description, category,
-        budget_min: 5,
-        budget_max: 50,
-        deadline_minutes: deadlineUnit === "days" ? deadlineValue * 1440 : deadlineUnit === "hours" ? deadlineValue * 60 : deadlineValue,
-        expires_at: expiresAt.toISOString(),
-      })
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from("jobs")
+        .insert({
+          buyer_id: session.user.id,
+          title, description, category,
+          budget_min: 5,
+          budget_max: 50,
+          deadline_minutes: deadlineUnit === "days" ? deadlineValue * 1440 : deadlineUnit === "hours" ? deadlineValue * 60 : deadlineValue,
+          expires_at: expiresAt.toISOString(),
+        })
+        .select()
+        .single();
 
-    if (error) {
-      toast({ title: "Error posting request", description: error.message, variant: "destructive" });
+      if (error) {
+        toast({ title: "Error posting request", description: error.message, variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      setJobId(data.id);
       setLoading(false);
-      return;
+      navigate(`/request/${data.id}`);
+    } catch (error: any) {
+      console.error("Submit request error:", error);
+      toast({ title: "Error", description: error?.message || "Something went wrong", variant: "destructive" });
+      setLoading(false);
     }
-
-    setJobId(data.id);
-    setLoading(false);
-    // Navigate to the active request page
-    navigate(`/request/${data.id}`);
   };
 
   useEffect(() => {
@@ -384,7 +389,7 @@ const PostRequest = () => {
               </p>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); submitRequest(); }} className="space-y-6">
+            <div className="space-y-6">
               <Card className="border-border/30 bg-card/60 backdrop-blur-xl">
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
@@ -429,7 +434,7 @@ const PostRequest = () => {
                 </CardContent>
               </Card>
 
-              <Button type="submit" size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
+              <Button type="button" onClick={submitRequest} size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
                 Post Request & Notify Experts
               </Button>
@@ -439,7 +444,7 @@ const PostRequest = () => {
                 <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-primary/60" /> ~90s avg response</span>
                 <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary/60" /> Free to post</span>
               </div>
-            </form>
+            </div>
           </div>
         )}
 
