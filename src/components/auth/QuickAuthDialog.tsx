@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,16 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login" }: QuickAuth
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const resetForm = () => {
-    setEmail("");
-    setPassword("");
-    setDisplayName("");
-  };
+  // Sync activeTab when defaultTab or open changes
+  useEffect(() => {
+    if (open) {
+      setActiveTab(defaultTab);
+      setLoading(false);
+      setEmail("");
+      setPassword("");
+      setDisplayName("");
+    }
+  }, [open, defaultTab]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +42,6 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login" }: QuickAuth
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast({ title: "Welcome back!", description: "You've successfully logged in." });
-      resetForm();
       onOpenChange(false);
       navigate("/dashboard");
     } catch (error: any) {
@@ -58,7 +62,6 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login" }: QuickAuth
       });
       if (error) throw error;
       toast({ title: "Account created!", description: "Check your email to verify your account." });
-      resetForm();
       onOpenChange(false);
     } catch (error: any) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
@@ -68,7 +71,7 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login" }: QuickAuth
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => { if (!loading) onOpenChange(v); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center items-center">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground mb-2">
