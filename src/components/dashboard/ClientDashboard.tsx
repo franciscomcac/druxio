@@ -38,19 +38,8 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleReopenJob = async (jobId: string) => {
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 3);
-    const { error } = await supabase
-      .from("jobs")
-      .update({ status: "open", expires_at: expiresAt.toISOString() })
-      .eq("id", jobId);
-    if (error) {
-      toast({ title: "Error reopening request", description: error.message, variant: "destructive" });
-      return;
-    }
-    toast({ title: "Request reopened! 🔄", description: "Experts are being notified again." });
-    onJobsChanged?.();
+  const handleReopenJob = (jobId: string) => {
+    navigate(`/post-request?jobId=${jobId}`);
   };
 
   const statCards = [
