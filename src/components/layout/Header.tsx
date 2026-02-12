@@ -51,18 +51,18 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/30 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow transition-shadow duration-300 group-hover:shadow-glow-lg">
             <Zap className="h-5 w-5" />
           </div>
           <span className="text-xl font-bold text-foreground">Duxio</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
-            <Link key={link.href} to={link.href} className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+            <Link key={link.href} to={link.href} className="text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground">
               {link.label}
             </Link>
           ))}
@@ -72,41 +72,41 @@ const Header = () => {
           {user ? (
             <>
               <Link to="/post-request">
-                <Button size="sm" className="gap-2"><Plus className="h-4 w-4" /> Post Request</Button>
+                <Button size="sm" className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow"><Plus className="h-4 w-4" /> Post Request</Button>
               </Link>
               <Link to="/inbox">
-                <Button variant="ghost" size="icon" className="relative"><MessageSquare className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className="relative hover:bg-primary/[0.06]"><MessageSquare className="h-5 w-5" /></Button>
               </Link>
               <NotificationsDropdown />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                    <Avatar className="h-9 w-9">
+                    <Avatar className="h-9 w-9 border border-border/40">
                       <AvatarImage src={profile?.avatar_url} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
                         {profile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "U"}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-xl border-border/40">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium">{profile?.display_name || "User"}</p>
+                    <p className="text-sm font-semibold text-foreground">{profile?.display_name || "User"}</p>
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate("/dashboard")}><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/wallet")}><Wallet className="mr-2 h-4 w-4" /> Wallet</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")}><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}><LogOut className="mr-2 h-4 w-4" /> Sign Out</DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border/30" />
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="hover:bg-primary/[0.06]"><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Wallet</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border/30" />
+                  <DropdownMenuItem onClick={handleSignOut} className="hover:bg-destructive/10"><LogOut className="mr-2 h-4 w-4" /> Sign Out</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
           ) : (
             <>
-              <Link to="/auth"><Button variant="outline" className="gap-2"><User className="h-4 w-4" /> Sign In</Button></Link>
-              <Link to="/post-request"><Button className="gap-2"><Zap className="h-4 w-4" /> Post Request</Button></Link>
+              <Link to="/auth"><Button variant="ghost" className="gap-2 hover:bg-primary/[0.06]"><User className="h-4 w-4" /> Sign In</Button></Link>
+              <Link to="/post-request"><Button className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow"><Zap className="h-4 w-4" /> Post Request</Button></Link>
             </>
           )}
         </div>
@@ -115,12 +115,12 @@ const Header = () => {
           <SheetTrigger asChild className="md:hidden">
             <Button variant="ghost" size="icon"><Menu className="h-6 w-6" /></Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-80">
+          <SheetContent side="right" className="w-80 bg-card/95 backdrop-blur-xl border-border/30">
             <div className="flex flex-col gap-6 pt-8">
               {navLinks.map((link) => (
                 <Link key={link.href} to={link.href} className="text-lg font-medium text-foreground" onClick={() => setIsOpen(false)}>{link.label}</Link>
               ))}
-              <hr className="border-border" />
+              <hr className="border-border/30" />
               {user ? (
                 <>
                   <Link to="/post-request" onClick={() => setIsOpen(false)}><Button className="w-full gap-2"><Plus className="h-4 w-4" /> Post Request</Button></Link>

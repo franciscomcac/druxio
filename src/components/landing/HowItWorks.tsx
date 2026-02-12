@@ -5,66 +5,65 @@ const steps = [
     icon: <Send className="h-7 w-7" />,
     title: "Describe Your Need",
     description: "Tell us what you need help with, set a budget (€5–50), and pick a deadline.",
+    accent: "from-primary/20 to-primary/5",
   },
   {
     icon: <Bell className="h-7 w-7" />,
     title: "Experts Are Notified",
     description: "Online experts in your category receive an instant ping — no browsing required.",
+    accent: "from-primary/15 to-primary/5",
   },
   {
     icon: <Handshake className="h-7 w-7" />,
     title: "Choose Your Expert",
     description: "Review up to 3 fixed-price quotes and hire the one that fits best.",
+    accent: "from-primary/20 to-primary/5",
   },
   {
     icon: <CheckCircle className="h-7 w-7" />,
     title: "Done & Delivered",
     description: "Approve the result, leave a rating, and payment is released. Simple.",
+    accent: "from-primary/15 to-primary/5",
   },
 ];
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="bg-card/30 py-24">
-      <div className="container mx-auto px-4">
-        <div className="mb-16 text-center">
-          <h2 className="mb-3 text-3xl font-bold text-foreground animate-fade-in">
-            How It Works
+    <section id="how-it-works" className="relative bg-card/20 py-28 overflow-hidden">
+      {/* Background accent */}
+      <div className="absolute top-0 left-[20%] h-[400px] w-[400px] rounded-full bg-primary/[0.03] blur-[120px] pointer-events-none" />
+
+      <div className="container relative z-10 mx-auto px-4">
+        <div className="mb-20 max-w-xl">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary animate-fade-in">How It Works</p>
+          <h2 className="mb-4 text-4xl font-bold text-foreground animate-fade-in [animation-delay:100ms]">
+            From request to done in four steps
           </h2>
-          <p className="text-muted-foreground animate-fade-in [animation-delay:100ms]">
-            From request to done in four simple steps
+          <p className="text-muted-foreground text-lg animate-fade-in [animation-delay:200ms]">
+            No sign-up fees, no subscriptions. Post what you need and let experts come to you.
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
             <div
               key={index}
-              className="group relative animate-fade-in"
-              style={{ animationDelay: `${index * 120}ms` }}
+              className="group relative animate-slide-up"
+              style={{ animationDelay: `${index * 150}ms` }}
             >
-              {/* Connector line */}
-              {index < steps.length - 1 && (
-                <div className="absolute left-1/2 top-14 hidden h-px w-full bg-gradient-to-r from-border to-transparent lg:block" />
-              )}
-
-              <div className="relative flex flex-col items-center text-center">
+              <div className="relative flex flex-col rounded-2xl border border-border/40 bg-card/60 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow hover:-translate-y-2">
                 {/* Step number */}
-                <span className="mb-4 text-xs font-semibold uppercase tracking-widest text-primary/60">
-                  Step {index + 1}
+                <span className="mb-5 text-5xl font-bold text-border/60 select-none">
+                  0{index + 1}
                 </span>
 
                 {/* Icon */}
-                <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/[0.07] text-primary transition-all duration-500 group-hover:bg-primary/[0.12] group-hover:scale-105">
+                <div className={`mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${step.accent} text-primary transition-transform duration-500 group-hover:scale-110`}>
                   {step.icon}
                 </div>
 
-                <h3 className="mb-2 text-lg font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-[240px]">
-                  {step.description}
-                </p>
+                <h3 className="mb-2 text-lg font-semibold text-foreground">{step.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
               </div>
             </div>
           ))}

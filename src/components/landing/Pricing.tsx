@@ -4,11 +4,14 @@ import { Check, Shield, Zap, Clock } from "lucide-react";
 
 const Pricing = () => {
   return (
-    <section className="bg-background py-24" id="pricing">
-      <div className="container mx-auto px-4">
-        <div className="mb-14 text-center">
-          <h2 className="mb-3 text-3xl font-bold text-foreground animate-fade-in">Simple & Transparent</h2>
-          <p className="text-muted-foreground animate-fade-in [animation-delay:100ms]">No subscriptions. Experts set fixed prices. You only pay for results.</p>
+    <section className="relative bg-background py-28 overflow-hidden" id="pricing">
+      <div className="absolute top-0 right-[20%] h-[500px] w-[500px] rounded-full bg-primary/[0.03] blur-[130px] pointer-events-none" />
+
+      <div className="container relative z-10 mx-auto px-4">
+        <div className="mb-16 text-center">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary animate-fade-in">Pricing</p>
+          <h2 className="mb-4 text-4xl font-bold text-foreground animate-fade-in [animation-delay:100ms]">Simple & Transparent</h2>
+          <p className="text-muted-foreground text-lg animate-fade-in [animation-delay:200ms]">No subscriptions. Experts set fixed prices. You only pay for results.</p>
         </div>
 
         <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
@@ -37,29 +40,29 @@ const Pricing = () => {
           ].map((plan, i) => (
             <Card
               key={plan.title}
-              className={`transition-all duration-500 hover:-translate-y-1 animate-fade-in ${plan.highlight ? "border-primary/30 shadow-lg" : "border-border/50"}`}
-              style={{ animationDelay: `${i * 120}ms` }}
+              className={`transition-all duration-500 hover:-translate-y-2 animate-slide-up ${plan.highlight ? "border-primary/30 shadow-glow bg-card/80" : "border-border/30 bg-card/40"}`}
+              style={{ animationDelay: `${i * 150}ms` }}
             >
               <CardHeader className="text-center">
-                {plan.highlight && <Badge className="mx-auto mb-2 bg-primary text-primary-foreground">Most Popular</Badge>}
-                <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${plan.highlight ? "bg-primary text-primary-foreground" : "bg-primary/[0.07] text-primary"}`}>
+                {plan.highlight && <Badge className="mx-auto mb-3 bg-primary text-primary-foreground shadow-glow">Most Popular</Badge>}
+                <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${plan.highlight ? "bg-primary text-primary-foreground shadow-glow" : "bg-primary/[0.08] text-primary"} transition-transform duration-500 hover:scale-110`}>
                   {plan.icon}
                 </div>
-                <CardTitle>{plan.title}</CardTitle>
+                <CardTitle className="text-foreground">{plan.title}</CardTitle>
                 <CardDescription>
                   {plan.highlight ? (
                     <>
                       <span className="text-4xl font-bold text-foreground">10%</span>
-                      <span className="block text-sm mt-1">per completed job</span>
+                      <span className="block text-sm mt-1 text-muted-foreground">per completed job</span>
                     </>
-                  ) : plan.desc}
+                  ) : <span className="text-muted-foreground">{plan.desc}</span>}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 text-primary/70 shrink-0" /> {f}
+                      <Check className="h-4 w-4 text-primary shrink-0" /> {f}
                     </li>
                   ))}
                 </ul>
