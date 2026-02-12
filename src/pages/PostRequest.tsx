@@ -113,8 +113,44 @@ const PostRequest = () => {
   const [onlineCount, setOnlineCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(180);
 
-  // If category came from search params, jump to details
+  // Resume waiting screen if jobId param provided
   useEffect(() => {
+    const resumeJobId = searchParams.get("jobId");
+    if (resumeJobId) {
+      const resumeJob = async () => {
+        // Reopen the job with a fresh 3-min window
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 3);
+        await supabase.from("jobs").update({ status: "open", expires_at: expiresAt.toISOString() }).eq("id", resumeJobId);
+
+        // Fetch job details
+        const { data: job } = await supabase.from("jobs").select("*").eq("id", resumeJobId).single();
+        if (job) {
+          setTitle(job.title);
+          setCategory(job.category);
+          setJobId(job.id);
+          setTimeLeft(180);
+          setWizardStep("waiting");
+
+          const mainCat = job.category.split(":")[0]?.trim() || job.category;
+          const { count } = await supabase.from("expert_categories").select("*", { count: "exact", head: true }).ilike("category", `%${mainCat}%`);
+          setOnlineCount(count || 0);
+
+          // Load existing quotes
+          const { data: existingQuotes } = await supabase.from("quotes").select("*").eq("job_id", resumeJobId).eq("status", "pending");
+          if (existingQuotes) {
+            const enriched = await Promise.all(existingQuotes.map(async (q) => {
+              const { data: profile } = await supabase.from("profiles").select("display_name, rating_avg, total_sessions").eq("id", q.expert_id).single();
+              return { ...q, expert_profile: profile };
+            }));
+            setQuotes(enriched as any);
+          }
+        }
+      };
+      resumeJob();
+      return;
+    }
+
     if (searchParams.get("category")) {
       const cat = searchParams.get("category")!;
       const broad = cat.split(":")[0]?.trim() || cat;
