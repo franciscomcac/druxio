@@ -104,10 +104,10 @@ const Dashboard = () => {
       loadDashboard(session.user);
     });
 
-    // Safety timeout - if still loading after 8s, force stop
+    // Safety timeout - if still loading after 8s, redirect to auth
     const timeout = setTimeout(() => {
       if (!called) {
-        setLoading(false);
+        navigate("/auth");
       }
     }, 8000);
 
