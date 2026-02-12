@@ -2,7 +2,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Hero from "@/components/landing/Hero";
 import LiveStats from "@/components/landing/LiveStats";
-import QuickHelpForm from "@/components/landing/QuickHelpForm";
+
 import HowItWorks from "@/components/landing/HowItWorks";
 import Categories from "@/components/landing/Categories";
 import Testimonials from "@/components/landing/Testimonials";
@@ -17,7 +17,7 @@ const Index = () => {
       <main>
         <Hero />
         <LiveStats />
-        <QuickHelpForm />
+        
         <HowItWorks />
         <Categories />
         <MentorSpotlight />
