@@ -39,27 +39,24 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const fetchData = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
-
+  const fetchData = async (sessionUser: any) => {
     try {
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", session.user.id),
-        supabase.from("expert_categories").select("category").eq("user_id", session.user.id),
-        supabase.from("jobs").select("*").eq("buyer_id", session.user.id).order("created_at", { ascending: false }).limit(20),
+        supabase.from("profiles").select("*").eq("id", sessionUser.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", sessionUser.id),
+        supabase.from("expert_categories").select("category").eq("user_id", sessionUser.id),
+        supabase.from("jobs").select("*").eq("buyer_id", sessionUser.id).order("created_at", { ascending: false }).limit(20),
       ]);
 
       if (!profileRes.data) {
-        const displayName = session.user.user_metadata?.display_name || session.user.email?.split("@")[0] || "User";
-        const { data: newProfile } = await supabase.from("profiles").upsert({ id: session.user.id, display_name: displayName }, { onConflict: "id" }).select().single();
+        const displayName = sessionUser.user_metadata?.display_name || sessionUser.email?.split("@")[0] || "User";
+        const { data: newProfile } = await supabase.from("profiles").upsert({ id: sessionUser.id, display_name: displayName }, { onConflict: "id" }).select().single();
         setProfile(newProfile);
-        const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+        const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${sessionUser.id}`);
         if (!hasSeenOnboarding) setShowOnboarding(true);
       } else {
         setProfile(profileRes.data);
-        const hasCompleted = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+        const hasCompleted = localStorage.getItem(`onboarding_completed_${sessionUser.id}`);
         if (!hasCompleted && !profileRes.data.skills?.length && !profileRes.data.bio) {
           const isMentorAlready = rolesRes.data?.some((r: any) => r.role === "mentor");
           if (!isMentorAlready) setShowOnboarding(true);
@@ -78,7 +75,18 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        navigate("/auth");
+        return;
+      }
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
+        fetchData(session.user);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleBecomeSeller = () => setShowSellerConsent(true);
 
@@ -95,7 +103,8 @@ const Dashboard = () => {
   const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
     if (profile?.id) localStorage.setItem(`onboarding_completed_${profile.id}`, "true");
-    fetchData();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) fetchData(session.user);
   };
 
   const isMentor = roles.some((r: any) => r.role === "mentor");
@@ -177,7 +186,7 @@ const Dashboard = () => {
         </div>
 
         {activeView === "client" ? (
-          <ClientDashboard profile={profile} myJobs={myJobs} onJobsChanged={fetchData} />
+          <ClientDashboard profile={profile} myJobs={myJobs} onJobsChanged={async () => { const { data: { session } } = await supabase.auth.getSession(); if (session) fetchData(session.user); }} />
         ) : (
           <ExpertDashboard profile={profile} subscribedCategories={subscribedCategories} />
         )}
