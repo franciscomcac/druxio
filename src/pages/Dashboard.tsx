@@ -76,58 +76,30 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    let called = false;
-    let redirected = false;
+    let isMounted = true;
 
-    const loadDashboard = async (user: any) => {
-      if (called || redirected) return;
-      called = true;
-      await fetchData(user);
-    };
-
-    const redirectToAuth = () => {
-      if (redirected) return;
-      redirected = true;
-      navigate("/auth");
-    };
-
-    // Set up auth listener FIRST - this is the primary source of truth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT") {
-        navigate("/");
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!isMounted) return;
+      if (!session) {
+        navigate("/auth");
         return;
       }
-      if (session?.user) {
-        loadDashboard(session.user);
-      }
-      // For INITIAL_SESSION with no session, wait a bit before redirecting
-      // because the session might still be loading after a fresh login
-      if (event === "INITIAL_SESSION" && !session) {
-        setTimeout(() => {
-          if (!called && !redirected) {
-            // Double-check session one more time
-            supabase.auth.getSession().then(({ data: { session: s } }) => {
-              if (s?.user) loadDashboard(s.user);
-              else redirectToAuth();
-            });
-          }
-        }, 1500);
+      await fetchData(session.user);
+    };
+
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+      if (event === "SIGNED_OUT") {
+        navigate("/");
       }
     });
 
-    // Safety timeout
-    const timeout = setTimeout(() => {
-      if (!called && !redirected) {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session?.user) loadDashboard(session.user);
-          else redirectToAuth();
-        });
-      }
-    }, 5000);
-
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
-      clearTimeout(timeout);
     };
   }, []);
 
