@@ -31,54 +31,59 @@ const Testimonials = () => {
   ];
 
   return (
-    <section className="bg-card/20 py-24">
-      <div className="container mx-auto px-4">
-        <div className="mb-14 text-center">
-          <h2 className="mb-3 text-3xl font-bold text-foreground animate-fade-in">Loved by Buyers & Experts</h2>
-          <p className="text-muted-foreground animate-fade-in [animation-delay:100ms]">Real stories from our community</p>
+    <section className="relative bg-card/20 py-28 overflow-hidden">
+      <div className="absolute top-[50%] left-[5%] h-[400px] w-[400px] rounded-full bg-primary/[0.03] blur-[120px] pointer-events-none" />
+
+      <div className="container relative z-10 mx-auto px-4">
+        <div className="mb-16 max-w-xl">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary animate-fade-in">Testimonials</p>
+          <h2 className="mb-4 text-4xl font-bold text-foreground animate-fade-in [animation-delay:100ms]">
+            Loved by Buyers & Experts
+          </h2>
+          <p className="text-muted-foreground text-lg animate-fade-in [animation-delay:200ms]">Real stories from our community</p>
         </div>
 
         <div className="relative">
-          <Button variant="ghost" size="icon" className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full lg:flex hover-scale" onClick={() => { setIsAutoPlaying(false); setCurrentIndex((p) => (p - 1 + testimonials.length) % testimonials.length); }}>
+          <Button variant="ghost" size="icon" className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full lg:flex border border-border/30 hover:bg-primary/[0.06]" onClick={() => { setIsAutoPlaying(false); setCurrentIndex((p) => (p - 1 + testimonials.length) % testimonials.length); }}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full lg:flex hover-scale" onClick={() => { setIsAutoPlaying(false); setCurrentIndex((p) => (p + 1) % testimonials.length); }}>
+          <Button variant="ghost" size="icon" className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 rounded-full lg:flex border border-border/30 hover:bg-primary/[0.06]" onClick={() => { setIsAutoPlaying(false); setCurrentIndex((p) => (p + 1) % testimonials.length); }}>
             <ChevronRight className="h-5 w-5" />
           </Button>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {visibleTestimonials.map((t, i) => (
-              <Card key={`${t.id}-${i}`} className="relative overflow-hidden border-border/50 bg-card/60 backdrop-blur-sm transition-all duration-500 hover:shadow-lg hover:-translate-y-1 animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
+              <Card key={`${t.id}-${i}`} className="relative overflow-hidden border-border/30 bg-card/60 backdrop-blur-sm transition-all duration-500 hover:shadow-glow hover:-translate-y-2 animate-fade-in" style={{ animationDelay: `${i * 120}ms` }}>
                 <CardContent className="p-6">
-                  <Quote className="absolute -right-2 -top-2 h-16 w-16 text-primary/[0.04]" />
+                  <Quote className="absolute -right-2 -top-2 h-20 w-20 text-primary/[0.04]" />
                   <div className="mb-4 flex gap-0.5">
                     {Array.from({ length: t.rating }).map((_, j) => (
-                      <Star key={j} className="h-3.5 w-3.5 fill-primary/70 text-primary/70" />
+                      <Star key={j} className="h-3.5 w-3.5 fill-primary text-primary" />
                     ))}
                   </div>
-                  <p className="mb-6 text-foreground text-sm leading-relaxed">"{t.content}"</p>
+                  <p className="mb-6 text-foreground/90 text-sm leading-relaxed">"{t.content}"</p>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
-                      <AvatarFallback className="bg-primary/[0.07] text-primary text-xs">
+                      <AvatarFallback className="bg-primary/[0.08] text-primary text-xs font-semibold">
                         {t.name.split(" ").map((n) => n[0]).join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium text-foreground">{t.name}</p>
+                      <p className="text-sm font-semibold text-foreground">{t.name}</p>
                       <p className="text-xs text-muted-foreground">{t.role}</p>
                     </div>
                   </div>
                   <div className="absolute right-4 top-4">
-                    <span className="rounded-full bg-primary/[0.06] px-2.5 py-1 text-[10px] font-medium text-primary/80">{t.category}</span>
+                    <span className="rounded-full bg-primary/[0.08] px-2.5 py-1 text-[10px] font-semibold text-primary/80">{t.category}</span>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          <div className="mt-10 flex justify-center gap-2">
+          <div className="mt-12 flex justify-center gap-2">
             {testimonials.map((_, index) => (
-              <button key={index} onClick={() => { setIsAutoPlaying(false); setCurrentIndex(index); }} className={`h-1.5 rounded-full transition-all duration-500 ${index === currentIndex ? "w-8 bg-primary/60" : "w-1.5 bg-border"}`} />
+              <button key={index} onClick={() => { setIsAutoPlaying(false); setCurrentIndex(index); }} className={`h-1.5 rounded-full transition-all duration-500 ${index === currentIndex ? "w-8 bg-primary" : "w-1.5 bg-border/60"}`} />
             ))}
           </div>
         </div>

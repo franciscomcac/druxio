@@ -29,24 +29,24 @@ const LiveStats = () => {
   ];
 
   return (
-    <section className="border-y border-border/40 bg-card/30 py-5">
+    <section className="border-y border-border/30 bg-card/40 py-6 backdrop-blur-sm">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary/60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
             </span>
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Live</span>
+            <span className="text-xs font-semibold text-primary uppercase tracking-widest">Live</span>
           </div>
 
           {statItems.map((stat, index) => (
-            <div key={index} className="flex items-center gap-2.5 transition-all duration-300">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/[0.06] text-primary/70">
+            <div key={index} className="flex items-center gap-3 group">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/[0.08] text-primary/70 group-hover:bg-primary/[0.15] transition-colors duration-300">
                 {stat.icon}
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground tabular-nums">
+                <p className="text-sm font-bold text-foreground tabular-nums transition-all">
                   {stat.prefix}{stat.value.toLocaleString()}{stat.suffix}
                 </p>
                 <p className="text-[10px] text-muted-foreground leading-none">{stat.label}</p>
