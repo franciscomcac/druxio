@@ -183,42 +183,46 @@ const PostRequest = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { setLoading(false); navigate("/auth"); return; }
 
-    const mainCategory = category.split(":")[0]?.trim() || category;
-    const { count } = await supabase
-      .from("expert_categories")
-      .select("*", { count: "exact", head: true })
-      .ilike("category", `%${mainCategory}%`);
-    setOnlineCount(count || 0);
+      const mainCategory = category.split(":")[0]?.trim() || category;
+      const { count } = await supabase
+        .from("expert_categories")
+        .select("*", { count: "exact", head: true })
+        .ilike("category", `%${mainCategory}%`);
+      setOnlineCount(count || 0);
 
-    const expiresAt = new Date();
-    expiresAt.setMinutes(expiresAt.getMinutes() + 3);
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 3);
 
-    const { data, error } = await supabase
-      .from("jobs")
-      .insert({
-        buyer_id: session.user.id,
-        title, description, category,
-        budget_min: 5,
-        budget_max: 50,
-        deadline_minutes: deadlineUnit === "days" ? deadlineValue * 1440 : deadlineUnit === "hours" ? deadlineValue * 60 : deadlineValue,
-        expires_at: expiresAt.toISOString(),
-      })
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from("jobs")
+        .insert({
+          buyer_id: session.user.id,
+          title, description, category,
+          budget_min: 5,
+          budget_max: 50,
+          deadline_minutes: deadlineUnit === "days" ? deadlineValue * 1440 : deadlineUnit === "hours" ? deadlineValue * 60 : deadlineValue,
+          expires_at: expiresAt.toISOString(),
+        })
+        .select()
+        .single();
 
-    if (error) {
-      toast({ title: "Error posting request", description: error.message, variant: "destructive" });
+      if (error) {
+        toast({ title: "Error posting request", description: error.message, variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      setJobId(data.id);
       setLoading(false);
-      return;
+      navigate(`/request/${data.id}`);
+    } catch (err: any) {
+      toast({ title: "Error posting request", description: err.message || "Something went wrong", variant: "destructive" });
+      setLoading(false);
     }
-
-    setJobId(data.id);
-    setLoading(false);
-    // Navigate to the active request page
-    navigate(`/request/${data.id}`);
   };
 
   useEffect(() => {
