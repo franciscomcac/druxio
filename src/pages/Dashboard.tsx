@@ -39,27 +39,25 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const fetchData = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
-
+  const fetchData = async (userId: string) => {
     try {
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", session.user.id),
-        supabase.from("expert_categories").select("category").eq("user_id", session.user.id),
-        supabase.from("jobs").select("*").eq("buyer_id", session.user.id).order("created_at", { ascending: false }).limit(20),
+        supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", userId),
+        supabase.from("expert_categories").select("category").eq("user_id", userId),
+        supabase.from("jobs").select("*").eq("buyer_id", userId).order("created_at", { ascending: false }).limit(20),
       ]);
 
       if (!profileRes.data) {
-        const displayName = session.user.user_metadata?.display_name || session.user.email?.split("@")[0] || "User";
-        const { data: newProfile } = await supabase.from("profiles").upsert({ id: session.user.id, display_name: displayName }, { onConflict: "id" }).select().single();
+        const { data: { session } } = await supabase.auth.getSession();
+        const displayName = session?.user?.user_metadata?.display_name || session?.user?.email?.split("@")[0] || "User";
+        const { data: newProfile } = await supabase.from("profiles").upsert({ id: userId, display_name: displayName }, { onConflict: "id" }).select().single();
         setProfile(newProfile);
-        const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+        const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${userId}`);
         if (!hasSeenOnboarding) setShowOnboarding(true);
       } else {
         setProfile(profileRes.data);
-        const hasCompleted = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+        const hasCompleted = localStorage.getItem(`onboarding_completed_${userId}`);
         if (!hasCompleted && !profileRes.data.skills?.length && !profileRes.data.bio) {
           const isMentorAlready = rolesRes.data?.some((r: any) => r.role === "mentor");
           if (!isMentorAlready) setShowOnboarding(true);
@@ -78,7 +76,36 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    let isMounted = true;
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+      if (event === 'SIGNED_OUT') {
+        navigate("/auth");
+        return;
+      }
+      if (session?.user) {
+        setTimeout(() => {
+          if (isMounted) fetchData(session.user.id);
+        }, 0);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      if (!session) {
+        navigate("/auth");
+      } else {
+        fetchData(session.user.id);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const handleBecomeSeller = () => setShowSellerConsent(true);
 
@@ -94,8 +121,10 @@ const Dashboard = () => {
 
   const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
-    if (profile?.id) localStorage.setItem(`onboarding_completed_${profile.id}`, "true");
-    fetchData();
+    if (profile?.id) {
+      localStorage.setItem(`onboarding_completed_${profile.id}`, "true");
+      fetchData(profile.id);
+    }
   };
 
   const isMentor = roles.some((r: any) => r.role === "mentor");
@@ -177,7 +206,7 @@ const Dashboard = () => {
         </div>
 
         {activeView === "client" ? (
-          <ClientDashboard profile={profile} myJobs={myJobs} onJobsChanged={fetchData} />
+          <ClientDashboard profile={profile} myJobs={myJobs} onJobsChanged={() => profile?.id && fetchData(profile.id)} />
         ) : (
           <ExpertDashboard profile={profile} subscribedCategories={subscribedCategories} />
         )}
