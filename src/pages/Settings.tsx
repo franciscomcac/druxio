@@ -24,35 +24,35 @@ import {
 const CATEGORY_TREE = [
   {
     id: "Gaming", label: "Gaming", icon: Gamepad2,
-    subs: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends", "Custom"],
+    subs: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends"],
   },
   {
     id: "Tech", label: "Tech", icon: Code,
-    subs: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress", "Custom"],
+    subs: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress"],
   },
   {
     id: "Business", label: "Business", icon: Briefcase,
-    subs: ["Marketing", "Startup Advice", "E-commerce", "Accounting", "Custom"],
+    subs: ["Marketing", "Startup Advice", "E-commerce", "Accounting"],
   },
   {
     id: "Creative", label: "Creative", icon: Palette,
-    subs: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails", "Custom"],
+    subs: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails"],
   },
   {
     id: "Music", label: "Music", icon: Music,
-    subs: ["Production", "Mixing & Mastering", "Guitar Lessons", "Custom"],
+    subs: ["Production", "Mixing & Mastering", "Guitar Lessons"],
   },
   {
     id: "Fitness", label: "Fitness", icon: Dumbbell,
-    subs: ["Personal Training", "Nutrition Plans", "Custom"],
+    subs: ["Personal Training", "Nutrition Plans"],
   },
   {
     id: "Languages", label: "Languages", icon: Globe,
-    subs: ["English", "Spanish", "Custom"],
+    subs: ["English", "Spanish"],
   },
   {
     id: "Content", label: "Content", icon: Video,
-    subs: ["Streaming", "YouTube", "TikTok", "Custom"],
+    subs: ["Streaming", "YouTube", "TikTok"],
   },
 ];
 

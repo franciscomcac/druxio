@@ -39,24 +39,27 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const fetchData = async (sessionUser: any) => {
+  const fetchData = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { navigate("/auth"); return; }
+
     try {
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", sessionUser.id).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", sessionUser.id),
-        supabase.from("expert_categories").select("category").eq("user_id", sessionUser.id),
-        supabase.from("jobs").select("*").eq("buyer_id", sessionUser.id).order("created_at", { ascending: false }).limit(20),
+        supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", session.user.id),
+        supabase.from("expert_categories").select("category").eq("user_id", session.user.id),
+        supabase.from("jobs").select("*").eq("buyer_id", session.user.id).order("created_at", { ascending: false }).limit(20),
       ]);
 
       if (!profileRes.data) {
-        const displayName = sessionUser.user_metadata?.display_name || sessionUser.email?.split("@")[0] || "User";
-        const { data: newProfile } = await supabase.from("profiles").upsert({ id: sessionUser.id, display_name: displayName }, { onConflict: "id" }).select().single();
+        const displayName = session.user.user_metadata?.display_name || session.user.email?.split("@")[0] || "User";
+        const { data: newProfile } = await supabase.from("profiles").upsert({ id: session.user.id, display_name: displayName }, { onConflict: "id" }).select().single();
         setProfile(newProfile);
-        const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${sessionUser.id}`);
+        const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
         if (!hasSeenOnboarding) setShowOnboarding(true);
       } else {
         setProfile(profileRes.data);
-        const hasCompleted = localStorage.getItem(`onboarding_completed_${sessionUser.id}`);
+        const hasCompleted = localStorage.getItem(`onboarding_completed_${session.user.id}`);
         if (!hasCompleted && !profileRes.data.skills?.length && !profileRes.data.bio) {
           const isMentorAlready = rolesRes.data?.some((r: any) => r.role === "mentor");
           if (!isMentorAlready) setShowOnboarding(true);
@@ -75,47 +78,7 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    let called = false;
-
-    const loadDashboard = async (user: any) => {
-      if (called) return;
-      called = true;
-      await fetchData(user);
-    };
-
-    // Set up auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT") {
-        navigate("/auth");
-        return;
-      }
-      if (session?.user) {
-        loadDashboard(session.user);
-      }
-    });
-
-    // Fallback: directly check session in case the event was already fired
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      loadDashboard(session.user);
-    });
-
-    // Safety timeout - if still loading after 8s, redirect to auth
-    const timeout = setTimeout(() => {
-      if (!called) {
-        navigate("/auth");
-      }
-    }, 8000);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const handleBecomeSeller = () => setShowSellerConsent(true);
 
@@ -132,8 +95,7 @@ const Dashboard = () => {
   const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
     if (profile?.id) localStorage.setItem(`onboarding_completed_${profile.id}`, "true");
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) fetchData(session.user);
+    fetchData();
   };
 
   const isMentor = roles.some((r: any) => r.role === "mentor");
@@ -215,7 +177,7 @@ const Dashboard = () => {
         </div>
 
         {activeView === "client" ? (
-          <ClientDashboard profile={profile} myJobs={myJobs} onJobsChanged={async () => { const { data: { session } } = await supabase.auth.getSession(); if (session) fetchData(session.user); }} />
+          <ClientDashboard profile={profile} myJobs={myJobs} onJobsChanged={fetchData} />
         ) : (
           <ExpertDashboard profile={profile} subscribedCategories={subscribedCategories} />
         )}

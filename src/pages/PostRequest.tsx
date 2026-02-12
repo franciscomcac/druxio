@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,14 +24,14 @@ import {
 } from "lucide-react";
 
 const BROAD_CATEGORIES = [
-  { id: "Gaming", label: "Gaming", icon: Gamepad2, description: "Boosting, coaching & more", titleExample: 'e.g. "Boost my Valorant rank to Diamond"' },
-  { id: "Tech", label: "Tech", icon: Code, description: "Dev, bots, servers & SEO", titleExample: 'e.g. "Build a Discord bot with auto-moderation"' },
-  { id: "Business", label: "Business", icon: Briefcase, description: "Marketing, e-com & growth", titleExample: 'e.g. "Create a Facebook ads campaign for my store"' },
-  { id: "Creative", label: "Creative", icon: Palette, description: "Design, video & copy", titleExample: 'e.g. "Design a logo for my brand"' },
-  { id: "Music", label: "Music", icon: Music, description: "Production, mixing & lessons", titleExample: 'e.g. "Mix and master my hip-hop track"' },
-  { id: "Fitness", label: "Fitness", icon: Dumbbell, description: "Training & nutrition", titleExample: 'e.g. "Create a 12-week workout plan for muscle gain"' },
-  { id: "Languages", label: "Languages", icon: Globe, description: "Tutoring & translation", titleExample: 'e.g. "Translate my website copy to Spanish"' },
-  { id: "Content", label: "Content", icon: Video, description: "Streaming, YouTube & TikTok", titleExample: 'e.g. "Edit my YouTube video with transitions & effects"' },
+  { id: "Gaming", label: "Gaming", icon: Gamepad2, description: "Boosting, coaching & more" },
+  { id: "Tech", label: "Tech", icon: Code, description: "Dev, bots, servers & SEO" },
+  { id: "Business", label: "Business", icon: Briefcase, description: "Marketing, e-com & growth" },
+  { id: "Creative", label: "Creative", icon: Palette, description: "Design, video & copy" },
+  { id: "Music", label: "Music", icon: Music, description: "Production, mixing & lessons" },
+  { id: "Fitness", label: "Fitness", icon: Dumbbell, description: "Training & nutrition" },
+  { id: "Languages", label: "Languages", icon: Globe, description: "Tutoring & translation" },
+  { id: "Content", label: "Content", icon: Video, description: "Streaming, YouTube & TikTok" },
 ];
 
 const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> = {
@@ -116,7 +115,6 @@ const PostRequest = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(180);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   // Resume waiting screen if jobId param provided
   useEffect(() => {
@@ -178,56 +176,49 @@ const PostRequest = () => {
   const handleBack = () => {
     if (wizardStep === "subcategory") setWizardStep("category");
     else if (wizardStep === "details") setWizardStep("subcategory");
-    else navigate("/");
+    else navigate(-1);
   };
 
-  const submitRequest = async (authenticatedUserId?: string) => {
-    try {
-      let userId = authenticatedUserId;
-      if (!userId) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { setShowAuthDialog(true); return; }
-        userId = session.user.id;
-      }
-      setLoading(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-      const mainCategory = category.split(":")[0]?.trim() || category;
-      const { count } = await supabase
-        .from("expert_categories")
-        .select("*", { count: "exact", head: true })
-        .ilike("category", `%${mainCategory}%`);
-      setOnlineCount(count || 0);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { navigate("/auth"); return; }
 
-      const expiresAt = new Date();
-      expiresAt.setMinutes(expiresAt.getMinutes() + 3);
+    const mainCategory = category.split(":")[0]?.trim() || category;
+    const { count } = await supabase
+      .from("expert_categories")
+      .select("*", { count: "exact", head: true })
+      .ilike("category", `%${mainCategory}%`);
+    setOnlineCount(count || 0);
 
-      const { data, error } = await supabase
-        .from("jobs")
-        .insert({
-          buyer_id: userId!,
-          title, description, category,
-          budget_min: 5,
-          budget_max: 50,
-          deadline_minutes: deadlineUnit === "days" ? deadlineValue * 1440 : deadlineUnit === "hours" ? deadlineValue * 60 : deadlineValue,
-          expires_at: expiresAt.toISOString(),
-        })
-        .select()
-        .single();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 3);
 
-      if (error) {
-        toast({ title: "Error posting request", description: error.message, variant: "destructive" });
-        setLoading(false);
-        return;
-      }
+    const { data, error } = await supabase
+      .from("jobs")
+      .insert({
+        buyer_id: session.user.id,
+        title, description, category,
+        budget_min: 5,
+        budget_max: 50,
+        deadline_minutes: deadlineUnit === "days" ? deadlineValue * 1440 : deadlineUnit === "hours" ? deadlineValue * 60 : deadlineValue,
+        expires_at: expiresAt.toISOString(),
+      })
+      .select()
+      .single();
 
-      setJobId(data.id);
+    if (error) {
+      toast({ title: "Error posting request", description: error.message, variant: "destructive" });
       setLoading(false);
-      navigate(`/request/${data.id}`);
-    } catch (error: any) {
-      console.error("Submit request error:", error);
-      toast({ title: "Error", description: error?.message || "Something went wrong", variant: "destructive" });
-      setLoading(false);
+      return;
     }
+
+    setJobId(data.id);
+    setLoading(false);
+    // Navigate to the active request page
+    navigate(`/request/${data.id}`);
   };
 
   useEffect(() => {
@@ -269,7 +260,6 @@ const PostRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <QuickAuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} onAuthenticated={(userId) => submitRequest(userId)} />
       <Header />
       <main className="container mx-auto px-4 py-10">
 
@@ -393,12 +383,12 @@ const PostRequest = () => {
               </p>
             </div>
 
-            <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <Card className="border-border/30 bg-card/60 backdrop-blur-xl">
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Title</label>
-                    <Input placeholder={BROAD_CATEGORIES.find(c => c.id === broadCategory)?.titleExample || 'e.g. "Describe what you need"'} value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border/40 focus:border-primary/40" />
+                    <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border/40 focus:border-primary/40" />
                   </div>
 
                    <div className="space-y-2">
@@ -438,7 +428,7 @@ const PostRequest = () => {
                 </CardContent>
               </Card>
 
-              <Button type="button" onClick={() => submitRequest()} size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
+              <Button type="submit" size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
                 Post Request & Notify Experts
               </Button>
@@ -448,7 +438,7 @@ const PostRequest = () => {
                 <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-primary/60" /> ~90s avg response</span>
                 <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary/60" /> Free to post</span>
               </div>
-            </div>
+            </form>
           </div>
         )}
 
