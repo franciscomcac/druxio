@@ -12,8 +12,6 @@ import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSqua
 
 const navLinks = [
   { label: "How It Works", href: "/#how-it-works" },
-  { label: "Categories", href: "/#categories" },
-  { label: "Pricing", href: "/#pricing" },
 ];
 
 const Header = () => {
