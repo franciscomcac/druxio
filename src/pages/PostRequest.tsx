@@ -213,8 +213,9 @@ const PostRequest = () => {
     }
 
     setJobId(data.id);
-    setWizardStep("waiting");
     setLoading(false);
+    // Navigate to the active request page
+    navigate(`/request/${data.id}`);
   };
 
   useEffect(() => {
