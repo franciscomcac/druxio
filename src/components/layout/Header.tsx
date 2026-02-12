@@ -37,6 +37,7 @@ const Header = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       setUser(session?.user || null);
       if (session?.user) {
+        setAuthOpen(false);
         const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single();
         setProfile(data);
       } else {
