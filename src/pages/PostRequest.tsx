@@ -182,9 +182,9 @@ const PostRequest = () => {
   };
 
   const submitRequest = async () => {
-    setLoading(true);
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { setLoading(false); setShowAuthDialog(true); return; }
+    if (!session) { setShowAuthDialog(true); return; }
+    setLoading(true);
 
     const mainCategory = category.split(":")[0]?.trim() || category;
     const { count } = await supabase
