@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
 import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus } from "lucide-react";
+import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 
 const navLinks = [
   { label: "How It Works", href: "/how-it-works" },
@@ -18,6 +19,8 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,8 +106,8 @@ const Header = () => {
             </>
           ) : (
             <>
-              <Link to="/auth"><Button variant="ghost" className="gap-2 hover:bg-primary/[0.06]"><User className="h-4 w-4" /> Sign In</Button></Link>
-              <Link to="/post-request"><Button className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow"><Zap className="h-4 w-4" /> Post Request</Button></Link>
+              <Button variant="ghost" className="gap-2 hover:bg-primary/[0.06]" onClick={() => { setAuthTab("login"); setAuthOpen(true); }}><User className="h-4 w-4" /> Sign In</Button>
+              <Button className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setAuthTab("signup"); setAuthOpen(true); }}><Zap className="h-4 w-4" /> Get Started</Button>
             </>
           )}
         </div>
@@ -127,14 +130,15 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  <Link to="/auth" onClick={() => setIsOpen(false)}><Button variant="outline" className="w-full gap-2"><User className="h-4 w-4" /> Sign In</Button></Link>
-                  <Link to="/post-request" onClick={() => setIsOpen(false)}><Button className="w-full gap-2"><Zap className="h-4 w-4" /> Post Request</Button></Link>
+                  <Button variant="outline" className="w-full gap-2" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}><User className="h-4 w-4" /> Sign In</Button>
+                  <Button className="w-full gap-2" onClick={() => { setIsOpen(false); setAuthTab("signup"); setAuthOpen(true); }}><Zap className="h-4 w-4" /> Get Started</Button>
                 </>
               )}
             </div>
           </SheetContent>
         </Sheet>
       </div>
+      <QuickAuthDialog open={authOpen} onOpenChange={setAuthOpen} defaultTab={authTab} />
     </header>
   );
 };
