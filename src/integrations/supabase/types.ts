@@ -79,6 +79,78 @@ export type Database = {
           },
         ]
       }
+      expert_categories: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          accepted_quote_id: string | null
+          budget_max: number
+          budget_min: number
+          buyer_id: string
+          category: string
+          created_at: string | null
+          deadline_minutes: number
+          description: string | null
+          expires_at: string | null
+          id: string
+          status: string
+          subcategory: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_quote_id?: string | null
+          budget_max?: number
+          budget_min?: number
+          buyer_id: string
+          category: string
+          created_at?: string | null
+          deadline_minutes?: number
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          status?: string
+          subcategory?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_quote_id?: string | null
+          budget_max?: number
+          budget_min?: number
+          buyer_id?: string
+          category?: string
+          created_at?: string | null
+          deadline_minutes?: number
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          status?: string
+          subcategory?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string | null
@@ -242,6 +314,47 @@ export type Database = {
           wallet_balance?: number | null
         }
         Relationships: []
+      }
+      quotes: {
+        Row: {
+          created_at: string | null
+          estimated_minutes: number
+          expert_id: string
+          id: string
+          job_id: string
+          message: string | null
+          price: number
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          estimated_minutes?: number
+          expert_id: string
+          id?: string
+          job_id: string
+          message?: string | null
+          price: number
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          estimated_minutes?: number
+          expert_id?: string
+          id?: string
+          job_id?: string
+          message?: string | null
+          price?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {

@@ -1,107 +1,92 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Search, Upload, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { ArrowRight, Zap } from "lucide-react";
 
 const categories = [
-  "React", "Java", "Python", "JavaScript", "TypeScript", "Node.js",
-  "Next.js", "APIs", "PostgreSQL", "Git", "Docker", "AWS"
+  "Gaming: Minecraft", "Gaming: Valorant", "Gaming: Fortnite", "Gaming: CS2",
+  "Tech: Discord Bots", "Tech: Web Dev", "Tech: SEO", "Tech: Server Setup",
+  "Business: Marketing", "Business: Startup", "Business: E-commerce",
+  "Creative: Design", "Creative: Video Editing", "Creative: Ad Copy",
 ];
 
 const QuickHelpForm = () => {
   const navigate = useNavigate();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [issueText, setIssueText] = useState("");
-
-  const toggleCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [budget, setBudget] = useState([15]);
+  const [deadline, setDeadline] = useState("30");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to search with query params
     const params = new URLSearchParams();
-    if (selectedCategories.length > 0) {
-      params.set("categories", selectedCategories.join(","));
-    }
-    if (issueText) {
-      params.set("issue", issueText);
-    }
-    navigate(`/search?${params.toString()}`);
+    if (title) params.set("title", title);
+    if (category) params.set("category", category);
+    params.set("budget", String(budget[0]));
+    params.set("deadline", deadline);
+    navigate(`/post-request?${params.toString()}`);
   };
 
   return (
     <section className="bg-background py-16" id="quick-help">
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-2xl">
           <div className="mb-8 text-center">
-            <h2 className="mb-3 text-3xl font-bold text-foreground">
-              What do you need help with?
-            </h2>
-            <p className="text-muted-foreground">
-              Select your tech stack and describe your issue. We'll match you with the best mentors.
-            </p>
+            <h2 className="mb-3 text-3xl font-bold text-foreground">Post a Quick Request</h2>
+            <p className="text-muted-foreground">Describe what you need — experts get notified instantly</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Category chips */}
-            <div className="rounded-xl border border-border bg-card p-6">
-              <label className="mb-3 block text-sm font-medium text-foreground">
-                Select categories (click to toggle)
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                  <Badge
-                    key={category}
-                    variant={selectedCategories.includes(category) ? "default" : "outline"}
-                    className="cursor-pointer px-3 py-1.5 text-sm transition-all hover:scale-105"
-                    onClick={() => toggleCategory(category)}
-                  >
-                    {category}
-                    {selectedCategories.includes(category) && (
-                      <X className="ml-1 h-3 w-3" />
-                    )}
-                  </Badge>
-                ))}
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border bg-card p-8">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">What do you need?</label>
+              <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Category</label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Budget: €{budget[0]}</label>
+              <Slider value={budget} onValueChange={setBudget} min={5} max={50} step={1} />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>€5</span><span>€50</span>
               </div>
             </div>
 
-            {/* Issue textarea */}
-            <div className="rounded-xl border border-border bg-card p-6">
-              <label className="mb-3 block text-sm font-medium text-foreground">
-                Describe your issue
-              </label>
-              <Textarea
-                placeholder="E.g., I'm getting a 'Cannot read property of undefined' error in my React component when trying to map over an array..."
-                value={issueText}
-                onChange={(e) => setIssueText(e.target.value)}
-                className="min-h-32 resize-none"
-              />
-              
-              {/* File upload hint */}
-              <div className="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-border bg-accent/30 p-4">
-                <Upload className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  Drag & drop code snippets or screenshots here (optional)
-                </span>
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Deadline</label>
+              <Select value={deadline} onValueChange={setDeadline}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15">15 minutes</SelectItem>
+                  <SelectItem value="30">30 minutes</SelectItem>
+                  <SelectItem value="45">45 minutes</SelectItem>
+                  <SelectItem value="60">1 hour</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            {/* Submit button */}
-            <Button 
-              type="submit" 
-              size="lg" 
-              className="w-full gap-2 py-6 text-lg"
-            >
-              <Search className="h-5 w-5" />
-              Find Mentors Now
+            <Button type="submit" size="lg" className="w-full gap-2">
+              <Zap className="h-5 w-5" />
+              Post Request & Notify Experts
             </Button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              Free to post • Experts respond within 2 minutes • Escrow-protected
+            </p>
           </form>
         </div>
       </div>

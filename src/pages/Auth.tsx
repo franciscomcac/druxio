@@ -20,47 +20,26 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/dashboard");
-      }
+      if (session) navigate("/dashboard");
     };
     checkUser();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate("/dashboard");
-      }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (session) navigate("/dashboard");
     });
-
     return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
-      });
+      toast({ title: "Welcome back!", description: "You've successfully logged in." });
     } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Login failed", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -69,31 +48,15 @@ const Auth = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: window.location.origin,
-          data: {
-            display_name: displayName,
-          },
-        },
+        email, password,
+        options: { emailRedirectTo: window.location.origin, data: { display_name: displayName } },
       });
-
       if (error) throw error;
-
-      toast({
-        title: "Account created!",
-        description: "Welcome to MicroMentor. Let's set up your profile.",
-      });
+      toast({ title: "Account created!", description: "Check your email to verify your account." });
     } catch (error: any) {
-      toast({
-        title: "Signup failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Signup failed", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -112,17 +75,13 @@ const Auth = () => {
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Zap className="h-6 w-6" />
             </div>
-            <span className="text-2xl font-bold text-foreground">
-              Micro<span className="text-primary">Mentor</span>
-            </span>
+            <span className="text-2xl font-bold text-foreground">Duxio</span>
           </Link>
           <CardTitle className="text-2xl">
             {activeTab === "login" ? "Welcome back" : "Create an account"}
           </CardTitle>
           <CardDescription>
-            {activeTab === "login" 
-              ? "Sign in to your account to continue" 
-              : "Get started with expert mentorship today"}
+            {activeTab === "login" ? "Sign in to continue" : "Join as a buyer or expert"}
           </CardDescription>
         </CardHeader>
 
@@ -137,29 +96,14 @@ const Auth = () => {
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email</Label>
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="login-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="login-password">Password</Label>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
+                  <Input id="login-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign In
                 </Button>
               </form>
             </TabsContent>
@@ -168,53 +112,26 @@ const Auth = () => {
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-name">Display Name</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="John Doe"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-name" type="text" placeholder="John Doe" value={displayName} onChange={(e) => setDisplayName(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Input id="signup-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
+                  <Input id="signup-password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Account
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create Account
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
 
           <div className="mt-6 text-center">
-            <Link 
-              to="/" 
-              className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to home
+            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+              <ArrowLeft className="h-4 w-4" /> Back to home
             </Link>
           </div>
         </CardContent>

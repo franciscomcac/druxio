@@ -1,212 +1,227 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/layout/Header";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import SellerConsentDialog from "@/components/onboarding/SellerConsentDialog";
-import { 
-  Target, MessageSquare, Video, DollarSign, Star, 
-  Clock, TrendingUp, Users, Calendar, Settings,
-  Plus, ArrowRight, LogOut
-} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Zap, DollarSign, Star, Clock, TrendingUp, Users, Settings,
+  Plus, ArrowRight, LogOut, Bell, Send, Loader2, Target
+} from "lucide-react";
 
-interface Profile {
+interface Job {
   id: string;
-  display_name: string | null;
-  bio: string | null;
-  avatar_url: string | null;
-  skills: string[] | null;
-  goals: any;
-  rating_avg: number | null;
-  total_sessions: number | null;
-  wallet_balance: number | null;
-  is_online: boolean | null;
-}
-
-interface UserRole {
-  role: 'admin' | 'mentor' | 'mentee';
+  title: string;
+  description: string | null;
+  category: string;
+  budget_max: number;
+  deadline_minutes: number;
+  status: string;
+  created_at: string;
+  expires_at: string | null;
+  buyer_id: string;
 }
 
 const Dashboard = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [roles, setRoles] = useState<UserRole[]>([]);
+  const [profile, setProfile] = useState<any>(null);
+  const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState<'mentee' | 'mentor'>('mentee');
+  const [activeView, setActiveView] = useState<"buyer" | "expert">("buyer");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSellerConsent, setShowSellerConsent] = useState(false);
+  const [openJobs, setOpenJobs] = useState<Job[]>([]);
+  const [myJobs, setMyJobs] = useState<Job[]>([]);
+  const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
+  const [quoteDialog, setQuoteDialog] = useState<Job | null>(null);
+  const [quotePrice, setQuotePrice] = useState("");
+  const [quoteMinutes, setQuoteMinutes] = useState("20");
+  const [quoteMessage, setQuoteMessage] = useState("");
+  const [sendingQuote, setSendingQuote] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session) {
-          navigate("/auth");
-          return;
-        }
+    fetchData();
+  }, []);
 
-        // Fetch profile - handle case where it doesn't exist
-        let { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .maybeSingle();
-
-        // If profile doesn't exist, create it and mark as new user - show onboarding
-        if (!profileData && !profileError) {
-          const displayName = session.user.user_metadata?.display_name || 
-                              session.user.email?.split('@')[0] || 
-                              'User';
-          
-          const { data: newProfile, error: insertError } = await supabase
-            .from("profiles")
-            .insert({
-              id: session.user.id,
-              display_name: displayName,
-            })
-            .select()
-            .single();
-          
-          if (insertError) {
-            console.error("Error creating profile:", insertError);
-          } else {
-            profileData = newProfile;
-            // Only show onboarding for brand new users (first login ever)
-            const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
-            if (!hasSeenOnboarding) {
-              setShowOnboarding(true);
-            }
-          }
-        } else if (profileData) {
-          // Check if this is truly a first-time login (no onboarding completion flag)
-          const hasCompletedOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
-          if (!hasCompletedOnboarding && !profileData.skills?.length && !profileData.bio) {
-            // Check if user is a mentor - mentors skip onboarding
-            const { data: existingRoles } = await supabase
-              .from("user_roles")
-              .select("role")
-              .eq("user_id", session.user.id);
-            
-            const isMentorAlready = existingRoles?.some(r => r.role === 'mentor');
-            if (!isMentorAlready) {
-              setShowOnboarding(true);
-            }
-          }
-        }
-
-        if (profileError) {
-          console.error("Profile error:", profileError);
-        }
-        
-        setProfile(profileData);
-
-        // Fetch roles
-        const { data: rolesData, error: rolesError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", session.user.id);
-
-        if (rolesError) {
-          console.error("Roles error:", rolesError);
-        }
-        setRoles((rolesData as UserRole[]) || []);
-
-        // Check if user is a mentor
-        const isMentor = rolesData?.some(r => r.role === 'mentor');
-        if (isMentor) {
-          setActiveView('mentor');
-        }
-      } catch (error: any) {
-        console.error("Error fetching user data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load your profile",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [navigate, toast]);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("viewAsMentor");
-    navigate("/");
-  };
-
-  const handleOnboardingComplete = async () => {
-    setShowOnboarding(false);
-    if (profile?.id) {
-      // Mark onboarding as completed permanently
-      localStorage.setItem(`onboarding_completed_${profile.id}`, "true");
-    }
-    // Refresh profile data
+  const fetchData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-      if (data) setProfile(data);
+    if (!session) { navigate("/auth"); return; }
+
+    const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
+      supabase.from("user_roles").select("role").eq("user_id", session.user.id),
+      supabase.from("expert_categories").select("category").eq("user_id", session.user.id),
+      supabase.from("jobs").select("*").eq("buyer_id", session.user.id).order("created_at", { ascending: false }).limit(20),
+    ]);
+
+    if (!profileRes.data) {
+      const displayName = session.user.user_metadata?.display_name || session.user.email?.split("@")[0] || "User";
+      const { data: newProfile } = await supabase.from("profiles").insert({ id: session.user.id, display_name: displayName }).select().single();
+      setProfile(newProfile);
+      const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+      if (!hasSeenOnboarding) setShowOnboarding(true);
+    } else {
+      setProfile(profileRes.data);
+      const hasCompleted = localStorage.getItem(`onboarding_completed_${session.user.id}`);
+      if (!hasCompleted && !profileRes.data.skills?.length && !profileRes.data.bio) {
+        const isMentorAlready = rolesRes.data?.some((r: any) => r.role === "mentor");
+        if (!isMentorAlready) setShowOnboarding(true);
+      }
     }
+
+    setRoles(rolesRes.data || []);
+    setSubscribedCategories(categoriesRes.data?.map((c: any) => c.category) || []);
+    setMyJobs(myJobsRes.data || []);
+
+    const isMentor = rolesRes.data?.some((r: any) => r.role === "mentor");
+    if (isMentor) {
+      setActiveView("expert");
+      // Fetch open jobs matching subscribed categories
+      const cats = categoriesRes.data?.map((c: any) => c.category) || [];
+      if (cats.length > 0) {
+        const { data: jobs } = await supabase
+          .from("jobs")
+          .select("*")
+          .eq("status", "open")
+          .order("created_at", { ascending: false })
+          .limit(20);
+        setOpenJobs(jobs || []);
+      }
+    }
+
+    setLoading(false);
   };
 
-  const handleBecomeSeller = () => {
-    setShowSellerConsent(true);
+  // Real-time subscription for new jobs (expert view)
+  useEffect(() => {
+    if (activeView !== "expert") return;
+
+    const channel = supabase
+      .channel("new-jobs")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "jobs" }, (payload) => {
+        const newJob = payload.new as Job;
+        if (newJob.status === "open") {
+          setOpenJobs((prev) => [newJob, ...prev]);
+          toast({ title: "🔔 New request!", description: `"${newJob.title}" — €${newJob.budget_max}` });
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [activeView]);
+
+  const handleSendQuote = async () => {
+    if (!quoteDialog || !quotePrice) return;
+    setSendingQuote(true);
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const { error } = await supabase.from("quotes").insert({
+      job_id: quoteDialog.id,
+      expert_id: session.user.id,
+      price: parseFloat(quotePrice),
+      estimated_minutes: parseInt(quoteMinutes),
+      message: quoteMessage || null,
+    });
+
+    if (error) {
+      toast({ title: "Error sending quote", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Quote sent! ✅", description: "The buyer will see your offer." });
+      setOpenJobs((prev) => prev.filter((j) => j.id !== quoteDialog.id));
+    }
+
+    setSendingQuote(false);
+    setQuoteDialog(null);
+    setQuotePrice("");
+    setQuoteMessage("");
   };
+
+  const handleBecomeSeller = () => setShowSellerConsent(true);
 
   const handleSellerConsentAccept = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
-
-    const { error } = await supabase
-      .from("user_roles")
-      .insert({ user_id: session.user.id, role: 'mentor' });
-
+    const { error } = await supabase.from("user_roles").insert({ user_id: session.user.id, role: "mentor" });
     if (error) throw error;
+    setRoles([...roles, { role: "mentor" }]);
+    toast({ title: "Welcome, Expert! 🎉", description: "Subscribe to categories and start receiving requests." });
+  };
 
-    setRoles([...roles, { role: 'mentor' }]);
-    toast({
-      title: "Welcome to the seller community! 🎉",
-      description: "Set up your availability and start bidding on jobs.",
-    });
+  const handleOnboardingComplete = async () => {
+    setShowOnboarding(false);
+    if (profile?.id) localStorage.setItem(`onboarding_completed_${profile.id}`, "true");
+    fetchData();
+  };
+
+  const isMentor = roles.some((r: any) => r.role === "mentor");
+
+  const timeAgo = (date: string) => {
+    const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    return `${Math.floor(mins / 60)}h ago`;
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  const isMentor = roles.some(r => r.role === 'mentor');
-
   return (
     <div className="min-h-screen bg-background">
       {showOnboarding && profile && (
-        <OnboardingWizard
-          userId={profile.id}
-          onComplete={handleOnboardingComplete}
-        />
+        <OnboardingWizard userId={profile.id} onComplete={handleOnboardingComplete} />
       )}
-      <SellerConsentDialog
-        open={showSellerConsent}
-        onOpenChange={setShowSellerConsent}
-        onAccept={handleSellerConsentAccept}
-      />
+      <SellerConsentDialog open={showSellerConsent} onOpenChange={setShowSellerConsent} onAccept={handleSellerConsentAccept} />
+      
+      {/* Quote Dialog */}
+      <Dialog open={!!quoteDialog} onOpenChange={() => setQuoteDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Quote</DialogTitle>
+            <DialogDescription>
+              {quoteDialog?.title} — Budget: up to €{quoteDialog?.budget_max}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Your Price (€)</label>
+              <Input type="number" placeholder="e.g. 12" value={quotePrice} onChange={(e) => setQuotePrice(e.target.value)} min={1} max={quoteDialog?.budget_max} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Estimated Time (min)</label>
+              <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={5} max={120} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Message (optional)</label>
+              <Textarea placeholder="I can fix this quickly because..." value={quoteMessage} onChange={(e) => setQuoteMessage(e.target.value)} maxLength={500} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setQuoteDialog(null)}>Cancel</Button>
+            <Button onClick={handleSendQuote} disabled={sendingQuote || !quotePrice} className="gap-2">
+              {sendingQuote ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send Quote
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -216,7 +231,7 @@ const Dashboard = () => {
             <Avatar className="h-16 w-16 ring-2 ring-primary/20">
               <AvatarImage src={profile?.avatar_url} />
               <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                {profile?.display_name?.split(" ").map(n => n[0]).join("") || "U"}
+                {profile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "U"}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -224,252 +239,173 @@ const Dashboard = () => {
                 Welcome, {profile?.display_name || "User"}!
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                {roles.map(r => (
-                  <Badge key={r.role} variant="secondary" className="capitalize">
-                    {r.role}
-                  </Badge>
+                {roles.map((r: any) => (
+                  <Badge key={r.role} variant="secondary" className="capitalize">{r.role === "mentor" ? "expert" : r.role}</Badge>
                 ))}
-                {profile?.is_online && (
-                  <Badge variant="outline" className="gap-1 text-green-600">
-                    <span className="h-2 w-2 rounded-full bg-green-500" />
-                    Online
-                  </Badge>
-                )}
               </div>
             </div>
           </div>
-
           <div className="flex gap-3">
             {!isMentor && (
               <Button onClick={handleBecomeSeller} variant="outline" className="gap-2">
-                <Plus className="h-4 w-4" />
-                Become a Seller
+                <Plus className="h-4 w-4" /> Become an Expert
               </Button>
             )}
             <Button variant="outline" size="icon" onClick={() => navigate("/settings")}>
               <Settings className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleSignOut}>
+            <Button variant="ghost" size="icon" onClick={async () => { await supabase.auth.signOut(); navigate("/"); }}>
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <DollarSign className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    ${profile?.wallet_balance?.toFixed(2) || "0.00"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Wallet Balance</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Video className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {profile?.total_sessions || 0}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Total Sessions</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Star className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {profile?.rating_avg?.toFixed(1) || "0.0"}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Average Rating</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Target className="h-6 w-6" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">
-                    {profile?.goals?.length || 0}
-                  </p>
-                  <p className="text-sm text-muted-foreground">Active Goals</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Card><CardContent className="pt-6"><div className="flex items-center gap-4"><div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><DollarSign className="h-6 w-6" /></div><div><p className="text-2xl font-bold text-foreground">€{profile?.wallet_balance?.toFixed(2) || "0.00"}</p><p className="text-sm text-muted-foreground">Wallet</p></div></div></CardContent></Card>
+          <Card><CardContent className="pt-6"><div className="flex items-center gap-4"><div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><Target className="h-6 w-6" /></div><div><p className="text-2xl font-bold text-foreground">{profile?.total_sessions || 0}</p><p className="text-sm text-muted-foreground">Completed Jobs</p></div></div></CardContent></Card>
+          <Card><CardContent className="pt-6"><div className="flex items-center gap-4"><div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><Star className="h-6 w-6" /></div><div><p className="text-2xl font-bold text-foreground">{profile?.rating_avg?.toFixed(1) || "0.0"}</p><p className="text-sm text-muted-foreground">Rating</p></div></div></CardContent></Card>
+          <Card><CardContent className="pt-6"><div className="flex items-center gap-4"><div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><Zap className="h-6 w-6" /></div><div><p className="text-2xl font-bold text-foreground">{subscribedCategories.length}</p><p className="text-sm text-muted-foreground">Subscribed Categories</p></div></div></CardContent></Card>
         </div>
 
-        {/* Role-specific tabs */}
-        {isMentor && (
-          <Tabs value={activeView} onValueChange={(v) => setActiveView(v as 'mentee' | 'mentor')} className="mb-8">
-            <TabsList>
-              <TabsTrigger value="mentee" className="gap-2">
-                <Users className="h-4 w-4" />
-                Mentee View
-              </TabsTrigger>
-              <TabsTrigger value="mentor" className="gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Mentor View
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        )}
+        {/* View Toggle */}
+        <Tabs value={activeView} onValueChange={(v) => setActiveView(v as any)} className="mb-8">
+          <TabsList>
+            <TabsTrigger value="buyer" className="gap-2"><Users className="h-4 w-4" /> Buyer</TabsTrigger>
+            {isMentor && <TabsTrigger value="expert" className="gap-2"><TrendingUp className="h-4 w-4" /> Expert</TabsTrigger>}
+          </TabsList>
+        </Tabs>
 
-        {/* Main Content */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Left Column - Goals/Requests */}
-          <div className="lg:col-span-2">
-            {activeView === 'mentee' ? (
+        {activeView === "buyer" ? (
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <Target className="h-5 w-5 text-primary" />
-                      Your Goals
-                    </span>
-                    <Button size="sm" className="gap-1">
-                      <Plus className="h-4 w-4" />
-                      Add Goal
+                    <span className="flex items-center gap-2"><Zap className="h-5 w-5 text-primary" /> Your Requests</span>
+                    <Button size="sm" className="gap-1" onClick={() => navigate("/post-request")}>
+                      <Plus className="h-4 w-4" /> New Request
                     </Button>
                   </CardTitle>
-                  <CardDescription>
-                    Track your learning progress and achievements
-                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {profile?.goals && profile.goals.length > 0 ? (
-                    <div className="space-y-4">
-                      {profile.goals.map((goal: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between rounded-lg border border-border p-4">
+                  {myJobs.length > 0 ? (
+                    <div className="space-y-3">
+                      {myJobs.map((job) => (
+                        <div key={job.id} className="flex items-center justify-between rounded-lg border border-border p-4">
                           <div>
-                            <p className="font-medium text-foreground">{goal.title}</p>
-                            <p className="text-sm text-muted-foreground">{goal.progress}% complete</p>
+                            <p className="font-medium text-foreground">{job.title}</p>
+                            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                              <Badge variant="outline" className="text-xs">{job.category}</Badge>
+                              <span>€{job.budget_max}</span>
+                              <span>{timeAgo(job.created_at)}</span>
+                            </div>
                           </div>
-                          <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-primary rounded-full" 
-                              style={{ width: `${goal.progress}%` }}
-                            />
-                          </div>
+                          <Badge variant={job.status === "open" ? "default" : "secondary"} className="capitalize">{job.status}</Badge>
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>No goals yet. Add your first learning goal!</p>
-                      <Button variant="outline" className="mt-4 gap-2">
-                        <Plus className="h-4 w-4" />
-                        Create Goal
+                      <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No requests yet</p>
+                      <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/post-request")}>
+                        <Plus className="h-4 w-4" /> Post Your First Request
                       </Button>
                     </div>
                   )}
                 </CardContent>
               </Card>
-            ) : (
+            </div>
+
+            <Card>
+              <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                <Button className="w-full justify-between" onClick={() => navigate("/post-request")}>
+                  Post a Request <ArrowRight className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/wallet")}>
+                  Top Up Wallet <DollarSign className="h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-primary" />
-                    Session Requests
+                    <Bell className="h-5 w-5 text-primary" /> Live Requests
                   </CardTitle>
-                  <CardDescription>
-                    Incoming requests from mentees
-                  </CardDescription>
+                  <CardDescription>Open requests matching your categories — send a quote to get hired</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>No pending requests.</p>
-                    <p className="text-sm mt-2">New requests will appear here when mentees reach out.</p>
-                  </div>
+                  {openJobs.length > 0 ? (
+                    <div className="space-y-3">
+                      {openJobs.map((job) => (
+                        <div key={job.id} className="flex items-center justify-between rounded-lg border border-border p-4 transition-all hover:bg-accent/30">
+                          <div className="flex-1">
+                            <p className="font-medium text-foreground">{job.title}</p>
+                            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                              <Badge variant="outline" className="text-xs">{job.category}</Badge>
+                              <span className="font-semibold text-foreground">€{job.budget_max}</span>
+                              <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {job.deadline_minutes}min</span>
+                              <span>{timeAgo(job.created_at)}</span>
+                            </div>
+                          </div>
+                          <Button size="sm" className="gap-1" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
+                            <Send className="h-3 w-3" /> Quote
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No open requests right now</p>
+                      <p className="text-sm mt-2">New requests will appear here in real-time</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            )}
-          </div>
+            </div>
 
-          {/* Right Column - Quick Actions */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-between" onClick={() => navigate("/search")}>
-                  Find an Expert
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/wallet")}>
-                  Top Up Wallet
-                  <DollarSign className="h-4 w-4" />
-                </Button>
-                {isMentor && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader><CardTitle className="text-lg">Your Categories</CardTitle></CardHeader>
+                <CardContent>
+                  {subscribedCategories.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {subscribedCategories.map((cat) => (
+                        <Badge key={cat} variant="secondary">{cat}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-muted-foreground">
+                      <p className="text-sm">Subscribe to categories in Settings to receive requests</p>
+                      <Button variant="link" size="sm" className="mt-2" onClick={() => navigate("/settings")}>
+                        Manage Categories
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
+                <CardContent className="space-y-3">
                   <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/settings")}>
-                    Set Availability
-                    <Calendar className="h-4 w-4" />
+                    Manage Categories <Settings className="h-4 w-4" />
                   </Button>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Your Skills</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {profile?.skills && profile.skills.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill, index) => (
-                      <Badge key={index} variant="secondary">{skill}</Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4 text-muted-foreground">
-                    <p className="text-sm">No skills added yet</p>
-                    <Button variant="link" size="sm" className="mt-2">
-                      Add Skills
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-4 text-muted-foreground">
-                  <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No recent activity</p>
-                </div>
-              </CardContent>
-            </Card>
+                  <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/wallet")}>
+                    View Earnings <DollarSign className="h-4 w-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );
