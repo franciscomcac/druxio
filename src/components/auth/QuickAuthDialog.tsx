@@ -42,11 +42,11 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login" }: QuickAuth
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       toast({ title: "Welcome back!", description: "You've successfully logged in." });
+      setLoading(false);
       onOpenChange(false);
       navigate("/dashboard");
     } catch (error: any) {
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
-    } finally {
       setLoading(false);
     }
   };
@@ -62,16 +62,16 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login" }: QuickAuth
       });
       if (error) throw error;
       toast({ title: "Account created!", description: "Check your email to verify your account." });
+      setLoading(false);
       onOpenChange(false);
     } catch (error: any) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
-    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!loading) onOpenChange(v); }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center items-center">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground mb-2">
