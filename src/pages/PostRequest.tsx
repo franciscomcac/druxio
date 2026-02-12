@@ -24,14 +24,14 @@ import {
 } from "lucide-react";
 
 const BROAD_CATEGORIES = [
-  { id: "Gaming", label: "Gaming", icon: Gamepad2, description: "Boosting, coaching & more" },
-  { id: "Tech", label: "Tech", icon: Code, description: "Dev, bots, servers & SEO" },
-  { id: "Business", label: "Business", icon: Briefcase, description: "Marketing, e-com & growth" },
-  { id: "Creative", label: "Creative", icon: Palette, description: "Design, video & copy" },
-  { id: "Music", label: "Music", icon: Music, description: "Production, mixing & lessons" },
-  { id: "Fitness", label: "Fitness", icon: Dumbbell, description: "Training & nutrition" },
-  { id: "Languages", label: "Languages", icon: Globe, description: "Tutoring & translation" },
-  { id: "Content", label: "Content", icon: Video, description: "Streaming, YouTube & TikTok" },
+  { id: "Gaming", label: "Gaming", icon: Gamepad2, description: "Boosting, coaching & more", titleExample: 'e.g. "Boost my Valorant rank to Diamond"' },
+  { id: "Tech", label: "Tech", icon: Code, description: "Dev, bots, servers & SEO", titleExample: 'e.g. "Build a Discord bot with auto-moderation"' },
+  { id: "Business", label: "Business", icon: Briefcase, description: "Marketing, e-com & growth", titleExample: 'e.g. "Create a Facebook ads campaign for my store"' },
+  { id: "Creative", label: "Creative", icon: Palette, description: "Design, video & copy", titleExample: 'e.g. "Design a logo for my brand"' },
+  { id: "Music", label: "Music", icon: Music, description: "Production, mixing & lessons", titleExample: 'e.g. "Mix and master my hip-hop track"' },
+  { id: "Fitness", label: "Fitness", icon: Dumbbell, description: "Training & nutrition", titleExample: 'e.g. "Create a 12-week workout plan for muscle gain"' },
+  { id: "Languages", label: "Languages", icon: Globe, description: "Tutoring & translation", titleExample: 'e.g. "Translate my website copy to Spanish"' },
+  { id: "Content", label: "Content", icon: Video, description: "Streaming, YouTube & TikTok", titleExample: 'e.g. "Edit my YouTube video with transitions & effects"' },
 ];
 
 const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> = {
@@ -388,7 +388,7 @@ const PostRequest = () => {
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Title</label>
-                    <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border/40 focus:border-primary/40" />
+                    <Input placeholder={BROAD_CATEGORIES.find(c => c.id === broadCategory)?.titleExample || 'e.g. "Describe what you need"'} value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border/40 focus:border-primary/40" />
                   </div>
 
                    <div className="space-y-2">
