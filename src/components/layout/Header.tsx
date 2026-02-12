@@ -24,26 +24,32 @@ const Header = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      if (session?.user) {
-        const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single();
-        setProfile(data);
-      }
-    };
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
+    // Set up listener FIRST - it handles INITIAL_SESSION event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Ignore TOKEN_REFRESHED with null session (transient state)
+      if (event === 'TOKEN_REFRESHED' && !session) return;
+      
       setUser(session?.user || null);
       if (session?.user) {
         setAuthOpen(false);
-        const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single();
-        setProfile(data);
-      } else {
+        // Use setTimeout to avoid Supabase auth deadlock
+        setTimeout(async () => {
+          const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single();
+          setProfile(data);
+        }, 0);
+      } else if (event === 'SIGNED_OUT') {
         setProfile(null);
       }
     });
+
+    // getSession as backup for initial load
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single().then(({ data }) => setProfile(data));
+      }
+    });
+
     return () => subscription.unsubscribe();
   }, []);
 
