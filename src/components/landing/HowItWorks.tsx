@@ -51,9 +51,9 @@ const HowItWorks = () => {
               className="group relative animate-slide-up"
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              <div className="relative flex flex-col rounded-2xl border border-border/40 bg-card/60 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow hover:-translate-y-2">
+              <div className="relative flex h-full flex-col rounded-2xl border border-border/40 bg-card/60 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow hover:-translate-y-2">
                 {/* Step number */}
-                <span className="mb-5 text-5xl font-bold text-border/60 select-none">
+                <span className="mb-5 text-5xl font-bold text-primary/40 select-none drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]">
                   0{index + 1}
                 </span>
 
