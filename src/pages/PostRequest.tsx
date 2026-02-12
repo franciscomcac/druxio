@@ -106,6 +106,8 @@ const PostRequest = () => {
   const [category, setCategory] = useState(searchParams.get("category") || "");
   const [title, setTitle] = useState(searchParams.get("title") || "");
   const [description, setDescription] = useState("");
+  const [deadlineValue, setDeadlineValue] = useState(30);
+  const [deadlineUnit, setDeadlineUnit] = useState<"minutes" | "hours" | "days">("minutes");
   
   const [loading, setLoading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -200,7 +202,7 @@ const PostRequest = () => {
         title, description, category,
         budget_min: 5,
         budget_max: 50,
-        deadline_minutes: 30,
+        deadline_minutes: deadlineUnit === "days" ? deadlineValue * 1440 : deadlineUnit === "hours" ? deadlineValue * 60 : deadlineValue,
         expires_at: expiresAt.toISOString(),
       })
       .select()
@@ -373,6 +375,35 @@ const PostRequest = () => {
                     <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border/40 focus:border-primary/40" />
                   </div>
 
+                   <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Estimated Time Needed</label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        value={deadlineValue}
+                        onChange={(e) => setDeadlineValue(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-24 bg-background/60 border-border/40 focus:border-primary/40"
+                      />
+                      <div className="flex rounded-lg border border-border/40 overflow-hidden bg-background/60">
+                        {(["minutes", "hours", "days"] as const).map((unit) => (
+                          <button
+                            key={unit}
+                            type="button"
+                            onClick={() => setDeadlineUnit(unit)}
+                            className={`px-3 py-2 text-sm font-medium transition-colors ${
+                              deadlineUnit === unit
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"
+                            }`}
+                          >
+                            {unit}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Description</label>
                     <Textarea placeholder="Describe your issue in detail..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-24 bg-background/60 border-border/40 focus:border-primary/40" maxLength={1000} />
@@ -467,7 +498,7 @@ const PostRequest = () => {
                       </div>
                       {quote.message && <p className="text-sm text-muted-foreground mb-2 leading-relaxed">{quote.message}</p>}
                       <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {quote.estimated_minutes} min</span>
+                        <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {quote.estimated_minutes >= 1440 ? `${Math.round(quote.estimated_minutes / 1440)} day${Math.round(quote.estimated_minutes / 1440) !== 1 ? "s" : ""}` : quote.estimated_minutes >= 60 ? `${Math.round(quote.estimated_minutes / 60)} hour${Math.round(quote.estimated_minutes / 60) !== 1 ? "s" : ""}` : `${quote.estimated_minutes} min`}</span>
                       </div>
                     </div>
                     <div className="text-right">
