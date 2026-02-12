@@ -76,16 +76,45 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    let called = false;
+
+    const loadDashboard = async (user: any) => {
+      if (called) return;
+      called = true;
+      await fetchData(user);
+    };
+
+    // Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_OUT" || !session) {
+      if (event === "SIGNED_OUT") {
         navigate("/auth");
         return;
       }
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") {
-        fetchData(session.user);
+      if (session?.user) {
+        loadDashboard(session.user);
       }
     });
-    return () => subscription.unsubscribe();
+
+    // Fallback: directly check session in case the event was already fired
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      loadDashboard(session.user);
+    });
+
+    // Safety timeout - if still loading after 8s, force stop
+    const timeout = setTimeout(() => {
+      if (!called) {
+        setLoading(false);
+      }
+    }, 8000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const handleBecomeSeller = () => setShowSellerConsent(true);
