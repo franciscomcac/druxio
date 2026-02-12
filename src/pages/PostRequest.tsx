@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,6 +116,7 @@ const PostRequest = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(180);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   // Resume waiting screen if jobId param provided
   useEffect(() => {
@@ -184,7 +186,7 @@ const PostRequest = () => {
     setLoading(true);
 
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { navigate("/auth"); return; }
+    if (!session) { setLoading(false); setShowAuthDialog(true); return; }
 
     const mainCategory = category.split(":")[0]?.trim() || category;
     const { count } = await supabase
@@ -260,6 +262,7 @@ const PostRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <QuickAuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} onAuthenticated={() => handleSubmit(new Event("submit") as any)} />
       <Header />
       <main className="container mx-auto px-4 py-10">
 
