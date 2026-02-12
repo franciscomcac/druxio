@@ -20,6 +20,7 @@ import {
   Apple, Salad,
   BookOpen, Languages,
   Tv, Youtube, Clapperboard,
+  MessageSquarePlus,
 } from "lucide-react";
 
 const BROAD_CATEGORIES = [
@@ -352,6 +353,21 @@ const PostRequest = () => {
                   </button>
                 );
               })}
+              {/* Custom Request option */}
+              <button
+                onClick={() => handleSelectSub(`${broadCategory}: Custom`)}
+                className="group flex items-center gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/[0.04] p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                style={{ animationDelay: `${(SUBCATEGORIES[broadCategory]?.length || 0) * 60}ms` }}
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/[0.12] text-primary transition-transform duration-300 group-hover:scale-110">
+                  <MessageSquarePlus className="h-6 w-6" />
+                </div>
+                <div className="text-left">
+                  <span className="font-semibold text-foreground">Custom Request</span>
+                  <p className="text-xs text-muted-foreground">Something else in {broadCategory}</p>
+                </div>
+                <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
+              </button>
             </div>
           </div>
         )}
