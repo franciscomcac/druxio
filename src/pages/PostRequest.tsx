@@ -6,23 +6,81 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Zap, Clock, Users, Star, Check, Loader2, ArrowLeft, Send, Shield, Sparkles } from "lucide-react";
+import {
+  Zap, Clock, Users, Star, Check, Loader2, ArrowLeft, Send, Shield, Sparkles,
+  Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
+  Swords, Crosshair, Pickaxe, Target, Trophy, ChevronRight,
+  Bot, Monitor, Search, Server, Smartphone, Layout,
+  TrendingUp, Rocket, ShoppingCart, Calculator,
+  PenTool, Film, FileText, Image,
+  Headphones, Guitar, Mic,
+  Apple, Salad,
+  BookOpen, Languages,
+  Tv, Youtube, Clapperboard,
+} from "lucide-react";
 
-const CATEGORIES = [
-  "Gaming: Minecraft", "Gaming: Valorant", "Gaming: Fortnite", "Gaming: CS2", "Gaming: Apex", "Gaming: League of Legends",
-  "Tech: Discord Bots", "Tech: Web Dev", "Tech: SEO", "Tech: Server Setup", "Tech: App Dev", "Tech: WordPress",
-  "Business: Marketing", "Business: Startup", "Business: E-commerce", "Business: Accounting",
-  "Creative: Design", "Creative: Video Editing", "Creative: Ad Copy", "Creative: Thumbnails",
-  "Music: Production", "Music: Mixing", "Music: Guitar",
-  "Fitness: Training", "Fitness: Nutrition",
-  "Languages: English", "Languages: Spanish",
-  "Content: Streaming", "Content: YouTube", "Content: TikTok",
+const BROAD_CATEGORIES = [
+  { id: "Gaming", label: "Gaming", icon: Gamepad2, description: "Boosting, coaching & more" },
+  { id: "Tech", label: "Tech", icon: Code, description: "Dev, bots, servers & SEO" },
+  { id: "Business", label: "Business", icon: Briefcase, description: "Marketing, e-com & growth" },
+  { id: "Creative", label: "Creative", icon: Palette, description: "Design, video & copy" },
+  { id: "Music", label: "Music", icon: Music, description: "Production, mixing & lessons" },
+  { id: "Fitness", label: "Fitness", icon: Dumbbell, description: "Training & nutrition" },
+  { id: "Languages", label: "Languages", icon: Globe, description: "Tutoring & translation" },
+  { id: "Content", label: "Content", icon: Video, description: "Streaming, YouTube & TikTok" },
 ];
+
+const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> = {
+  Gaming: [
+    { id: "Gaming: Valorant", label: "Valorant", icon: Crosshair },
+    { id: "Gaming: Fortnite", label: "Fortnite", icon: Target },
+    { id: "Gaming: Minecraft", label: "Minecraft", icon: Pickaxe },
+    { id: "Gaming: CS2", label: "CS2", icon: Swords },
+    { id: "Gaming: Apex", label: "Apex Legends", icon: Trophy },
+    { id: "Gaming: League of Legends", label: "League of Legends", icon: Gamepad2 },
+  ],
+  Tech: [
+    { id: "Tech: Discord Bots", label: "Discord Bots", icon: Bot },
+    { id: "Tech: Web Dev", label: "Web Development", icon: Monitor },
+    { id: "Tech: SEO", label: "SEO", icon: Search },
+    { id: "Tech: Server Setup", label: "Server Setup", icon: Server },
+    { id: "Tech: App Dev", label: "App Development", icon: Smartphone },
+    { id: "Tech: WordPress", label: "WordPress", icon: Layout },
+  ],
+  Business: [
+    { id: "Business: Marketing", label: "Marketing", icon: TrendingUp },
+    { id: "Business: Startup", label: "Startup Advice", icon: Rocket },
+    { id: "Business: E-commerce", label: "E-commerce", icon: ShoppingCart },
+    { id: "Business: Accounting", label: "Accounting", icon: Calculator },
+  ],
+  Creative: [
+    { id: "Creative: Design", label: "Graphic Design", icon: PenTool },
+    { id: "Creative: Video Editing", label: "Video Editing", icon: Film },
+    { id: "Creative: Ad Copy", label: "Ad Copy", icon: FileText },
+    { id: "Creative: Thumbnails", label: "Thumbnails", icon: Image },
+  ],
+  Music: [
+    { id: "Music: Production", label: "Production", icon: Headphones },
+    { id: "Music: Mixing", label: "Mixing & Mastering", icon: Mic },
+    { id: "Music: Guitar", label: "Guitar Lessons", icon: Guitar },
+  ],
+  Fitness: [
+    { id: "Fitness: Training", label: "Personal Training", icon: Dumbbell },
+    { id: "Fitness: Nutrition", label: "Nutrition Plans", icon: Apple },
+  ],
+  Languages: [
+    { id: "Languages: English", label: "English", icon: BookOpen },
+    { id: "Languages: Spanish", label: "Spanish", icon: Languages },
+  ],
+  Content: [
+    { id: "Content: Streaming", label: "Streaming", icon: Tv },
+    { id: "Content: YouTube", label: "YouTube", icon: Youtube },
+    { id: "Content: TikTok", label: "TikTok", icon: Clapperboard },
+  ],
+};
 
 interface Quote {
   id: string;
@@ -43,17 +101,44 @@ const PostRequest = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const [step, setStep] = useState<"form" | "waiting">("form");
+  const [wizardStep, setWizardStep] = useState<"category" | "subcategory" | "details" | "waiting">("category");
+  const [broadCategory, setBroadCategory] = useState("");
+  const [category, setCategory] = useState(searchParams.get("category") || "");
   const [title, setTitle] = useState(searchParams.get("title") || "");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState(searchParams.get("category") || "");
-  const [budget, setBudget] = useState([Number(searchParams.get("budget")) || 15]);
-  const [deadline, setDeadline] = useState(searchParams.get("deadline") || "30");
+  const [deadline, setDeadline] = useState("30");
   const [loading, setLoading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(180);
+
+  // If category came from search params, jump to details
+  useEffect(() => {
+    if (searchParams.get("category")) {
+      const cat = searchParams.get("category")!;
+      const broad = cat.split(":")[0]?.trim() || cat;
+      setBroadCategory(broad);
+      setCategory(cat);
+      setWizardStep("details");
+    }
+  }, []);
+
+  const handleSelectBroad = (id: string) => {
+    setBroadCategory(id);
+    setWizardStep("subcategory");
+  };
+
+  const handleSelectSub = (id: string) => {
+    setCategory(id);
+    setWizardStep("details");
+  };
+
+  const handleBack = () => {
+    if (wizardStep === "subcategory") setWizardStep("category");
+    else if (wizardStep === "details") setWizardStep("subcategory");
+    else navigate(-1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +162,8 @@ const PostRequest = () => {
       .insert({
         buyer_id: session.user.id,
         title, description, category,
-        budget_min: Math.max(5, budget[0] - 5),
-        budget_max: budget[0],
+        budget_min: 5,
+        budget_max: 50,
         deadline_minutes: parseInt(deadline),
         expires_at: expiresAt.toISOString(),
       })
@@ -92,7 +177,7 @@ const PostRequest = () => {
     }
 
     setJobId(data.id);
-    setStep("waiting");
+    setWizardStep("waiting");
     setLoading(false);
   };
 
@@ -112,12 +197,12 @@ const PostRequest = () => {
   }, [jobId]);
 
   useEffect(() => {
-    if (step !== "waiting") return;
+    if (wizardStep !== "waiting") return;
     const interval = setInterval(() => {
       setTimeLeft((prev) => { if (prev <= 1) { clearInterval(interval); return 0; } return prev - 1; });
     }, 1000);
     return () => clearInterval(interval);
-  }, [step]);
+  }, [wizardStep]);
 
   const handleAcceptQuote = async (quote: Quote) => {
     if (!jobId) return;
@@ -131,20 +216,116 @@ const PostRequest = () => {
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const progressPercent = ((180 - timeLeft) / 180) * 100;
 
+  const stepNumber = wizardStep === "category" ? 1 : wizardStep === "subcategory" ? 2 : 3;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-10">
-        {step === "form" ? (
-          <div className="mx-auto max-w-2xl animate-fade-in">
-            <Button variant="ghost" className="mb-6 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]" onClick={() => navigate(-1)}>
+
+        {/* Step indicator for wizard steps */}
+        {wizardStep !== "waiting" && (
+          <div className="mx-auto max-w-3xl mb-8 animate-fade-in">
+            <Button variant="ghost" className="mb-4 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]" onClick={handleBack}>
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
 
+            <div className="flex items-center gap-3 mb-8">
+              {[1, 2, 3].map((s) => (
+                <div key={s} className="flex items-center gap-3">
+                  <div className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-all duration-300 ${
+                    s < stepNumber ? "bg-primary text-primary-foreground" :
+                    s === stepNumber ? "bg-primary text-primary-foreground shadow-glow" :
+                    "bg-secondary text-muted-foreground"
+                  }`}>
+                    {s < stepNumber ? <Check className="h-4 w-4" /> : s}
+                  </div>
+                  {s < 3 && <div className={`h-0.5 w-8 rounded-full transition-colors duration-300 ${s < stepNumber ? "bg-primary" : "bg-border/40"}`} />}
+                </div>
+              ))}
+              <span className="ml-3 text-sm text-muted-foreground">
+                {wizardStep === "category" ? "Choose a category" : wizardStep === "subcategory" ? "Pick a specialty" : "Describe your request"}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Step 1: Broad category */}
+        {wizardStep === "category" && (
+          <div className="mx-auto max-w-3xl animate-fade-in">
             <div className="mb-8">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">New Request</p>
-              <h1 className="mb-2 text-3xl font-bold text-foreground">Post a Request</h1>
-              <p className="text-muted-foreground">Describe what you need and experts will send you quotes.</p>
+              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 1</p>
+              <h1 className="mb-2 text-3xl font-bold text-foreground">What do you need help with?</h1>
+              <p className="text-muted-foreground">Choose a category to find the right experts.</p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {BROAD_CATEGORIES.map((cat, i) => {
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleSelectBroad(cat.id)}
+                    className="group relative flex flex-col items-center gap-3 rounded-2xl border border-border/40 bg-card/60 p-6 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                    style={{ animationDelay: `${i * 60}ms` }}
+                  >
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary transition-transform duration-300 group-hover:scale-110">
+                      <Icon className="h-7 w-7" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-semibold text-foreground">{cat.label}</p>
+                      <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{cat.description}</p>
+                    </div>
+                    <ChevronRight className="absolute right-3 top-3 h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Subcategory */}
+        {wizardStep === "subcategory" && (
+          <div className="mx-auto max-w-3xl animate-fade-in">
+            <div className="mb-8">
+              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 2</p>
+              <h1 className="mb-2 text-3xl font-bold text-foreground">
+                What kind of <span className="text-primary">{broadCategory}</span>?
+              </h1>
+              <p className="text-muted-foreground">Pick a specialty so we can match you with the best experts.</p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {(SUBCATEGORIES[broadCategory] || []).map((sub, i) => {
+                const Icon = sub.icon;
+                return (
+                  <button
+                    key={sub.id}
+                    onClick={() => handleSelectSub(sub.id)}
+                    className="group flex items-center gap-4 rounded-2xl border border-border/40 bg-card/60 p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                    style={{ animationDelay: `${i * 60}ms` }}
+                  >
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/[0.08] text-primary transition-transform duration-300 group-hover:scale-110">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <span className="font-semibold text-foreground">{sub.label}</span>
+                    <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Details form */}
+        {wizardStep === "details" && (
+          <div className="mx-auto max-w-2xl animate-fade-in">
+            <div className="mb-8">
+              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 3</p>
+              <h1 className="mb-2 text-3xl font-bold text-foreground">Describe your request</h1>
+              <p className="text-muted-foreground">
+                Category: <span className="text-primary font-medium">{category}</span>
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -158,22 +339,6 @@ const PostRequest = () => {
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Description</label>
                     <Textarea placeholder="Describe your issue in detail..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-24 bg-background/60 border-border/40 focus:border-primary/40" maxLength={1000} />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Category</label>
-                    <Select value={category} onValueChange={setCategory} required>
-                      <SelectTrigger className="bg-background/60 border-border/40"><SelectValue placeholder="Select a category" /></SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Max Budget: <span className="text-primary font-bold">€{budget[0]}</span></label>
-                    <Slider value={budget} onValueChange={setBudget} min={5} max={50} step={1} />
-                    <div className="flex justify-between text-xs text-muted-foreground"><span>€5</span><span>€50</span></div>
                   </div>
 
                   <div className="space-y-2">
@@ -191,7 +356,7 @@ const PostRequest = () => {
                 </CardContent>
               </Card>
 
-              <Button type="submit" size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title || !category}>
+              <Button type="submit" size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
                 Post Request & Notify Experts
               </Button>
@@ -203,9 +368,11 @@ const PostRequest = () => {
               </div>
             </form>
           </div>
-        ) : (
+        )}
+
+        {/* Waiting screen */}
+        {wizardStep === "waiting" && (
           <div className="mx-auto max-w-2xl animate-fade-in">
-            {/* Live waiting screen */}
             <div className="mb-10 text-center">
               <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/[0.06] px-5 py-2.5 animate-fade-in">
                 <span className="relative flex h-3 w-3">
@@ -217,9 +384,8 @@ const PostRequest = () => {
                 </span>
               </div>
               <h1 className="mb-3 text-3xl font-bold text-foreground animate-fade-in [animation-delay:100ms]">{title}</h1>
-              <p className="text-muted-foreground animate-fade-in [animation-delay:200ms]">Budget: up to <span className="font-bold text-foreground">€{budget[0]}</span> · Deadline: {deadline} min</p>
+              <p className="text-muted-foreground animate-fade-in [animation-delay:200ms]">Deadline: {deadline} min</p>
 
-              {/* Progress bar */}
               <div className="mt-6 mx-auto max-w-md animate-fade-in [animation-delay:300ms]">
                 <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
                   <div className="h-full rounded-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-1000" style={{ width: `${progressPercent}%` }} />
@@ -231,13 +397,12 @@ const PostRequest = () => {
                   </div>
                 ) : quotes.length === 0 ? (
                   <div className="mt-4 rounded-xl bg-destructive/10 border border-destructive/20 p-4 text-destructive text-sm">
-                    No experts available right now. Try a broader category or increase your budget.
+                    No experts available right now. Try a broader category.
                   </div>
                 ) : null}
               </div>
             </div>
 
-            {/* Incoming quotes */}
             <div className="space-y-4">
               {quotes.length === 0 && timeLeft > 0 && (
                 <Card className="border-dashed border-border/30 bg-card/30">
@@ -292,6 +457,7 @@ const PostRequest = () => {
             </div>
           </div>
         )}
+
       </main>
     </div>
   );
