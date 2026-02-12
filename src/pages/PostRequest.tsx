@@ -181,19 +181,21 @@ const PostRequest = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading || !title) return;
     setLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setLoading(false); navigate("/auth"); return; }
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        console.error("No session found:", sessionError?.message);
+        setLoading(false);
+        navigate("/auth");
+        return;
+      }
 
       const mainCategory = category.split(":")[0]?.trim() || category;
-      const { count } = await supabase
-        .from("expert_categories")
-        .select("*", { count: "exact", head: true })
-        .ilike("category", `%${mainCategory}%`);
-      setOnlineCount(count || 0);
-
+      
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 3);
 
@@ -201,7 +203,9 @@ const PostRequest = () => {
         .from("jobs")
         .insert({
           buyer_id: session.user.id,
-          title, description, category,
+          title,
+          description: description || null,
+          category,
           budget_min: 5,
           budget_max: 50,
           deadline_minutes: deadlineUnit === "days" ? deadlineValue * 1440 : deadlineUnit === "hours" ? deadlineValue * 60 : deadlineValue,
@@ -211,16 +215,25 @@ const PostRequest = () => {
         .single();
 
       if (error) {
+        console.error("Job insert error:", error);
         toast({ title: "Error posting request", description: error.message, variant: "destructive" });
         setLoading(false);
         return;
       }
 
+      // Fetch expert count in background (non-blocking)
+      supabase
+        .from("expert_categories")
+        .select("*", { count: "exact", head: true })
+        .ilike("category", `%${mainCategory}%`)
+        .then(({ count }) => setOnlineCount(count || 0));
+
       setJobId(data.id);
       setLoading(false);
       navigate(`/request/${data.id}`);
     } catch (err: any) {
-      toast({ title: "Error posting request", description: err.message || "Something went wrong", variant: "destructive" });
+      console.error("Submit error:", err);
+      toast({ title: "Error posting request", description: err?.message || "Something went wrong", variant: "destructive" });
       setLoading(false);
     }
   };
