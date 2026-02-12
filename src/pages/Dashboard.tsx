@@ -86,7 +86,7 @@ const Dashboard = () => {
     };
 
     const redirectToAuth = () => {
-      if (redirected || called) return;
+      if (redirected) return;
       redirected = true;
       navigate("/auth");
     };
@@ -94,7 +94,7 @@ const Dashboard = () => {
     // Set up auth listener FIRST - this is the primary source of truth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
-        redirectToAuth();
+        navigate("/");
         return;
       }
       if (session?.user) {
