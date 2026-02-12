@@ -2,10 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { ArrowRight, Zap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const categories = [
   "Gaming: Minecraft", "Gaming: Valorant", "Gaming: Fortnite", "Gaming: CS2",
@@ -32,24 +31,24 @@ const QuickHelpForm = () => {
   };
 
   return (
-    <section className="bg-background py-16" id="quick-help">
+    <section className="bg-background py-20" id="quick-help">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-2xl">
-          <div className="mb-8 text-center">
-            <h2 className="mb-3 text-3xl font-bold text-foreground">Post a Quick Request</h2>
-            <p className="text-muted-foreground">Describe what you need — experts get notified instantly</p>
+          <div className="mb-10 text-center">
+            <h2 className="mb-3 text-3xl font-bold text-foreground animate-fade-in">Post a Quick Request</h2>
+            <p className="text-muted-foreground animate-fade-in [animation-delay:100ms]">Tell us what you need — experts are notified instantly</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border bg-card p-8">
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/50 bg-card/60 p-8 backdrop-blur-sm animate-fade-in [animation-delay:200ms]">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">What do you need?</label>
-              <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required />
+              <label className="text-sm font-medium text-foreground">What do you need help with?</label>
+              <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required className="bg-background/50" />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Category</label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger>
+                <SelectTrigger className="bg-background/50"><SelectValue placeholder="Select a category" /></SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
@@ -69,7 +68,7 @@ const QuickHelpForm = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Deadline</label>
               <Select value={deadline} onValueChange={setDeadline}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-background/50"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="15">15 minutes</SelectItem>
                   <SelectItem value="30">30 minutes</SelectItem>
@@ -79,13 +78,13 @@ const QuickHelpForm = () => {
               </Select>
             </div>
 
-            <Button type="submit" size="lg" className="w-full gap-2">
-              <Zap className="h-5 w-5" />
+            <Button type="submit" size="lg" className="w-full gap-2 hover-scale">
               Post Request & Notify Experts
+              <ArrowRight className="h-5 w-5" />
             </Button>
 
             <p className="text-center text-xs text-muted-foreground">
-              Free to post • Experts respond within 2 minutes • Escrow-protected
+              Free to post · Experts respond within 2 minutes · Escrow-protected
             </p>
           </form>
         </div>

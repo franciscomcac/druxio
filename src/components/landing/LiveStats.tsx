@@ -22,34 +22,34 @@ const LiveStats = () => {
   }, []);
 
   const statItems = [
-    { icon: <Users className="h-5 w-5" />, value: stats.expertsOnline, label: "Experts Online" },
-    { icon: <Zap className="h-5 w-5" />, value: stats.requestsToday, label: "Requests Today" },
-    { icon: <DollarSign className="h-5 w-5" />, value: stats.paidOut, label: "Paid to Experts", prefix: "€" },
-    { icon: <Clock className="h-5 w-5" />, value: stats.avgResponse, label: "Avg Response (sec)", suffix: "s" },
+    { icon: <Users className="h-4 w-4" />, value: stats.expertsOnline, label: "Experts Online" },
+    { icon: <Zap className="h-4 w-4" />, value: stats.requestsToday, label: "Requests Today" },
+    { icon: <DollarSign className="h-4 w-4" />, value: stats.paidOut, label: "Paid to Experts", prefix: "€" },
+    { icon: <Clock className="h-4 w-4" />, value: stats.avgResponse, label: "Avg Response", suffix: "s" },
   ];
 
   return (
-    <section className="border-y border-border bg-card/50 py-6">
+    <section className="border-y border-border/40 bg-card/30 py-5">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12">
+        <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
           <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500"></span>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary/60" />
             </span>
-            <span className="text-sm font-medium text-muted-foreground">Live</span>
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Live</span>
           </div>
-          
+
           {statItems.map((stat, index) => (
-            <div key={index} className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div key={index} className="flex items-center gap-2.5 transition-all duration-300">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/[0.06] text-primary/70">
                 {stat.icon}
               </div>
               <div>
-                <p className="text-lg font-bold text-foreground">
+                <p className="text-sm font-semibold text-foreground tabular-nums">
                   {stat.prefix}{stat.value.toLocaleString()}{stat.suffix}
                 </p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-[10px] text-muted-foreground leading-none">{stat.label}</p>
               </div>
             </div>
           ))}
