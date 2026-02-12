@@ -172,7 +172,7 @@ const Dashboard = () => {
         </div>
 
         {activeView === "client" ? (
-          <ClientDashboard profile={profile} myJobs={myJobs} />
+          <ClientDashboard profile={profile} myJobs={myJobs} onJobsChanged={fetchData} />
         ) : (
           <ExpertDashboard profile={profile} subscribedCategories={subscribedCategories} />
         )}
