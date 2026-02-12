@@ -11,7 +11,7 @@ import ClientDashboard from "@/components/dashboard/ClientDashboard";
 import ExpertDashboard from "@/components/dashboard/ExpertDashboard";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Plus, Settings, LogOut, Loader2, Users, TrendingUp,
+  Plus, Settings, LogOut, Loader2, Users, TrendingUp, Sparkles,
 } from "lucide-react";
 
 interface Job {
@@ -39,9 +39,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -72,10 +70,8 @@ const Dashboard = () => {
     setRoles(rolesRes.data || []);
     setSubscribedCategories(categoriesRes.data?.map((c: any) => c.category) || []);
     setMyJobs(myJobsRes.data || []);
-
     const isMentor = rolesRes.data?.some((r: any) => r.role === "mentor");
     if (isMentor) setActiveView("expert");
-
     setLoading(false);
   };
 
@@ -102,7 +98,10 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -116,35 +115,34 @@ const Dashboard = () => {
 
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-10">
         {/* Profile Header */}
-        <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 ring-2 ring-primary/20">
+        <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between animate-fade-in">
+          <div className="flex items-center gap-5">
+            <Avatar className="h-16 w-16 ring-2 ring-primary/20 shadow-glow">
               <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xl">
+              <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary text-xl font-bold">
                 {profile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "U"}
               </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-2xl font-bold text-foreground">
-                Welcome, {profile?.display_name || "User"}!
+                Welcome back, {profile?.display_name || "User"}
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant={activeView === "client" ? "default" : "secondary"}>
-                  {activeView === "client" ? "Client" : "Expert"}
+              <div className="flex items-center gap-2 mt-1.5">
+                <Badge variant="outline" className={`border-primary/20 ${activeView === "client" ? "bg-primary/[0.08] text-primary" : "text-muted-foreground"}`}>
+                  {activeView === "client" ? "Client" : "Expert"} Dashboard
                 </Badge>
               </div>
             </div>
           </div>
-          <div className="flex gap-3 flex-wrap">
-            {/* Role switcher */}
+          <div className="flex gap-3 flex-wrap animate-fade-in [animation-delay:100ms]">
             {isMentor && (
-              <div className="flex rounded-lg border border-border overflow-hidden">
+              <div className="flex rounded-xl border border-border/30 overflow-hidden bg-card/40 backdrop-blur-sm">
                 <Button
                   variant={activeView === "client" ? "default" : "ghost"}
                   size="sm"
-                  className="gap-2 rounded-none"
+                  className={`gap-2 rounded-none ${activeView === "client" ? "shadow-glow" : "hover:bg-primary/[0.06]"}`}
                   onClick={() => setActiveView("client")}
                 >
                   <Users className="h-4 w-4" /> Client
@@ -152,7 +150,7 @@ const Dashboard = () => {
                 <Button
                   variant={activeView === "expert" ? "default" : "ghost"}
                   size="sm"
-                  className="gap-2 rounded-none"
+                  className={`gap-2 rounded-none ${activeView === "expert" ? "shadow-glow" : "hover:bg-primary/[0.06]"}`}
                   onClick={() => setActiveView("expert")}
                 >
                   <TrendingUp className="h-4 w-4" /> Expert
@@ -160,20 +158,19 @@ const Dashboard = () => {
               </div>
             )}
             {!isMentor && (
-              <Button onClick={handleBecomeSeller} variant="outline" className="gap-2">
-                <Plus className="h-4 w-4" /> Become an Expert
+              <Button onClick={handleBecomeSeller} variant="outline" className="gap-2 border-primary/20 hover:bg-primary/[0.06]">
+                <Sparkles className="h-4 w-4" /> Become an Expert
               </Button>
             )}
-            <Button variant="outline" size="icon" onClick={() => navigate("/settings")}>
+            <Button variant="outline" size="icon" onClick={() => navigate("/settings")} className="border-border/30 hover:bg-primary/[0.06]">
               <Settings className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={async () => { await supabase.auth.signOut(); navigate("/"); }}>
+            <Button variant="ghost" size="icon" onClick={async () => { await supabase.auth.signOut(); navigate("/"); }} className="hover:bg-destructive/10 hover:text-destructive">
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Render the appropriate dashboard */}
         {activeView === "client" ? (
           <ClientDashboard profile={profile} myJobs={myJobs} />
         ) : (

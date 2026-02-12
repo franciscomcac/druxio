@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Zap, DollarSign, Star, Target, Plus, ArrowRight, Loader2,
+  Zap, DollarSign, Star, Target, Plus, ArrowRight,
 } from "lucide-react";
 
 interface Job {
@@ -34,72 +34,42 @@ const timeAgo = (date: string) => {
 const ClientDashboard = ({ profile, myJobs }: ClientDashboardProps) => {
   const navigate = useNavigate();
 
+  const statCards = [
+    { icon: <DollarSign className="h-6 w-6" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Wallet Balance" },
+    { icon: <Target className="h-6 w-6" />, value: myJobs.filter(j => j.status === "complete").length, label: "Completed Jobs" },
+    { icon: <Zap className="h-6 w-6" />, value: myJobs.filter(j => j.status === "open").length, label: "Active Requests" },
+    { icon: <Star className="h-6 w-6" />, value: myJobs.length, label: "Total Requests" },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <DollarSign className="h-6 w-6" />
+        {statCards.map((stat, i) => (
+          <Card key={i} className="border-border/30 bg-card/60 backdrop-blur-xl transition-all duration-500 hover:shadow-glow hover:-translate-y-1 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary">
+                  {stat.icon}
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">€{profile?.wallet_balance?.toFixed(2) || "0.00"}</p>
-                <p className="text-sm text-muted-foreground">Wallet Balance</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Target className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{myJobs.filter(j => j.status === "complete").length}</p>
-                <p className="text-sm text-muted-foreground">Completed Jobs</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Zap className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{myJobs.filter(j => j.status === "open").length}</p>
-                <p className="text-sm text-muted-foreground">Active Requests</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Star className="h-6 w-6" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{myJobs.length}</p>
-                <p className="text-sm text-muted-foreground">Total Requests</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Main Content */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card>
+          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms]">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2"><Zap className="h-5 w-5 text-primary" /> Your Requests</span>
-                <Button size="sm" className="gap-1" onClick={() => navigate("/post-request")}>
+                <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => navigate("/post-request")}>
                   <Plus className="h-4 w-4" /> New Request
                 </Button>
               </CardTitle>
@@ -107,25 +77,28 @@ const ClientDashboard = ({ profile, myJobs }: ClientDashboardProps) => {
             <CardContent>
               {myJobs.length > 0 ? (
                 <div className="space-y-3">
-                  {myJobs.map((job) => (
-                    <div key={job.id} className="flex items-center justify-between rounded-lg border border-border p-4">
+                  {myJobs.map((job, i) => (
+                    <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in" style={{ animationDelay: `${(i + 4) * 60}ms` }}>
                       <div>
                         <p className="font-medium text-foreground">{job.title}</p>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                          <Badge variant="outline" className="text-xs">{job.category}</Badge>
-                          <span>€{job.budget_max}</span>
+                        <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+                          <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
+                          <span className="font-semibold text-foreground">€{job.budget_max}</span>
                           <span>{timeAgo(job.created_at)}</span>
                         </div>
                       </div>
-                      <Badge variant={job.status === "open" ? "default" : "secondary"} className="capitalize">{job.status}</Badge>
+                      <Badge variant={job.status === "open" ? "default" : "secondary"} className={`capitalize ${job.status === "open" ? "shadow-glow" : ""}`}>{job.status}</Badge>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No requests yet</p>
-                  <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/post-request")}>
+                <div className="text-center py-12 text-muted-foreground">
+                  <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-primary/[0.06] flex items-center justify-center">
+                    <Zap className="h-7 w-7 text-primary/40" />
+                  </div>
+                  <p className="font-medium text-foreground mb-1">No requests yet</p>
+                  <p className="text-sm mb-4">Post your first request and get expert quotes in seconds</p>
+                  <Button variant="outline" className="gap-2 border-primary/20 hover:bg-primary/[0.06]" onClick={() => navigate("/post-request")}>
                     <Plus className="h-4 w-4" /> Post Your First Request
                   </Button>
                 </div>
@@ -134,13 +107,13 @@ const ClientDashboard = ({ profile, myJobs }: ClientDashboardProps) => {
           </Card>
         </div>
 
-        <Card>
+        <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
           <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full justify-between" onClick={() => navigate("/post-request")}>
+            <Button className="w-full justify-between shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => navigate("/post-request")}>
               Post a Request <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/wallet")}>
+            <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
               Top Up Wallet <DollarSign className="h-4 w-4" />
             </Button>
           </CardContent>

@@ -51,17 +51,13 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   useEffect(() => {
     const fetchJobs = async () => {
       const { data: jobs } = await supabase
-        .from("jobs")
-        .select("*")
-        .eq("status", "open")
-        .order("created_at", { ascending: false })
-        .limit(20);
+        .from("jobs").select("*").eq("status", "open")
+        .order("created_at", { ascending: false }).limit(20);
       setOpenJobs(jobs || []);
       setLoadingJobs(false);
     };
     fetchJobs();
 
-    // Real-time subscription for new jobs
     const channel = supabase
       .channel("expert-new-jobs")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "jobs" }, (payload) => {
@@ -104,11 +100,18 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     setQuoteMessage("");
   };
 
+  const statCards = [
+    { icon: <DollarSign className="h-6 w-6" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Earnings" },
+    { icon: <Target className="h-6 w-6" />, value: profile?.total_sessions || 0, label: "Jobs Completed" },
+    { icon: <Star className="h-6 w-6" />, value: profile?.rating_avg?.toFixed(1) || "0.0", label: "Rating" },
+    { icon: <Zap className="h-6 w-6" />, value: subscribedCategories.length, label: "Subscribed Categories" },
+  ];
+
   return (
     <div className="space-y-8">
       {/* Quote Dialog */}
       <Dialog open={!!quoteDialog} onOpenChange={() => setQuoteDialog(null)}>
-        <DialogContent>
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/30">
           <DialogHeader>
             <DialogTitle>Send Quote</DialogTitle>
             <DialogDescription>
@@ -118,20 +121,20 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Your Price (€)</label>
-              <Input type="number" placeholder="e.g. 12" value={quotePrice} onChange={(e) => setQuotePrice(e.target.value)} min={1} max={quoteDialog?.budget_max} />
+              <Input type="number" placeholder="e.g. 12" value={quotePrice} onChange={(e) => setQuotePrice(e.target.value)} min={1} max={quoteDialog?.budget_max} className="bg-background/60 border-border/40" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Estimated Time (min)</label>
-              <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={5} max={120} />
+              <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={5} max={120} className="bg-background/60 border-border/40" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Message (optional)</label>
-              <Textarea placeholder="I can fix this quickly because..." value={quoteMessage} onChange={(e) => setQuoteMessage(e.target.value)} maxLength={500} />
+              <Textarea placeholder="I can fix this quickly because..." value={quoteMessage} onChange={(e) => setQuoteMessage(e.target.value)} maxLength={500} className="bg-background/60 border-border/40" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setQuoteDialog(null)}>Cancel</Button>
-            <Button onClick={handleSendQuote} disabled={sendingQuote || !quotePrice} className="gap-2">
+            <Button variant="outline" onClick={() => setQuoteDialog(null)} className="border-border/30">Cancel</Button>
+            <Button onClick={handleSendQuote} disabled={sendingQuote || !quotePrice} className="gap-2 shadow-glow">
               {sendingQuote ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send Quote
             </Button>
@@ -141,89 +144,68 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><DollarSign className="h-6 w-6" /></div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">€{profile?.wallet_balance?.toFixed(2) || "0.00"}</p>
-                <p className="text-sm text-muted-foreground">Earnings</p>
+        {statCards.map((stat, i) => (
+          <Card key={i} className="border-border/30 bg-card/60 backdrop-blur-xl transition-all duration-500 hover:shadow-glow hover:-translate-y-1 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary">{stat.icon}</div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><Target className="h-6 w-6" /></div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{profile?.total_sessions || 0}</p>
-                <p className="text-sm text-muted-foreground">Jobs Completed</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><Star className="h-6 w-6" /></div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{profile?.rating_avg?.toFixed(1) || "0.0"}</p>
-                <p className="text-sm text-muted-foreground">Rating</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary"><Zap className="h-6 w-6" /></div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{subscribedCategories.length}</p>
-                <p className="text-sm text-muted-foreground">Subscribed Categories</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Main Content */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card>
+          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-primary" /> Live Requests
-              </CardTitle>
-              <CardDescription>Open requests matching your categories — send a quote to get hired</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="relative">
+                      <Bell className="h-5 w-5 text-primary" />
+                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary animate-ping" />
+                    </div>
+                    Live Requests
+                  </CardTitle>
+                  <CardDescription className="mt-1">Open requests matching your categories</CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {loadingJobs ? (
-                <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
               ) : openJobs.length > 0 ? (
                 <div className="space-y-3">
-                  {openJobs.map((job) => (
-                    <div key={job.id} className="flex items-center justify-between rounded-lg border border-border p-4 transition-all hover:bg-accent/30">
+                  {openJobs.map((job, i) => (
+                    <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in" style={{ animationDelay: `${(i + 4) * 60}ms` }}>
                       <div className="flex-1">
                         <p className="font-medium text-foreground">{job.title}</p>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                          <Badge variant="outline" className="text-xs">{job.category}</Badge>
-                          <span className="font-semibold text-foreground">€{job.budget_max}</span>
-                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {job.deadline_minutes}min</span>
+                        <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+                          <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
+                          <span className="font-bold text-foreground">€{job.budget_max}</span>
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
                           <span>{timeAgo(job.created_at)}</span>
                         </div>
                       </div>
-                      <Button size="sm" className="gap-1" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
+                      <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
                         <Send className="h-3 w-3" /> Quote
                       </Button>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No open requests right now</p>
-                  <p className="text-sm mt-2">New requests will appear here in real-time</p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-primary/[0.06] flex items-center justify-center">
+                    <Bell className="h-7 w-7 text-primary/40" />
+                  </div>
+                  <p className="font-medium text-foreground mb-1">No open requests right now</p>
+                  <p className="text-sm">New requests will appear here in real-time</p>
                 </div>
               )}
             </CardContent>
@@ -231,19 +213,19 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         </div>
 
         <div className="space-y-6">
-          <Card>
+          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
             <CardHeader><CardTitle className="text-lg">Your Categories</CardTitle></CardHeader>
             <CardContent>
               {subscribedCategories.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {subscribedCategories.map((cat) => (
-                    <Badge key={cat} variant="secondary">{cat}</Badge>
+                    <Badge key={cat} variant="secondary" className="bg-primary/[0.08] text-primary border-primary/20">{cat}</Badge>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-4 text-muted-foreground">
-                  <p className="text-sm">Subscribe to categories in Settings to receive requests</p>
-                  <Button variant="link" size="sm" className="mt-2" onClick={() => navigate("/settings")}>
+                <div className="text-center py-6 text-muted-foreground">
+                  <p className="text-sm mb-2">Subscribe to categories to receive requests</p>
+                  <Button variant="link" size="sm" className="text-primary" onClick={() => navigate("/settings")}>
                     Manage Categories
                   </Button>
                 </div>
@@ -251,13 +233,13 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:500ms]">
             <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/settings")}>
+              <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/settings")}>
                 Manage Categories <Settings className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="w-full justify-between" onClick={() => navigate("/wallet")}>
+              <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
                 View Earnings <DollarSign className="h-4 w-4" />
               </Button>
             </CardContent>
