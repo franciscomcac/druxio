@@ -5,7 +5,7 @@ import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
@@ -106,7 +106,7 @@ const PostRequest = () => {
   const [category, setCategory] = useState(searchParams.get("category") || "");
   const [title, setTitle] = useState(searchParams.get("title") || "");
   const [description, setDescription] = useState("");
-  const [deadline, setDeadline] = useState("30");
+  
   const [loading, setLoading] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
@@ -164,7 +164,7 @@ const PostRequest = () => {
         title, description, category,
         budget_min: 5,
         budget_max: 50,
-        deadline_minutes: parseInt(deadline),
+        deadline_minutes: 30,
         expires_at: expiresAt.toISOString(),
       })
       .select()
@@ -341,18 +341,6 @@ const PostRequest = () => {
                     <Textarea placeholder="Describe your issue in detail..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-24 bg-background/60 border-border/40 focus:border-primary/40" maxLength={1000} />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Deadline</label>
-                    <Select value={deadline} onValueChange={setDeadline}>
-                      <SelectTrigger className="bg-background/60 border-border/40"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="45">45 minutes</SelectItem>
-                        <SelectItem value="60">1 hour</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </CardContent>
               </Card>
 
@@ -384,7 +372,7 @@ const PostRequest = () => {
                 </span>
               </div>
               <h1 className="mb-3 text-3xl font-bold text-foreground animate-fade-in [animation-delay:100ms]">{title}</h1>
-              <p className="text-muted-foreground animate-fade-in [animation-delay:200ms]">Deadline: {deadline} min</p>
+              <p className="text-muted-foreground animate-fade-in [animation-delay:200ms]">Experts will propose their own timelines</p>
 
               <div className="mt-6 mx-auto max-w-md animate-fade-in [animation-delay:300ms]">
                 <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
