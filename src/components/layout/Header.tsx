@@ -11,7 +11,7 @@ import NotificationsDropdown from "@/components/notifications/NotificationsDropd
 import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus } from "lucide-react";
 
 const navLinks = [
-  { label: "How It Works", href: "/#how-it-works" },
+  { label: "How It Works", href: "/how-it-works" },
 ];
 
 const Header = () => {
