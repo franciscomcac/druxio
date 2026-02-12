@@ -43,21 +43,9 @@ const Header = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = async (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    e?.preventDefault();
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setProfile(null);
-      navigate("/");
-    } catch (error) {
-      console.error("Sign out error:", error);
-      // Force clear even on error
-      setUser(null);
-      setProfile(null);
-      navigate("/");
-    }
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
   };
 
   return (
@@ -105,32 +93,13 @@ const Header = () => {
                     <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                   <DropdownMenuSeparator className="bg-border/30" />
-                  <DropdownMenuItem onSelect={() => navigate("/dashboard")} className="hover:bg-primary/[0.06]"><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Wallet</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")} className="hover:bg-primary/[0.06]"><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Wallet</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-border/30" />
-                  <DropdownMenuItem
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      handleSignOut();
-                    }}
-                    className="hover:bg-destructive/10 cursor-pointer"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" /> Sign Out
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut} className="hover:bg-destructive/10"><LogOut className="mr-2 h-4 w-4" /> Sign Out</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              {/* Standalone sign out button as fallback - always visible */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleSignOut}
-                className="hover:bg-destructive/10 hover:text-destructive"
-                title="Sign Out"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
             </>
           ) : (
             <>
@@ -154,16 +123,7 @@ const Header = () => {
                 <>
                   <Link to="/post-request" onClick={() => setIsOpen(false)}><Button className="w-full gap-2"><Plus className="h-4 w-4" /> Post Request</Button></Link>
                   <Link to="/dashboard" onClick={() => setIsOpen(false)}><Button variant="outline" className="w-full gap-2"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button></Link>
-                  <Button
-                    variant="ghost"
-                    className="w-full gap-2"
-                    onClick={(e) => {
-                      setIsOpen(false);
-                      handleSignOut(e);
-                    }}
-                  >
-                    <LogOut className="h-4 w-4" /> Sign Out
-                  </Button>
+                  <Button variant="ghost" className="w-full gap-2" onClick={handleSignOut}><LogOut className="h-4 w-4" /> Sign Out</Button>
                 </>
               ) : (
                 <>

@@ -76,30 +76,44 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    let isMounted = true;
+    let called = false;
 
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!isMounted) return;
+    const loadDashboard = async (user: any) => {
+      if (called) return;
+      called = true;
+      await fetchData(user);
+    };
+
+    // Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        navigate("/auth");
+        return;
+      }
+      if (session?.user) {
+        loadDashboard(session.user);
+      }
+    });
+
+    // Fallback: directly check session in case the event was already fired
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         navigate("/auth");
         return;
       }
-      await fetchData(session.user);
-    };
-
-    init();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!isMounted) return;
-      if (event === "SIGNED_OUT") {
-        navigate("/");
-      }
+      loadDashboard(session.user);
     });
 
+    // Safety timeout - if still loading after 8s, redirect to auth
+    const timeout = setTimeout(() => {
+      if (!called) {
+        navigate("/auth");
+      }
+    }, 8000);
+
     return () => {
-      isMounted = false;
       subscription.unsubscribe();
+      clearTimeout(timeout);
     };
   }, []);
 
