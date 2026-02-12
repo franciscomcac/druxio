@@ -1,58 +1,31 @@
 import { useEffect, useState } from "react";
-import { Users, Video, DollarSign, MapPin } from "lucide-react";
-
-interface StatItem {
-  icon: React.ReactNode;
-  value: number;
-  label: string;
-  suffix?: string;
-}
+import { Users, Zap, DollarSign, Clock } from "lucide-react";
 
 const LiveStats = () => {
   const [stats, setStats] = useState({
-    mentorsOnline: 312,
-    sessionsToday: 5420,
+    expertsOnline: 312,
+    requestsToday: 1842,
     paidOut: 24000,
-    activeNow: 47,
+    avgResponse: 87,
   });
 
-  // Simulate live updates
   useEffect(() => {
     const interval = setInterval(() => {
       setStats((prev) => ({
-        mentorsOnline: prev.mentorsOnline + Math.floor(Math.random() * 3) - 1,
-        sessionsToday: prev.sessionsToday + Math.floor(Math.random() * 5),
-        paidOut: prev.paidOut + Math.floor(Math.random() * 100),
-        activeNow: prev.activeNow + Math.floor(Math.random() * 3) - 1,
+        expertsOnline: Math.max(200, prev.expertsOnline + Math.floor(Math.random() * 3) - 1),
+        requestsToday: prev.requestsToday + Math.floor(Math.random() * 3),
+        paidOut: prev.paidOut + Math.floor(Math.random() * 50),
+        avgResponse: Math.max(60, Math.min(120, prev.avgResponse + Math.floor(Math.random() * 5) - 2)),
       }));
     }, 5000);
-
     return () => clearInterval(interval);
   }, []);
 
-  const statItems: StatItem[] = [
-    {
-      icon: <Users className="h-5 w-5" />,
-      value: stats.mentorsOnline,
-      label: "Mentors Online",
-    },
-    {
-      icon: <Video className="h-5 w-5" />,
-      value: stats.sessionsToday,
-      label: "Sessions Today",
-      suffix: "",
-    },
-    {
-      icon: <DollarSign className="h-5 w-5" />,
-      value: stats.paidOut,
-      label: "Paid to Mentors",
-      suffix: "$",
-    },
-    {
-      icon: <MapPin className="h-5 w-5" />,
-      value: stats.activeNow,
-      label: "Active Now (Global)",
-    },
+  const statItems = [
+    { icon: <Users className="h-5 w-5" />, value: stats.expertsOnline, label: "Experts Online" },
+    { icon: <Zap className="h-5 w-5" />, value: stats.requestsToday, label: "Requests Today" },
+    { icon: <DollarSign className="h-5 w-5" />, value: stats.paidOut, label: "Paid to Experts", prefix: "€" },
+    { icon: <Clock className="h-5 w-5" />, value: stats.avgResponse, label: "Avg Response (sec)", suffix: "s" },
   ];
 
   return (
@@ -64,7 +37,7 @@ const LiveStats = () => {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500"></span>
             </span>
-            <span className="text-sm font-medium text-muted-foreground">Live Stats</span>
+            <span className="text-sm font-medium text-muted-foreground">Live</span>
           </div>
           
           {statItems.map((stat, index) => (
@@ -74,8 +47,7 @@ const LiveStats = () => {
               </div>
               <div>
                 <p className="text-lg font-bold text-foreground">
-                  {stat.suffix}
-                  {stat.value.toLocaleString()}
+                  {stat.prefix}{stat.value.toLocaleString()}{stat.suffix}
                 </p>
                 <p className="text-xs text-muted-foreground">{stat.label}</p>
               </div>

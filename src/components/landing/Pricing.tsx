@@ -1,138 +1,77 @@
-import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Video, Check, Zap } from "lucide-react";
-
-const pricingOptions = [
-  {
-    title: "Chat Session",
-    icon: <MessageSquare className="h-8 w-8" />,
-    price: "$1.99",
-    per: "per 10 min",
-    description: "Real-time text chat with code sharing and screen grabs",
-    features: [
-      "Instant connection",
-      "Code block sharing",
-      "Image uploads",
-      "Session notes saved",
-    ],
-    cta: "Start Chatting",
-    popular: false,
-  },
-  {
-    title: "Video Call",
-    icon: <Video className="h-8 w-8" />,
-    price: "$4.99",
-    per: "per 15 min",
-    description: "Face-to-face with screen sharing for complex issues",
-    features: [
-      "HD video call",
-      "Screen sharing",
-      "Recording option",
-      "AI summary included",
-    ],
-    cta: "Start Video Call",
-    popular: true,
-  },
-];
-
-const walletBonuses = [
-  { amount: "$5", bonus: null, value: 5 },
-  { amount: "$10", bonus: null, value: 10 },
-  { amount: "$50", bonus: "+10% bonus", value: 50 },
-  { amount: "$100", bonus: "+15% bonus", value: 100 },
-];
+import { Check, Shield, Zap, Clock } from "lucide-react";
 
 const Pricing = () => {
-  const navigate = useNavigate();
-
   return (
     <section className="bg-background py-20" id="pricing">
       <div className="container mx-auto px-4">
         <div className="mb-12 text-center">
-          <h2 className="mb-3 text-3xl font-bold text-foreground">
-            Simple, Transparent Pricing
-          </h2>
-          <p className="text-muted-foreground">
-            Pay only for the time you use. No subscriptions, no hidden fees.
-          </p>
+          <h2 className="mb-3 text-3xl font-bold text-foreground">Simple & Transparent</h2>
+          <p className="text-muted-foreground">No subscriptions. Experts set fixed prices. You only pay for results.</p>
         </div>
 
-        {/* Session pricing */}
-        <div className="mx-auto mb-16 grid max-w-3xl gap-6 md:grid-cols-2">
-          {pricingOptions.map((option) => (
-            <Card
-              key={option.title}
-              className={`relative overflow-hidden transition-all hover:shadow-lg ${
-                option.popular ? "border-primary shadow-md" : "border-border"
-              }`}
-            >
-              {option.popular && (
-                <div className="absolute right-4 top-4">
-                  <Badge className="gap-1 bg-primary text-primary-foreground">
-                    <Zap className="h-3 w-3" /> Most Popular
-                  </Badge>
-                </div>
-              )}
-              <CardHeader className="pb-4">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  {option.icon}
-                </div>
-                <CardTitle className="text-xl">{option.title}</CardTitle>
-                <CardDescription>{option.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-foreground">{option.price}</span>
-                  <span className="text-muted-foreground"> {option.per}</span>
-                </div>
-                <ul className="mb-6 space-y-3">
-                  {option.features.map((feature) => (
-                    <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Check className="h-4 w-4 text-primary" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link to="/search">
-                  <Button className="w-full" variant={option.popular ? "default" : "outline"}>
-                    {option.cta}
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+          <Card className="border-border">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Zap className="h-7 w-7" />
+              </div>
+              <CardTitle>For Buyers</CardTitle>
+              <CardDescription>Post requests for free</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {["Free to post any request", "Set your own budget (€5–50)", "See up to 3 expert quotes", "Only pay when you accept", "Escrow-protected payments"].map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 text-primary" /> {f}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
 
-        {/* Wallet top-up */}
-        <div className="mx-auto max-w-2xl rounded-2xl border border-border bg-card p-8 text-center">
-          <h3 className="mb-2 text-xl font-semibold text-foreground">
-            Top Up Your Wallet
-          </h3>
-          <p className="mb-6 text-muted-foreground">
-            Pre-load credits for faster checkout and exclusive bonuses
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {walletBonuses.map((wallet) => (
-              <Button
-                key={wallet.amount}
-                variant="outline"
-                className="relative gap-2"
-                onClick={() => navigate("/wallet")}
-              >
-                {wallet.amount}
-                {wallet.bonus && (
-                  <Badge variant="secondary" className="text-xs">
-                    {wallet.bonus}
-                  </Badge>
-                )}
-              </Button>
-            ))}
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Dynamic pricing: Peak hours (+20%) • Off-peak (-10%)
-          </p>
+          <Card className="border-primary shadow-md">
+            <CardHeader className="text-center">
+              <Badge className="mx-auto mb-2 bg-primary text-primary-foreground">Most Popular</Badge>
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+                <Shield className="h-7 w-7" />
+              </div>
+              <CardTitle>Platform Fee</CardTitle>
+              <CardDescription>
+                <span className="text-4xl font-bold text-foreground">10%</span>
+                <span className="block text-sm">per completed job</span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {["Deducted from expert earnings", "Covers escrow & disputes", "Secure payment processing", "24h dispute resolution", "Auto-release after 48h"].map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 text-primary" /> {f}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Clock className="h-7 w-7" />
+              </div>
+              <CardTitle>For Experts</CardTitle>
+              <CardDescription>Earn on your own terms</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {["Free to join & bid", "Set your own prices", "Real-time job notifications", "90% of each job you complete", "Weekly payouts via Stripe"].map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 text-primary" /> {f}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import PostRequest from "./pages/PostRequest";
 import Search from "./pages/Search";
 import Session from "./pages/Session";
 import Wallet from "./pages/Wallet";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/post-request" element={<PostRequest />} />
           <Route path="/search" element={<Search />} />
           <Route path="/session/:sessionId" element={<Session />} />
           <Route path="/wallet" element={<Wallet />} />

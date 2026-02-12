@@ -20,9 +20,9 @@ const Index = () => {
         <QuickHelpForm />
         <HowItWorks />
         <Categories />
+        <MentorSpotlight />
         <Testimonials />
         <Pricing />
-        <MentorSpotlight />
         <Newsletter />
       </main>
       <Footer />
