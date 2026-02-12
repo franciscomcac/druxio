@@ -181,10 +181,8 @@ const PostRequest = () => {
     else navigate("/");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitRequest = async () => {
     setLoading(true);
-
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { setLoading(false); setShowAuthDialog(true); return; }
 
@@ -262,7 +260,7 @@ const PostRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <QuickAuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} onAuthenticated={() => handleSubmit(new Event("submit") as any)} />
+      <QuickAuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} onAuthenticated={() => submitRequest()} />
       <Header />
       <main className="container mx-auto px-4 py-10">
 
@@ -386,7 +384,7 @@ const PostRequest = () => {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); submitRequest(); }} className="space-y-6">
               <Card className="border-border/30 bg-card/60 backdrop-blur-xl">
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
