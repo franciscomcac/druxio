@@ -39,13 +39,11 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => { fetchData(); }, []);
-
   const fetchData = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/auth"); return; }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { navigate("/auth"); return; }
 
+    try {
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", session.user.id),
@@ -79,6 +77,8 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => { fetchData(); }, []);
 
   const handleBecomeSeller = () => setShowSellerConsent(true);
 
