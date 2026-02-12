@@ -17,18 +17,125 @@ import TimezoneSelect from "@/components/settings/TimezoneSelect";
 import AvailabilitySettings from "@/components/settings/AvailabilitySettings";
 import {
   User, Bell, Shield, CreditCard, Loader2, Save, Camera, Clock, Tag, X,
+  ChevronDown, ChevronUp,
+  Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
 
-const ALL_CATEGORIES = [
-  "Gaming: Minecraft", "Gaming: Valorant", "Gaming: Fortnite", "Gaming: CS2", "Gaming: Apex",
-  "Tech: Discord Bots", "Tech: Web Dev", "Tech: SEO", "Tech: Server Setup", "Tech: App Dev",
-  "Business: Marketing", "Business: Startup", "Business: E-commerce", "Business: Accounting",
-  "Creative: Design", "Creative: Video Editing", "Creative: Ad Copy", "Creative: Thumbnails",
-  "Music: Production", "Music: Mixing", "Music: Guitar",
-  "Fitness: Training", "Fitness: Nutrition",
-  "Languages: English", "Languages: Spanish",
-  "Content: Streaming", "Content: YouTube", "Content: TikTok",
+const CATEGORY_TREE = [
+  {
+    id: "Gaming", label: "Gaming", icon: Gamepad2,
+    subs: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends"],
+  },
+  {
+    id: "Tech", label: "Tech", icon: Code,
+    subs: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress"],
+  },
+  {
+    id: "Business", label: "Business", icon: Briefcase,
+    subs: ["Marketing", "Startup Advice", "E-commerce", "Accounting"],
+  },
+  {
+    id: "Creative", label: "Creative", icon: Palette,
+    subs: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails"],
+  },
+  {
+    id: "Music", label: "Music", icon: Music,
+    subs: ["Production", "Mixing & Mastering", "Guitar Lessons"],
+  },
+  {
+    id: "Fitness", label: "Fitness", icon: Dumbbell,
+    subs: ["Personal Training", "Nutrition Plans"],
+  },
+  {
+    id: "Languages", label: "Languages", icon: Globe,
+    subs: ["English", "Spanish"],
+  },
+  {
+    id: "Content", label: "Content", icon: Video,
+    subs: ["Streaming", "YouTube", "TikTok"],
+  },
 ];
+
+const CategoryAccordion = ({
+  subscribedCategories,
+  onToggle,
+}: {
+  subscribedCategories: string[];
+  onToggle: (category: string) => void;
+}) => {
+  const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+
+  const toggleExpand = (groupId: string) => {
+    setExpandedGroups((prev) =>
+      prev.includes(groupId) ? prev.filter((g) => g !== groupId) : [...prev, groupId]
+    );
+  };
+
+  const getSubKey = (groupId: string, sub: string) => `${groupId}: ${sub}`;
+
+  const countSubscribed = (group: typeof CATEGORY_TREE[0]) =>
+    group.subs.filter((s) => subscribedCategories.includes(getSubKey(group.id, s))).length;
+
+  return (
+    <div className="space-y-1">
+      {CATEGORY_TREE.map((group) => {
+        const Icon = group.icon;
+        const isExpanded = expandedGroups.includes(group.id);
+        const subCount = countSubscribed(group);
+
+        return (
+          <div key={group.id}>
+            <button
+              onClick={() => toggleExpand(group.id)}
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3.5 transition-colors hover:bg-accent/40"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/[0.08] text-primary">
+                <Icon className="h-5 w-5" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="font-semibold text-foreground">{group.label}</p>
+                <p className="text-xs text-muted-foreground">
+                  {subCount > 0 ? `${subCount} subscribed` : "Not subscribed"}
+                </p>
+              </div>
+              {subCount > 0 && (
+                <Badge variant="secondary" className="bg-primary/[0.08] text-primary text-xs mr-2">
+                  {subCount}
+                </Badge>
+              )}
+              {isExpanded ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+
+            {isExpanded && (
+              <div className="ml-4 mb-2 border-l border-border/30 pl-4 space-y-0.5 animate-fade-in">
+                {group.subs.map((sub) => {
+                  const key = getSubKey(group.id, sub);
+                  const isActive = subscribedCategories.includes(key);
+                  return (
+                    <div
+                      key={sub}
+                      className="flex items-center justify-between rounded-lg px-4 py-3 transition-colors hover:bg-accent/30"
+                    >
+                      <span className="text-sm text-foreground">{sub}</span>
+                      <Switch
+                        checked={isActive}
+                        onCheckedChange={() => onToggle(key)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -173,36 +280,20 @@ const Settings = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Category Subscriptions</CardTitle>
-                  <CardDescription>Select categories to receive real-time request notifications</CardDescription>
+                  <CardDescription>
+                    Toggle the services you can provide to receive notifications from buyers
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-6">
-                    <h4 className="text-sm font-medium text-foreground mb-2">Your subscriptions ({subscribedCategories.length})</h4>
-                    {subscribedCategories.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {subscribedCategories.map((cat) => (
-                          <Badge key={cat} variant="default" className="gap-1 cursor-pointer" onClick={() => toggleCategory(cat)}>
-                            {cat} <X className="h-3 w-3" />
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No categories selected yet</p>
-                    )}
+                  <div className="mb-6 flex items-center gap-3">
+                    <Badge variant="secondary" className="bg-primary/[0.08] text-primary">
+                      {subscribedCategories.length} subscribed
+                    </Badge>
                   </div>
-                  <h4 className="text-sm font-medium text-foreground mb-3">All categories</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {ALL_CATEGORIES.map((cat) => (
-                      <Badge
-                        key={cat}
-                        variant={subscribedCategories.includes(cat) ? "default" : "outline"}
-                        className="cursor-pointer transition-all hover:scale-105"
-                        onClick={() => toggleCategory(cat)}
-                      >
-                        {cat}
-                      </Badge>
-                    ))}
-                  </div>
+                  <CategoryAccordion
+                    subscribedCategories={subscribedCategories}
+                    onToggle={toggleCategory}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
