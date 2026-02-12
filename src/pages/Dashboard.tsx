@@ -77,39 +77,53 @@ const Dashboard = () => {
 
   useEffect(() => {
     let called = false;
+    let redirected = false;
 
     const loadDashboard = async (user: any) => {
-      if (called) return;
+      if (called || redirected) return;
       called = true;
       await fetchData(user);
     };
 
-    // Set up auth listener
+    const redirectToAuth = () => {
+      if (redirected || called) return;
+      redirected = true;
+      navigate("/auth");
+    };
+
+    // Set up auth listener FIRST - this is the primary source of truth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
-        navigate("/auth");
+        redirectToAuth();
         return;
       }
       if (session?.user) {
         loadDashboard(session.user);
       }
-    });
-
-    // Fallback: directly check session in case the event was already fired
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-        return;
+      // For INITIAL_SESSION with no session, wait a bit before redirecting
+      // because the session might still be loading after a fresh login
+      if (event === "INITIAL_SESSION" && !session) {
+        setTimeout(() => {
+          if (!called && !redirected) {
+            // Double-check session one more time
+            supabase.auth.getSession().then(({ data: { session: s } }) => {
+              if (s?.user) loadDashboard(s.user);
+              else redirectToAuth();
+            });
+          }
+        }, 1500);
       }
-      loadDashboard(session.user);
     });
 
-    // Safety timeout - if still loading after 8s, redirect to auth
+    // Safety timeout
     const timeout = setTimeout(() => {
-      if (!called) {
-        navigate("/auth");
+      if (!called && !redirected) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user) loadDashboard(session.user);
+          else redirectToAuth();
+        });
       }
-    }, 8000);
+    }, 5000);
 
     return () => {
       subscription.unsubscribe();
