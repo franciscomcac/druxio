@@ -205,6 +205,18 @@ const ActiveRequest = () => {
     );
   }
 
+  const formatDeliveryTime = (minutes: number) => {
+    if (minutes >= 1440) {
+      const days = Math.round(minutes / 1440);
+      return `${days} day${days !== 1 ? "s" : ""}`;
+    }
+    if (minutes >= 60) {
+      const hours = Math.round(minutes / 60);
+      return `${hours} hour${hours !== 1 ? "s" : ""}`;
+    }
+    return `${minutes} min`;
+  };
+
   if (!job) return null;
 
   const sortedQuotes = [...quotes].sort((a, b) => a.price - b.price);
@@ -316,9 +328,7 @@ const ActiveRequest = () => {
                   <div className="text-right shrink-0 hidden sm:block">
                     <p className="text-xs text-muted-foreground">Delivery time</p>
                     <p className="text-sm font-medium text-foreground">
-                      {quote.estimated_minutes < 60
-                        ? `${quote.estimated_minutes} min`
-                        : `${(quote.estimated_minutes / 60).toFixed(0)} h`}
+                      {formatDeliveryTime(quote.estimated_minutes)}
                     </p>
                   </div>
 
@@ -430,9 +440,7 @@ const ActiveRequest = () => {
                       </div>
                       <div className="text-right">
                         <span className="text-xs text-muted-foreground">
-                          {selectedQuote.estimated_minutes < 60
-                            ? `${selectedQuote.estimated_minutes} min`
-                            : `${(selectedQuote.estimated_minutes / 60).toFixed(0)} hours`}
+                          {formatDeliveryTime(selectedQuote.estimated_minutes)}
                         </span>
                         <p className="text-lg font-bold text-primary">€{selectedQuote.price.toFixed(2)}</p>
                       </div>
