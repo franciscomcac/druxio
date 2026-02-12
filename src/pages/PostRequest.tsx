@@ -181,10 +181,14 @@ const PostRequest = () => {
     else navigate("/");
   };
 
-  const submitRequest = async () => {
+  const submitRequest = async (authenticatedUserId?: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setShowAuthDialog(true); return; }
+      let userId = authenticatedUserId;
+      if (!userId) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { setShowAuthDialog(true); return; }
+        userId = session.user.id;
+      }
       setLoading(true);
 
       const mainCategory = category.split(":")[0]?.trim() || category;
@@ -200,7 +204,7 @@ const PostRequest = () => {
       const { data, error } = await supabase
         .from("jobs")
         .insert({
-          buyer_id: session.user.id,
+          buyer_id: userId!,
           title, description, category,
           budget_min: 5,
           budget_max: 50,
@@ -265,7 +269,7 @@ const PostRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <QuickAuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} onAuthenticated={() => submitRequest()} />
+      <QuickAuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} onAuthenticated={(userId) => submitRequest(userId)} />
       <Header />
       <main className="container mx-auto px-4 py-10">
 
@@ -434,7 +438,7 @@ const PostRequest = () => {
                 </CardContent>
               </Card>
 
-              <Button type="button" onClick={submitRequest} size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
+              <Button type="button" onClick={() => submitRequest()} size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
                 Post Request & Notify Experts
               </Button>

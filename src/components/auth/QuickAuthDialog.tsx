@@ -10,7 +10,7 @@ import { Loader2, Zap } from "lucide-react";
 interface QuickAuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAuthenticated: () => void;
+  onAuthenticated: (userId: string) => void;
 }
 
 const QuickAuthDialog = ({ open, onOpenChange, onAuthenticated }: QuickAuthDialogProps) => {
@@ -26,9 +26,11 @@ const QuickAuthDialog = ({ open, onOpenChange, onAuthenticated }: QuickAuthDialo
     setLoading(true);
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast({ title: "Welcome back!" });
+        onOpenChange(false);
+        onAuthenticated(data.user.id);
       } else {
         const { error } = await supabase.auth.signUp({
           email, password,
@@ -36,9 +38,8 @@ const QuickAuthDialog = ({ open, onOpenChange, onAuthenticated }: QuickAuthDialo
         });
         if (error) throw error;
         toast({ title: "Account created!", description: "Check your email to verify your account." });
+        onOpenChange(false);
       }
-      onOpenChange(false);
-      onAuthenticated();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
