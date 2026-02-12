@@ -39,7 +39,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
   const { toast } = useToast();
 
   const handleReopenJob = (jobId: string) => {
-    navigate(`/post-request?jobId=${jobId}`);
+    navigate(`/request/${jobId}`);
   };
 
   const statCards = [
@@ -86,7 +86,12 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
               {myJobs.length > 0 ? (
                 <div className="space-y-3">
                   {myJobs.map((job, i) => (
-                    <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in" style={{ animationDelay: `${(i + 4) * 60}ms` }}>
+                    <div
+                      key={job.id}
+                      className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in cursor-pointer"
+                      style={{ animationDelay: `${(i + 4) * 60}ms` }}
+                      onClick={() => job.status === "open" ? navigate(`/request/${job.id}`) : undefined}
+                    >
                       <div>
                         <p className="font-medium text-foreground">{job.title}</p>
                         <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
