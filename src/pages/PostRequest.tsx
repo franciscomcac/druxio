@@ -115,6 +115,19 @@ const PostRequest = () => {
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [onlineCount, setOnlineCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(180);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Track auth state reactively
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUserId(session?.user?.id || null);
+    });
+    // Also set initial value
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id || null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Resume waiting screen if jobId param provided
   useEffect(() => {
@@ -185,10 +198,7 @@ const PostRequest = () => {
     setLoading(true);
 
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        console.error("No session found:", sessionError?.message);
+      if (!userId) {
         setLoading(false);
         navigate("/auth");
         return;
@@ -202,7 +212,7 @@ const PostRequest = () => {
       const { data, error } = await supabase
         .from("jobs")
         .insert({
-          buyer_id: session.user.id,
+          buyer_id: userId,
           title,
           description: description || null,
           category,
