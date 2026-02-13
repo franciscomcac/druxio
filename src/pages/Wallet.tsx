@@ -243,6 +243,7 @@ const Wallet = () => {
                 <TabsTrigger value="payments" className="text-xs">Payments ({filterByType(["session_payment"]).length})</TabsTrigger>
                 <TabsTrigger value="refunds" className="text-xs">Refunds ({filterByType(["refund"]).length})</TabsTrigger>
                 <TabsTrigger value="deposits" className="text-xs">Top-ups ({filterByType(["deposit"]).length})</TabsTrigger>
+                <TabsTrigger value="withdrawals" className="text-xs">Withdrawals ({filterByType(["withdrawal"]).length})</TabsTrigger>
               </TabsList>
 
               <TabsContent value="all" className="space-y-3">
@@ -259,6 +260,9 @@ const Wallet = () => {
               </TabsContent>
               <TabsContent value="deposits" className="space-y-3">
                 {filterByType(["deposit"]).length === 0 ? renderEmptyState("No top-ups yet") : filterByType(["deposit"]).map(renderTransaction)}
+              </TabsContent>
+              <TabsContent value="withdrawals" className="space-y-3">
+                {filterByType(["withdrawal"]).length === 0 ? renderEmptyState("No withdrawals yet") : filterByType(["withdrawal"]).map(renderTransaction)}
               </TabsContent>
             </Tabs>
           </CardContent>
