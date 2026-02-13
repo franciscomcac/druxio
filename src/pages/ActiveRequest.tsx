@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -502,6 +502,7 @@ const ActiveRequest = () => {
 
                       {/* Avatar */}
                       <Avatar className="h-11 w-11 border border-border/30 shrink-0">
+                        <AvatarImage src={quote.profile?.avatar_url || undefined} />
                         <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold text-sm">
                           {quote.profile?.display_name?.split(" ").map(n => n[0]).join("") || "E"}
                         </AvatarFallback>
@@ -516,7 +517,7 @@ const ActiveRequest = () => {
                           {quote.profile?.rating_avg ? (
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Star className="h-3 w-3 fill-primary text-primary" />
-                              {quote.profile.rating_avg.toFixed(1)}
+                              {quote.profile.rating_avg.toFixed(1)} ({Math.round((quote.profile.rating_avg / 5) * 100)}%)
                             </span>
                           ) : null}
                           {quote.profile?.total_sessions ? (
