@@ -356,13 +356,26 @@ const ActiveRequest = () => {
       return;
     }
     setSubmittingQuote(true);
-    const { error } = await supabase.from("quotes").insert({
-      job_id: jobId,
-      expert_id: userId,
-      price,
-      estimated_minutes: minutes,
-      message: `Updated offer: €${price.toFixed(2)} — ${minutes} min delivery`,
-    });
+    // Find existing quote to update
+    const existingQuote = quotes.find(q => q.expert_id === userId);
+    let error: any;
+    if (existingQuote) {
+      const res = await supabase.from("quotes").update({
+        price,
+        estimated_minutes: minutes,
+        message: `Updated offer: €${price.toFixed(2)} — ${minutes} min delivery`,
+      }).eq("id", existingQuote.id);
+      error = res.error;
+    } else {
+      const res = await supabase.from("quotes").insert({
+        job_id: jobId,
+        expert_id: userId,
+        price,
+        estimated_minutes: minutes,
+        message: `Updated offer: €${price.toFixed(2)} — ${minutes} min delivery`,
+      });
+      error = res.error;
+    }
     if (error) {
       toast({ title: "Failed to submit offer", description: error.message, variant: "destructive" });
     } else {
