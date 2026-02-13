@@ -158,51 +158,46 @@ const ActiveRequest = () => {
     return () => { supabase.removeChannel(channel); };
   }, [jobId, selectedChatPartnerId, isBuyer]);
 
-  // Load sessions (expert <-> buyer mapping), create if missing for seller
+  // Load sessions (expert <-> buyer mapping), create if missing for both sides
   useEffect(() => {
     if (!jobId || !userId || quotes.length === 0 || !job) return;
+
+    const findOrCreateSession = async (mentorId: string, menteeId: string): Promise<string | null> => {
+      const { data: existing } = await supabase
+        .from("sessions")
+        .select("id")
+        .eq("mentor_id", mentorId)
+        .eq("mentee_id", menteeId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existing) return existing.id;
+
+      const { data: newSession } = await supabase.from("sessions").insert({
+        mentor_id: mentorId,
+        mentee_id: menteeId,
+        status: "pending",
+        issue_description: job.title,
+        categories: [job.category],
+        session_type: "chat",
+      }).select("id").single();
+      return newSession?.id || null;
+    };
 
     const loadSessions = async () => {
       if (isBuyer) {
         for (const quote of quotes) {
-          const { data: sessionData } = await supabase
-            .from("sessions")
-            .select("id")
-            .eq("mentee_id", userId)
-            .eq("mentor_id", quote.expert_id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          if (sessionData) {
-            setSessionMap((prev) => ({ ...prev, [quote.expert_id]: sessionData.id }));
+          if (sessionMap[quote.expert_id]) continue;
+          const sid = await findOrCreateSession(quote.expert_id, userId);
+          if (sid) {
+            setSessionMap((prev) => ({ ...prev, [quote.expert_id]: sid }));
           }
         }
       } else {
-        // Seller: find or create session between self (mentor) and buyer
-        let { data: sessionData } = await supabase
-          .from("sessions")
-          .select("id")
-          .eq("mentor_id", userId)
-          .eq("mentee_id", job.buyer_id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (!sessionData) {
-          // Create session on-the-fly so chat works instantly
-          const { data: newSession } = await supabase.from("sessions").insert({
-            mentor_id: userId,
-            mentee_id: job.buyer_id,
-            status: "pending",
-            issue_description: job.title,
-            categories: [job.category],
-            session_type: "chat",
-          }).select("id").single();
-          sessionData = newSession;
-        }
-
-        if (sessionData) {
-          setSessionMap({ [job.buyer_id]: sessionData.id });
+        if (sessionMap[job.buyer_id]) return;
+        const sid = await findOrCreateSession(userId, job.buyer_id);
+        if (sid) {
+          setSessionMap({ [job.buyer_id]: sid });
         }
       }
     };
@@ -237,9 +232,12 @@ const ActiveRequest = () => {
       }, (payload) => {
         const newMsg = payload.new as ChatMessage;
         setChatMessages((prev) => {
-          const existing = prev[selectedChatPartnerId] || [];
+          const partnerId = selectedChatPartnerId;
+          const existing = prev[partnerId] || [];
           if (existing.find(m => m.id === newMsg.id)) return prev;
-          return { ...prev, [selectedChatPartnerId]: [...existing, newMsg] };
+          // Also deduplicate optimistic messages by content+sender
+          const filtered = existing.filter(m => !(m.id.startsWith("temp-") && m.content === newMsg.content && m.sender_id === newMsg.sender_id));
+          return { ...prev, [partnerId]: [...filtered, newMsg] };
         });
       })
       .subscribe();
