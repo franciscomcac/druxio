@@ -143,7 +143,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
               <Input
                 type="number"
                 step="0.01"
-                min="1"
+                min={method === "paypal" ? "10" : "1"}
                 max={balance}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -160,6 +160,14 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                 Max
               </Button>
             </div>
+            {method === "paypal" && parseFloat(amount) >= 10 && (
+              <p className="text-xs text-muted-foreground">
+                2% fee: €{(parseFloat(amount) * 0.02).toFixed(2)} — You receive: €{(parseFloat(amount) * 0.98).toFixed(2)}
+              </p>
+            )}
+            {method === "paypal" && (
+              <p className="text-xs text-muted-foreground">Minimum: €10.00</p>
+            )}
           </div>
 
           {/* PayPal fields */}
