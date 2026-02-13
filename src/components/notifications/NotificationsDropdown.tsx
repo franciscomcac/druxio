@@ -108,7 +108,9 @@ const NotificationsDropdown = () => {
     markAsRead(notification.id);
 
     // Navigate based on notification type
-    if (notification.type === "session_request" && notification.data?.session_id) {
+    if (notification.type === "new_request" && notification.data?.job_id) {
+      navigate(`/request/${notification.data.job_id}`);
+    } else if (notification.type === "session_request" && notification.data?.session_id) {
       navigate(`/session/${notification.data.session_id}`);
     } else if (notification.type === "message" && notification.data?.session_id) {
       navigate(`/session/${notification.data.session_id}`);
@@ -119,6 +121,8 @@ const NotificationsDropdown = () => {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
+      case "new_request":
+        return <Bell className="h-4 w-4 text-primary" />;
       case "session_request":
         return <UserPlus className="h-4 w-4 text-primary" />;
       case "message":
