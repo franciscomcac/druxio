@@ -57,59 +57,53 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Find the escrow transaction ID from our transactions table
-    const { data: txns } = await serviceClient
-      .from("transactions")
-      .select("*")
-      .ilike("description", "%Escrow hold%")
-      .eq("type", "session_payment")
-      .eq("status", "pending");
+    // Get escrow transaction ID from job
+    const { data: job } = await serviceClient
+      .from("jobs")
+      .select("escrow_txn_id, escrow_status")
+      .eq("id", jobId)
+      .single();
 
-    let escrowTxnId: string | null = null;
-    let txnRecord: any = null;
-
-    if (txns) {
-      for (const txn of txns) {
-        if (txn.stripe_payment_id) {
-          escrowTxnId = txn.stripe_payment_id;
-          txnRecord = txn;
-          break;
-        }
-      }
-    }
-
-    // If we have an escrow transaction, mark items as received (releases funds)
-    if (escrowTxnId) {
+    // Accept the delivery on Escrow.com (buyer accepts → funds released to seller)
+    if (job?.escrow_txn_id) {
       try {
-        // Patch the transaction to mark item as received by buyer
         const patchRes = await fetch(
-          `${ESCROW_API_BASE}/transaction/${escrowTxnId}`,
+          `${ESCROW_API_BASE}/transaction/${job.escrow_txn_id}`,
           {
             method: "PATCH",
             headers: {
               Authorization: getEscrowAuth(),
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              action: "receive",
-            }),
+            body: JSON.stringify({ action: "accept" }),
           }
         );
         const patchData = await patchRes.json();
         if (!patchRes.ok) {
-          console.error("Escrow release API error:", JSON.stringify(patchData));
-          // Don't throw — still mark as completed internally
+          console.error("Escrow accept API error:", JSON.stringify(patchData));
         }
       } catch (escrowErr) {
         console.error("Escrow API call failed, continuing with internal completion:", escrowErr);
       }
+    }
 
-      // Mark transaction as completed
-      if (txnRecord) {
-        await serviceClient
-          .from("transactions")
-          .update({ status: "completed", description: `Escrow released for job ${jobId}` })
-          .eq("id", txnRecord.id);
+    // Mark transaction records as completed
+    const { data: txns } = await serviceClient
+      .from("transactions")
+      .select("*")
+      .ilike("description", `%Escrow hold%`)
+      .eq("type", "session_payment")
+      .eq("status", "pending");
+
+    if (txns) {
+      for (const txn of txns) {
+        if (txn.stripe_payment_id) {
+          await serviceClient
+            .from("transactions")
+            .update({ status: "completed", description: `Escrow released for job ${jobId}` })
+            .eq("id", txn.id);
+          break;
+        }
       }
     }
 
@@ -124,7 +118,6 @@ Deno.serve(async (req) => {
       if (quote) {
         const sellerAmount = Math.round(Number(quote.price) * 0.95 * 100) / 100;
 
-        // Create earning record
         await serviceClient.from("transactions").insert({
           user_id: quote.expert_id,
           amount: sellerAmount,
@@ -133,7 +126,6 @@ Deno.serve(async (req) => {
           description: `Earning for job ${jobId} (5% fee deducted)`,
         });
 
-        // Credit seller wallet
         const { data: sellerProfile } = await serviceClient
           .from("profiles")
           .select("wallet_balance")
@@ -147,7 +139,6 @@ Deno.serve(async (req) => {
             .eq("id", quote.expert_id);
         }
 
-        // Notify seller
         await serviceClient.from("notifications").insert({
           user_id: quote.expert_id,
           type: "payment_released",
@@ -158,8 +149,11 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Mark job as completed
-    await serviceClient.from("jobs").update({ status: "completed" }).eq("id", jobId);
+    // Mark job as completed with escrow status
+    await serviceClient.from("jobs").update({
+      status: "completed",
+      escrow_status: "completed",
+    }).eq("id", jobId);
 
     return new Response(
       JSON.stringify({ success: true }),
