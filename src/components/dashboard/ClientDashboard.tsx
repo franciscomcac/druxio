@@ -90,7 +90,10 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
                       key={job.id}
                       className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in cursor-pointer"
                       style={{ animationDelay: `${(i + 4) * 60}ms` }}
-                      onClick={() => job.status === "open" ? navigate(`/request/${job.id}`) : undefined}
+                      onClick={() => {
+                        if (job.status === "open") navigate(`/request/${job.id}`);
+                        else if (job.status === "accepted") navigate(`/order/${job.id}`);
+                      }}
                     >
                       <div>
                         <p className="font-medium text-foreground">{job.title}</p>
