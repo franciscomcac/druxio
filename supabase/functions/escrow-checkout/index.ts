@@ -134,8 +134,13 @@ Deno.serve(async (req) => {
 
     const escrowTxnId = escrowData.id;
 
-    // Mark job as accepted, quote as accepted
-    await serviceClient.from("jobs").update({ status: "accepted", accepted_quote_id: quoteId }).eq("id", jobId);
+    // Mark job as accepted, quote as accepted, store escrow info
+    await serviceClient.from("jobs").update({
+      status: "accepted",
+      accepted_quote_id: quoteId,
+      escrow_txn_id: String(escrowTxnId),
+      escrow_status: "awaiting_agreement",
+    }).eq("id", jobId);
     await serviceClient.from("quotes").update({ status: "accepted" }).eq("id", quoteId);
 
     // Create pending transaction record

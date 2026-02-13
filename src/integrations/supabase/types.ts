@@ -110,6 +110,8 @@ export type Database = {
           created_at: string | null
           deadline_minutes: number
           description: string | null
+          escrow_status: string | null
+          escrow_txn_id: string | null
           expires_at: string | null
           id: string
           status: string
@@ -126,6 +128,8 @@ export type Database = {
           created_at?: string | null
           deadline_minutes?: number
           description?: string | null
+          escrow_status?: string | null
+          escrow_txn_id?: string | null
           expires_at?: string | null
           id?: string
           status?: string
@@ -142,6 +146,8 @@ export type Database = {
           created_at?: string | null
           deadline_minutes?: number
           description?: string | null
+          escrow_status?: string | null
+          escrow_txn_id?: string | null
           expires_at?: string | null
           id?: string
           status?: string
