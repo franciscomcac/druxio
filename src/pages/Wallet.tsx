@@ -1,4 +1,4 @@
-import { useState, useEffect, useLayoutEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBalance } from "@/hooks/use-balance";
@@ -22,6 +22,8 @@ import {
   DollarSign,
   PiggyBank,
 } from "lucide-react";
+import WithdrawalDialog from "@/components/wallet/WithdrawalDialog";
+import { Button } from "@/components/ui/button";
 
 interface Transaction {
   id: string;
@@ -44,26 +46,28 @@ const Wallet = () => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [txLoading, setTxLoading] = useState(true);
-  const { balance, totalEarned, totalSpent, totalRefunded, totalDeposited, loading: balanceLoading } = useBalance();
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const { balance, totalEarned, totalSpent, totalRefunded, totalDeposited, loading: balanceLoading, refetch: refetchBalance } = useBalance();
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
-  useEffect(() => {
-    const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/auth"); return; }
+  const loadTransactions = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { navigate("/auth"); return; }
 
-      const { data: txns } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false });
+    const { data: txns } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false });
 
-      if (txns) setTransactions(txns);
-      setTxLoading(false);
-    };
-    load();
+    if (txns) setTransactions(txns);
+    setTxLoading(false);
   }, [navigate]);
+
+  useEffect(() => {
+    loadTransactions();
+  }, [loadTransactions]);
 
   const loading = txLoading || balanceLoading;
 
@@ -144,6 +148,13 @@ const Wallet = () => {
             <p className="text-sm text-muted-foreground mb-2">Available Balance</p>
             <p className="text-5xl font-bold text-foreground">€{balance.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-2">All earnings, refunds & top-ups minus payments</p>
+            <Button
+              className="mt-4 gap-2"
+              onClick={() => setWithdrawOpen(true)}
+              disabled={balance <= 0}
+            >
+              <ArrowUpRight className="h-4 w-4" /> Withdraw
+            </Button>
           </CardContent>
         </Card>
 
@@ -252,6 +263,13 @@ const Wallet = () => {
             </Tabs>
           </CardContent>
         </Card>
+
+        <WithdrawalDialog
+          open={withdrawOpen}
+          onOpenChange={setWithdrawOpen}
+          balance={balance}
+          onSuccess={() => { refetchBalance(); loadTransactions(); }}
+        />
       </main>
       <Footer />
     </div>

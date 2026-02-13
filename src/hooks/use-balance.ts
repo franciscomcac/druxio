@@ -88,5 +88,7 @@ export function useBalance() {
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
-  return data;
+  const refetch = () => { if (userId) fetchTransactions(userId); };
+
+  return { ...data, refetch };
 }
