@@ -56,9 +56,56 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { authorizationId, quoteId } = await req.json();
+    const body = await req.json();
+    let { authorizationId } = body;
+    const { quoteId, jobId } = body;
+
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+
+    // If no authorizationId provided, look it up from transactions table
+    if (!authorizationId && jobId) {
+      // Find the buyer's session_payment transaction that has the auth ID in description
+      const { data: txns } = await serviceClient
+        .from("transactions")
+        .select("*")
+        .ilike("description", "%auth:%")
+        .eq("type", "session_payment");
+
+      if (txns && txns.length > 0) {
+        // Try to find the one linked to this job by checking quote's user
+        for (const txn of txns) {
+          const match = txn.description?.match(/auth:([A-Za-z0-9]+)/);
+          if (match) {
+            authorizationId = match[1];
+            break;
+          }
+        }
+      }
+
+      // Also try matching by stripe_payment_id field which stores PayPal order ID
+      if (!authorizationId) {
+        const { data: txns2 } = await serviceClient
+          .from("transactions")
+          .select("*")
+          .ilike("description", "%PayPal authorized%");
+
+        if (txns2 && txns2.length > 0) {
+          for (const txn of txns2) {
+            const match = txn.description?.match(/auth:([A-Za-z0-9]+)/);
+            if (match) {
+              authorizationId = match[1];
+              break;
+            }
+          }
+        }
+      }
+    }
+
     if (!authorizationId) {
-      return new Response(JSON.stringify({ error: "Missing authorizationId" }), {
+      return new Response(JSON.stringify({ error: "Missing authorizationId — no PayPal authorization found for this order" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -83,12 +130,6 @@ Deno.serve(async (req) => {
     }
 
     // Update transaction to completed
-    const serviceClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
-    // Find the transaction by authorization ID in description
     const { data: txns } = await serviceClient
       .from("transactions")
       .select("*")
@@ -120,6 +161,11 @@ Deno.serve(async (req) => {
           });
         }
       }
+    }
+
+    // Mark job as completed
+    if (jobId) {
+      await serviceClient.from("jobs").update({ status: "completed" }).eq("id", jobId);
     }
 
     return new Response(
