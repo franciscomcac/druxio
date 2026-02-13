@@ -134,8 +134,8 @@ const Wallet = () => {
                 <Receipt className="h-5 w-5" />
               </div>
               <div>
-                <p className="font-semibold text-foreground text-sm">10% Platform Fee</p>
-                <p className="text-xs text-muted-foreground mt-1">A small fee is included to keep the platform running.</p>
+                <p className="font-semibold text-foreground text-sm">5% + 5% Fee Split</p>
+                <p className="text-xs text-muted-foreground mt-1">Buyers pay 5% on checkout, sellers pay 5% on payout. Fair for everyone.</p>
               </div>
             </CardContent>
           </Card>
