@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useBalance } from "@/hooks/use-balance";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,12 +43,8 @@ const typeLabels: Record<string, string> = {
 const Wallet = () => {
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [balance, setBalance] = useState(0);
-  const [totalSpent, setTotalSpent] = useState(0);
-  const [totalEarned, setTotalEarned] = useState(0);
-  const [totalRefunded, setTotalRefunded] = useState(0);
-  const [totalDeposited, setTotalDeposited] = useState(0);
+  const [txLoading, setTxLoading] = useState(true);
+  const { balance, totalEarned, totalSpent, totalRefunded, totalDeposited, loading: balanceLoading } = useBalance();
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -62,26 +59,13 @@ const Wallet = () => {
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
-      if (txns) {
-        setTransactions(txns);
-
-        const spent = txns.filter(t => t.type === "session_payment" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
-        const earned = txns.filter(t => t.type === "session_earning" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
-        const refunded = txns.filter(t => t.type === "refund" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
-        const deposited = txns.filter(t => t.type === "deposit" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
-        const withdrawn = txns.filter(t => t.type === "withdrawal" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
-
-        setTotalSpent(spent);
-        setTotalEarned(earned);
-        setTotalRefunded(refunded);
-        setTotalDeposited(deposited);
-        setBalance(deposited + earned + refunded - spent - withdrawn);
-      }
-
-      setLoading(false);
+      if (txns) setTransactions(txns);
+      setTxLoading(false);
     };
     load();
   }, [navigate]);
+
+  const loading = txLoading || balanceLoading;
 
   const getTransactionIcon = (type: string) => {
     switch (type) {

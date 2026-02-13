@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useBalance } from "@/hooks/use-balance";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -22,13 +23,8 @@ const Header = () => {
   const [isAdminUser, setIsAdminUser] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
-  const [balance, setBalance] = useState<number | null>(null);
+  const { balance } = useBalance();
   const navigate = useNavigate();
-
-  const fetchBalance = async (userId: string) => {
-    const { data } = await supabase.from("profiles").select("wallet_balance").eq("id", userId).single();
-    if (data) setBalance(data.wallet_balance ?? 0);
-  };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -38,49 +34,25 @@ const Header = () => {
       if (session?.user) {
         setAuthOpen(false);
         setTimeout(async () => {
-          const { data } = await supabase.from("profiles").select("display_name, avatar_url, wallet_balance").eq("id", session.user.id).single();
+          const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single();
           setProfile(data);
-          setBalance(data?.wallet_balance ?? 0);
           const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
           setIsAdminUser(roles?.some(r => r.role === "admin") || false);
         }, 0);
       } else if (event === 'SIGNED_OUT') {
         setProfile(null);
-        setBalance(null);
       }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        supabase.from("profiles").select("display_name, avatar_url, wallet_balance").eq("id", session.user.id).single().then(({ data }) => {
-          setProfile(data);
-          setBalance(data?.wallet_balance ?? 0);
-        });
+        supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single().then(({ data }) => setProfile(data));
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  // Realtime balance updates
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('header-balance')
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'profiles',
-        filter: `id=eq.${user.id}`,
-      }, (payload) => {
-        const newBalance = (payload.new as any).wallet_balance;
-        if (newBalance !== undefined) setBalance(newBalance ?? 0);
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
