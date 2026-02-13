@@ -14,10 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import TimezoneSelect from "@/components/settings/TimezoneSelect";
-import AvailabilitySettings from "@/components/settings/AvailabilitySettings";
 import {
   User, Bell, Shield, CreditCard, Loader2, Save, Camera, Clock, Tag, X,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Wifi, WifiOff,
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
 
@@ -228,10 +227,7 @@ const Settings = () => {
           <TabsList className="w-full justify-start flex-wrap h-auto gap-2 bg-transparent p-0">
             <TabsTrigger value="profile" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><User className="h-4 w-4" /> Profile</TabsTrigger>
             {isMentor && (
-              <>
-                <TabsTrigger value="categories" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Tag className="h-4 w-4" /> Categories</TabsTrigger>
-                <TabsTrigger value="availability" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Clock className="h-4 w-4" /> Availability</TabsTrigger>
-              </>
+              <TabsTrigger value="categories" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Tag className="h-4 w-4" /> Categories</TabsTrigger>
             )}
             <TabsTrigger value="notifications" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Bell className="h-4 w-4" /> Notifications</TabsTrigger>
             <TabsTrigger value="security" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Shield className="h-4 w-4" /> Security</TabsTrigger>
@@ -268,6 +264,25 @@ const Settings = () => {
 
                 <div className="space-y-2"><Label>Bio</Label><Textarea placeholder="Tell others about yourself..." className="min-h-32" value={profile?.bio || ""} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} /></div>
 
+                {isMentor && (
+                  <div className="flex items-center justify-between p-4 rounded-lg bg-accent/30">
+                    <div className="flex items-center gap-3">
+                      {profile?.is_online ? <Wifi className="h-5 w-5 text-chart-2" /> : <WifiOff className="h-5 w-5 text-muted-foreground" />}
+                      <div>
+                        <p className="font-medium text-foreground">Online Status</p>
+                        <p className="text-sm text-muted-foreground">{profile?.is_online ? "You appear online to buyers" : "You appear offline"}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={profile?.is_online || false}
+                      onCheckedChange={async (checked) => {
+                        setProfile({ ...profile, is_online: checked });
+                        await supabase.from("profiles").update({ is_online: checked }).eq("id", profile.id);
+                      }}
+                    />
+                  </div>
+                )}
+
                 <Button onClick={handleSaveProfile} disabled={saving} className="gap-2">
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes
                 </Button>
@@ -299,11 +314,6 @@ const Settings = () => {
             </TabsContent>
           )}
 
-          {isMentor && profile && (
-            <TabsContent value="availability">
-              <AvailabilitySettings userId={profile.id} />
-            </TabsContent>
-          )}
 
           <TabsContent value="notifications">
             <Card>
