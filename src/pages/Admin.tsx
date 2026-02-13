@@ -343,11 +343,11 @@ const Admin = () => {
         toast({ title: "Dispute resolved — Refund issued", description: `Buyer has been refunded €${(selectedDispute.quote_price * 1.05).toFixed(2)}` });
       } else {
         try {
-          await supabase.functions.invoke("paypal-release", {
+          await supabase.functions.invoke("escrow-release", {
             body: { jobId: selectedDispute.job_id },
           });
         } catch {
-          // If paypal-release fails, still mark as completed
+          // If escrow-release fails, still mark as completed
         }
         await supabase.from("jobs").update({ status: "completed" }).eq("id", selectedDispute.job_id);
         toast({ title: "Dispute resolved — Payment released", description: "Funds released to the seller." });

@@ -6,64 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PAYPAL_BASE = "https://api-m.paypal.com";
-
-async function getPayPalToken(): Promise<string> {
-  const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
-  const secret = Deno.env.get("PAYPAL_SECRET");
-  if (!clientId || !secret) throw new Error("PayPal credentials not configured");
-
-  const res = await fetch(`${PAYPAL_BASE}/v1/oauth2/token`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "grant_type=client_credentials",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`PayPal auth failed: ${JSON.stringify(data)}`);
-  return data.access_token;
-}
-
-async function sendPayPalPayout(token: string, email: string, amount: number, withdrawalId: string) {
-  const res = await fetch(`${PAYPAL_BASE}/v1/payments/payouts`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      sender_batch_header: {
-        sender_batch_id: `WD_${withdrawalId}_${Date.now()}`,
-        email_subject: "You have a payout from Duxio!",
-        email_message: "Your withdrawal has been processed.",
-      },
-      items: [
-        {
-          recipient_type: "EMAIL",
-          amount: {
-            value: amount.toFixed(2),
-            currency: "EUR",
-          },
-          receiver: email,
-          note: `Duxio withdrawal ${withdrawalId}`,
-          sender_item_id: withdrawalId,
-        },
-      ],
-    }),
-  });
-
-  const data = await res.json();
-  console.log("PayPal Payout full response:", JSON.stringify(data));
-  console.log("PayPal Payout status:", res.status);
-  if (!res.ok) {
-    console.error("PayPal Payout error details:", JSON.stringify(data));
-    throw new Error(`PayPal Payout failed: ${data.message || data.error_description || JSON.stringify(data)}`);
-  }
-  return data;
-}
-
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -138,7 +80,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Calculate fee for PayPal
+    // Calculate fee for PayPal withdrawals
     const feeRate = method === "paypal" ? 0.02 : 0;
     const fee = Math.round(amount * feeRate * 100) / 100;
     const netAmount = Math.round((amount - fee) * 100) / 100;
@@ -177,8 +119,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create withdrawal record
-    const { data: withdrawal, error: wdError } = await adminClient.from("withdrawals").insert({
+    // Create withdrawal record — all withdrawals are pending for manual admin processing
+    const { error: wdError } = await adminClient.from("withdrawals").insert({
       user_id: userId,
       amount,
       method,
@@ -188,7 +130,7 @@ Deno.serve(async (req) => {
       crypto_address: method === "crypto" ? crypto_address : null,
       transaction_id: transaction.id,
       status: "pending",
-    }).select().single();
+    });
 
     if (wdError) {
       console.error("Withdrawal error:", wdError);
@@ -198,48 +140,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // For PayPal: try auto-process via Payouts API, fallback to pending
-    if (method === "paypal") {
-      try {
-        const ppToken = await getPayPalToken();
-        const payoutResult = await sendPayPalPayout(ppToken, paypal_email, netAmount, withdrawal.id);
-
-        const batchId = payoutResult?.batch_header?.payout_batch_id || null;
-
-        // Mark as completed
-        await adminClient
-          .from("transactions")
-          .update({ status: "completed", stripe_payment_id: batchId })
-          .eq("id", transaction.id);
-
-        await adminClient
-          .from("withdrawals")
-          .update({ status: "completed", admin_notes: `PayPal batch: ${batchId}` })
-          .eq("id", withdrawal.id);
-
-        return new Response(
-          JSON.stringify({ success: true, status: "completed", payout_batch_id: batchId }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } catch (ppErr) {
-        console.error("PayPal payout failed, marking as pending for manual processing:", ppErr);
-
-        // Keep as pending for manual processing instead of failing
-        await adminClient
-          .from("withdrawals")
-          .update({ admin_notes: `Auto-payout failed: ${ppErr.message}. Requires manual processing.` })
-          .eq("id", withdrawal.id);
-
-        return new Response(
-          JSON.stringify({ success: true, status: "pending", message: "Withdrawal submitted. It will be processed manually within 24-48h." }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    }
-
-    // For crypto: stays pending for manual processing
     return new Response(
-      JSON.stringify({ success: true, status: "pending", message: "Crypto withdrawal submitted. Processing may take 24-48h." }),
+      JSON.stringify({
+        success: true,
+        status: "pending",
+        message: "Withdrawal submitted. It will be processed manually within 24-48h.",
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
