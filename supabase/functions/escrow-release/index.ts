@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ESCROW_API_BASE = "https://api.escrow.com/2017-09-01";
+const ESCROW_API_BASE = "https://api.escrow-sandbox.com/2017-09-01";
 
 function getEscrowAuth(): string {
   const email = Deno.env.get("ESCROW_EMAIL");
