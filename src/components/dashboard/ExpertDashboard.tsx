@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -42,6 +43,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const [quoteDialog, setQuoteDialog] = useState<Job | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteMinutes, setQuoteMinutes] = useState("20");
+  const [quoteTimeUnit, setQuoteTimeUnit] = useState<"minutes" | "days" | "months">("minutes");
   const [quoteMessage, setQuoteMessage] = useState("");
   const [sendingQuote, setSendingQuote] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(true);
@@ -79,11 +81,16 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
+    const timeValue = parseInt(quoteMinutes);
+    let estimatedMinutes = timeValue;
+    if (quoteTimeUnit === "days") estimatedMinutes = timeValue * 1440;
+    if (quoteTimeUnit === "months") estimatedMinutes = timeValue * 43200;
+
     const { data: quoteData, error } = await supabase.from("quotes").insert({
       job_id: quoteDialog.id,
       expert_id: session.user.id,
       price: parseFloat(quotePrice),
-      estimated_minutes: parseInt(quoteMinutes),
+      estimated_minutes: estimatedMinutes,
       message: quoteMessage || null,
     }).select().single();
 
@@ -144,8 +151,20 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
               <Input type="number" placeholder="e.g. 12" value={quotePrice} onChange={(e) => setQuotePrice(e.target.value)} min={1} max={quoteDialog?.budget_max} className="bg-background/60 border-border/40" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Estimated Time (min)</label>
-              <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={5} max={120} className="bg-background/60 border-border/40" />
+              <label className="text-sm font-medium text-foreground">Estimated Delivery Time</label>
+              <div className="flex gap-2">
+                <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={1} className="bg-background/60 border-border/40 flex-1" />
+                <Select value={quoteTimeUnit} onValueChange={(v: "minutes" | "days" | "months") => setQuoteTimeUnit(v)}>
+                  <SelectTrigger className="w-[120px] bg-background/60 border-border/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="minutes">Minutes</SelectItem>
+                    <SelectItem value="days">Days</SelectItem>
+                    <SelectItem value="months">Months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Message (optional)</label>
