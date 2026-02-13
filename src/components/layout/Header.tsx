@@ -8,7 +8,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
-import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus } from "lucide-react";
+import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package } from "lucide-react";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 
 const navLinks = [
@@ -104,6 +104,7 @@ const Header = () => {
                   </div>
                   <DropdownMenuSeparator className="bg-border/30" />
                   <DropdownMenuItem onClick={() => navigate("/dashboard")} className="hover:bg-primary/[0.06]"><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/inbox")} className="hover:bg-primary/[0.06]"><MessageSquare className="mr-2 h-4 w-4" /> Chats</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Wallet</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-border/30" />

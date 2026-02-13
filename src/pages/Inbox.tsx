@@ -33,6 +33,7 @@ interface Session {
   session_type: string | null;
   mentee_id: string;
   mentor_id: string;
+  price: number | null;
   mentee_profile?: {
     display_name: string | null;
     avatar_url: string | null;
@@ -46,6 +47,7 @@ interface Session {
     created_at: string;
   };
   unread_count?: number;
+  linked_job_id?: string | null; // job linked via quotes for order navigation
 }
 
 const statusConfig: Record<string, { label: string; icon: React.ReactNode; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -105,12 +107,35 @@ const Inbox = () => {
             supabase.from("messages").select("id", { count: "exact" }).eq("session_id", session.id).eq("is_read", false).neq("sender_id", user.id),
           ]);
 
+          // Check if this session's expert has an accepted quote on a job (i.e. it's a paid order)
+          // We look for an accepted quote from this mentor for jobs owned by this mentee
+          let linkedJobId: string | null = null;
+          const { data: acceptedQuote } = await supabase
+            .from("quotes")
+            .select("job_id")
+            .eq("expert_id", session.mentor_id)
+            .eq("status", "accepted")
+            .limit(1)
+            .maybeSingle();
+
+          if (acceptedQuote) {
+            // Verify the job belongs to the current user (mentee)
+            const { data: jobCheck } = await supabase
+              .from("jobs")
+              .select("id")
+              .eq("id", acceptedQuote.job_id)
+              .eq("buyer_id", user.id)
+              .maybeSingle();
+            if (jobCheck) linkedJobId = jobCheck.id;
+          }
+
           return {
             ...session,
             mentee_profile: menteeProfile.data,
             mentor_profile: mentorProfile.data,
             last_message: lastMessage.data,
             unread_count: unreadMessages.count || 0,
+            linked_job_id: linkedJobId,
           };
         })
       );
@@ -154,7 +179,7 @@ const Inbox = () => {
     return (
       <Card 
         className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/30 bg-card/50 backdrop-blur-sm"
-        onClick={() => navigate(`/session/${session.id}`)}
+        onClick={() => session.linked_job_id ? navigate(`/order/${session.linked_job_id}`) : navigate(`/session/${session.id}`)}
       >
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
