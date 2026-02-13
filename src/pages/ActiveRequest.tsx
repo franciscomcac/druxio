@@ -11,8 +11,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import {
   Star, Check, Clock, Send, MessageSquare, XCircle, Eye, Users, ThumbsUp,
-  ArrowLeft, Zap, Loader2,
+  ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
 
 interface QuoteWithProfile {
@@ -69,6 +70,10 @@ const ActiveRequest = () => {
 
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
+
+  // PayPal checkout state
+  const [paypalDialog, setPaypalDialog] = useState<QuoteWithProfile | null>(null);
+  const [paypalLoading, setPaypalLoading] = useState(false);
 
   // Load job + quotes
   useEffect(() => {
@@ -196,16 +201,65 @@ const ActiveRequest = () => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, selectedExpertId]);
 
-  const handleAcceptQuote = async (quote: QuoteWithProfile) => {
-    if (!jobId) return;
-    const { error: jobError } = await supabase.from("jobs").update({ status: "accepted", accepted_quote_id: quote.id }).eq("id", jobId);
-    const { error: quoteError } = await supabase.from("quotes").update({ status: "accepted" }).eq("id", quote.id);
-    if (jobError || quoteError) {
-      toast({ title: "Error accepting offer", variant: "destructive" });
-      return;
+  const handleAcceptQuote = (quote: QuoteWithProfile) => {
+    setPaypalDialog(quote);
+  };
+
+  const handlePaypalCheckout = async () => {
+    if (!paypalDialog || !jobId) return;
+    setPaypalLoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      // Step 1: Create PayPal order via edge function
+      const createRes = await supabase.functions.invoke("paypal-checkout", {
+        body: { quoteId: paypalDialog.id, jobId },
+      });
+
+      if (createRes.error) throw new Error(createRes.error.message);
+      const { orderId, approvalUrl } = createRes.data;
+
+      if (!approvalUrl) throw new Error("No PayPal approval URL returned");
+
+      // Step 2: Open PayPal approval in popup
+      const popup = window.open(approvalUrl, "paypal-checkout", "width=500,height=700,scrollbars=yes");
+      
+      // Poll for popup close (user completed or cancelled PayPal flow)
+      const pollInterval = setInterval(async () => {
+        if (!popup || popup.closed) {
+          clearInterval(pollInterval);
+          
+          // Step 3: Authorize the payment (escrow hold)
+          try {
+            const captureRes = await supabase.functions.invoke("paypal-capture", {
+              body: { orderId, quoteId: paypalDialog.id, jobId },
+            });
+
+            if (captureRes.error) throw new Error(captureRes.error.message);
+
+            toast({
+              title: "Payment authorized! 🎉",
+              description: `Funds held in escrow until ${paypalDialog.profile?.display_name || "the expert"} delivers.`,
+            });
+            setPaypalDialog(null);
+            navigate("/dashboard");
+          } catch (captureErr: any) {
+            toast({
+              title: "Payment not completed",
+              description: "PayPal checkout was cancelled or failed. No charges were made.",
+              variant: "destructive",
+            });
+          }
+          setPaypalLoading(false);
+        }
+      }, 500);
+    } catch (err: any) {
+      console.error("PayPal checkout error:", err);
+      toast({ title: "Checkout error", description: err.message, variant: "destructive" });
+      setPaypalLoading(false);
     }
-    toast({ title: "Expert hired! 🎉", description: `${quote.profile?.display_name || "Expert"} is on the job.` });
-    navigate("/dashboard");
   };
 
   const handleCancelRequest = async () => {
@@ -389,13 +443,13 @@ const ActiveRequest = () => {
                     >
                       <MessageSquare className="h-3.5 w-3.5" /> Chat
                     </Button>
-                    <Button
-                      size="sm"
-                      className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow"
-                      onClick={(e) => { e.stopPropagation(); handleAcceptQuote(quote); }}
-                    >
-                      <Check className="h-3.5 w-3.5" /> Accept offer
-                    </Button>
+                     <Button
+                       size="sm"
+                       className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow"
+                       onClick={(e) => { e.stopPropagation(); handleAcceptQuote(quote); }}
+                     >
+                       <CreditCard className="h-3.5 w-3.5" /> Pay & Accept
+                     </Button>
                   </div>
                 </div>
               ))}
@@ -539,6 +593,50 @@ const ActiveRequest = () => {
             </div>
           </div>
         )}
+        {/* PayPal Checkout Dialog */}
+        <Dialog open={!!paypalDialog} onOpenChange={() => { if (!paypalLoading) setPaypalDialog(null); }}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border/30 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" /> Secure Checkout
+              </DialogTitle>
+              <DialogDescription>
+                Pay via PayPal. Funds are held in escrow until the service is delivered.
+              </DialogDescription>
+            </DialogHeader>
+            {paypalDialog && (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-border/30 bg-background/40 p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Service price</span>
+                    <span className="font-medium text-foreground">€{paypalDialog.price.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Buyer fee (5%)</span>
+                    <span className="font-medium text-foreground">€{(paypalDialog.price * 0.05).toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-border/30 pt-2 flex justify-between">
+                    <span className="font-semibold text-foreground">Total</span>
+                    <span className="font-bold text-lg text-primary">€{(paypalDialog.price * 1.05).toFixed(2)}</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-primary/[0.04] rounded-lg p-3">
+                  <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                  <span>Your payment is held securely in escrow. Funds are only released to the seller once you confirm delivery.</span>
+                </div>
+              </div>
+            )}
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setPaypalDialog(null)} disabled={paypalLoading} className="border-border/30">
+                Cancel
+              </Button>
+              <Button onClick={handlePaypalCheckout} disabled={paypalLoading} className="gap-2 shadow-glow">
+                {paypalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                {paypalLoading ? "Processing..." : "Pay with PayPal"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );
