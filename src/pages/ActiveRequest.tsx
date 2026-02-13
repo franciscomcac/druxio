@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import {
   Star, Check, Clock, Send, MessageSquare, XCircle, Eye, Users, ThumbsUp,
-  ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck,
+  ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck, RefreshCw,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
@@ -78,6 +78,12 @@ const ActiveRequest = () => {
   // PayPal checkout state
   const [paypalDialog, setPaypalDialog] = useState<QuoteWithProfile | null>(null);
   const [paypalLoading, setPaypalLoading] = useState(false);
+
+  // Seller: new quote form state
+  const [newQuotePrice, setNewQuotePrice] = useState("");
+  const [newQuoteMinutes, setNewQuoteMinutes] = useState("");
+  const [submittingQuote, setSubmittingQuote] = useState(false);
+  const [showQuoteForm, setShowQuoteForm] = useState(false);
 
   // Load job + quotes
   useEffect(() => {
@@ -339,6 +345,42 @@ const ActiveRequest = () => {
       }));
     }
     setSendingChat(false);
+  };
+
+  const handleSubmitNewQuote = async () => {
+    if (!jobId || !userId) return;
+    const price = parseFloat(newQuotePrice);
+    const minutes = parseInt(newQuoteMinutes) || 20;
+    if (isNaN(price) || price <= 0) {
+      toast({ title: "Enter a valid price", variant: "destructive" });
+      return;
+    }
+    setSubmittingQuote(true);
+    const { error } = await supabase.from("quotes").insert({
+      job_id: jobId,
+      expert_id: userId,
+      price,
+      estimated_minutes: minutes,
+      message: `Updated offer: €${price.toFixed(2)} — ${minutes} min delivery`,
+    });
+    if (error) {
+      toast({ title: "Failed to submit offer", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "New offer submitted! 🎉" });
+      setNewQuotePrice("");
+      setNewQuoteMinutes("");
+      setShowQuoteForm(false);
+      // Send a chat message about the new offer
+      const sid = sessionMap[selectedChatPartnerId || ""];
+      if (sid) {
+        await supabase.from("messages").insert({
+          session_id: sid,
+          sender_id: userId,
+          content: `📋 New offer: €${price.toFixed(2)} — delivery in ${minutes} min`,
+        });
+      }
+    }
+    setSubmittingQuote(false);
   };
 
   const selectedMessages = selectedChatPartnerId ? (chatMessages[selectedChatPartnerId] || []) : [];
@@ -646,6 +688,56 @@ const ActiveRequest = () => {
                         <div ref={chatEndRef} />
                       </div>
                     </ScrollArea>
+
+                    {/* Seller: new quote form */}
+                    {!isBuyer && (
+                      <div className="border-t border-border/30 px-4 py-2">
+                        {showQuoteForm ? (
+                          <div className="space-y-2 animate-fade-in">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-semibold text-foreground">Send a new offer</p>
+                              <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground" onClick={() => setShowQuoteForm(false)}>Cancel</Button>
+                            </div>
+                            <div className="flex gap-2">
+                              <div className="flex-1">
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0.50"
+                                  value={newQuotePrice}
+                                  onChange={(e) => setNewQuotePrice(e.target.value)}
+                                  placeholder="Price (€)"
+                                  className="bg-background/60 border-border/40 h-8 text-sm"
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={newQuoteMinutes}
+                                  onChange={(e) => setNewQuoteMinutes(e.target.value)}
+                                  placeholder="Delivery (min)"
+                                  className="bg-background/60 border-border/40 h-8 text-sm"
+                                />
+                              </div>
+                              <Button size="sm" className="h-8 gap-1.5" onClick={handleSubmitNewQuote} disabled={submittingQuote}>
+                                {submittingQuote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                                Send
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full gap-1.5 border-primary/20 text-primary hover:bg-primary/[0.06] text-xs h-7"
+                            onClick={() => setShowQuoteForm(true)}
+                          >
+                            <RefreshCw className="h-3 w-3" /> Send a new offer
+                          </Button>
+                        )}
+                      </div>
+                    )}
 
                     {/* Chat input */}
                     <div className="border-t border-border/30 p-3">
