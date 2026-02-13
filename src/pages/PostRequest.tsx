@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
+import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -116,13 +117,22 @@ const PostRequest = () => {
   const [onlineCount, setOnlineCount] = useState(0);
   const [timeLeft, setTimeLeft] = useState(180);
   const [userId, setUserId] = useState<string | null>(null);
-
-  // Track auth state reactively
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const pendingSubmitRef = useRef(false);
+  // Track auth state reactively & auto-submit after auth
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUserId(session?.user?.id || null);
+      const uid = session?.user?.id || null;
+      setUserId(uid);
+      if (uid && pendingSubmitRef.current) {
+        pendingSubmitRef.current = false;
+        // Trigger submit on next tick so userId state is set
+        setTimeout(() => {
+          const form = document.getElementById("post-request-form") as HTMLFormElement;
+          form?.requestSubmit();
+        }, 100);
+      }
     });
-    // Also set initial value
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUserId(session?.user?.id || null);
     });
@@ -200,7 +210,8 @@ const PostRequest = () => {
     try {
       if (!userId) {
         setLoading(false);
-        navigate("/auth");
+        pendingSubmitRef.current = true;
+        setShowAuthDialog(true);
         return;
       }
 
@@ -410,7 +421,7 @@ const PostRequest = () => {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form id="post-request-form" onSubmit={handleSubmit} className="space-y-6">
               <Card className="border-border/30 bg-card/60 backdrop-blur-xl">
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
@@ -558,6 +569,12 @@ const PostRequest = () => {
         )}
 
       </main>
+      <QuickAuthDialog
+        open={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+        defaultTab="signup"
+        onSuccess={() => setShowAuthDialog(false)}
+      />
     </div>
   );
 };

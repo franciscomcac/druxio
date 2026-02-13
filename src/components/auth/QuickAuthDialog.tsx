@@ -15,9 +15,10 @@ interface QuickAuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   defaultTab?: "login" | "signup";
+  onSuccess?: () => void;
 }
 
-const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login" }: QuickAuthDialogProps) => {
+const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login", onSuccess }: QuickAuthDialogProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,7 +46,8 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login" }: QuickAuth
       toast({ title: "Welcome back!", description: "You've successfully logged in." });
       setLoading(false);
       onOpenChange(false);
-      navigate("/dashboard");
+      if (onSuccess) onSuccess();
+      else navigate("/dashboard");
     } catch (error: any) {
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
       setLoading(false);
