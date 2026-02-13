@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft, Clock, MessageSquare, Send, Loader2, ShieldCheck,
-  AlertTriangle, CheckCircle2, Timer, Star,
+  AlertTriangle, CheckCircle2, Timer, Star, RefreshCw,
   FileText, Handshake, CreditCard, Package, ThumbsUp,
 } from "lucide-react";
 import { formatDistanceToNow, differenceInSeconds, addMinutes } from "date-fns";
@@ -71,6 +71,7 @@ const Order = () => {
   // Seller actions
   const [agreeLoading, setAgreeLoading] = useState(false);
   const [shipLoading, setShipLoading] = useState(false);
+  const [refreshingStatus, setRefreshingStatus] = useState(false);
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -175,35 +176,36 @@ const Order = () => {
     setSendingChat(false);
   };
 
-  // Seller agrees to escrow transaction
-  const handleSellerAgree = async () => {
-    if (!jobId) return;
-    setAgreeLoading(true);
-    try {
-      const res = await supabase.functions.invoke("escrow-agree", { body: { jobId } });
-      if (res.error) throw new Error(res.error.message);
-      const data = res.data as any;
-      toast({ title: "Transaction agreed! ✅", description: "The buyer can now fund the escrow." });
-      setJob((prev: any) => prev ? { ...prev, escrow_status: "awaiting_funding" } : prev);
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    }
-    setAgreeLoading(false);
+  // Seller agrees to escrow transaction (redirect to Escrow.com)
+  const handleSellerAgree = () => {
+    if (!job?.escrow_txn_id) return;
+    window.open(`https://www.escrow-sandbox.com/transactions/${job.escrow_txn_id}`, "_blank");
+    toast({ title: "Opening Escrow.com", description: "Please agree to the transaction on the Escrow.com page, then come back." });
   };
 
-  // Seller marks as delivered (ship)
-  const handleSellerDeliver = async () => {
+  // Seller marks as delivered (redirect to Escrow.com)
+  const handleSellerDeliver = () => {
+    if (!job?.escrow_txn_id) return;
+    window.open(`https://www.escrow-sandbox.com/transactions/${job.escrow_txn_id}`, "_blank");
+    toast({ title: "Opening Escrow.com", description: "Please mark the item as shipped on the Escrow.com page." });
+  };
+
+  // Refresh escrow status from Escrow.com
+  const handleRefreshStatus = async () => {
     if (!jobId) return;
-    setShipLoading(true);
+    setRefreshingStatus(true);
     try {
-      const res = await supabase.functions.invoke("escrow-ship", { body: { jobId } });
+      const res = await supabase.functions.invoke("escrow-status", { body: { jobId } });
       if (res.error) throw new Error(res.error.message);
-      toast({ title: "Marked as delivered! 📦", description: "Waiting for buyer to confirm." });
-      setJob((prev: any) => prev ? { ...prev, escrow_status: "delivered" } : prev);
+      const data = res.data as any;
+      if (data.escrow_status) {
+        setJob((prev: any) => prev ? { ...prev, escrow_status: data.escrow_status } : prev);
+        toast({ title: "Status updated", description: `Escrow status: ${data.escrow_status}` });
+      }
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
-    setShipLoading(false);
+    setRefreshingStatus(false);
   };
 
   // Buyer confirms delivery (accept)
@@ -367,6 +369,16 @@ const Order = () => {
                     Transaction #{job.escrow_txn_id}
                   </p>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2 w-full"
+                  onClick={handleRefreshStatus}
+                  disabled={refreshingStatus}
+                >
+                  {refreshingStatus ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                  Refresh Status
+                </Button>
               </CardContent>
             </Card>
 
