@@ -57,7 +57,9 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       const { data: jobs } = await supabase
         .from("jobs").select("*").eq("status", "open")
         .order("created_at", { ascending: false }).limit(20);
-      setOpenJobs(jobs || []);
+      // Filter out the expert's own buyer posts
+      const filtered = (jobs || []).filter(j => j.buyer_id !== profile?.id);
+      setOpenJobs(filtered);
       setLoadingJobs(false);
 
       // Fetch which jobs the expert already quoted on
@@ -79,7 +81,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       .channel("expert-new-jobs")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "jobs" }, (payload) => {
         const newJob = payload.new as Job;
-        if (newJob.status === "open") {
+        if (newJob.status === "open" && newJob.buyer_id !== profile?.id) {
           setOpenJobs((prev) => [newJob, ...prev]);
           toast({ title: "🔔 New request!", description: `"${newJob.title}" — €${newJob.budget_max}` });
         }
