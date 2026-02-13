@@ -312,15 +312,33 @@ const ActiveRequest = () => {
     const sid = sessionMap[selectedChatPartnerId];
     if (!sid) return;
     setSendingChat(true);
+    const messageContent = chatInput.trim();
+    setChatInput("");
+
+    // Optimistically add message to UI
+    const optimisticMsg: ChatMessage = {
+      id: `temp-${Date.now()}`,
+      content: messageContent,
+      sender_id: userId,
+      created_at: new Date().toISOString(),
+    };
+    setChatMessages((prev) => ({
+      ...prev,
+      [selectedChatPartnerId]: [...(prev[selectedChatPartnerId] || []), optimisticMsg],
+    }));
+
     const { error } = await supabase.from("messages").insert({
       session_id: sid,
       sender_id: userId,
-      content: chatInput.trim(),
+      content: messageContent,
     });
     if (error) {
       toast({ title: "Failed to send message", description: error.message, variant: "destructive" });
-    } else {
-      setChatInput("");
+      // Remove optimistic message on error
+      setChatMessages((prev) => ({
+        ...prev,
+        [selectedChatPartnerId]: (prev[selectedChatPartnerId] || []).filter(m => m.id !== optimisticMsg.id),
+      }));
     }
     setSendingChat(false);
   };
