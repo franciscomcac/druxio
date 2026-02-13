@@ -22,6 +22,7 @@ async function getPayPalToken(): Promise<string> {
     body: "grant_type=client_credentials",
   });
   const data = await res.json();
+  console.log("PayPal token response scope:", data.scope);
   if (!res.ok) throw new Error(`PayPal auth failed: ${JSON.stringify(data)}`);
   return data.access_token;
 }
@@ -55,9 +56,11 @@ async function sendPayPalPayout(token: string, email: string, amount: number, wi
   });
 
   const data = await res.json();
+  console.log("PayPal Payout full response:", JSON.stringify(data));
+  console.log("PayPal Payout status:", res.status);
   if (!res.ok) {
-    console.error("PayPal Payout error:", JSON.stringify(data));
-    throw new Error(`PayPal Payout failed: ${data.message || JSON.stringify(data)}`);
+    console.error("PayPal Payout error details:", JSON.stringify(data));
+    throw new Error(`PayPal Payout failed: ${data.message || data.error_description || JSON.stringify(data)}`);
   }
   return data;
 }
