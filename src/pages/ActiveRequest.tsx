@@ -244,7 +244,7 @@ const ActiveRequest = () => {
               description: `Funds held in escrow until ${paypalDialog.profile?.display_name || "the expert"} delivers.`,
             });
             setPaypalDialog(null);
-            navigate("/dashboard");
+            navigate(`/order/${jobId}`);
           } catch (captureErr: any) {
             toast({
               title: "Payment not completed",
