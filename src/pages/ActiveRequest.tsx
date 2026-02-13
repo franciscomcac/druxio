@@ -515,12 +515,12 @@ const ActiveRequest = () => {
                           </span>
                           {quote.profile?.rating_avg ? (
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <ThumbsUp className="h-3 w-3 text-primary/60" />
-                              {((quote.profile.rating_avg / 5) * 100).toFixed(0)}%
+                              <Star className="h-3 w-3 fill-primary text-primary" />
+                              {quote.profile.rating_avg.toFixed(1)}
                             </span>
                           ) : null}
                           {quote.profile?.total_sessions ? (
-                            <span className="text-xs text-muted-foreground">{quote.profile.total_sessions} reviews</span>
+                            <span className="text-xs text-muted-foreground">{quote.profile.total_sessions} orders</span>
                           ) : null}
                         </div>
                       </div>

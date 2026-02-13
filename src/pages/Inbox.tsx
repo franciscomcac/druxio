@@ -22,6 +22,7 @@ import {
   AlertCircle,
   ShoppingCart,
   Store,
+  Star,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -39,10 +40,12 @@ interface Session {
   mentee_profile?: {
     display_name: string | null;
     avatar_url: string | null;
+    rating_avg: number | null;
   };
   mentor_profile?: {
     display_name: string | null;
     avatar_url: string | null;
+    rating_avg: number | null;
   };
   last_message?: {
     content: string;
@@ -135,8 +138,8 @@ const Inbox = () => {
       const enrichedSessions = await Promise.all(
         paidSessions.map(async (session) => {
           const [menteeProfile, mentorProfile, lastMessage, unreadMessages] = await Promise.all([
-            supabase.from("profiles").select("display_name, avatar_url").eq("id", session.mentee_id).single(),
-            supabase.from("profiles").select("display_name, avatar_url").eq("id", session.mentor_id).single(),
+            supabase.from("profiles").select("display_name, avatar_url, rating_avg").eq("id", session.mentee_id).single(),
+            supabase.from("profiles").select("display_name, avatar_url, rating_avg").eq("id", session.mentor_id).single(),
             supabase.from("messages").select("content, created_at").eq("session_id", session.id).order("created_at", { ascending: false }).limit(1).single(),
             supabase.from("messages").select("id", { count: "exact" }).eq("session_id", session.id).eq("is_read", false).neq("sender_id", user.id),
           ]);
@@ -184,13 +187,15 @@ const Inbox = () => {
       return {
         name: session.mentee_profile?.display_name || "Buyer",
         avatar: session.mentee_profile?.avatar_url,
-        role: "Buyer"
+        role: "Buyer",
+        rating: session.mentee_profile?.rating_avg,
       };
     }
     return {
       name: session.mentor_profile?.display_name || "Seller",
       avatar: session.mentor_profile?.avatar_url,
-      role: "Seller"
+      role: "Seller",
+      rating: session.mentor_profile?.rating_avg,
     };
   };
 
@@ -224,6 +229,12 @@ const Inbox = () => {
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-foreground truncate">{other.name}</h3>
                   <span className="text-xs text-muted-foreground">• {other.role}</span>
+                  {other.rating ? (
+                    <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                      <Star className="h-3 w-3 fill-primary text-primary" />
+                      {other.rating.toFixed(1)}
+                    </span>
+                  ) : null}
                 </div>
                 <Badge variant={status.variant} className="gap-1 shrink-0">
                   {status.icon}

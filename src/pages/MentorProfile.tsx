@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
@@ -9,25 +9,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import {
   Star,
   MessageSquare,
-  Video,
   MapPin,
   Clock,
   Calendar,
   CheckCircle,
   Loader2,
   ArrowLeft,
-  Users,
   Award,
   Share2,
   Heart,
   Flag,
+  ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
 
-interface MentorProfile {
+interface MentorProfileData {
   id: string;
   display_name: string;
   bio: string;
@@ -44,9 +45,11 @@ interface MentorProfile {
 interface Review {
   id: string;
   rating: number;
-  comment: string;
+  comment: string | null;
   created_at: string;
   reviewer_id: string;
+  reviewer_name?: string;
+  reviewer_avatar?: string;
 }
 
 const MentorProfile = () => {
@@ -54,89 +57,56 @@ const MentorProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [mentor, setMentor] = useState<MentorProfile | null>(null);
+  const [mentor, setMentor] = useState<MentorProfileData | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [requesting, setRequesting] = useState(false);
+  const [completedOrders, setCompletedOrders] = useState(0);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
     if (mentorId) {
-      fetchMentor();
-      fetchReviews();
+      fetchAll();
     }
   }, [mentorId]);
 
-  const fetchMentor = async () => {
+  const fetchAll = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", mentorId)
-        .single();
+      // Fetch profile, reviews, categories, and completed orders in parallel
+      const [profileRes, reviewsRes, categoriesRes, ordersRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", mentorId).single(),
+        supabase.from("reviews").select("*").eq("reviewee_id", mentorId).order("created_at", { ascending: false }),
+        supabase.from("expert_categories").select("category").eq("user_id", mentorId!),
+        supabase.from("quotes").select("id, job_id, status").eq("expert_id", mentorId!).eq("status", "accepted"),
+      ]);
 
-      if (error) throw error;
-      setMentor(data);
+      if (profileRes.error) throw profileRes.error;
+      setMentor(profileRes.data);
+
+      // Enrich reviews with reviewer names
+      if (reviewsRes.data) {
+        const reviewerIds = [...new Set(reviewsRes.data.map(r => r.reviewer_id))];
+        const { data: reviewerProfiles } = await supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url")
+          .in("id", reviewerIds);
+        
+        const profileMap = new Map(reviewerProfiles?.map(p => [p.id, p]) || []);
+        
+        setReviews(reviewsRes.data.map(r => ({
+          ...r,
+          reviewer_name: profileMap.get(r.reviewer_id)?.display_name || "Anonymous",
+          reviewer_avatar: profileMap.get(r.reviewer_id)?.avatar_url || undefined,
+        })));
+      }
+
+      setCategories(categoriesRes.data?.map(c => c.category) || []);
+      setCompletedOrders(ordersRes.data?.length || 0);
     } catch (error: any) {
-      toast({
-        title: "Error loading mentor",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast({ title: "Error loading profile", description: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchReviews = async () => {
-    const { data } = await supabase
-      .from("reviews")
-      .select("*")
-      .eq("reviewee_id", mentorId)
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    if (data) {
-      setReviews(data);
-    }
-  };
-
-  const handleRequestSession = async (type: "chat" | "video") => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
-
-    setRequesting(true);
-    try {
-      const { data: newSession, error } = await supabase
-        .from("sessions")
-        .insert({
-          mentee_id: session.user.id,
-          mentor_id: mentorId,
-          status: "pending",
-          session_type: type,
-          price: type === "chat" ? 1.99 : 4.99,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Session requested!",
-        description: "The mentor will be notified of your request.",
-      });
-
-      navigate(`/session/${newSession.id}`);
-    } catch (error: any) {
-      toast({
-        title: "Failed to request session",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setRequesting(false);
     }
   };
 
@@ -153,39 +123,38 @@ const MentorProfile = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Expert not found</h1>
-          <Button onClick={() => navigate("/search")}>Browse Experts</Button>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Seller not found</h1>
+          <Button onClick={() => navigate("/search")}>Browse Sellers</Button>
         </div>
         <Footer />
       </div>
     );
   }
 
+  // Rating breakdown
+  const ratingCounts = [5, 4, 3, 2, 1].map(star => ({
+    star,
+    count: reviews.filter(r => r.rating === star).length,
+  }));
+  const totalReviews = reviews.length;
+  const satisfactionRate = totalReviews > 0
+    ? Math.round((reviews.filter(r => r.rating >= 4).length / totalReviews) * 100)
+    : 0;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Top actions bar */}
         <div className="flex items-center justify-between mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
+          <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
+            <ArrowLeft className="h-4 w-4" /> Back
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <Heart className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground">
-              <Flag className="h-4 w-4" />
-            </Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9"><Share2 className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9"><Heart className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground"><Flag className="h-4 w-4" /></Button>
           </div>
         </div>
 
@@ -203,15 +172,12 @@ const MentorProfile = () => {
                       </AvatarFallback>
                     </Avatar>
                     {mentor.is_online && (
-                      <span className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-green-500 ring-4 ring-background" />
+                      <span className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-chart-2 ring-4 ring-background" />
                     )}
                   </div>
-                  <h1 className="mt-4 text-2xl font-bold text-foreground">
-                    {mentor.display_name}
-                  </h1>
+                  <h1 className="mt-4 text-2xl font-bold text-foreground">{mentor.display_name}</h1>
                   <p className="text-muted-foreground mt-1 flex items-center justify-center gap-1">
-                    <MapPin className="h-4 w-4" />
-                    {mentor.location || "Remote"}
+                    <MapPin className="h-4 w-4" /> {mentor.location || "Remote"}
                   </p>
                 </div>
 
@@ -225,136 +191,109 @@ const MentorProfile = () => {
                     <p className="text-xs text-muted-foreground">Rating</p>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-foreground">
-                      {mentor.total_sessions || 0}
-                    </div>
-                    <p className="text-xs text-muted-foreground">Sessions</p>
+                    <div className="text-xl font-bold text-foreground">{completedOrders}</div>
+                    <p className="text-xs text-muted-foreground">Orders</p>
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-foreground">
-                      ${(mentor.hourly_rate || 2.50).toFixed(2)}
-                    </div>
-                    <p className="text-xs text-muted-foreground">/10 min</p>
+                    <div className="text-xl font-bold text-foreground">{satisfactionRate}%</div>
+                    <p className="text-xs text-muted-foreground">Satisfaction</p>
                   </div>
                 </div>
 
                 {/* Status */}
                 <div className="flex items-center justify-center gap-2 mb-6">
                   {mentor.is_online ? (
-                    <Badge variant="default" className="gap-1 bg-green-500 hover:bg-green-500">
-                      <span className="h-2 w-2 rounded-full bg-white animate-pulse" />
+                    <Badge variant="default" className="gap-1 bg-chart-2 hover:bg-chart-2">
+                      <span className="h-2 w-2 rounded-full bg-primary-foreground animate-pulse" />
                       Online Now
                     </Badge>
                   ) : (
                     <Badge variant="secondary" className="gap-1">
-                      <Clock className="h-3 w-3" />
-                      Offline
+                      <Clock className="h-3 w-3" /> Offline
                     </Badge>
                   )}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  <Button 
-                    className="w-full gap-2" 
-                    size="lg"
-                    onClick={() => handleRequestSession("chat")}
-                    disabled={requesting}
-                  >
-                    {requesting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <MessageSquare className="h-4 w-4" />
-                    )}
-                    Chat Session - $1.99
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="w-full gap-2" 
-                    size="lg"
-                    onClick={() => handleRequestSession("video")}
-                    disabled={requesting}
-                  >
-                    {requesting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Video className="h-4 w-4" />
-                    )}
-                    Video Call - $4.99
-                  </Button>
-                </div>
+                {/* Categories */}
+                {categories.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Categories</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {categories.map(cat => (
+                        <Badge key={cat} variant="outline" className="text-xs">{cat}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Skills */}
+                {mentor.skills && mentor.skills.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Skills</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {mentor.skills.map(skill => (
+                        <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
           {/* Details */}
           <div className="lg:col-span-2">
-            <Tabs defaultValue="about" className="w-full">
+            <Tabs defaultValue="reviews" className="w-full">
               <TabsList className="w-full justify-start mb-6">
+                <TabsTrigger value="reviews">Reviews ({totalReviews})</TabsTrigger>
                 <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="reviews">Reviews ({reviews.length})</TabsTrigger>
                 <TabsTrigger value="availability">Availability</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="about" className="space-y-6">
-                {/* Bio */}
+              <TabsContent value="reviews" className="space-y-6">
+                {/* Rating Overview */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">About</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground leading-relaxed">
-                      {mentor.bio || "This mentor hasn't added a bio yet."}
-                    </p>
-                  </CardContent>
-                </Card>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Left: Big rating */}
+                      <div className="text-center flex flex-col items-center justify-center">
+                        <p className="text-5xl font-bold text-foreground mb-1">
+                          {mentor.rating_avg?.toFixed(1) || "0.0"}
+                        </p>
+                        <div className="flex items-center gap-0.5 mb-2">
+                          {[1, 2, 3, 4, 5].map(s => (
+                            <Star key={s} className={`h-5 w-5 ${
+                              s <= Math.round(mentor.rating_avg || 0)
+                                ? "fill-primary text-primary"
+                                : "text-muted-foreground/20"
+                            }`} />
+                          ))}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{totalReviews} review{totalReviews !== 1 ? "s" : ""}</p>
+                        <div className="flex items-center gap-1 mt-2">
+                          <TrendingUp className="h-4 w-4 text-chart-2" />
+                          <span className="text-sm font-medium text-chart-2">{satisfactionRate}% satisfaction</span>
+                        </div>
+                      </div>
 
-                {/* Skills */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Award className="h-5 w-5" />
-                      Skills & Expertise
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {mentor.skills?.map((skill) => (
-                        <Badge key={skill} variant="secondary" className="px-3 py-1">
-                          {skill}
-                        </Badge>
-                      )) || (
-                        <p className="text-muted-foreground">No skills listed</p>
-                      )}
+                      {/* Right: Breakdown */}
+                      <div className="space-y-2">
+                        {ratingCounts.map(({ star, count }) => (
+                          <div key={star} className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground w-8">{star} ★</span>
+                            <Progress
+                              value={totalReviews > 0 ? (count / totalReviews) * 100 : 0}
+                              className="h-2 flex-1"
+                            />
+                            <span className="text-sm text-muted-foreground w-8 text-right">{count}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Highlights */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Why Choose Me</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3">
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span className="text-muted-foreground">Fast response time</span>
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span className="text-muted-foreground">Verified expertise</span>
-                      </li>
-                      <li className="flex items-center gap-3">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span className="text-muted-foreground">100% satisfaction rate</span>
-                      </li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="reviews" className="space-y-4">
+                {/* Individual Reviews */}
                 {reviews.length === 0 ? (
                   <Card>
                     <CardContent className="p-8 text-center">
@@ -366,34 +305,91 @@ const MentorProfile = () => {
                   reviews.map((review) => (
                     <Card key={review.id}>
                       <CardContent className="p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`h-4 w-4 ${
-                                i < review.rating
-                                  ? "fill-primary text-primary"
-                                  : "text-muted"
-                              }`}
-                            />
-                          ))}
-                          <span className="text-sm text-muted-foreground ml-2">
-                            {new Date(review.created_at).toLocaleDateString()}
-                          </span>
+                        <div className="flex items-start gap-3">
+                          <Avatar className="h-9 w-9 border border-border/30">
+                            <AvatarImage src={review.reviewer_avatar} />
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                              {review.reviewer_name?.charAt(0) || "A"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-sm text-foreground">{review.reviewer_name}</span>
+                                <div className="flex items-center gap-0.5">
+                                  {[1, 2, 3, 4, 5].map(s => (
+                                    <Star key={s} className={`h-3 w-3 ${
+                                      s <= review.rating ? "fill-primary text-primary" : "text-muted-foreground/20"
+                                    }`} />
+                                  ))}
+                                </div>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(review.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                            {review.comment && (
+                              <p className="text-sm text-muted-foreground">{review.comment}</p>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-muted-foreground">{review.comment}</p>
                       </CardContent>
                     </Card>
                   ))
                 )}
               </TabsContent>
 
+              <TabsContent value="about" className="space-y-6">
+                <Card>
+                  <CardHeader><CardTitle className="text-lg">About</CardTitle></CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {mentor.bio || "This seller hasn't added a bio yet."}
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Award className="h-5 w-5" /> Skills & Expertise
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {mentor.skills?.length ? mentor.skills.map((skill) => (
+                        <Badge key={skill} variant="secondary" className="px-3 py-1">{skill}</Badge>
+                      )) : <p className="text-muted-foreground">No skills listed</p>}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader><CardTitle className="text-lg">Highlights</CardTitle></CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3">
+                      <li className="flex items-center gap-3">
+                        <ShieldCheck className="h-5 w-5 text-chart-2" />
+                        <span className="text-muted-foreground">{completedOrders} completed orders</span>
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <CheckCircle className="h-5 w-5 text-chart-2" />
+                        <span className="text-muted-foreground">{satisfactionRate}% satisfaction rate</span>
+                      </li>
+                      <li className="flex items-center gap-3">
+                        <Star className="h-5 w-5 fill-primary text-primary" />
+                        <span className="text-muted-foreground">{mentor.rating_avg?.toFixed(1) || "No"} average rating</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
               <TabsContent value="availability">
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
-                      <Calendar className="h-5 w-5" />
-                      Weekly Availability
+                      <Calendar className="h-5 w-5" /> Weekly Availability
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -415,11 +411,7 @@ const MentorProfile = () => {
           </div>
         </div>
 
-        {/* Similar Experts Carousel */}
-        <SimilarExperts 
-          currentExpertId={mentorId || ""} 
-          skills={mentor.skills || []} 
-        />
+        <SimilarExperts currentExpertId={mentorId || ""} skills={mentor.skills || []} />
       </main>
 
       <Footer />

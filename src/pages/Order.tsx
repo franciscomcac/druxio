@@ -56,6 +56,14 @@ const Order = () => {
   const [disputeReason, setDisputeReason] = useState("");
   const [disputeLoading, setDisputeLoading] = useState(false);
 
+  // Review dialog (shown after confirming delivery)
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
+
   // Confirm delivery dialog
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -112,6 +120,14 @@ const Order = () => {
 
       if (sessionData) {
         setSessionId(sessionData.id);
+        // Check if already reviewed
+        const { data: existingReview } = await supabase
+          .from("reviews")
+          .select("id")
+          .eq("session_id", sessionData.id)
+          .eq("reviewer_id", user.id)
+          .maybeSingle();
+        if (existingReview) setHasReviewed(true);
       }
 
       setLoading(false);
@@ -196,15 +212,12 @@ const Order = () => {
     if (!jobId || !quote) return;
     setConfirmLoading(true);
     try {
-      // Call paypal-release to capture escrowed funds
       const res = await supabase.functions.invoke("paypal-release", {
         body: { jobId, quoteId: quote.id },
       });
       if (res.error) throw new Error(res.error.message);
 
-      // Update job status
       await supabase.from("jobs").update({ status: "completed" }).eq("id", jobId);
-      // Update session to completed
       if (sessionId) {
         await supabase.from("sessions").update({ status: "completed" }).eq("id", sessionId);
       }
@@ -212,10 +225,32 @@ const Order = () => {
       toast({ title: "Delivery confirmed! 🎉", description: "Payment released to the seller." });
       setConfirmOpen(false);
       setJob((prev: any) => prev ? { ...prev, status: "completed" } : prev);
+      // Open review dialog
+      setReviewOpen(true);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
     setConfirmLoading(false);
+  };
+
+  const handleSubmitReview = async () => {
+    if (!reviewRating || !sessionId || !quote || !userId) return;
+    setReviewLoading(true);
+    try {
+      await supabase.from("reviews").insert({
+        session_id: sessionId,
+        reviewer_id: userId,
+        reviewee_id: quote.expert_id,
+        rating: reviewRating,
+        comment: reviewComment.trim() || null,
+      });
+      toast({ title: "Review submitted! ⭐", description: "Thank you for your feedback." });
+      setReviewOpen(false);
+      setHasReviewed(true);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setReviewLoading(false);
   };
 
   const handleRaiseDispute = async () => {
@@ -364,7 +399,7 @@ const Order = () => {
             </Card>
 
             {/* Seller info */}
-            <Card>
+            <Card className="cursor-pointer hover:border-primary/30 transition-colors" onClick={() => navigate(`/mentor/${quote.expert_id}`)}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 border border-border/30">
@@ -378,16 +413,17 @@ const Order = () => {
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       {sellerProfile?.rating_avg ? (
                         <span className="flex items-center gap-1">
-                          <Star className="h-3 w-3 text-primary" />
+                          <Star className="h-3 w-3 fill-primary text-primary" />
                           {sellerProfile.rating_avg.toFixed(1)}
                         </span>
                       ) : null}
                       {sellerProfile?.total_sessions ? (
-                        <span>{sellerProfile.total_sessions} sessions</span>
+                        <span>{sellerProfile.total_sessions} orders</span>
                       ) : null}
                     </div>
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground mt-2">Tap to view profile & reviews</p>
               </CardContent>
             </Card>
 
@@ -400,6 +436,16 @@ const Order = () => {
                 <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setDisputeOpen(true)}>
                   <AlertTriangle className="h-4 w-4" /> Raise Dispute
                 </Button>
+              </div>
+            )}
+            {isBuyer && isCompleted && !hasReviewed && (
+              <Button className="w-full gap-2" onClick={() => setReviewOpen(true)}>
+                <Star className="h-4 w-4" /> Leave a Review
+              </Button>
+            )}
+            {isBuyer && isCompleted && hasReviewed && (
+              <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-chart-2" /> Review submitted
               </div>
             )}
           </div>
@@ -517,6 +563,56 @@ const Order = () => {
             <Button variant="destructive" onClick={handleRaiseDispute} disabled={disputeLoading || !disputeReason.trim()} className="gap-2">
               {disputeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <AlertTriangle className="h-4 w-4" />}
               {disputeLoading ? "Submitting..." : "Submit Dispute"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Dialog */}
+      <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-primary" /> Rate your experience
+            </DialogTitle>
+            <DialogDescription>
+              How was your experience with {sellerProfile?.display_name || "the seller"}?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  className="p-1 transition-transform hover:scale-110"
+                  onMouseEnter={() => setReviewHover(star)}
+                  onMouseLeave={() => setReviewHover(0)}
+                  onClick={() => setReviewRating(star)}
+                >
+                  <Star className={`h-8 w-8 ${
+                    star <= (reviewHover || reviewRating)
+                      ? "fill-primary text-primary"
+                      : "text-muted-foreground/30"
+                  }`} />
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-sm text-muted-foreground">
+              {reviewRating === 1 ? "Poor" : reviewRating === 2 ? "Below Average" : reviewRating === 3 ? "Average" : reviewRating === 4 ? "Good" : reviewRating === 5 ? "Excellent" : "Select a rating"}
+            </p>
+            <Textarea
+              value={reviewComment}
+              onChange={(e) => setReviewComment(e.target.value)}
+              placeholder="Tell us about your experience (optional)..."
+              rows={3}
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setReviewOpen(false)} disabled={reviewLoading}>Skip</Button>
+            <Button onClick={handleSubmitReview} disabled={reviewLoading || !reviewRating} className="gap-2">
+              {reviewLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
+              {reviewLoading ? "Submitting..." : "Submit Review"}
             </Button>
           </DialogFooter>
         </DialogContent>
