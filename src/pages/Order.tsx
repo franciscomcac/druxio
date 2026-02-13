@@ -34,6 +34,7 @@ const Order = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -151,9 +152,12 @@ const Order = () => {
     return () => { supabase.removeChannel(channel); };
   }, [sessionId]);
 
-  // Scroll chat
+  // Scroll chat — only scroll inside the chat scroll area, not the whole page
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = chatScrollRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [messages]);
 
   // Delivery countdown
@@ -409,7 +413,7 @@ const Order = () => {
                   <CardTitle className="text-base">Chat with {sellerProfile?.display_name || "Seller"}</CardTitle>
                 </div>
               </CardHeader>
-              <ScrollArea className="flex-1 p-4">
+              <ScrollArea className="flex-1 p-4" ref={chatScrollRef}>
                 <div className="space-y-3">
                   {messages.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground text-sm">
