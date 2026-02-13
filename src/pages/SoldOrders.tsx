@@ -85,7 +85,8 @@ const SoldOrders = () => {
 
   const activeOrders = orders.filter(o => o.job.status === "accepted");
   const completedOrders = orders.filter(o => o.job.status === "completed");
-  const otherOrders = orders.filter(o => !["accepted", "completed"].includes(o.job.status));
+  const disputedOrders = orders.filter(o => o.job.status === "disputed");
+  const otherOrders = orders.filter(o => !["accepted", "completed", "disputed"].includes(o.job.status));
 
   const renderOrder = (order: SoldOrderData) => {
     const config = statusConfig[order.job.status] || statusConfig.accepted;
@@ -178,6 +179,9 @@ const SoldOrders = () => {
               <TabsTrigger value="completed" className="gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Completed ({completedOrders.length})
               </TabsTrigger>
+              <TabsTrigger value="disputed" className="gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5" /> Disputed ({disputedOrders.length})
+              </TabsTrigger>
               {otherOrders.length > 0 && (
                 <TabsTrigger value="other" className="gap-1.5">
                   Other ({otherOrders.length})
@@ -190,6 +194,9 @@ const SoldOrders = () => {
             </TabsContent>
             <TabsContent value="completed" className="space-y-3">
               {completedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No completed orders</p> : completedOrders.map(renderOrder)}
+            </TabsContent>
+            <TabsContent value="disputed" className="space-y-3">
+              {disputedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No disputed orders</p> : disputedOrders.map(renderOrder)}
             </TabsContent>
             {otherOrders.length > 0 && (
               <TabsContent value="other" className="space-y-3">
