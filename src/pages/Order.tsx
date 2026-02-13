@@ -212,7 +212,7 @@ const Order = () => {
     if (!jobId || !quote) return;
     setConfirmLoading(true);
     try {
-      const res = await supabase.functions.invoke("paypal-release", {
+      const res = await supabase.functions.invoke("escrow-release", {
         body: { jobId, quoteId: quote.id },
       });
       if (res.error) throw new Error(res.error.message);
