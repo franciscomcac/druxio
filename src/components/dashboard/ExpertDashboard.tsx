@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
-  DollarSign, Star, Clock, Bell, Send, Loader2, Settings, Target, TrendingUp, Zap,
+  DollarSign, Star, Clock, Bell, Send, Loader2, Settings, Target, TrendingUp, Zap, MessageSquare,
 } from "lucide-react";
 
 interface Job {
@@ -40,6 +40,7 @@ const timeAgo = (date: string) => {
 
 const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps) => {
   const [openJobs, setOpenJobs] = useState<Job[]>([]);
+  const [quotedJobIds, setQuotedJobIds] = useState<Set<string>>(new Set());
   const [quoteDialog, setQuoteDialog] = useState<Job | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteMinutes, setQuoteMinutes] = useState("20");
@@ -52,11 +53,25 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
   useEffect(() => {
     const fetchJobs = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       const { data: jobs } = await supabase
         .from("jobs").select("*").eq("status", "open")
         .order("created_at", { ascending: false }).limit(20);
       setOpenJobs(jobs || []);
       setLoadingJobs(false);
+
+      // Fetch which jobs the expert already quoted on
+      if (user && jobs && jobs.length > 0) {
+        const jobIds = jobs.map(j => j.id);
+        const { data: myQuotes } = await supabase
+          .from("quotes")
+          .select("job_id")
+          .eq("expert_id", user.id)
+          .in("job_id", jobIds);
+        if (myQuotes) {
+          setQuotedJobIds(new Set(myQuotes.map(q => q.job_id)));
+        }
+      }
     };
     fetchJobs();
 
@@ -116,8 +131,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         });
       }
 
+      setQuotedJobIds((prev) => new Set([...prev, quoteDialog.id]));
       toast({ title: "Quote sent! ✅", description: "View the leaderboard and chat with the buyer." });
-      // Navigate to the request page (seller view)
       navigate(`/request/${quoteDialog.id}`);
     }
 
@@ -232,9 +247,15 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                           <span>{timeAgo(job.created_at)}</span>
                         </div>
                       </div>
-                      <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
-                        <Send className="h-3 w-3" /> Quote
-                      </Button>
+                      {quotedJobIds.has(job.id) ? (
+                        <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
+                          <MessageSquare className="h-3 w-3" /> Chat
+                        </Button>
+                      ) : (
+                        <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
+                          <Send className="h-3 w-3" /> Quote
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
