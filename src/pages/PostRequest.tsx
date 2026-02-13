@@ -333,10 +333,10 @@ const PostRequest = () => {
                   <button
                     key={cat.id}
                     onClick={() => handleSelectBroad(cat.id)}
-                    className="group relative flex flex-col items-center gap-3 rounded-2xl border border-border/40 bg-card/60 p-6 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                    className="group relative flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary transition-transform duration-300 group-hover:scale-110">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
                       <Icon className="h-7 w-7" />
                     </div>
                     <div className="text-center">
@@ -369,10 +369,10 @@ const PostRequest = () => {
                   <button
                     key={sub.id}
                     onClick={() => handleSelectSub(sub.id)}
-                    className="group flex items-center gap-4 rounded-2xl border border-border/40 bg-card/60 p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                    className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/[0.08] text-primary transition-transform duration-300 group-hover:scale-110">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
                       <Icon className="h-6 w-6" />
                     </div>
                     <span className="font-semibold text-foreground">{sub.label}</span>
