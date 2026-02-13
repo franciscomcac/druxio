@@ -1,1 +1,4 @@
 project_id = "fgpzlmomrzcpefqcstdn"
+
+[functions.withdraw]
+verify_jwt = false
