@@ -97,9 +97,41 @@ const Inbox = () => {
         return;
       }
 
-      // Fetch profiles for each session
+      // Only show sessions linked to paid/accepted orders
+      // For buyer: find jobs they own with accepted quotes, match mentor_id
+      // For seller: find accepted quotes they have, match mentee_id (buyer)
+      const { data: acceptedQuotes } = await supabase
+        .from("quotes")
+        .select("expert_id, job_id, status")
+        .eq("status", "accepted");
+
+      // Build a set of valid (mentor_id, mentee_id) pairs from accepted quotes
+      const validPairs = new Set<string>();
+      const jobIdMap = new Map<string, string>(); // "mentorId-menteeId" -> jobId
+      if (acceptedQuotes) {
+        for (const q of acceptedQuotes) {
+          const { data: jobData } = await supabase
+            .from("jobs")
+            .select("id, buyer_id")
+            .eq("id", q.job_id)
+            .single();
+          if (jobData) {
+            const key = `${q.expert_id}-${jobData.buyer_id}`;
+            validPairs.add(key);
+            jobIdMap.set(key, jobData.id);
+          }
+        }
+      }
+
+      // Filter sessions to only those with an accepted order
+      const paidSessions = (sessionsData || []).filter(s => {
+        const key = `${s.mentor_id}-${s.mentee_id}`;
+        return validPairs.has(key);
+      });
+
+      // Enrich with profiles, messages, job links
       const enrichedSessions = await Promise.all(
-        (sessionsData || []).map(async (session) => {
+        paidSessions.map(async (session) => {
           const [menteeProfile, mentorProfile, lastMessage, unreadMessages] = await Promise.all([
             supabase.from("profiles").select("display_name, avatar_url").eq("id", session.mentee_id).single(),
             supabase.from("profiles").select("display_name, avatar_url").eq("id", session.mentor_id).single(),
@@ -107,27 +139,8 @@ const Inbox = () => {
             supabase.from("messages").select("id", { count: "exact" }).eq("session_id", session.id).eq("is_read", false).neq("sender_id", user.id),
           ]);
 
-          // Check if this session's expert has an accepted quote on a job (i.e. it's a paid order)
-          // We look for an accepted quote from this mentor for jobs owned by this mentee
-          let linkedJobId: string | null = null;
-          const { data: acceptedQuote } = await supabase
-            .from("quotes")
-            .select("job_id")
-            .eq("expert_id", session.mentor_id)
-            .eq("status", "accepted")
-            .limit(1)
-            .maybeSingle();
-
-          if (acceptedQuote) {
-            // Verify the job belongs to the current user (mentee)
-            const { data: jobCheck } = await supabase
-              .from("jobs")
-              .select("id")
-              .eq("id", acceptedQuote.job_id)
-              .eq("buyer_id", user.id)
-              .maybeSingle();
-            if (jobCheck) linkedJobId = jobCheck.id;
-          }
+          const pairKey = `${session.mentor_id}-${session.mentee_id}`;
+          const linkedJobId = jobIdMap.get(pairKey) || null;
 
           return {
             ...session,
