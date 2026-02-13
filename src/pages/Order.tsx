@@ -179,14 +179,14 @@ const Order = () => {
   // Seller agrees to escrow transaction (redirect to Escrow.com)
   const handleSellerAgree = () => {
     if (!job?.escrow_txn_id) return;
-    window.open(`https://www.escrow-sandbox.com/transactions/${job.escrow_txn_id}`, "_blank");
+    window.open(`https://www.escrow.com/transactions/${job.escrow_txn_id}`, "_blank");
     toast({ title: "Opening Escrow.com", description: "Please agree to the transaction on the Escrow.com page, then come back." });
   };
 
   // Seller marks as delivered (redirect to Escrow.com)
   const handleSellerDeliver = () => {
     if (!job?.escrow_txn_id) return;
-    window.open(`https://www.escrow-sandbox.com/transactions/${job.escrow_txn_id}`, "_blank");
+    window.open(`https://www.escrow.com/transactions/${job.escrow_txn_id}`, "_blank");
     toast({ title: "Opening Escrow.com", description: "Please mark the item as shipped on the Escrow.com page." });
   };
 
@@ -503,7 +503,7 @@ const Order = () => {
                 )}
                 {escrowStatus === "awaiting_funding" && job.escrow_txn_id && (
                   <Button className="w-full gap-2" asChild>
-                    <a href={`https://www.escrow-sandbox.com/transactions/${job.escrow_txn_id}/payment`} target="_blank" rel="noopener noreferrer">
+                    <a href={`https://www.escrow.com/transactions/${job.escrow_txn_id}/payment`} target="_blank" rel="noopener noreferrer">
                       <CreditCard className="h-4 w-4" /> Fund Escrow Payment
                     </a>
                   </Button>
