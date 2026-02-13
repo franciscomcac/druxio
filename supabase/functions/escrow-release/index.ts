@@ -43,6 +43,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const userId = claimsData.claims.sub as string;
 
     const { jobId, quoteId } = await req.json();
     if (!jobId) {
@@ -60,9 +61,13 @@ Deno.serve(async (req) => {
     // Get escrow transaction ID from job
     const { data: job } = await serviceClient
       .from("jobs")
-      .select("escrow_txn_id, escrow_status")
+      .select("escrow_txn_id, escrow_status, buyer_id")
       .eq("id", jobId)
       .single();
+
+    // Get buyer email for As-Customer header
+    const { data: buyerAuth } = await serviceClient.auth.admin.getUserById(job?.buyer_id || userId);
+    const buyerEmail = buyerAuth?.user?.email;
 
     // Accept the delivery on Escrow.com (buyer accepts → funds released to seller)
     if (job?.escrow_txn_id) {
@@ -74,6 +79,7 @@ Deno.serve(async (req) => {
             headers: {
               Authorization: getEscrowAuth(),
               "Content-Type": "application/json",
+              ...(buyerEmail ? { "As-Customer": buyerEmail } : {}),
             },
             body: JSON.stringify({ action: "accept" }),
           }
