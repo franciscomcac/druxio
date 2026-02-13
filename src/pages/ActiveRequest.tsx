@@ -82,6 +82,7 @@ const ActiveRequest = () => {
   // Seller: new quote form state
   const [newQuotePrice, setNewQuotePrice] = useState("");
   const [newQuoteMinutes, setNewQuoteMinutes] = useState("");
+  const [newQuoteUnit, setNewQuoteUnit] = useState<"minutes" | "hours" | "days">("minutes");
   const [submittingQuote, setSubmittingQuote] = useState(false);
   const [showQuoteForm, setShowQuoteForm] = useState(false);
 
@@ -347,10 +348,17 @@ const ActiveRequest = () => {
     setSendingChat(false);
   };
 
+  const formatDeliveryTime = (minutes: number) => {
+    if (minutes >= 1440) return `${Math.round(minutes / 1440)} day${Math.round(minutes / 1440) !== 1 ? "s" : ""}`;
+    if (minutes >= 60) return `${Math.round(minutes / 60)} hour${Math.round(minutes / 60) !== 1 ? "s" : ""}`;
+    return `${minutes} min`;
+  };
+
   const handleSubmitNewQuote = async () => {
     if (!jobId || !userId) return;
     const price = parseFloat(newQuotePrice);
-    const minutes = parseInt(newQuoteMinutes) || 20;
+    const rawValue = parseInt(newQuoteMinutes) || 20;
+    const minutes = newQuoteUnit === "days" ? rawValue * 1440 : newQuoteUnit === "hours" ? rawValue * 60 : rawValue;
     if (isNaN(price) || price <= 0) {
       toast({ title: "Enter a valid price", variant: "destructive" });
       return;
@@ -363,7 +371,7 @@ const ActiveRequest = () => {
       const res = await supabase.from("quotes").update({
         price,
         estimated_minutes: minutes,
-        message: `Updated offer: €${price.toFixed(2)} — ${minutes} min delivery`,
+        message: `Updated offer: €${price.toFixed(2)} — ${formatDeliveryTime(minutes)} delivery`,
       }).eq("id", existingQuote.id);
       error = res.error;
     } else {
@@ -372,7 +380,7 @@ const ActiveRequest = () => {
         expert_id: userId,
         price,
         estimated_minutes: minutes,
-        message: `Updated offer: €${price.toFixed(2)} — ${minutes} min delivery`,
+        message: `Updated offer: €${price.toFixed(2)} — ${formatDeliveryTime(minutes)} delivery`,
       });
       error = res.error;
     }
@@ -389,7 +397,7 @@ const ActiveRequest = () => {
         await supabase.from("messages").insert({
           session_id: sid,
           sender_id: userId,
-          content: `📋 New offer: €${price.toFixed(2)} — delivery in ${minutes} min`,
+          content: `📋 New offer: €${price.toFixed(2)} — delivery in ${formatDeliveryTime(minutes)}`,
         });
       }
     }
@@ -406,11 +414,6 @@ const ActiveRequest = () => {
     );
   }
 
-  const formatDeliveryTime = (minutes: number) => {
-    if (minutes >= 1440) return `${Math.round(minutes / 1440)} day${Math.round(minutes / 1440) !== 1 ? "s" : ""}`;
-    if (minutes >= 60) return `${Math.round(minutes / 60)} hour${Math.round(minutes / 60) !== 1 ? "s" : ""}`;
-    return `${minutes} min`;
-  };
 
   if (!job) return null;
 
@@ -723,15 +726,31 @@ const ActiveRequest = () => {
                                   className="bg-background/60 border-border/40 h-8 text-sm"
                                 />
                               </div>
-                              <div className="flex-1">
+                              <div className="flex-1 flex gap-1">
                                 <Input
                                   type="number"
                                   min="1"
                                   value={newQuoteMinutes}
                                   onChange={(e) => setNewQuoteMinutes(e.target.value)}
-                                  placeholder="Delivery (min)"
-                                  className="bg-background/60 border-border/40 h-8 text-sm"
+                                  placeholder="Delivery"
+                                  className="bg-background/60 border-border/40 h-8 text-sm w-16"
                                 />
+                                <div className="flex rounded-md border border-border/40 overflow-hidden h-8">
+                                  {(["minutes", "hours", "days"] as const).map((unit) => (
+                                    <button
+                                      key={unit}
+                                      type="button"
+                                      onClick={() => setNewQuoteUnit(unit)}
+                                      className={`px-2 text-xs font-medium transition-colors ${
+                                        newQuoteUnit === unit
+                                          ? "bg-primary text-primary-foreground"
+                                          : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"
+                                      }`}
+                                    >
+                                      {unit === "minutes" ? "min" : unit === "hours" ? "hr" : "day"}
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
                               <Button size="sm" className="h-8 gap-1.5" onClick={handleSubmitNewQuote} disabled={submittingQuote}>
                                 {submittingQuote ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
