@@ -34,7 +34,7 @@ const Pricing = () => {
               icon: <Clock className="h-7 w-7" />,
               title: "For Experts",
               desc: "Earn on your own terms",
-              features: ["Free to join & bid", "Set your own prices", "Real-time job notifications", "90% of each job you complete", "Weekly payouts via Stripe"],
+              features: ["Free to join & bid", "Set your own prices", "Real-time job notifications", "95% of each job you complete", "Weekly payouts via Stripe"],
               highlight: false,
             },
           ].map((plan, i) => (
@@ -52,7 +52,7 @@ const Pricing = () => {
                 <CardDescription>
                   {plan.highlight ? (
                     <>
-                      <span className="text-4xl font-bold text-foreground">10%</span>
+                      <span className="text-4xl font-bold text-foreground">5%</span>
                       <span className="block text-sm mt-1 text-muted-foreground">per completed job</span>
                     </>
                   ) : <span className="text-muted-foreground">{plan.desc}</span>}
