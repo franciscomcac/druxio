@@ -438,6 +438,19 @@ const Order = () => {
                       );
                     })
                   )}
+                  {isDisputed && (
+                    <div className="flex justify-center my-4">
+                      <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-destructive/10 border border-destructive/20 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <ShieldCheck className="h-4 w-4 text-destructive" />
+                          <span className="font-semibold text-destructive">Admin Notice</span>
+                        </div>
+                        <p className="text-muted-foreground text-xs">
+                          A dispute has been raised for this order. Our admin team will review the case and take appropriate action. Please wait for a resolution.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   <div ref={chatEndRef} />
                 </div>
               </ScrollArea>
