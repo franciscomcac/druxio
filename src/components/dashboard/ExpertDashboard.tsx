@@ -44,7 +44,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const [quoteDialog, setQuoteDialog] = useState<Job | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteMinutes, setQuoteMinutes] = useState("20");
-  const [quoteTimeUnit, setQuoteTimeUnit] = useState<"minutes" | "days" | "months">("minutes");
+  const [quoteTimeUnit, setQuoteTimeUnit] = useState<"minutes" | "hours" | "days">("minutes");
   const [quoteMessage, setQuoteMessage] = useState("");
   const [sendingQuote, setSendingQuote] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(true);
@@ -98,8 +98,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
     const timeValue = parseInt(quoteMinutes);
     let estimatedMinutes = timeValue;
+    if (quoteTimeUnit === "hours") estimatedMinutes = timeValue * 60;
     if (quoteTimeUnit === "days") estimatedMinutes = timeValue * 1440;
-    if (quoteTimeUnit === "months") estimatedMinutes = timeValue * 43200;
 
     const { data: quoteData, error } = await supabase.from("quotes").insert({
       job_id: quoteDialog.id,
@@ -169,14 +169,14 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
               <label className="text-sm font-medium text-foreground">Estimated Delivery Time</label>
               <div className="flex gap-2">
                 <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={1} className="bg-background/60 border-border/40 flex-1" />
-                <Select value={quoteTimeUnit} onValueChange={(v: "minutes" | "days" | "months") => setQuoteTimeUnit(v)}>
+                <Select value={quoteTimeUnit} onValueChange={(v: "minutes" | "hours" | "days") => setQuoteTimeUnit(v)}>
                   <SelectTrigger className="w-[120px] bg-background/60 border-border/40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="minutes">Minutes</SelectItem>
+                    <SelectItem value="hours">Hours</SelectItem>
                     <SelectItem value="days">Days</SelectItem>
-                    <SelectItem value="months">Months</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
