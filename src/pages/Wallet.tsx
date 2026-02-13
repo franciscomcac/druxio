@@ -3,20 +3,18 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
   Wallet as WalletIcon,
-  Plus,
   ArrowUpRight,
   ArrowDownLeft,
   Clock,
   CreditCard,
-  Gift,
-  TrendingUp,
   Loader2,
+  ShieldCheck,
+  Receipt,
 } from "lucide-react";
 
 interface Transaction {
@@ -28,30 +26,14 @@ interface Transaction {
   created_at: string;
 }
 
-interface TopUpOption {
-  amount: number;
-  bonus: number;
-  popular?: boolean;
-}
-
-const topUpOptions: TopUpOption[] = [
-  { amount: 5, bonus: 0 },
-  { amount: 10, bonus: 0 },
-  { amount: 25, bonus: 5 },
-  { amount: 50, bonus: 10, popular: true },
-  { amount: 100, bonus: 15 },
-  { amount: 200, bonus: 25 },
-];
-
 const Wallet = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const [balance, setBalance] = useState(0);
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
-  const [processing, setProcessing] = useState(false);
+  const [totalSpent, setTotalSpent] = useState(0);
+  const [totalEarned, setTotalEarned] = useState(0);
 
   useEffect(() => {
     checkAuthAndFetch();
@@ -64,83 +46,30 @@ const Wallet = () => {
       return;
     }
 
-    // Fetch user's wallet balance
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("wallet_balance")
-      .eq("id", session.user.id)
-      .single();
-
-    if (profile) {
-      setBalance(profile.wallet_balance || 0);
-    }
-
-    // Fetch transactions
     const { data: txns } = await supabase
       .from("transactions")
       .select("*")
       .eq("user_id", session.user.id)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
 
     if (txns) {
       setTransactions(txns);
+      setTotalSpent(txns.filter(t => t.type === "session_payment").reduce((sum, t) => sum + t.amount, 0));
+      setTotalEarned(txns.filter(t => t.type === "session_earning").reduce((sum, t) => sum + t.amount, 0));
     }
 
     setLoading(false);
   };
 
-  const handleTopUp = async (amount: number, bonus: number) => {
-    setSelectedAmount(amount);
-    setProcessing(true);
-
-    // Simulate payment processing - in real app, integrate with Stripe
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
-
-    const totalAmount = amount + bonus;
-
-    // Add transaction
-    await supabase.from("transactions").insert({
-      user_id: session.user.id,
-      type: "deposit",
-      amount: totalAmount,
-      description: `Top-up $${amount}${bonus > 0 ? ` + $${bonus} bonus` : ""}`,
-      status: "completed",
-    });
-
-    // Update balance
-    await supabase
-      .from("profiles")
-      .update({ wallet_balance: balance + totalAmount })
-      .eq("id", session.user.id);
-
-    setBalance((prev) => prev + totalAmount);
-
-    toast({
-      title: "Top-up successful!",
-      description: `$${totalAmount.toFixed(2)} has been added to your wallet.`,
-    });
-
-    setProcessing(false);
-    setSelectedAmount(null);
-
-    // Refresh transactions
-    checkAuthAndFetch();
-  };
-
   const getTransactionIcon = (type: string) => {
     switch (type) {
-      case "deposit":
-        return <ArrowDownLeft className="h-4 w-4 text-green-500" />;
       case "session_payment":
         return <ArrowUpRight className="h-4 w-4 text-red-500" />;
       case "session_earning":
         return <ArrowDownLeft className="h-4 w-4 text-green-500" />;
       case "refund":
-        return <ArrowDownLeft className="h-4 w-4 text-blue-500" />;
+        return <ArrowDownLeft className="h-4 w-4 text-primary" />;
       default:
         return <Clock className="h-4 w-4 text-muted-foreground" />;
     }
@@ -166,158 +95,97 @@ const Wallet = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Wallet</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Payments</h1>
           <p className="text-muted-foreground">
-            Manage your balance and view transaction history
+            View your payment history. You pay upfront when you confirm a service with an expert.
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* Balance Card */}
-          <Card className="lg:col-span-1 bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 bg-primary-foreground/20 rounded-full">
-                  <WalletIcon className="h-6 w-6" />
-                </div>
-                <span className="text-primary-foreground/80">Available Balance</span>
+        {/* How it works + Stats */}
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          <Card className="border-primary/20 bg-primary/[0.04]">
+            <CardContent className="p-5 flex items-start gap-4">
+              <div className="p-2.5 rounded-xl bg-primary/20 text-primary shrink-0">
+                <CreditCard className="h-5 w-5" />
               </div>
-              <div className="text-4xl font-bold mb-6">
-                ${balance.toFixed(2)}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
-                <TrendingUp className="h-4 w-4" />
-                <span>Updated just now</span>
+              <div>
+                <p className="font-semibold text-foreground text-sm">Pay When You Confirm</p>
+                <p className="text-xs text-muted-foreground mt-1">You're only charged after you accept an expert's quote.</p>
               </div>
             </CardContent>
           </Card>
-
-          {/* Quick Stats */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="p-4 bg-accent/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">This Month</p>
-                  <p className="text-2xl font-bold text-foreground">$0.00</p>
-                  <p className="text-xs text-muted-foreground">spent on sessions</p>
-                </div>
-                <div className="p-4 bg-accent/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Sessions</p>
-                  <p className="text-2xl font-bold text-foreground">0</p>
-                  <p className="text-xs text-muted-foreground">completed</p>
-                </div>
-                <div className="p-4 bg-accent/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground mb-1">Saved</p>
-                  <p className="text-2xl font-bold text-green-600">$0.00</p>
-                  <p className="text-xs text-muted-foreground">from bonuses</p>
-                </div>
+          <Card className="border-primary/20 bg-primary/[0.04]">
+            <CardContent className="p-5 flex items-start gap-4">
+              <div className="p-2.5 rounded-xl bg-primary/20 text-primary shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm">Secure & Protected</p>
+                <p className="text-xs text-muted-foreground mt-1">Payments are held in escrow until the service is delivered.</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/20 bg-primary/[0.04]">
+            <CardContent className="p-5 flex items-start gap-4">
+              <div className="p-2.5 rounded-xl bg-primary/20 text-primary shrink-0">
+                <Receipt className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground text-sm">10% Platform Fee</p>
+                <p className="text-xs text-muted-foreground mt-1">A small fee is included to keep the platform running.</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Top Up Section */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Add Funds
-            </CardTitle>
-            <CardDescription>
-              Choose an amount to add to your wallet. Get bonus credits on larger top-ups!
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {topUpOptions.map((option) => (
-                <button
-                  key={option.amount}
-                  onClick={() => handleTopUp(option.amount, option.bonus)}
-                  disabled={processing}
-                  className={`relative p-6 rounded-xl border-2 transition-all hover:border-primary hover:shadow-md ${
-                    selectedAmount === option.amount && processing
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-card"
-                  } ${processing && selectedAmount !== option.amount ? "opacity-50" : ""}`}
-                >
-                  {option.popular && (
-                    <Badge className="absolute -top-2 right-4 bg-green-500 hover:bg-green-500">
-                      Most Popular
-                    </Badge>
-                  )}
-                  {option.bonus > 0 && (
-                    <div className="absolute -top-2 left-4">
-                      <Badge variant="secondary" className="gap-1">
-                        <Gift className="h-3 w-3" />
-                        +${option.bonus} bonus
-                      </Badge>
-                    </div>
-                  )}
-                  
-                  <div className="text-center">
-                    <p className="text-3xl font-bold text-foreground mb-1">
-                      ${option.amount}
-                    </p>
-                    {option.bonus > 0 && (
-                      <p className="text-sm text-green-600">
-                        Get ${option.amount + option.bonus} total
-                      </p>
-                    )}
-                  </div>
-
-                  {processing && selectedAmount === option.amount && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-xl">
-                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-              <CreditCard className="h-4 w-4" />
-              <span>Secure payments powered by Stripe</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Summary cards */}
+        <div className="grid gap-6 sm:grid-cols-2 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <p className="text-sm text-muted-foreground mb-1">Total Spent</p>
+              <p className="text-3xl font-bold text-foreground">${totalSpent.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground mt-1">on services purchased</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <p className="text-sm text-muted-foreground mb-1">Total Earned</p>
+              <p className="text-3xl font-bold text-green-500">${totalEarned.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground mt-1">from services delivered</p>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Transaction History */}
-        <Card className="mt-8">
+        <Card>
           <CardHeader>
             <CardTitle>Transaction History</CardTitle>
-            <CardDescription>
-              Your recent transactions and activity
-            </CardDescription>
+            <CardDescription>Your recent payments and earnings</CardDescription>
           </CardHeader>
           <CardContent>
             {transactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <WalletIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No transactions yet</p>
-                <p className="text-sm">Your transaction history will appear here</p>
+                <p className="font-medium">No transactions yet</p>
+                <p className="text-sm mt-1">When you purchase or deliver a service, it'll show up here.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {transactions.map((tx) => (
                   <div
                     key={tx.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-accent/30"
+                    className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2 rounded-full bg-background">
+                      <div className="p-2 rounded-full bg-accent">
                         {getTransactionIcon(tx.type)}
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{tx.description}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDate(tx.created_at)}
-                        </p>
+                        <p className="font-medium text-foreground text-sm">{tx.description}</p>
+                        <p className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -326,9 +194,7 @@ const Wallet = () => {
                       }`}>
                         {tx.type === "session_payment" ? "-" : "+"}${tx.amount.toFixed(2)}
                       </p>
-                      <Badge variant="secondary" className="text-xs">
-                        {tx.status}
-                      </Badge>
+                      <Badge variant="secondary" className="text-xs">{tx.status}</Badge>
                     </div>
                   </div>
                 ))}
