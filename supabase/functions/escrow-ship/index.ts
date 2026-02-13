@@ -86,7 +86,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Call Escrow.com API to ship (mark as delivered by seller)
+    // Get seller email for As-Customer header
+    const { data: sellerAuth } = await serviceClient.auth.admin.getUserById(quote.expert_id);
+    if (!sellerAuth?.user?.email) {
+      throw new Error("Could not resolve seller email");
+    }
+
+    // Call Escrow.com API to ship as the seller (using As-Customer header)
     const patchRes = await fetch(
       `${ESCROW_API_BASE}/transaction/${job.escrow_txn_id}`,
       {
@@ -94,6 +100,7 @@ Deno.serve(async (req) => {
         headers: {
           Authorization: getEscrowAuth(),
           "Content-Type": "application/json",
+          "As-Customer": sellerAuth.user.email,
         },
         body: JSON.stringify({ action: "ship" }),
       }
