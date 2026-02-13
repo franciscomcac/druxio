@@ -79,18 +79,37 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const { error } = await supabase.from("quotes").insert({
+    const { data: quoteData, error } = await supabase.from("quotes").insert({
       job_id: quoteDialog.id,
       expert_id: session.user.id,
       price: parseFloat(quotePrice),
       estimated_minutes: parseInt(quoteMinutes),
       message: quoteMessage || null,
-    });
+    }).select().single();
 
     if (error) {
       toast({ title: "Error sending quote", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Quote sent! ✅", description: "The buyer will see your offer." });
+      // Create a pending session so both buyer and expert can chat
+      const { data: sessionData } = await supabase.from("sessions").insert({
+        mentor_id: session.user.id,
+        mentee_id: quoteDialog.buyer_id,
+        status: "pending",
+        issue_description: quoteDialog.title,
+        categories: [quoteDialog.category],
+        session_type: "chat",
+      }).select().single();
+
+      // If expert included a message, insert it as first chat message
+      if (quoteMessage && sessionData) {
+        await supabase.from("messages").insert({
+          session_id: sessionData.id,
+          sender_id: session.user.id,
+          content: quoteMessage,
+        });
+      }
+
+      toast({ title: "Quote sent! ✅", description: "The buyer will see your offer and you can chat." });
       setOpenJobs((prev) => prev.filter((j) => j.id !== quoteDialog.id));
     }
 

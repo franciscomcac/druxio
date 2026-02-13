@@ -65,6 +65,7 @@ const ActiveRequest = () => {
   const [chatInput, setChatInput] = useState("");
   const [sendingChat, setSendingChat] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [sessionMap, setSessionMap] = useState<Record<string, string>>({}); // expertId -> sessionId
 
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
@@ -127,29 +128,68 @@ const ActiveRequest = () => {
     return () => { supabase.removeChannel(channel); };
   }, [jobId, selectedExpertId]);
 
-  // Load chat messages for selected expert (using sessions/messages or a simple approach)
-  // For now we use the quote message as initial, and we'll use a simple local chat
-  // In production this would use the messages table linked to a session
+  // Load sessions linked to this job's quotes (expert → session mapping)
   useEffect(() => {
-    if (!selectedExpertId || !jobId) return;
-    // Initialize chat with the quote message if not already loaded
-    setChatMessages((prev) => {
-      if (prev[selectedExpertId]) return prev;
-      const quote = quotes.find(q => q.expert_id === selectedExpertId);
-      if (quote?.message) {
-        return {
-          ...prev,
-          [selectedExpertId]: [{
-            id: `quote-msg-${quote.id}`,
-            content: quote.message,
-            sender_id: selectedExpertId,
-            created_at: quote.created_at,
-          }]
-        };
+    if (!jobId || !userId || quotes.length === 0) return;
+
+    const loadSessions = async () => {
+      // Find sessions where the current user is mentee and the expert is mentor
+      for (const quote of quotes) {
+        const { data: sessionData } = await supabase
+          .from("sessions")
+          .select("id")
+          .eq("mentee_id", userId)
+          .eq("mentor_id", quote.expert_id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (sessionData) {
+          setSessionMap((prev) => ({ ...prev, [quote.expert_id]: sessionData.id }));
+        }
       }
-      return { ...prev, [selectedExpertId]: [] };
-    });
-  }, [selectedExpertId, quotes, jobId]);
+    };
+    loadSessions();
+  }, [quotes, jobId, userId]);
+
+  // Load real messages for the selected expert's session
+  useEffect(() => {
+    if (!selectedExpertId) return;
+    const sid = sessionMap[selectedExpertId];
+    if (!sid) return;
+
+    const loadMessages = async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("id, content, sender_id, created_at")
+        .eq("session_id", sid)
+        .order("created_at", { ascending: true });
+      if (data) {
+        setChatMessages((prev) => ({ ...prev, [selectedExpertId]: data }));
+      }
+    };
+    loadMessages();
+
+    // Realtime subscription for this session's messages
+    const channel = supabase
+      .channel(`chat-${sid}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `session_id=eq.${sid}`,
+      }, (payload) => {
+        const newMsg = payload.new as ChatMessage;
+        setChatMessages((prev) => {
+          const existing = prev[selectedExpertId] || [];
+          if (existing.find(m => m.id === newMsg.id)) return prev;
+          return { ...prev, [selectedExpertId]: [...existing, newMsg] };
+        });
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedExpertId, sessionMap]);
 
   // Scroll chat to bottom
   useEffect(() => {
@@ -175,21 +215,23 @@ const ActiveRequest = () => {
     navigate("/dashboard");
   };
 
-  const handleSendChat = () => {
+  const handleSendChat = async () => {
     if (!chatInput.trim() || !selectedExpertId || !userId) return;
+    const sid = sessionMap[selectedExpertId];
+    if (!sid) return;
+
     setSendingChat(true);
-    // Add message locally (in production, save to messages table)
-    const newMsg: ChatMessage = {
-      id: `local-${Date.now()}`,
-      content: chatInput.trim(),
+    const { error } = await supabase.from("messages").insert({
+      session_id: sid,
       sender_id: userId,
-      created_at: new Date().toISOString(),
-    };
-    setChatMessages((prev) => ({
-      ...prev,
-      [selectedExpertId]: [...(prev[selectedExpertId] || []), newMsg],
-    }));
-    setChatInput("");
+      content: chatInput.trim(),
+    });
+
+    if (error) {
+      toast({ title: "Failed to send message", description: error.message, variant: "destructive" });
+    } else {
+      setChatInput("");
+    }
     setSendingChat(false);
   };
 
