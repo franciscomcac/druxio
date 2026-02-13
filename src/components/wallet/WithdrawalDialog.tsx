@@ -84,7 +84,11 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      toast({ title: "Withdrawal successful! 🎉", description: `€${numAmount.toFixed(2)} has been withdrawn.` });
+      if (data?.status === "completed") {
+        toast({ title: "Withdrawal sent! 🎉", description: `€${numAmount.toFixed(2)} sent to your PayPal.` });
+      } else {
+        toast({ title: "Withdrawal submitted ⏳", description: `€${numAmount.toFixed(2)} is pending. Processing may take 24-48h.` });
+      }
       resetForm();
       onOpenChange(false);
       onSuccess();
