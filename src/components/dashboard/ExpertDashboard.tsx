@@ -109,8 +109,9 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         });
       }
 
-      toast({ title: "Quote sent! ✅", description: "The buyer will see your offer and you can chat." });
-      setOpenJobs((prev) => prev.filter((j) => j.id !== quoteDialog.id));
+      toast({ title: "Quote sent! ✅", description: "View the leaderboard and chat with the buyer." });
+      // Navigate to the request page (seller view)
+      navigate(`/request/${quoteDialog.id}`);
     }
 
     setSendingQuote(false);
