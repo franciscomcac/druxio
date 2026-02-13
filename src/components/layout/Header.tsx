@@ -22,39 +22,65 @@ const Header = () => {
   const [isAdminUser, setIsAdminUser] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
+  const [balance, setBalance] = useState<number | null>(null);
   const navigate = useNavigate();
 
+  const fetchBalance = async (userId: string) => {
+    const { data } = await supabase.from("profiles").select("wallet_balance").eq("id", userId).single();
+    if (data) setBalance(data.wallet_balance ?? 0);
+  };
+
   useEffect(() => {
-    // Set up listener FIRST - it handles INITIAL_SESSION event
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Ignore TOKEN_REFRESHED with null session (transient state)
       if (event === 'TOKEN_REFRESHED' && !session) return;
       
       setUser(session?.user || null);
       if (session?.user) {
         setAuthOpen(false);
-        // Use setTimeout to avoid Supabase auth deadlock
         setTimeout(async () => {
-          const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single();
+          const { data } = await supabase.from("profiles").select("display_name, avatar_url, wallet_balance").eq("id", session.user.id).single();
           setProfile(data);
+          setBalance(data?.wallet_balance ?? 0);
           const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
           setIsAdminUser(roles?.some(r => r.role === "admin") || false);
         }, 0);
       } else if (event === 'SIGNED_OUT') {
         setProfile(null);
+        setBalance(null);
       }
     });
 
-    // getSession as backup for initial load
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single().then(({ data }) => setProfile(data));
+        supabase.from("profiles").select("display_name, avatar_url, wallet_balance").eq("id", session.user.id).single().then(({ data }) => {
+          setProfile(data);
+          setBalance(data?.wallet_balance ?? 0);
+        });
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Realtime balance updates
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('header-balance')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${user.id}`,
+      }, (payload) => {
+        const newBalance = (payload.new as any).wallet_balance;
+        if (newBalance !== undefined) setBalance(newBalance ?? 0);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -82,6 +108,10 @@ const Header = () => {
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <>
+              <Button variant="ghost" size="sm" className="gap-1.5 hover:bg-primary/[0.06] text-sm font-medium" onClick={() => navigate("/wallet")}>
+                <Wallet className="h-4 w-4 text-primary" />
+                <span className="text-foreground">€{(balance ?? 0).toFixed(2)}</span>
+              </Button>
               <Link to="/post-request">
                 <Button size="sm" className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow"><Plus className="h-4 w-4" /> Post Request</Button>
               </Link>
