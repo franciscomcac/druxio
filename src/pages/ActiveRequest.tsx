@@ -161,6 +161,17 @@ const ActiveRequest = () => {
           if (isBuyer && !selectedChatPartnerId) setSelectedChatPartnerId(q.expert_id);
         }
       )
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes", filter: `job_id=eq.${jobId}` },
+        async (payload) => {
+          const q = payload.new as any;
+          const { data: profile } = await supabase.from("profiles").select("display_name, rating_avg, total_sessions, avatar_url").eq("id", q.expert_id).single();
+          setQuotes((prev) => {
+            const updated = prev.map(p => p.id === q.id ? { ...q, profile } as QuoteWithProfile : p);
+            updated.sort((a, b) => a.price - b.price);
+            return updated;
+          });
+        }
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [jobId, selectedChatPartnerId, isBuyer]);
@@ -418,7 +429,17 @@ const ActiveRequest = () => {
   if (!job) return null;
 
   const sortedQuotes = [...quotes].sort((a, b) => a.price - b.price);
-  const cheapestId = sortedQuotes.length > 0 ? sortedQuotes[0].id : null;
+  
+  // Recommended = best composite score: lower price + higher rating (normalized)
+  const recommendedId = sortedQuotes.length > 0 ? (() => {
+    const maxPrice = Math.max(...sortedQuotes.map(q => q.price), 1);
+    return sortedQuotes.reduce((best, curr) => {
+      const currScore = (1 - curr.price / maxPrice) * 0.5 + ((curr.profile?.rating_avg || 0) / 5) * 0.5;
+      const bestScore = (1 - best.price / maxPrice) * 0.5 + ((best.profile?.rating_avg || 0) / 5) * 0.5;
+      return currScore > bestScore ? curr : best;
+    }).id;
+  })() : null;
+
   const fastestId = sortedQuotes.length > 0
     ? sortedQuotes.reduce((prev, curr) => curr.estimated_minutes < prev.estimated_minutes ? curr : prev).id
     : null;
@@ -541,10 +562,10 @@ const ActiveRequest = () => {
 
                       {/* Badges */}
                       <div className="flex items-center gap-2">
-                        {quote.id === cheapestId && i === 0 && (
+                        {quote.id === recommendedId && (
                           <Badge className="bg-primary/20 text-primary border-0 text-xs">Recommended</Badge>
                         )}
-                        {quote.id === fastestId && quote.id !== cheapestId && (
+                        {quote.id === fastestId && quote.id !== recommendedId && (
                           <Badge variant="secondary" className="text-xs">Fastest</Badge>
                         )}
                         {isMyQuote && (
