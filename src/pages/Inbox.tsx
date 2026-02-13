@@ -19,7 +19,9 @@ import {
   Calendar,
   ArrowRight,
   Inbox as InboxIcon,
-  AlertCircle
+  AlertCircle,
+  ShoppingCart,
+  Store,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -170,18 +172,25 @@ const Inbox = () => {
     return sessions;
   };
 
+  const splitByRole = (filtered: Session[]) => {
+    const selling = filtered.filter(s => s.mentor_id === userId);
+    const buying = filtered.filter(s => s.mentee_id === userId);
+    return { selling, buying };
+  };
+
   const getOtherParticipant = (session: Session) => {
-    if (isMentor) {
+    const iAmMentor = session.mentor_id === userId;
+    if (iAmMentor) {
       return {
-        name: session.mentee_profile?.display_name || "Mentee",
+        name: session.mentee_profile?.display_name || "Buyer",
         avatar: session.mentee_profile?.avatar_url,
-        role: "Mentee"
+        role: "Buyer"
       };
     }
     return {
-      name: session.mentor_profile?.display_name || "Mentor",
+      name: session.mentor_profile?.display_name || "Seller",
       avatar: session.mentor_profile?.avatar_url,
-      role: "Mentor"
+      role: "Seller"
     };
   };
 
@@ -295,6 +304,43 @@ const Inbox = () => {
     </div>
   );
 
+  const GroupedSessionList = ({ filtered }: { filtered: Session[] }) => {
+    const { selling, buying } = splitByRole(filtered);
+    if (filtered.length === 0) return null;
+    return (
+      <div className="space-y-6">
+        {selling.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Store className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Selling</h3>
+              <Badge variant="secondary" className="text-xs">{selling.length}</Badge>
+            </div>
+            <div className="space-y-3">
+              {selling.map((session) => (
+                <SessionCard key={session.id} session={session} />
+              ))}
+            </div>
+          </div>
+        )}
+        {buying.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <ShoppingCart className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">Buying</h3>
+              <Badge variant="secondary" className="text-xs">{buying.length}</Badge>
+            </div>
+            <div className="space-y-3">
+              {buying.map((session) => (
+                <SessionCard key={session.id} session={session} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const LoadingSkeleton = () => (
     <div className="space-y-3">
       {[1, 2, 3].map((i) => (
@@ -394,11 +440,7 @@ const Inbox = () => {
             {loading ? (
               <LoadingSkeleton />
             ) : activeSessions.length > 0 ? (
-              <div className="space-y-3">
-                {activeSessions.map((session) => (
-                  <SessionCard key={session.id} session={session} />
-                ))}
-              </div>
+              <GroupedSessionList filtered={activeSessions} />
             ) : (
               <EmptyState type="active" />
             )}
@@ -408,11 +450,7 @@ const Inbox = () => {
             {loading ? (
               <LoadingSkeleton />
             ) : completedSessions.length > 0 ? (
-              <div className="space-y-3">
-                {completedSessions.map((session) => (
-                  <SessionCard key={session.id} session={session} />
-                ))}
-              </div>
+              <GroupedSessionList filtered={completedSessions} />
             ) : (
               <EmptyState type="completed" />
             )}
@@ -422,11 +460,7 @@ const Inbox = () => {
             {loading ? (
               <LoadingSkeleton />
             ) : sessions.length > 0 ? (
-              <div className="space-y-3">
-                {sessions.map((session) => (
-                  <SessionCard key={session.id} session={session} />
-                ))}
-              </div>
+              <GroupedSessionList filtered={sessions} />
             ) : (
               <EmptyState type="" />
             )}
