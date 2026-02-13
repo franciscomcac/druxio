@@ -45,9 +45,8 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
 
   const handleSubmit = async () => {
     const numAmount = parseFloat(amount);
-    const minAmount = method === "paypal" ? 10 : 1;
-    if (isNaN(numAmount) || numAmount < minAmount) {
-      toast({ title: `Minimum withdrawal is €${minAmount.toFixed(2)}`, variant: "destructive" });
+    if (isNaN(numAmount) || numAmount <= 0) {
+      toast({ title: "Amount must be greater than 0", variant: "destructive" });
       return;
     }
     if (numAmount > balance) {
@@ -143,7 +142,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
               <Input
                 type="number"
                 step="0.01"
-                min={method === "paypal" ? "10" : "1"}
+                min="0.01"
                 max={balance}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -164,9 +163,6 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
               <p className="text-xs text-muted-foreground">
                 2% fee: €{(parseFloat(amount) * 0.02).toFixed(2)} — You receive: €{(parseFloat(amount) * 0.98).toFixed(2)}
               </p>
-            )}
-            {method === "paypal" && (
-              <p className="text-xs text-muted-foreground">Minimum: €10.00</p>
             )}
           </div>
 
