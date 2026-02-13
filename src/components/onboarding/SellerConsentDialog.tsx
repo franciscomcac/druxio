@@ -48,7 +48,7 @@ const SELLER_RULES = [
     icon: DollarSign,
     title: "Escrow & Payments",
     description:
-      "Funds are held in escrow until the buyer confirms delivery. The platform takes a 12% fee on completed jobs. Payments are released within 24-48 hours after approval.",
+      "Funds are held in escrow until the buyer confirms delivery. The platform takes a 5% fee on completed jobs. Payments are released within 24-48 hours after approval.",
   },
   {
     icon: Shield,
@@ -83,7 +83,7 @@ const SELLER_RULES = [
 ];
 
 const ACKNOWLEDGMENTS = [
-  "I understand the 12% platform fee on all completed jobs",
+  "I understand the 5% platform fee on all completed jobs",
   "I will provide proof of completion for all deliverables",
   "I accept the dispute resolution process and platform decisions",
   "I will not request payments outside of the platform",
