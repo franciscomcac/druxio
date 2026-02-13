@@ -108,7 +108,9 @@ const NotificationsDropdown = () => {
     markAsRead(notification.id);
 
     // Navigate based on notification type
-    if (notification.type === "new_request" && notification.data?.job_id) {
+    if (notification.data?.job_id && ["dispute_raised", "dispute_resolved", "refund_issued", "order_completed", "order_cancelled"].includes(notification.type)) {
+      navigate(`/order/${notification.data.job_id}`);
+    } else if (notification.type === "new_request" && notification.data?.job_id) {
       navigate(`/request/${notification.data.job_id}`);
     } else if (notification.type === "session_request" && notification.data?.session_id) {
       navigate(`/session/${notification.data.session_id}`);
@@ -116,6 +118,8 @@ const NotificationsDropdown = () => {
       navigate(`/session/${notification.data.session_id}`);
     } else if (notification.type === "session_accepted" && notification.data?.session_id) {
       navigate(`/session/${notification.data.session_id}`);
+    } else if (notification.data?.job_id) {
+      navigate(`/order/${notification.data.job_id}`);
     }
   };
 
