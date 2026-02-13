@@ -99,8 +99,9 @@ Deno.serve(async (req) => {
     const { amount, method, paypal_email, crypto_token, crypto_network, crypto_address } = body;
 
     // Validate amount
-    if (!amount || amount < 1) {
-      return new Response(JSON.stringify({ error: "Minimum withdrawal is €1.00" }), {
+    const minAmount = method === "paypal" ? 10 : 1;
+    if (!amount || amount < minAmount) {
+      return new Response(JSON.stringify({ error: `Minimum withdrawal is €${minAmount.toFixed(2)}` }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
