@@ -158,13 +158,12 @@ const ActiveRequest = () => {
     return () => { supabase.removeChannel(channel); };
   }, [jobId, selectedChatPartnerId, isBuyer]);
 
-  // Load sessions (expert <-> buyer mapping)
+  // Load sessions (expert <-> buyer mapping), create if missing for seller
   useEffect(() => {
     if (!jobId || !userId || quotes.length === 0 || !job) return;
 
     const loadSessions = async () => {
       if (isBuyer) {
-        // Buyer: map each expert to a session
         for (const quote of quotes) {
           const { data: sessionData } = await supabase
             .from("sessions")
@@ -179,8 +178,8 @@ const ActiveRequest = () => {
           }
         }
       } else {
-        // Seller: find session between self (mentor) and buyer
-        const { data: sessionData } = await supabase
+        // Seller: find or create session between self (mentor) and buyer
+        let { data: sessionData } = await supabase
           .from("sessions")
           .select("id")
           .eq("mentor_id", userId)
@@ -188,6 +187,20 @@ const ActiveRequest = () => {
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
+
+        if (!sessionData) {
+          // Create session on-the-fly so chat works instantly
+          const { data: newSession } = await supabase.from("sessions").insert({
+            mentor_id: userId,
+            mentee_id: job.buyer_id,
+            status: "pending",
+            issue_description: job.title,
+            categories: [job.category],
+            session_type: "chat",
+          }).select("id").single();
+          sessionData = newSession;
+        }
+
         if (sessionData) {
           setSessionMap({ [job.buyer_id]: sessionData.id });
         }
