@@ -601,6 +601,22 @@ const Order = () => {
             <p className="text-center text-sm text-muted-foreground">
               {reviewRating === 1 ? "Poor" : reviewRating === 2 ? "Below Average" : reviewRating === 3 ? "Average" : reviewRating === 4 ? "Good" : reviewRating === 5 ? "Excellent" : "Select a rating"}
             </p>
+            <div className="flex flex-wrap gap-2">
+              {["Great service", "Fast delivery", "Very helpful", "Highly skilled"].map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setReviewComment((prev) => prev.includes(tag) ? prev.replace(tag, "").replace(/\s{2,}/g, " ").trim() : (prev ? `${prev}, ${tag}` : tag))}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    reviewComment.includes(tag)
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-accent/40 text-muted-foreground border-border/40 hover:bg-accent"
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
             <Textarea
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
