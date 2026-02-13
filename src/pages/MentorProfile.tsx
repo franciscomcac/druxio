@@ -411,7 +411,7 @@ const MentorProfile = () => {
           </div>
         </div>
 
-        <SimilarExperts currentExpertId={mentorId || ""} skills={mentor.skills || []} />
+        
       </main>
 
       <Footer />
