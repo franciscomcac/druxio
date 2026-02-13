@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // For PayPal: auto-process via Payouts API
+    // For PayPal: try auto-process via Payouts API, fallback to pending
     if (method === "paypal") {
       try {
         const ppToken = await getPayPalToken();
@@ -222,27 +222,17 @@ Deno.serve(async (req) => {
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       } catch (ppErr) {
-        console.error("PayPal payout failed:", ppErr);
+        console.error("PayPal payout failed, marking as pending for manual processing:", ppErr);
 
-        // Mark as failed, refund balance
-        await adminClient
-          .from("transactions")
-          .update({ status: "failed" })
-          .eq("id", transaction.id);
-
+        // Keep as pending for manual processing instead of failing
         await adminClient
           .from("withdrawals")
-          .update({ status: "failed", admin_notes: `PayPal error: ${ppErr.message}` })
+          .update({ admin_notes: `Auto-payout failed: ${ppErr.message}. Requires manual processing.` })
           .eq("id", withdrawal.id);
 
-        await adminClient
-          .from("profiles")
-          .update({ wallet_balance: (profile.wallet_balance || 0) })
-          .eq("id", userId);
-
         return new Response(
-          JSON.stringify({ error: `PayPal payout failed: ${ppErr.message}` }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          JSON.stringify({ success: true, status: "pending", message: "Withdrawal submitted. It will be processed manually within 24-48h." }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }
