@@ -530,7 +530,7 @@ const ActiveRequest = () => {
                           {quote.profile?.rating_avg ? (
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Star className="h-3 w-3 fill-primary text-primary" />
-                              {Math.round((quote.profile.rating_avg / 5) * 100)}%{quote.profile?.total_sessions ? ` (${quote.profile.total_sessions})` : ""}
+                              {Math.round((quote.profile.rating_avg / 5) * 100)}% ({quote.profile?.total_sessions ?? 0})
                             </span>
                           ) : null}
                         </div>
