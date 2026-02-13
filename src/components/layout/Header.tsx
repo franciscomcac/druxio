@@ -8,7 +8,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
-import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package } from "lucide-react";
+import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck } from "lucide-react";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 
 const navLinks = [
@@ -19,6 +19,7 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const navigate = useNavigate();
@@ -36,6 +37,8 @@ const Header = () => {
         setTimeout(async () => {
           const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single();
           setProfile(data);
+          const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+          setIsAdminUser(roles?.some(r => r.role === "admin") || false);
         }, 0);
       } else if (event === 'SIGNED_OUT') {
         setProfile(null);
@@ -107,6 +110,12 @@ const Header = () => {
                   <DropdownMenuItem onClick={() => navigate("/inbox")} className="hover:bg-primary/[0.06]"><MessageSquare className="mr-2 h-4 w-4" /> Chats</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Wallet</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
+                  {isAdminUser && (
+                    <>
+                      <DropdownMenuSeparator className="bg-border/30" />
+                      <DropdownMenuItem onClick={() => navigate("/admin")} className="hover:bg-primary/[0.06]"><ShieldCheck className="mr-2 h-4 w-4" /> Admin</DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator className="bg-border/30" />
                   <DropdownMenuItem onClick={handleSignOut} className="hover:bg-destructive/10"><LogOut className="mr-2 h-4 w-4" /> Sign Out</DropdownMenuItem>
                 </DropdownMenuContent>

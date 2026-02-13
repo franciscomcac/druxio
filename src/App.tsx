@@ -16,6 +16,7 @@ import MentorProfile from "./pages/MentorProfile";
 import Settings from "./pages/Settings";
 import Inbox from "./pages/Inbox";
 import Order from "./pages/Order";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/order/:jobId" element={<Order />} />
+          <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
