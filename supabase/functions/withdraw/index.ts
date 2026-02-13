@@ -137,7 +137,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Deduct from wallet immediately
+    // Calculate fee for PayPal
+    const feeRate = method === "paypal" ? 0.02 : 0;
+    const fee = Math.round(amount * feeRate * 100) / 100;
+    const netAmount = Math.round((amount - fee) * 100) / 100;
+
+    // Deduct full amount from wallet
     await adminClient
       .from("profiles")
       .update({ wallet_balance: (profile.wallet_balance || 0) - amount })
@@ -152,7 +157,7 @@ Deno.serve(async (req) => {
         type: "withdrawal",
         status: "pending",
         description: method === "paypal"
-          ? `Withdrawal to PayPal (${paypal_email})`
+          ? `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — €${fee.toFixed(2)} fee`
           : `Withdrawal to ${crypto_token} (${crypto_network})`,
       })
       .select()
@@ -196,7 +201,7 @@ Deno.serve(async (req) => {
     if (method === "paypal") {
       try {
         const ppToken = await getPayPalToken();
-        const payoutResult = await sendPayPalPayout(ppToken, paypal_email, amount, withdrawal.id);
+        const payoutResult = await sendPayPalPayout(ppToken, paypal_email, netAmount, withdrawal.id);
 
         const batchId = payoutResult?.batch_header?.payout_batch_id || null;
 
