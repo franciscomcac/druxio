@@ -85,6 +85,15 @@ const Header = () => {
               <Link to="/post-request">
                 <Button size="sm" className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow"><Plus className="h-4 w-4" /> Post Request</Button>
               </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="relative hover:bg-primary/[0.06]"><Package className="h-5 w-5" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 bg-card/95 backdrop-blur-xl border-border/40">
+                  <DropdownMenuItem onClick={() => navigate("/orders/purchased")} className="hover:bg-primary/[0.06]"><Package className="mr-2 h-4 w-4" /> Purchased Orders</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/orders/sold")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Sold Orders</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Link to="/inbox">
                 <Button variant="ghost" size="icon" className="relative hover:bg-primary/[0.06]"><MessageSquare className="h-5 w-5" /></Button>
               </Link>

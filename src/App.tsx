@@ -16,6 +16,8 @@ import MentorProfile from "./pages/MentorProfile";
 import Settings from "./pages/Settings";
 import Inbox from "./pages/Inbox";
 import Order from "./pages/Order";
+import PurchasedOrders from "./pages/PurchasedOrders";
+import SoldOrders from "./pages/SoldOrders";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -41,6 +43,8 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/order/:jobId" element={<Order />} />
+          <Route path="/orders/purchased" element={<PurchasedOrders />} />
+          <Route path="/orders/sold" element={<SoldOrders />} />
           <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
