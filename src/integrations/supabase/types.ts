@@ -519,6 +519,54 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawals: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          created_at: string
+          crypto_address: string | null
+          crypto_network: string | null
+          crypto_token: string | null
+          id: string
+          method: string
+          paypal_email: string | null
+          status: string
+          transaction_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          created_at?: string
+          crypto_address?: string | null
+          crypto_network?: string | null
+          crypto_token?: string | null
+          id?: string
+          method: string
+          paypal_email?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          created_at?: string
+          crypto_address?: string | null
+          crypto_network?: string | null
+          crypto_token?: string | null
+          id?: string
+          method?: string
+          paypal_email?: string | null
+          status?: string
+          transaction_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
