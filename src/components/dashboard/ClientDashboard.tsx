@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Zap, DollarSign, Star, Target, Plus, ArrowRight, RotateCcw,
+  Zap, DollarSign, Star, Target, Plus, ArrowRight,
 } from "lucide-react";
 
 interface Job {
@@ -37,10 +37,6 @@ const timeAgo = (date: string) => {
 const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const handleReopenJob = (jobId: string) => {
-    navigate(`/request/${jobId}`);
-  };
 
   const statCards = [
     { icon: <DollarSign className="h-6 w-6" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Wallet Balance" },
@@ -104,16 +100,6 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {job.status !== "open" && job.status !== "accepted" && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="gap-1.5 text-primary hover:bg-primary/[0.06]"
-                            onClick={(e) => { e.stopPropagation(); handleReopenJob(job.id); }}
-                          >
-                            <RotateCcw className="h-3.5 w-3.5" /> Reopen
-                          </Button>
-                        )}
                         <Badge variant={job.status === "open" ? "default" : "secondary"} className={`capitalize ${job.status === "open" ? "shadow-glow" : ""}`}>{job.status}</Badge>
                       </div>
                     </div>
