@@ -247,7 +247,6 @@ const MentorProfile = () => {
               <TabsList className="w-full justify-start mb-6">
                 <TabsTrigger value="reviews">Reviews ({totalReviews})</TabsTrigger>
                 <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="availability">Availability</TabsTrigger>
               </TabsList>
 
               <TabsContent value="reviews" className="space-y-6">
@@ -385,28 +384,6 @@ const MentorProfile = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="availability">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Calendar className="h-5 w-5" /> Weekly Availability
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-2">
-                      {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => (
-                        <div key={day} className="flex items-center justify-between p-3 rounded-lg bg-accent/30">
-                          <span className="font-medium text-foreground">{day}</span>
-                          <span className="text-muted-foreground">9:00 AM - 5:00 PM</span>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="mt-4 text-sm text-muted-foreground text-center">
-                      Timezone: {mentor.timezone || "UTC"}
-                    </p>
-                  </CardContent>
-                </Card>
-              </TabsContent>
             </Tabs>
           </div>
         </div>
