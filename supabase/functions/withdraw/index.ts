@@ -6,13 +6,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PAYPAL_BASE = "https://api-m.sandbox.paypal.com";
+const PAYPAL_BASE = "https://api-m.paypal.com";
 
 async function getPayPalToken(): Promise<string> {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
   const secret = Deno.env.get("PAYPAL_SECRET");
-  console.log("PayPal client ID starts with:", clientId?.substring(0, 8), "length:", clientId?.length);
-  console.log("PayPal secret length:", secret?.length);
   if (!clientId || !secret) throw new Error("PayPal credentials not configured");
 
   const res = await fetch(`${PAYPAL_BASE}/v1/oauth2/token`, {
@@ -24,7 +22,6 @@ async function getPayPalToken(): Promise<string> {
     body: "grant_type=client_credentials",
   });
   const data = await res.json();
-  console.log("PayPal token response scope:", data.scope);
   if (!res.ok) throw new Error(`PayPal auth failed: ${JSON.stringify(data)}`);
   return data.access_token;
 }
