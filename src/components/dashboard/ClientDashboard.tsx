@@ -80,7 +80,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
             </CardHeader>
             <CardContent>
               {myJobs.length > 0 ? (
-                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                <div className="space-y-3">
                   {myJobs.slice(0, 10).map((job, i) => (
                     <div
                       key={job.id}

@@ -365,7 +365,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingJobs ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : openJobs.length > 0 ? (
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+                    <div className="space-y-3">
                       {openJobs.slice(0, 10).map((job, i) => (
                         <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
                           <div className="flex-1">
@@ -405,7 +405,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : ongoingOrders.length > 0 ? (
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">{ongoingOrders.slice(0, 10).map(renderOrderCard)}</div>
+                    <div className="space-y-3">{ongoingOrders.slice(0, 10).map(renderOrderCard)}</div>
                   ) : renderEmptyState("No ongoing orders")}
                 </TabsContent>
 
@@ -414,7 +414,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : completedOrders.length > 0 ? (
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">{completedOrders.slice(0, 10).map(renderOrderCard)}</div>
+                    <div className="space-y-3">{completedOrders.slice(0, 10).map(renderOrderCard)}</div>
                   ) : renderEmptyState("No completed orders yet")}
                 </TabsContent>
 
@@ -423,7 +423,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : disputedOrders.length > 0 ? (
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">{disputedOrders.slice(0, 10).map(renderOrderCard)}</div>
+                    <div className="space-y-3">{disputedOrders.slice(0, 10).map(renderOrderCard)}</div>
                   ) : renderEmptyState("No disputed orders")}
                 </TabsContent>
               </Tabs>
