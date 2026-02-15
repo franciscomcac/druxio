@@ -148,7 +148,7 @@ const MentorProfile = () => {
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Top actions bar */}
         <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
+          <Button variant="ghost" onClick={() => navigate("/search")} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
           <div className="flex items-center gap-2">

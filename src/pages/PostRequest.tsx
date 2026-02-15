@@ -217,7 +217,7 @@ const PostRequest = () => {
         setWizardStep("subcategory");
       }
     }
-    else navigate(-1);
+    else navigate("/");
   };
 
   const handleAiRefine = async () => {
