@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNotificationSound } from "@/hooks/use-notification-sound";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -123,6 +124,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  const playNotificationSound = useNotificationSound();
 
   // Fetch open jobs
   useEffect(() => {
@@ -155,6 +157,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         const newJob = payload.new as Job;
         if (newJob.status === "open" && newJob.buyer_id !== profile?.id) {
           setOpenJobs((prev) => [newJob, ...prev]);
+          playNotificationSound();
           toast({ title: "🔔 New request!", description: `"${newJob.title}" — €${newJob.budget_max}` });
         }
       })
