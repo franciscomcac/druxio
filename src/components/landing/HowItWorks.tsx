@@ -29,7 +29,7 @@ const HowItWorks = () => {
           {steps.map((step, i) => (
             <div
               key={i}
-              className="group relative rounded-lg border border-border/30 bg-card/50 p-6 transition-all duration-300 hover:border-primary/20 hover:bg-card/80"
+              className="group relative rounded-lg border border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:bg-card/80"
             >
               <span className="text-4xl font-bold text-primary font-mono block mb-4">
                 {step.num}
@@ -47,7 +47,7 @@ const HowItWorks = () => {
           <Button onClick={() => navigate("/post-request")} className="gap-2 rounded-sm">
             Post a Task <ArrowRight className="h-4 w-4" />
           </Button>
-          <Button variant="outline" className="gap-2 rounded-sm border-border/50" onClick={() => navigate("/how-it-works")}>
+          <Button variant="outline" className="gap-2 rounded-sm border-border" onClick={() => navigate("/how-it-works")}>
             Learn more
           </Button>
         </div>

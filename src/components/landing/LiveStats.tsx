@@ -28,7 +28,7 @@ const LiveStats = () => {
   ];
 
   return (
-    <section className="border-y border-border/30 bg-card/30 py-5">
+    <section className="border-y border-border bg-card/30 py-5">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
           {items.map((stat, i) => (

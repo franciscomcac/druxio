@@ -31,7 +31,7 @@ const MentorSpotlight = () => {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {recentRequests.map((req, i) => (
-            <Card key={i} className="group border-border/30 bg-card/40 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow hover:-translate-y-2 animate-slide-up" style={{ animationDelay: `${i * 100}ms` }}>
+            <Card key={i} className="group border-border bg-card backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:shadow-glow hover:-translate-y-2 animate-slide-up" style={{ animationDelay: `${i * 100}ms` }}>
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <Badge variant="outline" className="text-xs font-normal border-primary/20 text-primary/80">{req.category}</Badge>
@@ -45,7 +45,7 @@ const MentorSpotlight = () => {
                     {req.deadline}
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-t border-border/20">
+                <div className="mt-3 pt-3 border-t border-border">
                   <span className="text-xs text-primary/80 font-medium">{req.status}</span>
                 </div>
               </CardContent>

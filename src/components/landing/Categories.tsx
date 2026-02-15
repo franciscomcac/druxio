@@ -39,7 +39,7 @@ const Categories = () => {
           {categories.map((cat, i) => (
             <div
               key={cat.name}
-              className="group rounded-2xl border border-border/30 bg-card/40 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow hover:-translate-y-2 animate-slide-up cursor-pointer"
+              className="group rounded-2xl border border-border bg-card p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:shadow-glow hover:-translate-y-2 animate-slide-up cursor-pointer"
               style={{ animationDelay: `${i * 80}ms` }}
               onClick={() => navigate(`/category/${cat.slug}`)}
             >
@@ -49,7 +49,7 @@ const Categories = () => {
               <h3 className="mb-3 text-lg font-semibold text-foreground">{cat.name}</h3>
               <div className="flex flex-wrap gap-1.5">
                 {cat.subcategories.map((sub) => (
-                  <Badge key={sub} variant="outline" className="text-xs font-normal border-border/40 text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors">
+                  <Badge key={sub} variant="outline" className="text-xs font-normal border-border text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors">
                     {sub}
                   </Badge>
                 ))}
