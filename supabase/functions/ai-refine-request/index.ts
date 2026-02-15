@@ -16,7 +16,7 @@ const SUBCATEGORIES: Record<string, string[]> = {
   Creative: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails"],
   Music: ["Production", "Mixing & Mastering", "Guitar Lessons"],
   Fitness: ["Personal Training", "Nutrition Plans"],
-  Languages: ["English", "Spanish"],
+  Languages: ["English", "Spanish", "French", "German", "Portuguese", "Arabic", "Chinese", "Japanese", "Korean", "Italian", "Russian", "Hindi"],
   Content: ["Streaming", "YouTube", "TikTok"],
 };
 
