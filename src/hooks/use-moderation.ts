@@ -6,6 +6,9 @@ export const useModeration = () => {
   const [checking, setChecking] = useState(false);
   const { toast } = useToast();
 
+  /**
+   * Hard check — blocks content if flagged (for posts, requests, etc.)
+   */
   const checkContent = async (
     text: string,
     context?: string
@@ -41,5 +44,43 @@ export const useModeration = () => {
     }
   };
 
-  return { checkContent, checking };
+  /**
+   * Soft check — never blocks, but silently alerts admins if flagged.
+   * Use for chat between buyers and sellers.
+   */
+  const softCheckContent = async (
+    text: string,
+    context?: string,
+    metadata?: { job_id?: string; sender_id?: string }
+  ): Promise<void> => {
+    if (!text || text.trim().length < 5) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("moderate-content", {
+        body: { text, context },
+      });
+
+      if (error || !data?.flagged) return;
+
+      // Silently notify all admins
+      const { data: adminRoles } = await supabase
+        .from("user_roles").select("user_id").eq("role", "admin");
+
+      if (adminRoles && adminRoles.length > 0) {
+        await Promise.all(adminRoles.map((a) =>
+          supabase.from("notifications").insert({
+            user_id: a.user_id,
+            type: "moderation_alert",
+            title: "Flagged chat message",
+            message: `"${text.slice(0, 200)}" — Reason: ${data.reason || "Flagged by AI"}`,
+            data: { ...metadata, flagged_text: text.slice(0, 500) },
+          })
+        ));
+      }
+    } catch {
+      // Silent — never block chat
+    }
+  };
+
+  return { checkContent, softCheckContent, checking };
 };
