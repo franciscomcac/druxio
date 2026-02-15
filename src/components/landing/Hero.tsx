@@ -28,7 +28,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative bg-background pt-20 pb-24 md:pt-28 md:pb-36 overflow-hidden min-h-[85vh] flex items-center">
+    <section className="relative bg-background pt-12 pb-16 md:pt-16 md:pb-24 overflow-hidden min-h-[calc(100vh-4rem)] flex items-center">
       {/* Gradient blobs — asymmetric */}
       <div className="absolute top-[-10%] left-[-5%] h-[600px] w-[600px] rounded-full bg-primary/[0.07] blur-[160px] pointer-events-none" />
       <div className="absolute bottom-[-15%] right-[-8%] h-[500px] w-[500px] rounded-full bg-primary/[0.05] blur-[140px] pointer-events-none" />
