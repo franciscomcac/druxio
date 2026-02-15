@@ -31,7 +31,7 @@ const HowItWorks = () => {
               key={i}
               className="group relative rounded-lg border border-border/30 bg-card/50 p-6 transition-all duration-300 hover:border-primary/20 hover:bg-card/80"
             >
-              <span className="text-4xl font-bold text-primary/25 font-mono block mb-4">
+              <span className="text-4xl font-bold text-primary font-mono block mb-4">
                 {step.num}
               </span>
               <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
