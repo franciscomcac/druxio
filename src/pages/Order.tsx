@@ -13,8 +13,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft, Clock, MessageSquare, Send, Loader2, ShieldCheck,
-  AlertTriangle, CheckCircle2, Timer, Star, RefreshCw,
-  FileText, Handshake, CreditCard, Package, ThumbsUp,
+  AlertTriangle, CheckCircle2, Timer, Star,
+  FileText, Package, CreditCard,
 } from "lucide-react";
 import { formatDistanceToNow, differenceInSeconds, addMinutes } from "date-fns";
 import {
@@ -70,11 +70,6 @@ const Order = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
-  // Seller actions
-  const [agreeLoading, setAgreeLoading] = useState(false);
-  const [shipLoading, setShipLoading] = useState(false);
-  const [refreshingStatus, setRefreshingStatus] = useState(false);
-
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
@@ -93,20 +88,16 @@ const Order = () => {
       if (!quoteData) { setLoading(false); return; }
       setQuote(quoteData);
 
-      // Get seller profile
       const { data: sp } = await supabase
         .from("profiles").select("display_name, avatar_url, rating_avg, total_sessions, is_online")
         .eq("id", quoteData.expert_id).single();
       setSellerProfile(sp);
 
-      // Get buyer profile
       const { data: bp } = await supabase
         .from("profiles").select("display_name, avatar_url")
         .eq("id", jobData.buyer_id).single();
       setBuyerProfile(bp);
 
-      // Get session
-      const isBuyer = user.id === jobData.buyer_id;
       const { data: sessionData } = await supabase
         .from("sessions").select("id")
         .eq("mentee_id", jobData.buyer_id)
@@ -153,7 +144,6 @@ const Order = () => {
     if (container) container.scrollTop = container.scrollHeight;
   }, [messages]);
 
-  // Delivery countdown
   useEffect(() => {
     if (!quote || !job) return;
     const acceptedAt = new Date(quote.created_at);
@@ -180,52 +170,61 @@ const Order = () => {
     setSendingChat(false);
   };
 
-  // Seller agrees to escrow transaction (redirect to Escrow.com)
-  const handleSellerAgree = () => {
-    if (!job?.escrow_txn_id) return;
-    window.open(`https://www.escrow.com/transactions/${job.escrow_txn_id}`, "_blank");
-    toast({ title: "Opening Escrow.com", description: "Please agree to the transaction on the Escrow.com page, then come back." });
-  };
-
-  // Seller marks as delivered (redirect to Escrow.com)
-  const handleSellerDeliver = () => {
-    if (!job?.escrow_txn_id) return;
-    window.open(`https://www.escrow.com/transactions/${job.escrow_txn_id}`, "_blank");
-    toast({ title: "Opening Escrow.com", description: "Please mark the item as shipped on the Escrow.com page." });
-  };
-
-  // Refresh escrow status from Escrow.com
-  const handleRefreshStatus = async () => {
-    if (!jobId || !job?.escrow_txn_id) {
-      toast({ title: "No escrow transaction", description: "Escrow has not been created for this order yet." });
-      return;
+  // Seller marks as delivered
+  const handleSellerDeliver = async () => {
+    if (!jobId) return;
+    await supabase.from("jobs").update({ escrow_status: "delivered" }).eq("id", jobId);
+    setJob((prev: any) => prev ? { ...prev, escrow_status: "delivered" } : prev);
+    toast({ title: "Marked as delivered! 📦", description: "Waiting for buyer to confirm." });
+    // Notify buyer
+    if (job?.buyer_id) {
+      await supabase.from("notifications").insert({
+        user_id: job.buyer_id, type: "order_completed",
+        title: "Order delivered!", message: "The seller has marked your order as delivered. Please review and confirm.",
+        data: { job_id: jobId },
+      });
     }
-    setRefreshingStatus(true);
-    try {
-      const res = await supabase.functions.invoke("escrow-status", { body: { jobId } });
-      if (res.error) throw new Error(res.error.message);
-      const data = res.data as any;
-      if (data.escrow_status) {
-        setJob((prev: any) => prev ? { ...prev, escrow_status: data.escrow_status } : prev);
-        toast({ title: "Status updated", description: `Escrow status: ${data.escrow_status}` });
-      }
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    }
-    setRefreshingStatus(false);
   };
 
-  // Buyer confirms delivery (accept)
+  // Buyer confirms delivery
   const handleConfirmDelivery = async () => {
     if (!jobId || !quote) return;
     setConfirmLoading(true);
     try {
-      const res = await supabase.functions.invoke("escrow-release", { body: { jobId, quoteId: quote.id } });
-      if (res.error) throw new Error(res.error.message);
+      // Credit seller wallet
+      const servicePrice = Number(quote.price);
+      const sellerEarning = Math.round(servicePrice * 0.95 * 100) / 100;
+
+      // Update seller balance
+      const { data: sellerData } = await supabase
+        .from("profiles").select("wallet_balance").eq("id", quote.expert_id).single();
+      const currentBalance = Number(sellerData?.wallet_balance || 0);
+      await supabase.from("profiles").update({
+        wallet_balance: currentBalance + sellerEarning,
+      }).eq("id", quote.expert_id);
+
+      // Record seller earning transaction
+      await supabase.from("transactions").insert({
+        user_id: quote.expert_id,
+        amount: sellerEarning,
+        type: "session_earning",
+        status: "completed",
+        description: `Earning for job ${jobId}`,
+      });
+
+      // Mark job completed
+      await supabase.from("jobs").update({ status: "completed", escrow_status: "completed" }).eq("id", jobId);
 
       if (sessionId) {
         await supabase.from("sessions").update({ status: "completed" }).eq("id", sessionId);
       }
+
+      // Notify seller
+      await supabase.from("notifications").insert({
+        user_id: quote.expert_id, type: "order_completed",
+        title: "Payment released! 💰", message: `€${sellerEarning.toFixed(2)} has been added to your wallet.`,
+        data: { job_id: jobId },
+      });
 
       toast({ title: "Delivery confirmed! 🎉", description: "Payment released to the seller." });
       setConfirmOpen(false);
@@ -313,28 +312,24 @@ const Order = () => {
   const isOverdue = timeLeft === 0 && !isCompleted;
   const isBuyer = userId === job.buyer_id;
   const isSeller = userId === quote.expert_id;
-  const escrowStatus = job.escrow_status || "awaiting_agreement";
+  const paymentStatus = job.escrow_status || "paid";
   const otherPartyProfile = isBuyer ? sellerProfile : buyerProfile;
   const otherPartyLabel = isBuyer ? "Seller" : "Buyer";
 
-  const getEscrowStatusInfo = () => {
-    switch (escrowStatus) {
-      case "awaiting_agreement":
-        return { label: "Awaiting Seller Agreement", color: "text-yellow-500", bg: "bg-yellow-500/10" };
-      case "awaiting_funding":
-        return { label: "Awaiting Buyer Payment", color: "text-orange-500", bg: "bg-orange-500/10" };
-      case "funded":
-        return { label: "Funded - In Progress", color: "text-blue-500", bg: "bg-blue-500/10" };
+  const getPaymentStatusInfo = () => {
+    switch (paymentStatus) {
+      case "paid":
+        return { label: "Paid — In Progress", color: "text-blue-500", bg: "bg-blue-500/10" };
       case "delivered":
-        return { label: "Delivered - Awaiting Acceptance", color: "text-purple-500", bg: "bg-purple-500/10" };
+        return { label: "Delivered — Awaiting Confirmation", color: "text-purple-500", bg: "bg-purple-500/10" };
       case "completed":
-        return { label: "Completed", color: "text-green-500", bg: "bg-green-500/10" };
+        return { label: "Completed — Payment Released", color: "text-green-500", bg: "bg-green-500/10" };
       default:
-        return { label: escrowStatus, color: "text-muted-foreground", bg: "bg-muted/10" };
+        return { label: "Paid", color: "text-blue-500", bg: "bg-blue-500/10" };
     }
   };
 
-  const escrowInfo = getEscrowStatusInfo();
+  const statusInfo = getPaymentStatusInfo();
 
   return (
     <div className="min-h-screen bg-background">
@@ -359,33 +354,22 @@ const Order = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Order details + Actions */}
           <div className="lg:col-span-1 space-y-4">
-            {/* Escrow Status */}
+            {/* Payment Status */}
             <Card>
               <CardContent className="p-5">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${escrowInfo.bg}`}>
-                    <ShieldCheck className={`h-5 w-5 ${escrowInfo.color}`} />
+                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${statusInfo.bg}`}>
+                    <CreditCard className={`h-5 w-5 ${statusInfo.color}`} />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Escrow Status</p>
-                    <p className={`text-sm font-semibold ${escrowInfo.color}`}>{escrowInfo.label}</p>
+                    <p className="text-xs text-muted-foreground">Payment Status</p>
+                    <p className={`text-sm font-semibold ${statusInfo.color}`}>{statusInfo.label}</p>
                   </div>
                 </div>
-                {job.escrow_txn_id && (
-                  <p className="text-[10px] text-muted-foreground font-mono">
-                    Transaction #{job.escrow_txn_id}
-                  </p>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-2 w-full"
-                  onClick={handleRefreshStatus}
-                  disabled={refreshingStatus}
-                >
-                  {refreshingStatus ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
-                  Refresh Status
-                </Button>
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-primary/[0.04] rounded-lg p-2.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                  <span>Paid via PayPal. Funds are released to the seller once delivery is confirmed.</span>
+                </div>
               </CardContent>
             </Card>
 
@@ -480,19 +464,12 @@ const Order = () => {
             {/* Seller Actions */}
             {isSeller && !isCompleted && !isDisputed && (
               <div className="space-y-2">
-                {escrowStatus === "awaiting_agreement" && (
-                  <Button className="w-full gap-2" onClick={handleSellerAgree} disabled={agreeLoading}>
-                    {agreeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Handshake className="h-4 w-4" />}
-                    {agreeLoading ? "Agreeing..." : "Agree to Transaction"}
+                {paymentStatus === "paid" && (
+                  <Button className="w-full gap-2" onClick={handleSellerDeliver}>
+                    <Package className="h-4 w-4" /> Mark as Delivered
                   </Button>
                 )}
-                {(escrowStatus === "funded" || escrowStatus === "awaiting_funding") && (
-                  <Button className="w-full gap-2" onClick={handleSellerDeliver} disabled={shipLoading || escrowStatus === "awaiting_funding"}>
-                    {shipLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
-                    {shipLoading ? "Processing..." : escrowStatus === "awaiting_funding" ? "Waiting for buyer payment..." : "Mark as Delivered"}
-                  </Button>
-                )}
-                {escrowStatus === "delivered" && (
+                {paymentStatus === "delivered" && (
                   <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2 p-3">
                     <Clock className="h-4 w-4" /> Waiting for buyer to confirm delivery
                   </div>
@@ -503,27 +480,15 @@ const Order = () => {
             {/* Buyer Actions */}
             {isBuyer && !isCompleted && !isDisputed && (
               <div className="space-y-2">
-                {escrowStatus === "awaiting_agreement" && (
-                  <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2 p-3">
-                    <Clock className="h-4 w-4" /> Waiting for seller to agree
-                  </div>
-                )}
-                {escrowStatus === "awaiting_funding" && job.escrow_txn_id && (
-                  <Button className="w-full gap-2" asChild>
-                    <a href={`https://www.escrow.com/transactions/${job.escrow_txn_id}/payment`} target="_blank" rel="noopener noreferrer">
-                      <CreditCard className="h-4 w-4" /> Fund Escrow Payment
-                    </a>
-                  </Button>
-                )}
-                {escrowStatus === "delivered" && (
-                  <Button className="w-full gap-2" onClick={() => setConfirmOpen(true)}>
-                    <CheckCircle2 className="h-4 w-4" /> Confirm Delivery & Release Payment
-                  </Button>
-                )}
-                {(escrowStatus === "funded") && (
+                {paymentStatus === "paid" && (
                   <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2 p-3">
                     <Clock className="h-4 w-4" /> Seller is working on your order
                   </div>
+                )}
+                {paymentStatus === "delivered" && (
+                  <Button className="w-full gap-2" onClick={() => setConfirmOpen(true)}>
+                    <CheckCircle2 className="h-4 w-4" /> Confirm Delivery & Release Payment
+                  </Button>
                 )}
                 <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setDisputeOpen(true)}>
                   <AlertTriangle className="h-4 w-4" /> Raise Dispute
@@ -622,7 +587,7 @@ const Order = () => {
               <CheckCircle2 className="h-5 w-5 text-green-500" /> Confirm Delivery
             </DialogTitle>
             <DialogDescription>
-              Once you confirm, the escrowed payment will be released to the seller. This action cannot be undone.
+              Once you confirm, the payment will be released to the seller's wallet. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">

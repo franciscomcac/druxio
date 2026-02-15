@@ -78,9 +78,9 @@ const ActiveRequest = () => {
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
 
-  // Escrow checkout state
-  const [escrowDialog, setEscrowDialog] = useState<QuoteWithProfile | null>(null);
-  const [escrowLoading, setEscrowLoading] = useState(false);
+  // PayPal checkout state
+  const [paypalDialog, setPaypalDialog] = useState<QuoteWithProfile | null>(null);
+  const [paypalLoading, setPaypalLoading] = useState(false);
 
   // Seller: new quote form state
   const [newQuotePrice, setNewQuotePrice] = useState("");
@@ -272,32 +272,66 @@ const ActiveRequest = () => {
   }, [chatMessages, selectedChatPartnerId]);
 
   const handleAcceptQuote = (quote: QuoteWithProfile) => {
-    setEscrowDialog(quote);
+    setPaypalDialog(quote);
   };
 
-  const handleEscrowCheckout = async () => {
-    if (!escrowDialog || !jobId) return;
-    setEscrowLoading(true);
+  const handlePayPalCheckout = async () => {
+    if (!paypalDialog || !jobId) return;
+    setPaypalLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
-      const res = await supabase.functions.invoke("escrow-checkout", {
-        body: { quoteId: escrowDialog.id, jobId },
-      });
-      if (res.error) throw new Error(res.error.message);
-      if (res.data?.error) throw new Error(res.data.error);
 
-      toast({
-        title: "Payment secured! 🎉",
-        description: `Funds held in escrow until ${escrowDialog.profile?.display_name || "the expert"} delivers.`,
+      // Step 1: Create PayPal order
+      const createRes = await supabase.functions.invoke("paypal-create-order", {
+        body: { quoteId: paypalDialog.id, jobId },
       });
-      setEscrowDialog(null);
-      navigate(`/order/${jobId}`);
+      if (createRes.error) throw new Error(createRes.error.message);
+      if (createRes.data?.error) throw new Error(createRes.data.error);
+
+      const { paypalOrderId, approvalUrl } = createRes.data;
+
+      if (!approvalUrl) throw new Error("No PayPal approval URL received");
+
+      // Open PayPal approval in new window
+      const paypalWindow = window.open(approvalUrl, "_blank", "width=500,height=700");
+
+      // Poll for completion
+      const pollInterval = setInterval(async () => {
+        try {
+          const captureRes = await supabase.functions.invoke("paypal-capture-order", {
+            body: { paypalOrderId, quoteId: paypalDialog.id, jobId },
+          });
+
+          if (captureRes.data?.success) {
+            clearInterval(pollInterval);
+            paypalWindow?.close();
+            toast({
+              title: "Payment successful! 🎉",
+              description: `Payment confirmed. ${paypalDialog.profile?.display_name || "The expert"} will start working now.`,
+            });
+            setPaypalDialog(null);
+            setPaypalLoading(false);
+            navigate(`/order/${jobId}`);
+          }
+        } catch {
+          // Payment not yet completed, keep polling
+        }
+      }, 3000);
+
+      // Stop polling after 5 minutes
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        if (paypalLoading) {
+          setPaypalLoading(false);
+          toast({ title: "Payment timeout", description: "Please try again if you haven't completed payment.", variant: "destructive" });
+        }
+      }, 300000);
     } catch (err: any) {
-      console.error("Escrow checkout error:", err);
+      console.error("PayPal checkout error:", err);
       toast({ title: "Checkout error", description: err.message, variant: "destructive" });
+      setPaypalLoading(false);
     }
-    setEscrowLoading(false);
   };
 
   const handleCancelRequest = async () => {
@@ -815,46 +849,46 @@ const ActiveRequest = () => {
           </div>
         )}
 
-        {/* Escrow Checkout Dialog — buyer only */}
-        <Dialog open={!!escrowDialog} onOpenChange={() => { if (!escrowLoading) setEscrowDialog(null); }}>
-          <DialogContent className="bg-card/95 backdrop-blur-xl border-border/30 max-w-md">
+        {/* PayPal Checkout Dialog — buyer only */}
+        <Dialog open={!!paypalDialog} onOpenChange={() => { if (!paypalLoading) setPaypalDialog(null); }}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-primary" /> Secure Checkout
               </DialogTitle>
               <DialogDescription>
-                Funds are held securely via Escrow.com until the service is delivered.
+                Pay securely via PayPal. The seller will start working immediately after payment.
               </DialogDescription>
             </DialogHeader>
-            {escrowDialog && (
+            {paypalDialog && (
               <div className="space-y-4">
-                <div className="rounded-lg border border-border/30 bg-background/40 p-4 space-y-2">
+                <div className="rounded-lg border border-border bg-background/40 p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Service price</span>
-                    <span className="font-medium text-foreground">€{escrowDialog.price.toFixed(2)}</span>
+                    <span className="font-medium text-foreground">€{paypalDialog.price.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Buyer fee (5%)</span>
-                    <span className="font-medium text-foreground">€{(escrowDialog.price * 0.05).toFixed(2)}</span>
+                    <span className="font-medium text-foreground">€{(paypalDialog.price * 0.05).toFixed(2)}</span>
                   </div>
-                  <div className="border-t border-border/30 pt-2 flex justify-between">
+                  <div className="border-t border-border pt-2 flex justify-between">
                     <span className="font-semibold text-foreground">Total</span>
-                    <span className="font-bold text-lg text-primary">€{(escrowDialog.price * 1.05).toFixed(2)}</span>
+                    <span className="font-bold text-lg text-primary">€{(paypalDialog.price * 1.05).toFixed(2)}</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2 text-xs text-muted-foreground bg-primary/[0.04] rounded-lg p-3">
                   <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  <span>Your payment is held securely in escrow via Escrow.com. Funds are only released to the seller once you confirm delivery.</span>
+                  <span>You'll be redirected to PayPal to complete payment securely. Funds go directly to Duxio and are disbursed to the seller upon delivery confirmation.</span>
                 </div>
               </div>
             )}
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setEscrowDialog(null)} disabled={escrowLoading} className="border-border/30">
+              <Button variant="outline" onClick={() => setPaypalDialog(null)} disabled={paypalLoading} className="border-border">
                 Cancel
               </Button>
-              <Button onClick={handleEscrowCheckout} disabled={escrowLoading} className="gap-2 shadow-glow">
-                {escrowLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-                {escrowLoading ? "Processing..." : "Pay Securely"}
+              <Button onClick={handlePayPalCheckout} disabled={paypalLoading} className="gap-2 shadow-glow">
+                {paypalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+                {paypalLoading ? "Waiting for PayPal..." : "Pay with PayPal"}
               </Button>
             </DialogFooter>
           </DialogContent>
