@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNotificationSound } from "@/hooks/use-notification-sound";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ const NotificationsDropdown = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const playNotificationSound = useNotificationSound();
 
   useEffect(() => {
     fetchNotifications();
@@ -46,6 +48,7 @@ const NotificationsDropdown = () => {
           const newNotification = payload.new as Notification;
           setNotifications((prev) => [newNotification, ...prev]);
           setUnreadCount((prev) => prev + 1);
+          playNotificationSound();
         }
       )
       .subscribe();
