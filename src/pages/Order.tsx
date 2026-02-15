@@ -192,7 +192,10 @@ const Order = () => {
 
   // Refresh escrow status from Escrow.com
   const handleRefreshStatus = async () => {
-    if (!jobId) return;
+    if (!jobId || !job?.escrow_txn_id) {
+      toast({ title: "No escrow transaction", description: "Escrow has not been created for this order yet." });
+      return;
+    }
     setRefreshingStatus(true);
     try {
       const res = await supabase.functions.invoke("escrow-status", { body: { jobId } });
