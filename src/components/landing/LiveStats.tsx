@@ -1,24 +1,7 @@
-import { useEffect, useState } from "react";
+import { useLiveStats } from "@/hooks/use-live-stats";
 
 const LiveStats = () => {
-  const [stats, setStats] = useState({
-    expertsOnline: 312,
-    requestsToday: 1842,
-    paidOut: 24000,
-    avgResponse: 87,
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStats((prev) => ({
-        expertsOnline: Math.max(200, prev.expertsOnline + Math.floor(Math.random() * 3) - 1),
-        requestsToday: prev.requestsToday + Math.floor(Math.random() * 3),
-        paidOut: prev.paidOut + Math.floor(Math.random() * 50),
-        avgResponse: Math.max(60, Math.min(120, prev.avgResponse + Math.floor(Math.random() * 5) - 2)),
-      }));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  const stats = useLiveStats();
 
   const items = [
     { value: stats.expertsOnline, label: "Experts Online" },

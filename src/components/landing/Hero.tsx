@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useLiveStats } from "@/hooks/use-live-stats";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ const floatingTasks = [
 const Hero = () => {
   const [taskTitle, setTaskTitle] = useState("");
   const navigate = useNavigate();
+  const stats = useLiveStats();
 
   const handleQuickPost = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +80,7 @@ const Hero = () => {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 opacity-75" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
             </span>
-            <span className="text-primary font-bold">142 experts</span>
+            <span className="text-primary font-bold">{stats.expertsOnline} experts</span>
             <span className="text-muted-foreground">online right now</span>
           </div>
 
