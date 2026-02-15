@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useModeration } from "@/hooks/use-moderation";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -54,6 +55,7 @@ const ActiveRequest = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { checkContent } = useModeration();
 
   const [job, setJob] = useState<Job | null>(null);
   const [quotes, setQuotes] = useState<QuoteWithProfile[]>([]);
@@ -310,6 +312,10 @@ const ActiveRequest = () => {
     if (!sid) return;
     setSendingChat(true);
     const messageContent = chatInput.trim();
+
+    const flagged = await checkContent(messageContent, "chat message");
+    if (flagged) { setSendingChat(false); return; }
+
     setChatInput("");
 
     // Optimistically add message to UI

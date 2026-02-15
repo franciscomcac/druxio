@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useModeration } from "@/hooks/use-moderation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const Order = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { checkContent } = useModeration();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
@@ -168,6 +170,8 @@ const Order = () => {
   const handleSendChat = async () => {
     if (!chatInput.trim() || !sessionId || !userId) return;
     setSendingChat(true);
+    const flagged = await checkContent(chatInput.trim(), "order chat message");
+    if (flagged) { setSendingChat(false); return; }
     const { error } = await supabase.from("messages").insert({
       session_id: sessionId, sender_id: userId, content: chatInput.trim(),
     });
