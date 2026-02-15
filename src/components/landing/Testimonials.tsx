@@ -14,14 +14,23 @@ const testimonials = [
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const changeIndex = (newIndex: number) => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex(newIndex);
+      setIsTransitioning(false);
+    }, 300);
+  };
 
   useEffect(() => {
     if (!isAutoPlaying) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
+      changeIndex((currentIndex + 1) % testimonials.length);
+    }, 4000);
     return () => clearInterval(interval);
-  }, [isAutoPlaying]);
+  }, [isAutoPlaying, currentIndex]);
 
   const getVisible = () => {
     const items = [];
@@ -48,7 +57,7 @@ const Testimonials = () => {
             variant="ghost"
             size="icon"
             className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 lg:flex h-10 w-10 rounded-full border border-border/30 hover:bg-card"
-            onClick={() => { setIsAutoPlaying(false); setCurrentIndex((p) => (p - 1 + testimonials.length) % testimonials.length); }}
+            onClick={() => { setIsAutoPlaying(false); changeIndex((currentIndex - 1 + testimonials.length) % testimonials.length); }}
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
@@ -56,16 +65,17 @@ const Testimonials = () => {
             variant="ghost"
             size="icon"
             className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 lg:flex h-10 w-10 rounded-full border border-border/30 hover:bg-card"
-            onClick={() => { setIsAutoPlaying(false); setCurrentIndex((p) => (p + 1) % testimonials.length); }}
+            onClick={() => { setIsAutoPlaying(false); changeIndex((currentIndex + 1) % testimonials.length); }}
           >
             <ChevronRight className="h-5 w-5" />
           </Button>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 transition-all duration-300 ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
             {visible.map((t, i) => (
               <div
                 key={`${t.name}-${currentIndex}-${i}`}
                 className="rounded-xl border border-border/40 bg-card/70 p-7 flex flex-col transition-all duration-300 hover:border-primary/30"
+                style={{ transitionDelay: `${i * 50}ms` }}
               >
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex gap-1">
@@ -98,7 +108,7 @@ const Testimonials = () => {
             {testimonials.map((_, index) => (
               <button
                 key={index}
-                onClick={() => { setIsAutoPlaying(false); setCurrentIndex(index); }}
+                onClick={() => { setIsAutoPlaying(false); changeIndex(index); }}
                 className={`h-2 rounded-full transition-all duration-300 ${
                   index === currentIndex ? "w-8 bg-primary" : "w-2 bg-border/60"
                 }`}
