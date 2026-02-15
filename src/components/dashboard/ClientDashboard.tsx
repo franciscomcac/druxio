@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import RankBadge from "@/components/RankBadge";
 import {
   Zap, DollarSign, Star, Target, Plus, ArrowRight,
 } from "lucide-react";
@@ -121,17 +122,26 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
           </Card>
         </div>
 
-        <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
-          <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            <Button className="w-full justify-between shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => navigate("/post-request")}>
-              Post a Request <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
-              Top Up Wallet <DollarSign className="h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
+            <CardHeader><CardTitle className="text-lg">Your Rank</CardTitle></CardHeader>
+            <CardContent>
+              <RankBadge totalSpent={profile?.total_spent || 0} showProgress size="md" />
+            </CardContent>
+          </Card>
+
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:500ms]">
+            <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <Button className="w-full justify-between shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => navigate("/post-request")}>
+                Post a Request <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
+                Top Up Wallet <DollarSign className="h-4 w-4" />
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

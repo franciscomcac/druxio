@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useModeration } from "@/hooks/use-moderation";
 import Header from "@/components/layout/Header";
+import RankBadge from "@/components/RankBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -72,7 +73,7 @@ const ActiveRequest = () => {
   const [sessionMap, setSessionMap] = useState<Record<string, string>>({}); // partnerId -> sessionId
 
   // Buyer profile (for seller view)
-  const [buyerProfile, setBuyerProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
+  const [buyerProfile, setBuyerProfile] = useState<{ display_name: string | null; avatar_url: string | null; total_spent?: number } | null>(null);
 
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
@@ -113,7 +114,7 @@ const ActiveRequest = () => {
 
       // Fetch buyer profile (for seller view header)
       if (!userIsBuyer) {
-        const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", jobData.buyer_id).single();
+        const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url, total_spent").eq("id", jobData.buyer_id).single();
         setBuyerProfile(bp);
       }
 
@@ -459,7 +460,10 @@ const ActiveRequest = () => {
                 <Badge variant="outline" className="border-primary/20 text-primary/80">{job.category}</Badge>
                 {job.description && <span className="truncate max-w-xs">{job.description}</span>}
                 {!isBuyer && (
-                  <Badge variant="secondary">Seller View</Badge>
+                  <>
+                    <Badge variant="secondary">Seller View</Badge>
+                    {buyerProfile && <RankBadge totalSpent={buyerProfile.total_spent || 0} />}
+                  </>
                 )}
               </div>
             </div>
