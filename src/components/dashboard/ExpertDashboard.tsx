@@ -13,7 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
   DollarSign, Star, Clock, Bell, Send, Loader2, Settings, Target, TrendingUp, Zap, MessageSquare,
-  Package, CheckCircle2, AlertTriangle, ArrowRight,
+  Package, CheckCircle2, AlertTriangle, ArrowRight, X,
+  Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -48,9 +49,35 @@ const timeAgo = (date: string) => {
   return `${Math.floor(mins / 60)}h ago`;
 };
 
+const CATEGORY_ICONS: Record<string, any> = {
+  Gaming: Gamepad2, Tech: Code, Business: Briefcase, Creative: Palette,
+  Music: Music, Fitness: Dumbbell, Languages: Globe, Content: Video,
+};
+
+const getCategoryGroup = (category: string) => {
+  const broad = category.split(":")[0]?.trim() || category;
+  return { broad, icon: CATEGORY_ICONS[broad] || Zap };
+};
+
+type GroupedItems<T> = { broad: string; icon: any; items: T[] }[];
+
+function groupByCategory<T>(
+  items: T[],
+  getCat: (item: T) => string
+): GroupedItems<T> {
+  const map = new Map<string, { icon: any; items: T[] }>();
+  for (const item of items) {
+    const { broad, icon } = getCategoryGroup(getCat(item));
+    if (!map.has(broad)) map.set(broad, { icon, items: [] });
+    map.get(broad)!.items.push(item);
+  }
+  return Array.from(map.entries()).map(([broad, { icon, items }]) => ({ broad, icon, items }));
+}
+
 const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps) => {
   const [openJobs, setOpenJobs] = useState<Job[]>([]);
   const [quotedJobIds, setQuotedJobIds] = useState<Set<string>>(new Set());
+  const [discardedJobIds, setDiscardedJobIds] = useState<Set<string>>(new Set());
   const [quoteDialog, setQuoteDialog] = useState<Job | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteMinutes, setQuoteMinutes] = useState("20");
@@ -368,40 +395,69 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                 <TabsContent value="live" className="mt-0">
                   {loadingJobs ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
-                  ) : openJobs.length > 0 ? (
-                    <div className="space-y-3">
-                      {openJobs.slice(0, 10).map((job, i) => (
-                        <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
-                          <div className="flex-1">
-                            <p className="font-medium text-foreground">{job.title}</p>
-                            <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
-                              <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
-                              <span className="font-bold text-foreground">€{job.budget_max}</span>
-                              <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
-                              <span>{timeAgo(job.created_at)}</span>
+                  ) : (() => {
+                    const visibleJobs = openJobs.filter(j => !discardedJobIds.has(j.id));
+                    if (visibleJobs.length === 0) return (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-primary/[0.06] flex items-center justify-center">
+                          <Bell className="h-7 w-7 text-primary/40" />
+                        </div>
+                        <p className="font-medium text-foreground mb-1">No open requests right now</p>
+                        <p className="text-sm">New requests will appear here in real-time</p>
+                      </div>
+                    );
+                    const grouped = groupByCategory(visibleJobs.slice(0, 10), j => j.category);
+                    return (
+                      <div className="space-y-5">
+                        {grouped.map(({ broad, icon: CatIcon, items }) => (
+                          <div key={broad}>
+                            <div className="flex items-center gap-2 mb-2 px-1">
+                              <CatIcon className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-semibold text-foreground">{broad}</span>
+                              <span className="text-xs text-muted-foreground">({items.length})</span>
+                            </div>
+                            <div className="space-y-2">
+                              {items.map((job) => (
+                                <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03]">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-foreground truncate">{job.title}</p>
+                                    <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+                                      <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
+                                      <span className="font-bold text-foreground">€{job.budget_max}</span>
+                                      <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
+                                      <span>{timeAgo(job.created_at)}</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    {quotedJobIds.has(job.id) ? (
+                                      <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
+                                        <MessageSquare className="h-3 w-3" /> Chat
+                                      </Button>
+                                    ) : (
+                                      <>
+                                        <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
+                                          <Send className="h-3 w-3" /> Quote
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                          onClick={() => setDiscardedJobIds(prev => new Set([...prev, job.id]))}
+                                          title="Discard this request"
+                                        >
+                                          <X className="h-3.5 w-3.5" />
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                          {quotedJobIds.has(job.id) ? (
-                            <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
-                              <MessageSquare className="h-3 w-3" /> Chat
-                            </Button>
-                          ) : (
-                            <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
-                              <Send className="h-3 w-3" /> Quote
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-primary/[0.06] flex items-center justify-center">
-                        <Bell className="h-7 w-7 text-primary/40" />
+                        ))}
                       </div>
-                      <p className="font-medium text-foreground mb-1">No open requests right now</p>
-                      <p className="text-sm">New requests will appear here in real-time</p>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </TabsContent>
 
                 {/* Ongoing Orders */}
@@ -409,7 +465,18 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : ongoingOrders.length > 0 ? (
-                    <div className="space-y-3">{ongoingOrders.slice(0, 10).map(renderOrderCard)}</div>
+                    <div className="space-y-5">
+                      {groupByCategory(ongoingOrders, o => o.job.category).map(({ broad, icon: CatIcon, items }) => (
+                        <div key={broad}>
+                          <div className="flex items-center gap-2 mb-2 px-1">
+                            <CatIcon className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-semibold text-foreground">{broad}</span>
+                            <span className="text-xs text-muted-foreground">({items.length})</span>
+                          </div>
+                          <div className="space-y-3">{items.map(renderOrderCard)}</div>
+                        </div>
+                      ))}
+                    </div>
                   ) : renderEmptyState("No ongoing orders")}
                 </TabsContent>
 
@@ -418,7 +485,18 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : completedOrders.length > 0 ? (
-                    <div className="space-y-3">{completedOrders.slice(0, 10).map(renderOrderCard)}</div>
+                    <div className="space-y-5">
+                      {groupByCategory(completedOrders, o => o.job.category).map(({ broad, icon: CatIcon, items }) => (
+                        <div key={broad}>
+                          <div className="flex items-center gap-2 mb-2 px-1">
+                            <CatIcon className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-semibold text-foreground">{broad}</span>
+                            <span className="text-xs text-muted-foreground">({items.length})</span>
+                          </div>
+                          <div className="space-y-3">{items.map(renderOrderCard)}</div>
+                        </div>
+                      ))}
+                    </div>
                   ) : renderEmptyState("No completed orders yet")}
                 </TabsContent>
 
@@ -427,7 +505,18 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : disputedOrders.length > 0 ? (
-                    <div className="space-y-3">{disputedOrders.slice(0, 10).map(renderOrderCard)}</div>
+                    <div className="space-y-5">
+                      {groupByCategory(disputedOrders, o => o.job.category).map(({ broad, icon: CatIcon, items }) => (
+                        <div key={broad}>
+                          <div className="flex items-center gap-2 mb-2 px-1">
+                            <CatIcon className="h-4 w-4 text-primary" />
+                            <span className="text-sm font-semibold text-foreground">{broad}</span>
+                            <span className="text-xs text-muted-foreground">({items.length})</span>
+                          </div>
+                          <div className="space-y-3">{items.map(renderOrderCard)}</div>
+                        </div>
+                      ))}
+                    </div>
                   ) : renderEmptyState("No disputed orders")}
                 </TabsContent>
               </Tabs>
