@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useModeration } from "@/hooks/use-moderation";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ const Session = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { checkContent } = useModeration();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const [session, setSession] = useState<SessionData | null>(null);
@@ -179,6 +181,8 @@ const Session = () => {
     if (!newMessage.trim() || !sessionId || !currentUser) return;
 
     setSending(true);
+    const flagged = await checkContent(newMessage.trim(), "chat message");
+    if (flagged) { setSending(false); return; }
     try {
       const { error } = await supabase.from("messages").insert({
         session_id: sessionId,

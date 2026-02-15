@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CategoryTemplateFields from "@/components/post-request/CategoryTemplateFields";
 import { supabase } from "@/integrations/supabase/client";
+import { useModeration } from "@/hooks/use-moderation";
 import Header from "@/components/layout/Header";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import { Button } from "@/components/ui/button";
@@ -103,6 +104,7 @@ const PostRequest = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { checkContent } = useModeration();
 
   const [wizardStep, setWizardStep] = useState<"category" | "subcategory" | "ai-refine" | "details" | "waiting">("category");
   const [broadCategory, setBroadCategory] = useState("");
@@ -261,6 +263,14 @@ const PostRequest = () => {
     e.preventDefault();
     if (loading || !title) return;
     setLoading(true);
+
+    // Moderation check
+    const textToCheck = `${title} ${description || ""}`.trim();
+    const flagged = await checkContent(textToCheck, "job request posting");
+    if (flagged) {
+      setLoading(false);
+      return;
+    }
 
     try {
       if (!userId) {
