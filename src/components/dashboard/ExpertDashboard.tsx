@@ -283,10 +283,10 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       <div
         key={order.job.id}
         onClick={() => navigate(`/order/${order.job.id}`)}
-        className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 cursor-pointer transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03]"
+        className="flex items-center justify-between rounded-sm border border-border/20 bg-background/40 p-4 cursor-pointer transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]"
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Avatar className="h-9 w-9 border border-border/30 shrink-0">
+          <Avatar className="h-9 w-9 border border-border/30 shrink-0 rounded-sm">
             <AvatarImage src={order.buyerProfile?.avatar_url} />
             <AvatarFallback className="bg-primary/10 text-primary text-xs">
               {order.buyerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
@@ -370,10 +370,10 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
-          <Card key={i} className="border-border/30 bg-card/60 backdrop-blur-xl transition-all duration-500 hover:shadow-glow hover:-translate-y-1 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+          <Card key={i} className="border-border/30 bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-1 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 80}ms` }}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary">{stat.icon}</div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-primary/[0.08] text-primary">{stat.icon}</div>
                 <div>
                   <p className="text-2xl font-bold text-foreground">{stat.value}</p>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
@@ -388,7 +388,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       {/* Main Content with Tabs */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms]">
+          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms] rounded-sm">
             <CardContent className="pt-6">
               <Tabs defaultValue="live" className="space-y-4">
                 <TabsList className="bg-background/60 border border-border/20 w-full justify-start">
@@ -428,7 +428,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                     const visibleJobs = openJobs.filter(j => !discardedJobIds.has(j.id));
                     if (visibleJobs.length === 0) return (
                       <div className="text-center py-12 text-muted-foreground">
-                        <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-primary/[0.06] flex items-center justify-center">
+                        <div className="mx-auto mb-4 h-16 w-16 rounded-sm bg-primary/[0.06] flex items-center justify-center">
                           <Bell className="h-7 w-7 text-primary/40" />
                         </div>
                         <p className="font-medium text-foreground mb-1">No open requests right now</p>
@@ -445,7 +445,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                       <div className="space-y-2">
                         {grouped.map(({ broad, icon: CatIcon, items }) => (
                           <Collapsible key={broad} defaultOpen={grouped.length <= 3}>
-                            <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
+                            <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
                               <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                               <CatIcon className="h-4 w-4 text-primary" />
                               <span className="text-sm font-semibold text-foreground">{broad}</span>
@@ -457,7 +457,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                   <div key={sub}>
                                     <p className="text-xs font-medium text-muted-foreground px-2 py-1">{sub}</p>
                                     {subItems.map((job) => (
-                                      <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03]">
+                                      <div key={job.id} className="flex items-center justify-between rounded-sm border border-border/20 bg-background/40 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]">
                                         <div className="flex-1 min-w-0">
                                           <p className="font-medium text-foreground truncate">{job.title}</p>
                                           <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
@@ -468,19 +468,17 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                         </div>
                                         <div className="flex items-center gap-1.5 shrink-0">
                                           {quotedJobIds.has(job.id) ? (
-                                            <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
+                                            <Button size="sm" variant="outline" className="gap-1.5 rounded-sm border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
                                               <MessageSquare className="h-3 w-3" /> Chat
                                             </Button>
                                           ) : (
-                                            <>
-                                              <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
-                                                <Send className="h-3 w-3" /> Quote
-                                              </Button>
-                                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDiscardedJobIds(prev => new Set([...prev, job.id]))} title="Discard this request">
-                                                <X className="h-3.5 w-3.5" />
-                                              </Button>
-                                            </>
+                                            <Button size="sm" className="gap-1.5 rounded-sm" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
+                                              <Send className="h-3 w-3" /> Quote
+                                            </Button>
                                           )}
+                                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDiscardedJobIds(prev => new Set([...prev, job.id]))} title="Discard">
+                                            <X className="h-3.5 w-3.5" />
+                                          </Button>
                                         </div>
                                       </div>
                                     ))}
@@ -503,7 +501,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                     <div className="space-y-2">
                       {groupByCategory(ongoingOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
                         <Collapsible key={broad} defaultOpen>
-                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
+                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
                             <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                             <CatIcon className="h-4 w-4 text-primary" />
                             <span className="text-sm font-semibold text-foreground">{broad}</span>
@@ -528,7 +526,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                     <div className="space-y-2">
                       {groupByCategory(completedOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
                         <Collapsible key={broad} defaultOpen>
-                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
+                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
                             <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                             <CatIcon className="h-4 w-4 text-primary" />
                             <span className="text-sm font-semibold text-foreground">{broad}</span>
@@ -553,7 +551,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                     <div className="space-y-2">
                       {groupByCategory(disputedOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
                         <Collapsible key={broad} defaultOpen>
-                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
+                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
                             <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                             <CatIcon className="h-4 w-4 text-primary" />
                             <span className="text-sm font-semibold text-foreground">{broad}</span>
@@ -575,7 +573,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         </div>
 
         <div className="space-y-6">
-          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
+          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
             <CardHeader><CardTitle className="text-lg">Your Categories</CardTitle></CardHeader>
             <CardContent>
               {subscribedCategories.length > 0 ? (
@@ -595,7 +593,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:500ms]">
+          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:500ms] rounded-sm">
             <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/settings")}>
