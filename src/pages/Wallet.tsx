@@ -91,7 +91,7 @@ const Wallet = () => {
     transactions.filter(t => types.includes(t.type));
 
   const renderTransaction = (tx: Transaction) => (
-    <div key={tx.id} className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card">
+    <div key={tx.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
       <div className="flex items-center gap-4">
         <div className="p-2 rounded-full bg-accent">{getTransactionIcon(tx.type)}</div>
         <div>
@@ -200,7 +200,7 @@ const Wallet = () => {
 
         {/* How it works */}
         <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <Card className="border-border/20">
+          <Card className="border-border">
             <CardContent className="p-4 flex items-start gap-3">
               <CreditCard className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
@@ -209,7 +209,7 @@ const Wallet = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/20">
+          <Card className="border-border">
             <CardContent className="p-4 flex items-start gap-3">
               <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
@@ -218,7 +218,7 @@ const Wallet = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/20">
+          <Card className="border-border">
             <CardContent className="p-4 flex items-start gap-3">
               <Receipt className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
@@ -237,7 +237,7 @@ const Wallet = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all" className="space-y-4">
-              <TabsList className="bg-background/60 border border-border/20 flex-wrap h-auto gap-1 p-1">
+              <TabsList className="bg-background/60 border border-border flex-wrap h-auto gap-1 p-1">
                 <TabsTrigger value="all" className="text-xs">All ({transactions.length})</TabsTrigger>
                 <TabsTrigger value="earnings" className="text-xs">Earnings ({filterByType(["session_earning"]).length})</TabsTrigger>
                 <TabsTrigger value="payments" className="text-xs">Payments ({filterByType(["session_payment"]).length})</TabsTrigger>

@@ -95,7 +95,7 @@ const SoldOrders = () => {
     return (
       <Card
         key={order.job.id}
-        className="cursor-pointer border-border/20 bg-background/40 hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
+        className="cursor-pointer border-border bg-background/40 hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
         onClick={() => {
           if (order.job.status === "accepted") navigate(`/order/${order.job.id}`);
         }}
@@ -133,7 +133,7 @@ const SoldOrders = () => {
                 </span>
               )}
               <div className="flex items-center gap-2">
-                <Avatar className="h-7 w-7 border border-border/30">
+                <Avatar className="h-7 w-7 border border-border">
                   <AvatarImage src={order.buyerProfile?.avatar_url} />
                   <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
                     {order.buyerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
@@ -163,7 +163,7 @@ const SoldOrders = () => {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : orders.length === 0 ? (
-          <Card className="border-border/20 bg-background/40">
+          <Card className="border-border bg-background/40">
             <CardContent className="flex flex-col items-center py-16 text-center">
               <Package className="h-12 w-12 text-muted-foreground/40 mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-1">No sold orders yet</h3>
@@ -172,7 +172,7 @@ const SoldOrders = () => {
           </Card>
         ) : (
           <Tabs defaultValue="active" className="space-y-4">
-            <TabsList className="bg-background/60 border border-border/20">
+            <TabsList className="bg-background/60 border border-border">
               <TabsTrigger value="active" className="gap-1.5">
                 <Clock className="h-3.5 w-3.5" /> In Progress ({activeOrders.length})
               </TabsTrigger>

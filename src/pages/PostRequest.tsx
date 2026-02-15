@@ -405,7 +405,7 @@ const PostRequest = () => {
                   }`}>
                     {s < stepNumber ? <Check className="h-4 w-4" /> : s}
                   </div>
-                  {s < 3 && <div className={`h-0.5 w-8 rounded-full transition-colors duration-300 ${s < stepNumber ? "bg-primary" : "bg-border/40"}`} />}
+                  {s < 3 && <div className={`h-0.5 w-8 rounded-full transition-colors duration-300 ${s < stepNumber ? "bg-primary" : "bg-border"}`} />}
                 </div>
               ))}
               <span className="ml-3 text-sm text-muted-foreground">
@@ -526,7 +526,7 @@ const PostRequest = () => {
             </div>
 
             {/* Input area */}
-            <Card className="border-border/30 bg-card/60 backdrop-blur-xl mb-6">
+            <Card className="border-border bg-card/60 backdrop-blur-xl mb-6">
               <CardContent className="pt-6 space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -537,7 +537,7 @@ const PostRequest = () => {
                     placeholder="e.g. I want someone to build me a custom Discord bot that tracks server activity and sends daily reports..."
                     value={userIdea}
                     onChange={(e) => setUserIdea(e.target.value)}
-                    className="min-h-28 bg-background/60 border-border/40 focus:border-primary/40 text-[15px]"
+                    className="min-h-28 bg-background/60 border-border focus:border-primary/40 text-[15px]"
                     maxLength={500}
                   />
                   <p className="text-xs text-muted-foreground text-right">{userIdea.length}/500</p>
@@ -637,11 +637,11 @@ const PostRequest = () => {
             </div>
 
             <form id="post-request-form" onSubmit={handleSubmit} className="space-y-6">
-              <Card className="border-border/30 bg-card/60 backdrop-blur-xl">
+              <Card className="border-border bg-card/60 backdrop-blur-xl">
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Title</label>
-                    <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border/40 focus:border-primary/40" />
+                    <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border focus:border-primary/40" />
                   </div>
 
                    <div className="space-y-2">
@@ -652,9 +652,9 @@ const PostRequest = () => {
                         min={1}
                         value={deadlineValue}
                         onChange={(e) => setDeadlineValue(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-24 bg-background/60 border-border/40 focus:border-primary/40"
+                        className="w-24 bg-background/60 border-border focus:border-primary/40"
                       />
-                      <div className="flex rounded-lg border border-border/40 overflow-hidden bg-background/60">
+                      <div className="flex rounded-lg border border-border overflow-hidden bg-background/60">
                         {(["minutes", "hours", "days"] as const).map((unit) => (
                           <button
                             key={unit}
@@ -675,7 +675,7 @@ const PostRequest = () => {
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Description</label>
-                    <Textarea placeholder="Describe your issue in detail..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-24 bg-background/60 border-border/40 focus:border-primary/40" maxLength={1000} />
+                    <Textarea placeholder="Describe your issue in detail..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-24 bg-background/60 border-border focus:border-primary/40" maxLength={1000} />
                   </div>
 
                   <CategoryTemplateFields
@@ -741,7 +741,7 @@ const PostRequest = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-border/30 bg-card/60 animate-fade-in [animation-delay:400ms]">
+              <Card className="border-border bg-card/60 animate-fade-in [animation-delay:400ms]">
                 <CardContent className="flex items-center gap-4 p-5">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                     <Clock className="h-6 w-6 text-primary" />

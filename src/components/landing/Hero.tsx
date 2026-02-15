@@ -73,7 +73,7 @@ const Hero = () => {
       <div className="container relative z-10 mx-auto px-4">
         <div className="mx-auto max-w-3xl text-center">
           {/* Live badge */}
-          <div className="mb-8 inline-flex items-center gap-2 border border-border/40 bg-card/40 px-4 py-2 rounded-sm text-sm animate-fade-in">
+          <div className="mb-8 inline-flex items-center gap-2 border border-border bg-card/40 px-4 py-2 rounded-sm text-sm animate-fade-in">
             <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 opacity-75" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
@@ -95,7 +95,7 @@ const Hero = () => {
 
           {/* Inline task form — THE main CTA */}
           <form onSubmit={handleQuickPost} className="mx-auto max-w-xl mb-6 animate-fade-in [animation-delay:300ms]">
-            <div className="flex gap-2 p-1.5 border border-border/50 bg-card/60 rounded-sm backdrop-blur-sm">
+            <div className="flex gap-2 p-1.5 border border-border bg-card/60 rounded-sm backdrop-blur-sm">
               <Input
                 value={taskTitle}
                 onChange={(e) => setTaskTitle(e.target.value)}
