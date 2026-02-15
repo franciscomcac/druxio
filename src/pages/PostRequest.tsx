@@ -86,6 +86,50 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
   ],
 };
 
+const TITLE_PLACEHOLDERS: Record<string, string> = {
+  "Gaming: Valorant": 'e.g. "Boost me to Diamond rank"',
+  "Gaming: Fortnite": 'e.g. "Need a duo partner for ranked"',
+  "Gaming: Minecraft": 'e.g. "Fix Minecraft server TPS drops"',
+  "Gaming: CS2": 'e.g. "Coach me to reach Faceit Level 8"',
+  "Gaming: Apex": 'e.g. "Help me hit Masters this split"',
+  "Gaming: League of Legends": 'e.g. "Coaching for jungle macro"',
+  "Tech: Discord Bots": 'e.g. "Build a custom moderation bot"',
+  "Tech: Web Dev": 'e.g. "Fix my React app login bug"',
+  "Tech: SEO": 'e.g. "Audit and improve my site SEO"',
+  "Tech: Server Setup": 'e.g. "Set up a VPS with Nginx"',
+  "Tech: App Dev": 'e.g. "Build a mobile app prototype"',
+  "Tech: WordPress": 'e.g. "Speed up my WordPress site"',
+  "Business: Marketing": 'e.g. "Create a social media strategy"',
+  "Business: Startup": 'e.g. "Review my pitch deck"',
+  "Business: E-commerce": 'e.g. "Set up my Shopify store"',
+  "Business: Accounting": 'e.g. "Help with quarterly tax filing"',
+  "Creative: Design": 'e.g. "Design a logo for my brand"',
+  "Creative: Video Editing": 'e.g. "Edit a 10-min YouTube video"',
+  "Creative: Ad Copy": 'e.g. "Write copy for my Facebook ads"',
+  "Creative: Thumbnails": 'e.g. "Create 5 YouTube thumbnails"',
+  "Music: Production": 'e.g. "Produce a lo-fi beat"',
+  "Music: Mixing": 'e.g. "Mix and master my track"',
+  "Music: Guitar": 'e.g. "Teach me fingerpicking basics"',
+  "Fitness: Training": 'e.g. "Create a 12-week workout plan"',
+  "Fitness: Nutrition": 'e.g. "Build a meal plan for bulking"',
+  "Languages: English": 'e.g. "Help me prep for IELTS speaking"',
+  "Languages: Spanish": 'e.g. "Conversational Spanish lessons"',
+  "Content: Streaming": 'e.g. "Set up my Twitch overlays"',
+  "Content: YouTube": 'e.g. "Grow my YouTube channel"',
+  "Content: TikTok": 'e.g. "Edit viral TikTok clips"',
+};
+
+const BROAD_PLACEHOLDERS: Record<string, string> = {
+  Gaming: 'e.g. "Help me rank up in my game"',
+  Tech: 'e.g. "Fix a bug in my project"',
+  Business: 'e.g. "Help grow my online business"',
+  Creative: 'e.g. "Design something for my brand"',
+  Music: 'e.g. "Help with my music project"',
+  Fitness: 'e.g. "Create a workout plan for me"',
+  Languages: 'e.g. "Help me practice a language"',
+  Content: 'e.g. "Grow my content channel"',
+};
+
 interface Quote {
   id: string;
   expert_id: string;
@@ -641,7 +685,7 @@ const PostRequest = () => {
                 <CardContent className="space-y-5 pt-6">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Title</label>
-                    <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border focus:border-primary/40" />
+                    <Input placeholder={TITLE_PLACEHOLDERS[category] || BROAD_PLACEHOLDERS[broadCategory] || 'e.g. "Describe what you need"'} value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border focus:border-primary/40" />
                   </div>
 
                    <div className="space-y-2">
