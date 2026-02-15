@@ -106,7 +106,8 @@ const PostRequest = () => {
   const { toast } = useToast();
   const { checkContent } = useModeration();
 
-  const [wizardStep, setWizardStep] = useState<"category" | "subcategory" | "ai-refine" | "details" | "waiting">("category");
+  const [wizardStep, setWizardStep] = useState<"category" | "subcategory" | "ai-refine" | "details" | "waiting" | "matching">("category");
+  const [matchingData, setMatchingData] = useState<{ onlineSellers: number; avgResponseMin: number } | null>(null);
   const [broadCategory, setBroadCategory] = useState("");
   const [category, setCategory] = useState(searchParams.get("category") || "");
   const [title, setTitle] = useState(searchParams.get("title") || "");
@@ -307,15 +308,36 @@ const PostRequest = () => {
         return;
       }
 
-      supabase
+      // Fetch online sellers for this category
+      const catForSearch = category.split(":")[0]?.trim() || category;
+      const { data: expertCats } = await supabase
         .from("expert_categories")
-        .select("*", { count: "exact", head: true })
-        .ilike("category", `%${mainCategory}%`)
-        .then(({ count }) => setOnlineCount(count || 0));
+        .select("user_id")
+        .ilike("category", `%${catForSearch}%`);
 
+      let onlineSellers = 0;
+      let avgResponseMin = 5;
+
+      if (expertCats && expertCats.length > 0) {
+        const uniqueIds = [...new Set(expertCats.map(e => e.user_id))];
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("is_online, response_time_minutes")
+          .in("id", uniqueIds)
+          .eq("is_online", true);
+
+        onlineSellers = profiles?.length || 0;
+        if (profiles && profiles.length > 0) {
+          const times = profiles.map(p => p.response_time_minutes || 5);
+          avgResponseMin = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+        }
+      }
+
+      setOnlineCount(onlineSellers);
       setJobId(data.id);
+      setMatchingData({ onlineSellers, avgResponseMin });
+      setWizardStep("matching");
       setLoading(false);
-      navigate(`/request/${data.id}`);
     } catch (err: any) {
       console.error("Submit error:", err);
       toast({ title: "Error posting request", description: err?.message || "Something went wrong", variant: "destructive" });
@@ -676,6 +698,77 @@ const PostRequest = () => {
                 <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary/60" /> Free to post</span>
               </div>
             </form>
+          </div>
+        )}
+
+        {/* Matching interstitial */}
+        {wizardStep === "matching" && matchingData && (
+          <div className="mx-auto max-w-lg animate-fade-in text-center py-8">
+            <div className="mb-8">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
+                <Check className="h-10 w-10 text-primary animate-fade-in" />
+              </div>
+              <h1 className="text-3xl font-bold text-foreground mb-2 animate-fade-in [animation-delay:100ms]">
+                Request Posted!
+              </h1>
+              <p className="text-muted-foreground animate-fade-in [animation-delay:200ms]">
+                We're notifying experts in <span className="font-semibold text-foreground">{category}</span>
+              </p>
+            </div>
+
+            <div className="space-y-4 mb-8">
+              <Card className="border-primary/20 bg-primary/[0.04] animate-fade-in [animation-delay:300ms]">
+                <CardContent className="flex items-center gap-4 p-5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-chart-2/10">
+                    <Users className="h-6 w-6 text-chart-2" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-2xl font-bold text-foreground">
+                      {matchingData.onlineSellers}
+                      <span className="text-base font-normal text-muted-foreground ml-1">
+                        online seller{matchingData.onlineSellers !== 1 ? "s" : ""}
+                      </span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {matchingData.onlineSellers > 0
+                        ? `Available right now for ${category.split(":")[0]?.trim()}`
+                        : "No sellers online — they'll be notified when they come back"}
+                    </p>
+                  </div>
+                  {matchingData.onlineSellers > 0 && (
+                    <span className="ml-auto h-3 w-3 rounded-full bg-chart-2 animate-pulse shrink-0" />
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-border/30 bg-card/60 animate-fade-in [animation-delay:400ms]">
+                <CardContent className="flex items-center gap-4 p-5">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                    <Clock className="h-6 w-6 text-primary" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-2xl font-bold text-foreground">
+                      ~{matchingData.avgResponseMin}
+                      <span className="text-base font-normal text-muted-foreground ml-1">minutes</span>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Estimated time for first offer
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Button
+              size="lg"
+              className="gap-2 shadow-glow w-full animate-fade-in [animation-delay:500ms]"
+              onClick={() => navigate(`/request/${jobId}`)}
+            >
+              Go to Live Request <Zap className="h-4 w-4" />
+            </Button>
+            <p className="text-xs text-muted-foreground mt-3 animate-fade-in [animation-delay:600ms]">
+              You'll see offers appear in real-time
+            </p>
           </div>
         )}
 
