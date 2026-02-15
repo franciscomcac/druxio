@@ -20,6 +20,7 @@ import PurchasedOrders from "./pages/PurchasedOrders";
 import SoldOrders from "./pages/SoldOrders";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import CategoryPage from "./pages/CategoryPage";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/category/:slug" element={<CategoryPage />} />
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />

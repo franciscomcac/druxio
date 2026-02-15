@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SimilarExperts from "@/components/experts/SimilarExperts";
+import PortfolioSection from "@/components/experts/PortfolioSection";
+import AvailabilityBadge from "@/components/experts/AvailabilityBadge";
+import { useFavorites } from "@/hooks/use-favorites";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -56,6 +59,7 @@ const MentorProfile = () => {
   const { mentorId } = useParams<{ mentorId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const [mentor, setMentor] = useState<MentorProfileData | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -153,7 +157,14 @@ const MentorProfile = () => {
           </Button>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="h-9 w-9"><Share2 className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9"><Heart className="h-4 w-4" /></Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-9 w-9 ${mentorId && isFavorite(mentorId) ? "text-destructive" : ""}`}
+              onClick={() => mentorId && toggleFavorite(mentorId)}
+            >
+              <Heart className={`h-4 w-4 ${mentorId && isFavorite(mentorId) ? "fill-current" : ""}`} />
+            </Button>
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground"><Flag className="h-4 w-4" /></Button>
           </div>
         </div>
@@ -202,7 +213,7 @@ const MentorProfile = () => {
 
                 {/* Status */}
                 <div className="flex items-center justify-center gap-2 mb-6">
-                  {mentor.is_online ? (
+                {mentor.is_online ? (
                     <Badge variant="default" className="gap-1 bg-chart-2 hover:bg-chart-2">
                       <span className="h-2 w-2 rounded-full bg-primary-foreground animate-pulse" />
                       Online Now
@@ -212,6 +223,7 @@ const MentorProfile = () => {
                       <Clock className="h-3 w-3" /> Offline
                     </Badge>
                   )}
+                  <AvailabilityBadge isOnline={mentor.is_online} responseTimeMinutes={(mentor as any).response_time_minutes} />
                 </div>
 
                 {/* Categories */}
@@ -246,6 +258,7 @@ const MentorProfile = () => {
             <Tabs defaultValue="reviews" className="w-full">
               <TabsList className="w-full justify-start mb-6">
                 <TabsTrigger value="reviews">Reviews ({totalReviews})</TabsTrigger>
+                <TabsTrigger value="portfolio">Portfolio</TabsTrigger>
                 <TabsTrigger value="about">About</TabsTrigger>
               </TabsList>
 
@@ -336,6 +349,10 @@ const MentorProfile = () => {
                     </Card>
                   ))
                 )}
+              </TabsContent>
+
+              <TabsContent value="portfolio" className="space-y-6">
+                {mentorId && <PortfolioSection userId={mentorId} />}
               </TabsContent>
 
               <TabsContent value="about" className="space-y-6">
