@@ -601,16 +601,23 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
         <div className="space-y-6">
           <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
-            <CardHeader><CardTitle className="text-lg">Your Categories</CardTitle></CardHeader>
-            <CardContent>
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-lg">Your Categories</CardTitle>
+              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => navigate("/settings")}>
+                Edit
+              </Button>
+            </CardHeader>
+            <CardContent className="pb-4">
               {subscribedCategories.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                   {subscribedCategories.map((cat) => (
-                    <Badge key={cat} variant="secondary" className="bg-primary/[0.08] text-primary border-primary/20">{cat}</Badge>
+                    <span key={cat} className="shrink-0 rounded-sm border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-foreground">
+                      {cat.replace(/^[^:]+:\s*/, "")}
+                    </span>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-6 text-muted-foreground">
+                <div className="text-center py-4 text-muted-foreground">
                   <p className="text-sm mb-2">Subscribe to categories to receive requests</p>
                   <Button variant="link" size="sm" className="text-primary" onClick={() => navigate("/settings")}>
                     Manage Categories
