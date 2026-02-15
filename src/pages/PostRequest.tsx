@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import CategoryTemplateFields from "@/components/post-request/CategoryTemplateFields";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
@@ -122,6 +123,7 @@ const PostRequest = () => {
 
   // AI refine state
   const [userIdea, setUserIdea] = useState("");
+  const [templateData, setTemplateData] = useState<Record<string, string>>({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<{
     title: string;
@@ -643,6 +645,12 @@ const PostRequest = () => {
                     <label className="text-sm font-medium text-foreground">Description</label>
                     <Textarea placeholder="Describe your issue in detail..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-24 bg-background/60 border-border/40 focus:border-primary/40" maxLength={1000} />
                   </div>
+
+                  <CategoryTemplateFields
+                    category={category}
+                    templateData={templateData}
+                    onChange={(key, value) => setTemplateData(prev => ({ ...prev, [key]: value }))}
+                  />
 
                 </CardContent>
               </Card>

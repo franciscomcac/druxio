@@ -14,9 +14,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import TimezoneSelect from "@/components/settings/TimezoneSelect";
+import PortfolioSection from "@/components/experts/PortfolioSection";
 import {
   User, Bell, Shield, CreditCard, Loader2, Save, Camera, Clock, Tag, X,
-  ChevronDown, ChevronUp, Wifi, WifiOff,
+  ChevronDown, ChevronUp, Wifi, WifiOff, Image,
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
 
@@ -227,7 +228,10 @@ const Settings = () => {
           <TabsList className="w-full justify-start flex-wrap h-auto gap-2 bg-transparent p-0">
             <TabsTrigger value="profile" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><User className="h-4 w-4" /> Profile</TabsTrigger>
             {isMentor && (
-              <TabsTrigger value="categories" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Tag className="h-4 w-4" /> Categories</TabsTrigger>
+              <>
+                <TabsTrigger value="portfolio" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Image className="h-4 w-4" /> Portfolio</TabsTrigger>
+                <TabsTrigger value="categories" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Tag className="h-4 w-4" /> Categories</TabsTrigger>
+              </>
             )}
             <TabsTrigger value="notifications" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Bell className="h-4 w-4" /> Notifications</TabsTrigger>
             <TabsTrigger value="security" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Shield className="h-4 w-4" /> Security</TabsTrigger>
@@ -289,6 +293,12 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {isMentor && (
+            <TabsContent value="portfolio">
+              {profile && <PortfolioSection userId={profile.id} editable />}
+            </TabsContent>
+          )}
 
           {isMentor && (
             <TabsContent value="categories">

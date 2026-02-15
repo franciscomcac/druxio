@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import AvailabilityBadge from "@/components/experts/AvailabilityBadge";
+import { useFavorites } from "@/hooks/use-favorites";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +21,7 @@ import {
   Video,
   X,
   Loader2,
+  Heart,
 } from "lucide-react";
 
 interface Mentor {
@@ -42,6 +45,7 @@ interface Category {
 const Search = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { isFavorite, toggleFavorite } = useFavorites();
   
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -342,6 +346,7 @@ const Search = () => {
                         </Avatar>
                         <h3 className="font-semibold text-foreground">{mentor.display_name}</h3>
                         <p className="text-sm text-muted-foreground line-clamp-2">{mentor.bio || "Expert"}</p>
+                        <AvailabilityBadge isOnline={mentor.is_online} responseTimeMinutes={(mentor as any).response_time_minutes} />
                       </div>
 
                       {/* Stats */}
@@ -381,13 +386,13 @@ const Search = () => {
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-8 w-8"
+                            className={`h-8 w-8 ${isFavorite(mentor.id) ? "text-destructive" : ""}`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              navigate(`/mentor/${mentor.id}`);
+                              toggleFavorite(mentor.id);
                             }}
                           >
-                            <MessageSquare className="h-4 w-4" />
+                            <Heart className={`h-4 w-4 ${isFavorite(mentor.id) ? "fill-current" : ""}`} />
                           </Button>
                           <Button 
                             size="icon" 
@@ -398,7 +403,7 @@ const Search = () => {
                               navigate(`/mentor/${mentor.id}`);
                             }}
                           >
-                            <Video className="h-4 w-4" />
+                            <MessageSquare className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>

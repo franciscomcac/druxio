@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import {
   Gamepad2, Code, Briefcase, Palette,
@@ -5,17 +6,18 @@ import {
 } from "lucide-react";
 
 const categories = [
-  { name: "Gaming", icon: <Gamepad2 className="h-6 w-6" />, subcategories: ["Minecraft", "Valorant", "Fortnite", "CS2", "Apex", "LoL"], color: "from-primary/15 to-primary/5" },
-  { name: "Tech Support", icon: <Code className="h-6 w-6" />, subcategories: ["Discord Bots", "Web Dev", "SEO", "Server Setup", "App Dev", "WordPress"], color: "from-primary/12 to-primary/5" },
-  { name: "Business", icon: <Briefcase className="h-6 w-6" />, subcategories: ["Marketplace", "Dropshipping", "Accounting", "Legal", "Marketing", "Startup"], color: "from-primary/15 to-primary/5" },
-  { name: "Creative", icon: <Palette className="h-6 w-6" />, subcategories: ["Ad Copy", "Logo Design", "Video Editing", "Thumbnails", "UI/UX", "Branding"], color: "from-primary/12 to-primary/5" },
-  { name: "Music", icon: <Music className="h-6 w-6" />, subcategories: ["Production", "Mixing", "Guitar", "Piano", "Vocals", "Beat Making"], color: "from-primary/15 to-primary/5" },
-  { name: "Fitness", icon: <Dumbbell className="h-6 w-6" />, subcategories: ["Personal Training", "Nutrition", "Yoga", "Weight Loss"], color: "from-primary/12 to-primary/5" },
-  { name: "Languages", icon: <Globe className="h-6 w-6" />, subcategories: ["English", "Spanish", "French", "Japanese", "German"], color: "from-primary/15 to-primary/5" },
-  { name: "Content", icon: <Camera className="h-6 w-6" />, subcategories: ["Streaming", "YouTube", "TikTok", "Photography", "Podcasting"], color: "from-primary/12 to-primary/5" },
+  { name: "Gaming", slug: "gaming", icon: <Gamepad2 className="h-6 w-6" />, subcategories: ["Minecraft", "Valorant", "Fortnite", "CS2", "Apex", "LoL"], color: "from-primary/15 to-primary/5" },
+  { name: "Tech", slug: "tech", icon: <Code className="h-6 w-6" />, subcategories: ["Discord Bots", "Web Dev", "SEO", "Server Setup", "App Dev", "WordPress"], color: "from-primary/12 to-primary/5" },
+  { name: "Business", slug: "business", icon: <Briefcase className="h-6 w-6" />, subcategories: ["Marketplace", "Dropshipping", "Accounting", "Legal", "Marketing", "Startup"], color: "from-primary/15 to-primary/5" },
+  { name: "Creative", slug: "creative", icon: <Palette className="h-6 w-6" />, subcategories: ["Ad Copy", "Logo Design", "Video Editing", "Thumbnails", "UI/UX", "Branding"], color: "from-primary/12 to-primary/5" },
+  { name: "Music", slug: "music", icon: <Music className="h-6 w-6" />, subcategories: ["Production", "Mixing", "Guitar", "Piano", "Vocals", "Beat Making"], color: "from-primary/15 to-primary/5" },
+  { name: "Fitness", slug: "fitness", icon: <Dumbbell className="h-6 w-6" />, subcategories: ["Personal Training", "Nutrition", "Yoga", "Weight Loss"], color: "from-primary/12 to-primary/5" },
+  { name: "Languages", slug: "languages", icon: <Globe className="h-6 w-6" />, subcategories: ["English", "Spanish", "French", "Japanese", "German"], color: "from-primary/15 to-primary/5" },
+  { name: "Content", slug: "content", icon: <Camera className="h-6 w-6" />, subcategories: ["Streaming", "YouTube", "TikTok", "Photography", "Podcasting"], color: "from-primary/12 to-primary/5" },
 ];
 
 const Categories = () => {
+  const navigate = useNavigate();
   return (
     <section id="categories" className="relative bg-background py-28 overflow-hidden">
       <div className="absolute bottom-0 right-[10%] h-[500px] w-[500px] rounded-full bg-primary/[0.03] blur-[120px] pointer-events-none" />
@@ -39,6 +41,7 @@ const Categories = () => {
               key={cat.name}
               className="group rounded-2xl border border-border/30 bg-card/40 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow hover:-translate-y-2 animate-slide-up cursor-pointer"
               style={{ animationDelay: `${i * 80}ms` }}
+              onClick={() => navigate(`/category/${cat.slug}`)}
             >
               <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${cat.color} text-primary transition-transform duration-500 group-hover:scale-110`}>
                 {cat.icon}

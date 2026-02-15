@@ -100,6 +100,27 @@ export type Database = {
         }
         Relationships: []
       }
+      favorites: {
+        Row: {
+          created_at: string
+          expert_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expert_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expert_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           accepted_quote_id: string | null
@@ -261,6 +282,36 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          link_url: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -273,6 +324,7 @@ export type Database = {
           is_online: boolean | null
           location: string | null
           rating_avg: number | null
+          response_time_minutes: number | null
           skills: string[] | null
           stripe_connect_id: string | null
           stripe_customer_id: string | null
@@ -292,6 +344,7 @@ export type Database = {
           is_online?: boolean | null
           location?: string | null
           rating_avg?: number | null
+          response_time_minutes?: number | null
           skills?: string[] | null
           stripe_connect_id?: string | null
           stripe_customer_id?: string | null
@@ -311,6 +364,7 @@ export type Database = {
           is_online?: boolean | null
           location?: string | null
           rating_avg?: number | null
+          response_time_minutes?: number | null
           skills?: string[] | null
           stripe_connect_id?: string | null
           stripe_customer_id?: string | null
