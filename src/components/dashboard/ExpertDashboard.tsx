@@ -204,11 +204,14 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const completedOrders = orders.filter(o => o.job.status === "completed");
   const disputedOrders = orders.filter(o => o.job.status === "disputed");
 
+  const ratingValue = profile?.rating_avg ? Number(profile.rating_avg) : 0;
+  const ratingPercent = ratingValue > 0 ? Math.round((ratingValue / 5) * 100) : 0;
+
   const statCards = [
-    { icon: <DollarSign className="h-6 w-6" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Earnings" },
-    { icon: <Target className="h-6 w-6" />, value: profile?.total_sessions || 0, label: "Jobs Completed" },
-    { icon: <Star className="h-6 w-6" />, value: profile?.rating_avg?.toFixed(1) || "0.0", label: "Rating" },
-    { icon: <Zap className="h-6 w-6" />, value: subscribedCategories.length, label: "Categories" },
+    { icon: <DollarSign className="h-6 w-6" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Earnings", subtitle: null },
+    { icon: <Target className="h-6 w-6" />, value: profile?.total_sessions || 0, label: "Jobs Completed", subtitle: null },
+    { icon: <Star className="h-6 w-6" />, value: ratingValue.toFixed(1), label: "Rating", subtitle: ratingValue > 0 ? `${ratingPercent}% satisfaction` : null },
+    { icon: <Zap className="h-6 w-6" />, value: subscribedCategories.length, label: "Categories", subtitle: null },
   ];
 
   const renderOrderCard = (order: OrderData) => {
@@ -318,6 +321,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                 <div>
                   <p className="text-2xl font-bold text-foreground">{stat.value}</p>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  {stat.subtitle && <p className="text-xs text-primary mt-0.5">{stat.subtitle}</p>}
                 </div>
               </div>
             </CardContent>
