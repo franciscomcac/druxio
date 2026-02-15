@@ -21,13 +21,22 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    const getRedirect = () => {
+      const saved = localStorage.getItem("auth_redirect");
+      if (saved) {
+        localStorage.removeItem("auth_redirect");
+        return saved;
+      }
+      return "/dashboard";
+    };
+
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) navigate("/dashboard");
+      if (session) navigate(getRedirect());
     };
     checkUser();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      if (session) navigate("/dashboard");
+      if (session) navigate(getRedirect());
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -94,6 +103,10 @@ const Auth = () => {
             disabled={googleLoading}
             onClick={async () => {
               setGoogleLoading(true);
+              // Preserve any pending redirect (e.g. from post-request flow)
+              if (!localStorage.getItem("auth_redirect")) {
+                localStorage.setItem("auth_redirect", "/dashboard");
+              }
               const { error } = await lovable.auth.signInWithOAuth("google", {
                 redirect_uri: window.location.origin,
               });
