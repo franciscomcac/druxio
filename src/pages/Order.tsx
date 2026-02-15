@@ -335,7 +335,7 @@ const Order = () => {
       <main className="container mx-auto px-4 py-6 max-w-5xl">
         {/* Back button & title */}
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate(isBuyer ? "/purchased-orders" : "/sold-orders")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(isBuyer ? "/orders/purchased" : "/orders/sold")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
