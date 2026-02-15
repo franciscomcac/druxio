@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
   DollarSign, Star, Clock, Bell, Send, Loader2, Settings, Target, TrendingUp, Zap, MessageSquare,
-  Package, CheckCircle2, AlertTriangle, ArrowRight, X, ChevronRight, FolderOpen,
+  Package, CheckCircle2, AlertTriangle, ArrowRight, X, ChevronRight, FolderOpen, FileText, Eye,
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -117,6 +117,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const [quoteMessage, setQuoteMessage] = useState("");
   const [sendingQuote, setSendingQuote] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(true);
+  const [previewJob, setPreviewJob] = useState<Job | null>(null);
 
   // Orders state
   const [orders, setOrders] = useState<OrderData[]>([]);
@@ -392,6 +393,50 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Job Preview Dialog */}
+      <Dialog open={!!previewJob} onOpenChange={() => setPreviewJob(null)}>
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              {previewJob?.title}
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-3 pt-1">
+              <Badge variant="secondary" className="text-xs">{previewJob?.category}</Badge>
+              <span className="font-semibold text-foreground">€{previewJob?.budget_max}</span>
+              <span className="flex items-center gap-1 text-xs"><Clock className="h-3 w-3" /> {previewJob?.deadline_minutes}min</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Description</p>
+              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                {previewJob?.description || "No description provided."}
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="ghost" onClick={() => setPreviewJob(null)} className="rounded-sm">
+              Dismiss
+            </Button>
+            {previewJob && !quotedJobIds.has(previewJob.id) && (
+              <Button className="gap-1.5 rounded-sm" onClick={() => {
+                const job = previewJob;
+                setPreviewJob(null);
+                setQuoteDialog(job);
+                setQuotePrice(String(Math.round(job.budget_max * 0.8)));
+              }}>
+                <Send className="h-3.5 w-3.5" /> Send Quote
+              </Button>
+            )}
+            {previewJob && quotedJobIds.has(previewJob.id) && (
+              <Button variant="outline" className="gap-1.5 rounded-sm border-primary/30 text-primary" onClick={() => { navigate(`/request/${previewJob.id}`); setPreviewJob(null); }}>
+                <MessageSquare className="h-3.5 w-3.5" /> Chat
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
@@ -483,8 +528,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                     <p className="text-xs font-medium text-muted-foreground px-2 py-1">{sub}</p>
                                     {subItems.map((job) => (
                                       <div key={job.id} className="flex items-center justify-between rounded-sm border border-border bg-background/40 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]">
-                                        <div className="flex-1 min-w-0">
-                                          <p className="font-medium text-foreground truncate">{job.title}</p>
+                                        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setPreviewJob(job)}>
+                                          <p className="font-medium text-foreground truncate hover:text-primary transition-colors">{job.title}</p>
                                           <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
                                             <span className="font-bold text-foreground">€{job.budget_max}</span>
                                             <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
