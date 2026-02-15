@@ -21,7 +21,7 @@ import {
   Apple, Salad,
   BookOpen, Languages,
   Tv, Youtube, Clapperboard,
-  MessageSquarePlus,
+  MessageSquarePlus, Wand2, PencilLine,
 } from "lucide-react";
 
 const BROAD_CATEGORIES = [
@@ -103,7 +103,7 @@ const PostRequest = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const [wizardStep, setWizardStep] = useState<"category" | "subcategory" | "details" | "waiting">("category");
+  const [wizardStep, setWizardStep] = useState<"category" | "subcategory" | "ai-refine" | "details" | "waiting">("category");
   const [broadCategory, setBroadCategory] = useState("");
   const [category, setCategory] = useState(searchParams.get("category") || "");
   const [title, setTitle] = useState(searchParams.get("title") || "");
@@ -119,6 +119,18 @@ const PostRequest = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const pendingSubmitRef = useRef(false);
+
+  // AI refine state
+  const [userIdea, setUserIdea] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState<{
+    title: string;
+    description: string;
+    category: string;
+    broad_category: string;
+    clarifying_note: string;
+  } | null>(null);
+
   // Track auth state reactively & auto-submit after auth
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
@@ -126,7 +138,6 @@ const PostRequest = () => {
       setUserId(uid);
       if (uid && pendingSubmitRef.current) {
         pendingSubmitRef.current = false;
-        // Trigger submit on next tick so userId state is set
         setTimeout(() => {
           const form = document.getElementById("post-request-form") as HTMLFormElement;
           form?.requestSubmit();
@@ -144,12 +155,10 @@ const PostRequest = () => {
     const resumeJobId = searchParams.get("jobId");
     if (resumeJobId) {
       const resumeJob = async () => {
-        // Reopen the job with a fresh 3-min window
         const expiresAt = new Date();
         expiresAt.setMinutes(expiresAt.getMinutes() + 3);
         await supabase.from("jobs").update({ status: "open", expires_at: expiresAt.toISOString() }).eq("id", resumeJobId);
 
-        // Fetch job details
         const { data: job } = await supabase.from("jobs").select("*").eq("id", resumeJobId).single();
         if (job) {
           setTitle(job.title);
@@ -162,7 +171,6 @@ const PostRequest = () => {
           const { count } = await supabase.from("expert_categories").select("*", { count: "exact", head: true }).ilike("category", `%${mainCat}%`);
           setOnlineCount(count || 0);
 
-          // Load existing quotes
           const { data: existingQuotes } = await supabase.from("quotes").select("*").eq("job_id", resumeJobId).eq("status", "pending");
           if (existingQuotes) {
             const enriched = await Promise.all(existingQuotes.map(async (q) => {
@@ -198,8 +206,53 @@ const PostRequest = () => {
 
   const handleBack = () => {
     if (wizardStep === "subcategory") setWizardStep("category");
-    else if (wizardStep === "details") setWizardStep("subcategory");
+    else if (wizardStep === "ai-refine") {
+      setAiResult(null);
+      setWizardStep("category");
+    }
+    else if (wizardStep === "details") {
+      if (aiResult) {
+        setWizardStep("ai-refine");
+      } else {
+        setWizardStep("subcategory");
+      }
+    }
     else navigate(-1);
+  };
+
+  const handleAiRefine = async () => {
+    if (!userIdea.trim() || aiLoading) return;
+    setAiLoading(true);
+    setAiResult(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-refine-request", {
+        body: { userIdea: userIdea.trim() },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setAiResult(data);
+    } catch (err: any) {
+      console.error("AI refine error:", err);
+      toast({
+        title: "AI couldn't process your request",
+        description: err?.message || "Please try again or pick a category manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAcceptAiSuggestion = () => {
+    if (!aiResult) return;
+    setTitle(aiResult.title);
+    setDescription(aiResult.description);
+    setCategory(aiResult.category);
+    setBroadCategory(aiResult.broad_category);
+    setWizardStep("details");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -242,7 +295,6 @@ const PostRequest = () => {
         return;
       }
 
-      // Fetch expert count in background (non-blocking)
       supabase
         .from("expert_categories")
         .select("*", { count: "exact", head: true })
@@ -294,7 +346,8 @@ const PostRequest = () => {
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const progressPercent = ((180 - timeLeft) / 180) * 100;
 
-  const stepNumber = wizardStep === "category" ? 1 : wizardStep === "subcategory" ? 2 : 3;
+  const stepNumber = wizardStep === "category" ? 1 : wizardStep === "subcategory" ? 2 : wizardStep === "ai-refine" ? 2 : wizardStep === "details" ? 3 : 3;
+  const totalSteps = wizardStep === "ai-refine" || aiResult ? 3 : 3;
 
   return (
     <div className="min-h-screen bg-background">
@@ -322,7 +375,7 @@ const PostRequest = () => {
                 </div>
               ))}
               <span className="ml-3 text-sm text-muted-foreground">
-                {wizardStep === "category" ? "Choose a category" : wizardStep === "subcategory" ? "Pick a specialty" : "Describe your request"}
+                {wizardStep === "category" ? "Choose a category" : wizardStep === "subcategory" ? "Pick a specialty" : wizardStep === "ai-refine" ? "Describe your idea" : "Describe your request"}
               </span>
             </div>
           </div>
@@ -358,6 +411,25 @@ const PostRequest = () => {
                   </button>
                 );
               })}
+
+              {/* Custom Request - AI powered */}
+              <button
+                onClick={() => setWizardStep("ai-refine")}
+                className="group relative flex flex-col items-center gap-3 rounded-2xl border border-dashed border-primary/40 bg-primary/[0.04] p-6 transition-all duration-300 hover:border-primary/60 hover:shadow-glow hover:-translate-y-1 animate-slide-up col-span-2 md:col-span-4"
+                style={{ animationDelay: `${BROAD_CATEGORIES.length * 60}ms` }}
+              >
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
+                  <Wand2 className="h-7 w-7" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-foreground">Custom Request</p>
+                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">Describe your idea & let AI find the best category</p>
+                </div>
+                <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">AI Powered</span>
+                </div>
+              </button>
             </div>
           </div>
         )}
@@ -407,6 +479,115 @@ const PostRequest = () => {
                 <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* AI Refine Step */}
+        {wizardStep === "ai-refine" && (
+          <div className="mx-auto max-w-2xl animate-fade-in">
+            <div className="mb-8">
+              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 2</p>
+              <h1 className="mb-2 text-3xl font-bold text-foreground">Describe your idea</h1>
+              <p className="text-muted-foreground">Tell us what you need — AI will refine it and find the best category.</p>
+            </div>
+
+            {/* Input area */}
+            <Card className="border-border/30 bg-card/60 backdrop-blur-xl mb-6">
+              <CardContent className="pt-6 space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <PencilLine className="h-4 w-4 text-primary" />
+                    What do you need help with?
+                  </label>
+                  <Textarea
+                    placeholder="e.g. I want someone to build me a custom Discord bot that tracks server activity and sends daily reports..."
+                    value={userIdea}
+                    onChange={(e) => setUserIdea(e.target.value)}
+                    className="min-h-28 bg-background/60 border-border/40 focus:border-primary/40 text-[15px]"
+                    maxLength={500}
+                  />
+                  <p className="text-xs text-muted-foreground text-right">{userIdea.length}/500</p>
+                </div>
+
+                <Button
+                  onClick={handleAiRefine}
+                  disabled={!userIdea.trim() || aiLoading}
+                  className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500"
+                >
+                  {aiLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      AI is thinking...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4" />
+                      Refine with AI
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* AI Result */}
+            {aiResult && (
+              <div className="space-y-4 animate-fade-in">
+                {/* Clarifying note */}
+                <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">AI understood your request</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{aiResult.clarifying_note}</p>
+                  </div>
+                </div>
+
+                {/* Suggested fields */}
+                <Card className="border-primary/20 bg-card/60 backdrop-blur-xl">
+                  <CardContent className="pt-6 space-y-5">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Suggested Category</label>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+                          <Zap className="h-3.5 w-3.5" />
+                          {aiResult.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Suggested Title</label>
+                      <p className="text-foreground font-semibold text-lg">{aiResult.title}</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Refined Description</label>
+                      <p className="text-muted-foreground text-sm leading-relaxed">{aiResult.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleAcceptAiSuggestion}
+                    className="flex-1 gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500"
+                  >
+                    <Check className="h-4 w-4" />
+                    Use this & continue
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleAiRefine}
+                    disabled={aiLoading}
+                    className="gap-2"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

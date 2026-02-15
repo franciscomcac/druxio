@@ -2,3 +2,6 @@ project_id = "fgpzlmomrzcpefqcstdn"
 
 [functions.withdraw]
 verify_jwt = false
+
+[functions.ai-refine-request]
+verify_jwt = false
