@@ -67,8 +67,9 @@ const Header = () => {
           <span className="text-lg font-bold text-foreground">Dux<Zap className="inline h-4 w-4 text-primary fill-primary -mx-0.5" />o</span>
         </Link>
 
-        {/* Center nav */}
-        <nav className="hidden items-center gap-1 md:flex">
+        {/* Right actions */}
+        <div className="hidden items-center gap-1.5 md:flex">
+          {/* Nav links */}
           <Link to="/how-it-works">
             <Button variant="ghost" size="sm" className={`text-sm font-medium ${isActive("/how-it-works") ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
               How It Works
@@ -88,10 +89,6 @@ const Header = () => {
               </Link>
             </>
           )}
-        </nav>
-
-        {/* Right actions */}
-        <div className="hidden items-center gap-1.5 md:flex">
           <ThemeToggle />
           {user ? (
             <>
