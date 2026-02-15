@@ -95,6 +95,7 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login", onSuccess }
           disabled={googleLoading}
           onClick={async () => {
             setGoogleLoading(true);
+            localStorage.setItem("auth_redirect", window.location.pathname + window.location.search);
             const { error } = await lovable.auth.signInWithOAuth("google", {
               redirect_uri: window.location.origin,
             });
