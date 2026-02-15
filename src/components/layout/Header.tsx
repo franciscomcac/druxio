@@ -64,7 +64,7 @@ const Header = () => {
       <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center group">
-          <span className="text-lg font-bold text-foreground">Dux<span className="relative inline-block"><Zap className="h-3 w-3 absolute -top-0.5 left-1/2 -translate-x-1/2 text-primary fill-primary" />i</span>o</span>
+          <span className="text-lg font-bold text-foreground">Dux<Zap className="inline h-4 w-4 text-primary fill-primary -mx-0.5" />o</span>
         </Link>
 
         {/* Center nav */}
