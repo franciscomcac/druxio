@@ -65,8 +65,10 @@ const Testimonials = () => {
             {visible.map((t, i) => (
               <div
                 key={`${t.name}-${currentIndex}-${i}`}
-                className="rounded-lg border border-border/30 bg-card/50 p-6 flex flex-col gap-4 transition-all duration-300 hover:border-primary/20"
+                className="relative overflow-hidden rounded-lg border border-border/30 bg-card/50 p-6 flex flex-col gap-4 transition-all duration-300 hover:border-primary/20"
               >
+                {/* Decorative quote mark */}
+                <span className="absolute -right-2 -top-4 text-[120px] font-serif leading-none text-primary/[0.04] select-none pointer-events-none">"</span>
                 <div className="flex items-center justify-between">
                   <div className="flex gap-0.5">
                     {Array.from({ length: t.rating }).map((_, j) => (
