@@ -1,35 +1,77 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, CheckCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Mail, ArrowRight, CheckCircle, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Newsletter = () => {
-  return (
-    <section className="bg-background py-20">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground">Ready to get started?</h2>
-          <p className="mb-8 text-muted-foreground text-lg">Post your first task in 30 seconds. No sign-up fees, no subscriptions.</p>
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
-            <Link to="/post-request">
-              <Button size="lg" className="gap-2 rounded-sm px-8 h-12 text-base font-semibold">
-                Post a Task <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/auth">
-              <Button variant="outline" size="lg" className="gap-2 rounded-sm px-8 h-12 text-base border-border/50">
-                <Zap className="h-4 w-4" /> Earn as Expert
-              </Button>
-            </Link>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) setSubmitted(true);
+  };
+
+  return (
+    <section className="bg-background py-24">
+      <div className="container mx-auto px-4">
+        <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-2">
+          {/* Stay Updated card */}
+          <div className="rounded-lg border border-border/30 bg-card/50 p-8 flex flex-col">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Mail className="h-6 w-6" />
+            </div>
+            <h3 className="mb-2 text-2xl font-bold text-foreground">Stay Updated</h3>
+            <p className="mb-8 text-muted-foreground text-sm leading-relaxed flex-1">
+              Get notified about new categories, features, and platform updates.
+            </p>
+
+            {submitted ? (
+              <div className="flex items-center gap-3 rounded-lg bg-primary/10 p-4 text-primary border border-primary/20">
+                <CheckCircle className="h-5 w-5" />
+                <span className="font-medium text-sm">Thanks! You're on the list.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  maxLength={255}
+                  className="flex-1 h-11 rounded-lg bg-background/60 border-border/40"
+                />
+                <Button type="submit" className="gap-2 h-11 rounded-lg px-5">
+                  Subscribe <ArrowRight className="h-4 w-4" />
+                </Button>
+              </form>
+            )}
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-            {["Free to post", "Escrow-protected", "Pay when satisfied", "90s avg response"].map((item) => (
-              <div key={item} className="flex items-center gap-1.5">
-                <CheckCircle className="h-3.5 w-3.5 text-primary/70" />
-                <span>{item}</span>
-              </div>
-            ))}
+          {/* Become an Expert card */}
+          <div className="rounded-lg border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-card/60 p-8 flex flex-col">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <h3 className="mb-2 text-2xl font-bold text-foreground">Become an Expert</h3>
+            <p className="mb-6 text-muted-foreground text-sm leading-relaxed">
+              Monetize your skills. Get pinged for jobs in your categories and earn up to{" "}
+              <span className="font-bold text-primary">€500/week</span>.
+            </p>
+            <ul className="mb-8 space-y-3 flex-1">
+              {["Real-time job notifications", "Set your own fixed prices", "90% earnings, weekly payouts"].map((f) => (
+                <li key={f} className="flex items-center gap-2.5 text-sm text-foreground/90">
+                  <CheckCircle className="h-4 w-4 text-primary shrink-0" /> {f}
+                </li>
+              ))}
+            </ul>
+            <Link to="/auth">
+              <Button className="w-full gap-2 h-12 rounded-lg text-base font-semibold">
+                Join as Expert <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
