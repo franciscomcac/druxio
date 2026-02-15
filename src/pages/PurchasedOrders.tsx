@@ -101,8 +101,11 @@ const PurchasedOrders = () => {
         key={order.job.id}
         className="cursor-pointer border-border/20 bg-background/40 hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
         onClick={() => {
-          if (order.job.status === "accepted") navigate(`/order/${order.job.id}`);
-          else if (order.job.status === "open") navigate(`/request/${order.job.id}`);
+          if (order.job.status === "accepted" || order.job.status === "completed" || order.job.status === "disputed") {
+            navigate(`/order/${order.job.id}`);
+          } else if (order.job.status === "open") {
+            navigate(`/request/${order.job.id}`);
+          }
         }}
       >
         <CardContent className="p-5">
@@ -140,7 +143,7 @@ const PurchasedOrders = () => {
                   </div>
                 </>
               )}
-              {(order.job.status === "accepted" || order.job.status === "open") && (
+              {["accepted", "open", "completed", "disputed"].includes(order.job.status) && (
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
