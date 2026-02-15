@@ -64,9 +64,6 @@ const Header = () => {
       <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow transition-shadow duration-300 group-hover:shadow-glow-lg">
-            <Zap className="h-4 w-4" />
-          </div>
           <span className="text-lg font-bold text-foreground">Duxio</span>
         </Link>
 
