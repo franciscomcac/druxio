@@ -26,12 +26,12 @@ const taskPool = [
 ];
 
 const cardSlots = [
-  { position: "top-[8%] left-[2%]", size: "w-[260px]", rotate: "-2deg" },
+  { position: "top-[6%] left-[2%]", size: "w-[260px]", rotate: "-2deg" },
   { position: "top-[4%] right-[3%]", size: "w-[240px]", rotate: "1.5deg" },
-  { position: "bottom-[18%] left-[1%]", size: "w-[230px]", rotate: "1deg" },
-  { position: "bottom-[22%] right-[2%]", size: "w-[250px]", rotate: "-1.5deg" },
-  { position: "top-[42%] left-[0%]", size: "w-[220px]", rotate: "2deg" },
-  { position: "top-[38%] right-[1%]", size: "w-[210px]", rotate: "-2.5deg" },
+  { position: "bottom-[4%] left-[1%]", size: "w-[230px]", rotate: "1deg" },
+  { position: "bottom-[2%] right-[2%]", size: "w-[250px]", rotate: "-1.5deg" },
+  { position: "top-[38%] left-[0%]", size: "w-[220px]", rotate: "2deg" },
+  { position: "top-[36%] right-[1%]", size: "w-[210px]", rotate: "-2.5deg" },
 ];
 
 const Hero = () => {
@@ -102,7 +102,7 @@ const Hero = () => {
         return (
           <div
             key={i}
-            className={`absolute ${slot.position} ${slot.size} hidden lg:block pointer-events-none transition-opacity duration-400`}
+            className={`absolute ${slot.position} ${slot.size} hidden xl:block pointer-events-none transition-opacity duration-400`}
             style={{
               transform: `rotate(${slot.rotate})`,
               opacity: fadingSlots[i] ? 0 : 1,
