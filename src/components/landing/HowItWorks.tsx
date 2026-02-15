@@ -3,58 +3,44 @@ import { Send, Bell, Handshake, CheckCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const steps = [
-  { icon: <Send className="h-7 w-7" />, title: "Describe Your Need", description: "Pick a category and tell us what you need done." },
-  { icon: <Bell className="h-7 w-7" />, title: "Experts Get Notified", description: "Online experts receive an instant notification." },
-  { icon: <Handshake className="h-7 w-7" />, title: "Compare & Hire", description: "Review competing offers and pick the best one." },
-  { icon: <CheckCircle className="h-7 w-7" />, title: "Done & Delivered", description: "Approve, rate, and payment is released." },
+  { num: "01", icon: <Send className="h-5 w-5" />, title: "Post your task", description: "Pick a category and describe what you need done. Set your budget." },
+  { num: "02", icon: <Bell className="h-5 w-5" />, title: "Experts get notified", description: "Matching experts are pinged instantly. They send fixed-price quotes." },
+  { num: "03", icon: <Handshake className="h-5 w-5" />, title: "Compare & hire", description: "Review competing offers, check ratings, and pick the best expert." },
+  { num: "04", icon: <CheckCircle className="h-5 w-5" />, title: "Done & paid", description: "Approve the work. Payment releases from escrow. Both parties rate." },
 ];
 
 const HowItWorks = () => {
   const navigate = useNavigate();
 
   return (
-    <section id="how-it-works" className="relative bg-card/20 py-28 overflow-hidden">
-      <div className="absolute top-0 left-[20%] h-[400px] w-[400px] rounded-full bg-primary/[0.03] blur-[120px] pointer-events-none" />
-
-      <div className="container relative z-10 mx-auto px-4">
-        <div className="mb-16 max-w-xl">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary animate-fade-in">How It Works</p>
-          <h2 className="mb-4 text-4xl font-bold text-foreground animate-fade-in [animation-delay:100ms]">
-            From request to done in four steps
-          </h2>
-          <p className="text-muted-foreground text-lg animate-fade-in [animation-delay:200ms]">
-            No sign-up fees, no subscriptions. Post what you need and let experts come to you.
-          </p>
+    <section id="how-it-works" className="bg-background py-20">
+      <div className="container mx-auto px-4">
+        <div className="mb-12">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">How It Works</p>
+          <h2 className="text-3xl font-bold text-foreground">From request to done in four steps</h2>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-10">
-          {steps.map((step, index) => (
-            <div
-              key={index}
-              className="group relative animate-slide-up"
-              style={{ animationDelay: `${index * 150}ms` }}
-            >
-              <div className="relative flex h-full flex-col rounded-2xl border border-border/40 bg-card/60 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow hover:-translate-y-2">
-                <span className="mb-5 text-5xl font-bold text-primary/40 select-none drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]">
-                  0{index + 1}
-                </span>
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary transition-transform duration-500 group-hover:scale-110">
+        <div className="grid gap-px md:grid-cols-4 border border-border/40 rounded-sm overflow-hidden bg-border/40 mb-10">
+          {steps.map((step, i) => (
+            <div key={i} className="bg-card/80 p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl font-bold text-primary/30 font-mono">{step.num}</span>
+                <div className="h-8 w-8 flex items-center justify-center rounded-sm bg-primary/10 text-primary">
                   {step.icon}
                 </div>
-                <h3 className="mb-2 text-lg font-semibold text-foreground">{step.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
               </div>
+              <h3 className="text-base font-semibold text-foreground">{step.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
             </div>
           ))}
         </div>
 
-        <div className="text-center animate-fade-in [animation-delay:600ms]">
-          <Button
-            variant="outline"
-            className="gap-2 border-primary/20 hover:bg-primary/[0.06] hover:border-primary/30"
-            onClick={() => navigate("/how-it-works")}
-          >
-            Read the full breakdown <ArrowRight className="h-4 w-4" />
+        <div className="flex gap-3">
+          <Button onClick={() => navigate("/post-request")} className="gap-2 rounded-sm">
+            Post a Task <ArrowRight className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" className="gap-2 rounded-sm border-border/50" onClick={() => navigate("/how-it-works")}>
+            Learn more
           </Button>
         </div>
       </div>
