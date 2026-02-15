@@ -11,13 +11,13 @@ const BROAD_CATEGORIES = [
 
 const SUBCATEGORIES: Record<string, string[]> = {
   Gaming: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends"],
-  Tech: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress"],
-  Business: ["Marketing", "Startup Advice", "E-commerce", "Accounting"],
-  Creative: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails"],
-  Music: ["Production", "Mixing & Mastering", "Guitar Lessons"],
-  Fitness: ["Personal Training", "Nutrition Plans"],
-  Languages: ["English", "Spanish", "French", "German", "Portuguese", "Arabic", "Chinese", "Japanese", "Korean", "Italian", "Russian", "Hindi"],
-  Content: ["Streaming", "YouTube", "TikTok"],
+  Tech: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress", "AI & Automation", "Cybersecurity", "Database & SQL", "Networking & WiFi", "Cloud & DevOps"],
+  Business: ["Marketing", "Startup Advice", "E-commerce", "Accounting", "Analytics & Data", "Sales & Outreach", "Investing & Crypto", "HR & Hiring"],
+  Creative: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails", "Photography", "UI/UX Design", "Illustration", "Copywriting"],
+  Music: ["Production", "Mixing & Mastering", "Guitar Lessons", "Piano Lessons", "Vocal Coaching", "Beat Making", "Songwriting"],
+  Fitness: ["Personal Training", "Nutrition Plans", "Yoga & Mobility", "Weight Loss", "Sports Coaching", "Injury Rehab"],
+  Languages: ["English", "Spanish", "French", "German", "Portuguese", "Arabic", "Chinese", "Japanese", "Korean", "Italian", "Russian", "Hindi", "Dutch", "Turkish", "Translation"],
+  Content: ["Streaming", "YouTube", "TikTok", "Instagram", "Podcasting", "Blogging & SEO Writing", "Community Management"],
 };
 
 serve(async (req) => {
