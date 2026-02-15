@@ -124,7 +124,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
 
         <div className="space-y-4">
           <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
-            <CardHeader><CardTitle className="text-lg">Your Buyer Rank</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-lg">Your Client Rank</CardTitle></CardHeader>
             <CardContent>
               <RankBadge totalSpent={profile?.total_spent || 0} showProgress size="md" />
             </CardContent>
