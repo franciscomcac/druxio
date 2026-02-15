@@ -4,7 +4,7 @@ import { useLiveStats } from "@/hooks/use-live-stats";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Shield, Clock, Users, Star, CheckCircle, Zap, Send } from "lucide-react";
+import { ArrowRight, Shield, Clock, Users, Star, CheckCircle, Zap, Send, ChevronDown } from "lucide-react";
 
 const floatingTasks = [
   { title: "Fix Minecraft server TPS drops", category: "Gaming", budget: "€12", expert: "JM", rating: "4.9", delay: "0s", position: "top-[8%] left-[2%]", size: "w-[260px]", rotate: "-2deg" },
@@ -30,7 +30,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative bg-background pt-12 pb-16 md:pt-16 md:pb-24 overflow-hidden min-h-[calc(100vh-4rem)] flex items-center">
+    <section id="hero-section" className="relative bg-background pt-12 pb-16 md:pt-16 md:pb-24 overflow-hidden min-h-[calc(100vh-4rem)] flex items-center">
       {/* Gradient blobs — asymmetric */}
       <div className="absolute top-[-10%] left-[-5%] h-[600px] w-[600px] rounded-full bg-primary/[0.07] blur-[160px] pointer-events-none" />
       <div className="absolute bottom-[-15%] right-[-8%] h-[500px] w-[500px] rounded-full bg-primary/[0.05] blur-[140px] pointer-events-none" />
@@ -127,6 +127,22 @@ const Hero = () => {
               </div>
             ))}
           </div>
+
+          {/* Scroll down arrow */}
+          <button
+            onClick={() => {
+              const hero = document.getElementById("hero-section");
+              if (hero) {
+                const nextSection = hero.nextElementSibling;
+                nextSection?.scrollIntoView({ behavior: "smooth" });
+              }
+            }}
+            className="mt-10 mx-auto flex flex-col items-center gap-1 text-muted-foreground/60 hover:text-primary transition-colors animate-fade-in [animation-delay:700ms] cursor-pointer"
+            aria-label="Scroll down"
+          >
+            <span className="text-xs">Scroll down</span>
+            <ChevronDown className="h-5 w-5 animate-bounce" />
+          </button>
         </div>
       </div>
     </section>
