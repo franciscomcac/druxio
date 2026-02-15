@@ -11,6 +11,7 @@ import {
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
 import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck, Search, Bell } from "lucide-react";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -93,7 +94,8 @@ const Header = () => {
         </nav>
 
         {/* Right actions */}
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-1.5 md:flex">
+          <ThemeToggle />
           {user ? (
             <>
               {/* Post Request - primary CTA */}
