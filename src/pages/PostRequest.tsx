@@ -8,6 +8,7 @@ import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -688,32 +689,40 @@ const PostRequest = () => {
                     <Input placeholder={TITLE_PLACEHOLDERS[category] || BROAD_PLACEHOLDERS[broadCategory] || 'e.g. "Describe what you need"'} value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border focus:border-primary/40" />
                   </div>
 
-                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Max Time</label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
+                   <div className="space-y-3">
+                    <label className="text-sm font-medium text-foreground">Max Delivery Time</label>
+                    <div className="flex rounded-lg border border-border overflow-hidden bg-background/60 w-fit">
+                      {(["minutes", "hours", "days"] as const).map((unit) => (
+                        <button
+                          key={unit}
+                          type="button"
+                          onClick={() => {
+                            setDeadlineUnit(unit);
+                            const max = unit === "minutes" ? 60 : unit === "hours" ? 23 : 30;
+                            setDeadlineValue((prev) => Math.min(prev, max));
+                          }}
+                          className={`px-4 py-2 text-sm font-medium transition-colors ${
+                            deadlineUnit === unit
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"
+                          }`}
+                        >
+                          {unit}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Slider
                         min={1}
-                        value={deadlineValue}
-                        onChange={(e) => setDeadlineValue(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-24 bg-background/60 border-border focus:border-primary/40"
+                        max={deadlineUnit === "minutes" ? 60 : deadlineUnit === "hours" ? 23 : 30}
+                        step={1}
+                        value={[deadlineValue]}
+                        onValueChange={([v]) => setDeadlineValue(v)}
+                        className="flex-1"
                       />
-                      <div className="flex rounded-lg border border-border overflow-hidden bg-background/60">
-                        {(["minutes", "hours", "days"] as const).map((unit) => (
-                          <button
-                            key={unit}
-                            type="button"
-                            onClick={() => setDeadlineUnit(unit)}
-                            className={`px-3 py-2 text-sm font-medium transition-colors ${
-                              deadlineUnit === unit
-                                ? "bg-primary text-primary-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"
-                            }`}
-                          >
-                            {unit}
-                          </button>
-                        ))}
-                      </div>
+                      <span className="text-sm font-semibold text-foreground w-20 text-right tabular-nums">
+                        {deadlineValue} {deadlineUnit}
+                      </span>
                     </div>
                   </div>
 
