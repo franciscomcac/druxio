@@ -13,9 +13,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
   DollarSign, Star, Clock, Bell, Send, Loader2, Settings, Target, TrendingUp, Zap, MessageSquare,
-  Package, CheckCircle2, AlertTriangle, ArrowRight, X,
+  Package, CheckCircle2, AlertTriangle, ArrowRight, X, ChevronRight, FolderOpen,
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { formatDistanceToNow } from "date-fns";
 
 interface Job {
@@ -59,19 +60,47 @@ const getCategoryGroup = (category: string) => {
   return { broad, icon: CATEGORY_ICONS[broad] || Zap };
 };
 
-type GroupedItems<T> = { broad: string; icon: any; items: T[] }[];
+type GroupedItems<T> = { broad: string; sub: string | null; icon: any; items: T[] }[];
 
 function groupByCategory<T>(
   items: T[],
-  getCat: (item: T) => string
+  getCat: (item: T) => string,
+  subscribedCats: string[]
 ): GroupedItems<T> {
-  const map = new Map<string, { icon: any; items: T[] }>();
+  // Build set of subscribed broad categories
+  const subscribedBroads = new Set(subscribedCats.map(c => c.split(":")[0]?.trim() || c));
+  
+  const map = new Map<string, { icon: any; subs: Map<string, T[]> }>();
   for (const item of items) {
-    const { broad, icon } = getCategoryGroup(getCat(item));
-    if (!map.has(broad)) map.set(broad, { icon, items: [] });
-    map.get(broad)!.items.push(item);
+    const cat = getCat(item);
+    const { broad, icon } = getCategoryGroup(cat);
+    // Only include items whose broad category the seller is subscribed to
+    if (!subscribedBroads.has(broad)) continue;
+    if (!map.has(broad)) map.set(broad, { icon, subs: new Map() });
+    const subCat = cat.includes(":") ? cat.split(":").slice(1).join(":").trim() : null;
+    const subKey = subCat || "__root__";
+    const group = map.get(broad)!;
+    if (!group.subs.has(subKey)) group.subs.set(subKey, []);
+    group.subs.get(subKey)!.push(item);
   }
-  return Array.from(map.entries()).map(([broad, { icon, items }]) => ({ broad, icon, items }));
+  const result: GroupedItems<T> = [];
+  for (const [broad, { icon, subs }] of map.entries()) {
+    const allItems: T[] = [];
+    subs.forEach(items => allItems.push(...items));
+    result.push({ broad, sub: null, icon, items: allItems });
+  }
+  return result;
+}
+
+function getSubGroups<T>(items: T[], getCat: (item: T) => string): { sub: string; items: T[] }[] {
+  const map = new Map<string, T[]>();
+  for (const item of items) {
+    const cat = getCat(item);
+    const sub = cat.includes(":") ? cat.split(":").slice(1).join(":").trim() : cat;
+    if (!map.has(sub)) map.set(sub, []);
+    map.get(sub)!.push(item);
+  }
+  return Array.from(map.entries()).map(([sub, items]) => ({ sub, items }));
 }
 
 const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps) => {
@@ -406,54 +435,60 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                         <p className="text-sm">New requests will appear here in real-time</p>
                       </div>
                     );
-                    const grouped = groupByCategory(visibleJobs.slice(0, 10), j => j.category);
+                    const grouped = groupByCategory(visibleJobs.slice(0, 10), j => j.category, subscribedCategories);
+                    if (grouped.length === 0) return (
+                      <div className="text-center py-12 text-muted-foreground">
+                        <p className="text-sm">No requests matching your subscribed categories</p>
+                      </div>
+                    );
                     return (
-                      <div className="space-y-5">
+                      <div className="space-y-2">
                         {grouped.map(({ broad, icon: CatIcon, items }) => (
-                          <div key={broad}>
-                            <div className="flex items-center gap-2 mb-2 px-1">
+                          <Collapsible key={broad} defaultOpen={grouped.length <= 3}>
+                            <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
+                              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                               <CatIcon className="h-4 w-4 text-primary" />
                               <span className="text-sm font-semibold text-foreground">{broad}</span>
-                              <span className="text-xs text-muted-foreground">({items.length})</span>
-                            </div>
-                            <div className="space-y-2">
-                              {items.map((job) => (
-                                <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03]">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-foreground truncate">{job.title}</p>
-                                    <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
-                                      <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
-                                      <span className="font-bold text-foreground">€{job.budget_max}</span>
-                                      <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
-                                      <span>{timeAgo(job.created_at)}</span>
-                                    </div>
+                              <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="space-y-1.5 pl-4 border-l border-border/20 ml-4 mt-1 mb-2">
+                                {getSubGroups(items, j => j.category).map(({ sub, items: subItems }) => (
+                                  <div key={sub}>
+                                    <p className="text-xs font-medium text-muted-foreground px-2 py-1">{sub}</p>
+                                    {subItems.map((job) => (
+                                      <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03]">
+                                        <div className="flex-1 min-w-0">
+                                          <p className="font-medium text-foreground truncate">{job.title}</p>
+                                          <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+                                            <span className="font-bold text-foreground">€{job.budget_max}</span>
+                                            <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
+                                            <span>{timeAgo(job.created_at)}</span>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                          {quotedJobIds.has(job.id) ? (
+                                            <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
+                                              <MessageSquare className="h-3 w-3" /> Chat
+                                            </Button>
+                                          ) : (
+                                            <>
+                                              <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
+                                                <Send className="h-3 w-3" /> Quote
+                                              </Button>
+                                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDiscardedJobIds(prev => new Set([...prev, job.id]))} title="Discard this request">
+                                                <X className="h-3.5 w-3.5" />
+                                              </Button>
+                                            </>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
-                                  <div className="flex items-center gap-1.5 shrink-0">
-                                    {quotedJobIds.has(job.id) ? (
-                                      <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
-                                        <MessageSquare className="h-3 w-3" /> Chat
-                                      </Button>
-                                    ) : (
-                                      <>
-                                        <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
-                                          <Send className="h-3 w-3" /> Quote
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                          onClick={() => setDiscardedJobIds(prev => new Set([...prev, job.id]))}
-                                          title="Discard this request"
-                                        >
-                                          <X className="h-3.5 w-3.5" />
-                                        </Button>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+                                ))}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
                         ))}
                       </div>
                     );
@@ -465,16 +500,21 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : ongoingOrders.length > 0 ? (
-                    <div className="space-y-5">
-                      {groupByCategory(ongoingOrders, o => o.job.category).map(({ broad, icon: CatIcon, items }) => (
-                        <div key={broad}>
-                          <div className="flex items-center gap-2 mb-2 px-1">
+                    <div className="space-y-2">
+                      {groupByCategory(ongoingOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
+                        <Collapsible key={broad} defaultOpen>
+                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
+                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                             <CatIcon className="h-4 w-4 text-primary" />
                             <span className="text-sm font-semibold text-foreground">{broad}</span>
-                            <span className="text-xs text-muted-foreground">({items.length})</span>
-                          </div>
-                          <div className="space-y-3">{items.map(renderOrderCard)}</div>
-                        </div>
+                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="space-y-2 pl-4 border-l border-border/20 ml-4 mt-1 mb-2">
+                              {items.map(renderOrderCard)}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
                       ))}
                     </div>
                   ) : renderEmptyState("No ongoing orders")}
@@ -485,16 +525,21 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : completedOrders.length > 0 ? (
-                    <div className="space-y-5">
-                      {groupByCategory(completedOrders, o => o.job.category).map(({ broad, icon: CatIcon, items }) => (
-                        <div key={broad}>
-                          <div className="flex items-center gap-2 mb-2 px-1">
+                    <div className="space-y-2">
+                      {groupByCategory(completedOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
+                        <Collapsible key={broad} defaultOpen>
+                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
+                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                             <CatIcon className="h-4 w-4 text-primary" />
                             <span className="text-sm font-semibold text-foreground">{broad}</span>
-                            <span className="text-xs text-muted-foreground">({items.length})</span>
-                          </div>
-                          <div className="space-y-3">{items.map(renderOrderCard)}</div>
-                        </div>
+                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="space-y-2 pl-4 border-l border-border/20 ml-4 mt-1 mb-2">
+                              {items.map(renderOrderCard)}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
                       ))}
                     </div>
                   ) : renderEmptyState("No completed orders yet")}
@@ -505,16 +550,21 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingOrders ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : disputedOrders.length > 0 ? (
-                    <div className="space-y-5">
-                      {groupByCategory(disputedOrders, o => o.job.category).map(({ broad, icon: CatIcon, items }) => (
-                        <div key={broad}>
-                          <div className="flex items-center gap-2 mb-2 px-1">
+                    <div className="space-y-2">
+                      {groupByCategory(disputedOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
+                        <Collapsible key={broad} defaultOpen>
+                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-lg px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
+                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                             <CatIcon className="h-4 w-4 text-primary" />
                             <span className="text-sm font-semibold text-foreground">{broad}</span>
-                            <span className="text-xs text-muted-foreground">({items.length})</span>
-                          </div>
-                          <div className="space-y-3">{items.map(renderOrderCard)}</div>
-                        </div>
+                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="space-y-2 pl-4 border-l border-border/20 ml-4 mt-1 mb-2">
+                              {items.map(renderOrderCard)}
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
                       ))}
                     </div>
                   ) : renderEmptyState("No disputed orders")}
