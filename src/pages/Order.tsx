@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft, Clock, MessageSquare, Send, Loader2, ShieldCheck,
   AlertTriangle, CheckCircle2, Timer, Star,
-  FileText, Package, CreditCard,
+  FileText, Package, CreditCard, XCircle, Undo2,
 } from "lucide-react";
 import { formatDistanceToNow, differenceInSeconds, addMinutes } from "date-fns";
 import {
@@ -69,6 +69,11 @@ const Order = () => {
   // Confirm delivery dialog (buyer accepts)
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+
+  // Cancel delivery dialog (seller cancels)
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -271,6 +276,47 @@ const Order = () => {
     setDisputeLoading(false);
   };
 
+  // Seller cancels delivery
+  const handleCancelDelivery = async () => {
+    if (!cancelReason.trim() || !jobId) return;
+    setCancelLoading(true);
+    try {
+      // Revert escrow_status back to paid
+      await supabase.from("jobs").update({ escrow_status: "paid", status: "cancelled" }).eq("id", jobId);
+
+      // Notify buyer
+      if (job?.buyer_id) {
+        await supabase.from("notifications").insert({
+          user_id: job.buyer_id, type: "order_cancelled",
+          title: "Order cancelled by seller",
+          message: cancelReason.trim(),
+          data: { job_id: jobId },
+        });
+      }
+
+      // Notify admins via notification (for manual refund processing)
+      const { data: adminRoles } = await supabase
+        .from("user_roles").select("user_id").eq("role", "admin");
+      if (adminRoles) {
+        await Promise.all(adminRoles.map((a) =>
+          supabase.from("notifications").insert({
+            user_id: a.user_id, type: "order_cancelled",
+            title: "Seller cancelled order — refund needed",
+            message: `Seller cancelled order "${job.title}". Reason: ${cancelReason.trim()}`,
+            data: { job_id: jobId, quote_id: quote?.id },
+          })
+        ));
+      }
+
+      toast({ title: "Order cancelled", description: "The buyer and admin have been notified." });
+      setCancelOpen(false);
+      setJob((prev: any) => prev ? { ...prev, status: "cancelled", escrow_status: "paid" } : prev);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setCancelLoading(false);
+  };
+
   const formatCountdown = (seconds: number) => {
     const d = Math.floor(seconds / 86400);
     const h = Math.floor((seconds % 86400) / 3600);
@@ -462,17 +508,27 @@ const Order = () => {
             </Card>
 
             {/* Seller Actions */}
-            {isSeller && !isCompleted && !isDisputed && (
+            {isSeller && !isCompleted && !isDisputed && job.status !== "cancelled" && (
               <div className="space-y-2">
                 {paymentStatus === "paid" && (
-                  <Button className="w-full gap-2" onClick={handleSellerDeliver}>
-                    <Package className="h-4 w-4" /> Mark as Delivered
-                  </Button>
+                  <>
+                    <Button className="w-full gap-2" onClick={handleSellerDeliver}>
+                      <Package className="h-4 w-4" /> Mark as Delivered
+                    </Button>
+                    <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelOpen(true)}>
+                      <XCircle className="h-4 w-4" /> Cancel Order
+                    </Button>
+                  </>
                 )}
                 {paymentStatus === "delivered" && (
-                  <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2 p-3">
-                    <Clock className="h-4 w-4" /> Waiting for buyer to confirm delivery
-                  </div>
+                  <>
+                    <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2 p-3">
+                      <Clock className="h-4 w-4" /> Waiting for buyer to confirm delivery
+                    </div>
+                    <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelOpen(true)}>
+                      <Undo2 className="h-4 w-4" /> Cancel Delivery
+                    </Button>
+                  </>
                 )}
               </div>
             )}
@@ -664,6 +720,63 @@ const Order = () => {
             <Button onClick={handleSubmitReview} disabled={reviewLoading || !reviewRating} className="gap-2">
               {reviewLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
               {reviewLoading ? "Submitting..." : "Submit Review"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Delivery Dialog */}
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-destructive" /> Cancel Order
+            </DialogTitle>
+            <DialogDescription>
+              Please provide a reason for cancelling. The buyer will be notified and an admin will process the refund.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {[
+                "Buyer requested refund",
+                "Delivery time overdue",
+                "Cannot complete buyer request",
+                "Buyer is unresponsive",
+              ].map((reason) => (
+                <button
+                  key={reason}
+                  type="button"
+                  onClick={() => setCancelReason(reason)}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    cancelReason === reason
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-accent/40 text-muted-foreground border-border hover:bg-accent"
+                  }`}
+                >
+                  {reason}
+                </button>
+              ))}
+            </div>
+            <Textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Add more details or type a custom reason..."
+              rows={3}
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setCancelOpen(false)} disabled={cancelLoading}>
+              Go Back
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelDelivery}
+              disabled={cancelLoading || !cancelReason.trim()}
+              className="gap-2"
+            >
+              {cancelLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
+              {cancelLoading ? "Cancelling..." : "Confirm Cancellation"}
             </Button>
           </DialogFooter>
         </DialogContent>
