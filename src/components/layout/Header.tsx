@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useBalance } from "@/hooks/use-balance";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
-import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck } from "lucide-react";
+import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck, Search, Bell } from "lucide-react";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
-
-const navLinks = [
-  { label: "How It Works", href: "/how-it-works" },
-];
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +21,7 @@ const Header = () => {
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const { balance } = useBalance();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -59,9 +56,12 @@ const Header = () => {
     navigate("/");
   };
 
+  const isActive = (path: string) => location.pathname === path;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/30 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow transition-shadow duration-300 group-hover:shadow-glow-lg">
             <Zap className="h-5 w-5" />
@@ -69,37 +69,57 @@ const Header = () => {
           <span className="text-xl font-bold text-foreground">Duxio</span>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
-            <Link key={link.href} to={link.href} className="text-sm font-medium text-muted-foreground transition-colors duration-200 hover:text-foreground">
-              {link.label}
-            </Link>
-          ))}
+        {/* Center nav */}
+        <nav className="hidden items-center gap-1 md:flex">
+          <Link to="/how-it-works">
+            <Button variant="ghost" size="sm" className={`text-sm font-medium ${isActive("/how-it-works") ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
+              How It Works
+            </Button>
+          </Link>
+          {user && (
+            <>
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm" className={`text-sm font-medium ${isActive("/dashboard") ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
+                  Dashboard
+                </Button>
+              </Link>
+              <Link to="/orders/purchased">
+                <Button variant="ghost" size="sm" className={`text-sm font-medium ${location.pathname.startsWith("/orders") ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
+                  My Orders
+                </Button>
+              </Link>
+            </>
+          )}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        {/* Right actions */}
+        <div className="hidden items-center gap-2 md:flex">
           {user ? (
             <>
+              {/* Post Request - primary CTA */}
+              <Link to="/post-request">
+                <Button size="sm" className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow">
+                  <Plus className="h-4 w-4" /> Post Request
+                </Button>
+              </Link>
+
+              {/* Balance */}
               <Button variant="ghost" size="sm" className="gap-1.5 hover:bg-primary/[0.06] text-sm font-medium" onClick={() => navigate("/wallet")}>
                 <Wallet className="h-4 w-4 text-primary" />
                 <span className="text-foreground">€{(balance ?? 0).toFixed(2)}</span>
               </Button>
-              <Link to="/post-request">
-                <Button size="sm" className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow"><Plus className="h-4 w-4" /> Post Request</Button>
-              </Link>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative hover:bg-primary/[0.06]"><Package className="h-5 w-5" /></Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-card/95 backdrop-blur-xl border-border/40">
-                  <DropdownMenuItem onClick={() => navigate("/orders/purchased")} className="hover:bg-primary/[0.06]"><Package className="mr-2 h-4 w-4" /> Purchased Orders</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/orders/sold")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Sold Orders</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+
+              {/* Messages */}
               <Link to="/inbox">
-                <Button variant="ghost" size="icon" className="relative hover:bg-primary/[0.06]"><MessageSquare className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" className={`relative hover:bg-primary/[0.06] ${isActive("/inbox") ? "bg-primary/[0.06]" : ""}`}>
+                  <MessageSquare className="h-5 w-5" />
+                </Button>
               </Link>
+
+              {/* Notifications */}
               <NotificationsDropdown />
+
+              {/* Profile dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -118,8 +138,11 @@ const Header = () => {
                   </div>
                   <DropdownMenuSeparator className="bg-border/30" />
                   <DropdownMenuItem onClick={() => navigate("/dashboard")} className="hover:bg-primary/[0.06]"><LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/inbox")} className="hover:bg-primary/[0.06]"><MessageSquare className="mr-2 h-4 w-4" /> Chats</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Balance</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/orders/purchased")} className="hover:bg-primary/[0.06]"><Package className="mr-2 h-4 w-4" /> Purchased Orders</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/orders/sold")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Sold Orders</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/inbox")} className="hover:bg-primary/[0.06]"><MessageSquare className="mr-2 h-4 w-4" /> Messages</DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-border/30" />
+                  <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Balance & Wallet</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
                   {isAdminUser && (
                     <>
@@ -134,32 +157,63 @@ const Header = () => {
             </>
           ) : (
             <>
-              <Button variant="ghost" className="gap-2 hover:bg-primary/[0.06]" onClick={() => { setAuthTab("login"); setAuthOpen(true); }}><User className="h-4 w-4" /> Sign In</Button>
-              <Button className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setAuthTab("signup"); setAuthOpen(true); }}><Zap className="h-4 w-4" /> Get Started</Button>
+              <Button variant="ghost" className="gap-2 hover:bg-primary/[0.06]" onClick={() => { setAuthTab("login"); setAuthOpen(true); }}>
+                <User className="h-4 w-4" /> Sign In
+              </Button>
+              <Button className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setAuthTab("signup"); setAuthOpen(true); }}>
+                <Zap className="h-4 w-4" /> Get Started
+              </Button>
             </>
           )}
         </div>
 
+        {/* Mobile menu */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild className="md:hidden">
             <Button variant="ghost" size="icon"><Menu className="h-6 w-6" /></Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-80 bg-card/95 backdrop-blur-xl border-border/30">
-            <div className="flex flex-col gap-6 pt-8">
-              {navLinks.map((link) => (
-                <Link key={link.href} to={link.href} className="text-lg font-medium text-foreground" onClick={() => setIsOpen(false)}>{link.label}</Link>
-              ))}
-              <hr className="border-border/30" />
+            <div className="flex flex-col gap-2 pt-8">
+              <Link to="/how-it-works" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" className="w-full justify-start gap-2 text-base">How It Works</Button>
+              </Link>
+              <hr className="border-border/30 my-2" />
               {user ? (
                 <>
-                  <Link to="/post-request" onClick={() => setIsOpen(false)}><Button className="w-full gap-2"><Plus className="h-4 w-4" /> Post Request</Button></Link>
-                  <Link to="/dashboard" onClick={() => setIsOpen(false)}><Button variant="outline" className="w-full gap-2"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button></Link>
-                  <Button variant="ghost" className="w-full gap-2" onClick={handleSignOut}><LogOut className="h-4 w-4" /> Sign Out</Button>
+                  <Link to="/post-request" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full gap-2 mb-2"><Plus className="h-4 w-4" /> Post Request</Button>
+                  </Link>
+                  <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start gap-2"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
+                  </Link>
+                  <Link to="/orders/purchased" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start gap-2"><Package className="h-4 w-4" /> Purchased Orders</Button>
+                  </Link>
+                  <Link to="/orders/sold" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start gap-2"><Wallet className="h-4 w-4" /> Sold Orders</Button>
+                  </Link>
+                  <Link to="/inbox" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start gap-2"><MessageSquare className="h-4 w-4" /> Messages</Button>
+                  </Link>
+                  <Link to="/wallet" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start gap-2"><Wallet className="h-4 w-4" /> Balance: €{(balance ?? 0).toFixed(2)}</Button>
+                  </Link>
+                  <Link to="/settings" onClick={() => setIsOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start gap-2"><Settings className="h-4 w-4" /> Settings</Button>
+                  </Link>
+                  <hr className="border-border/30 my-2" />
+                  <Button variant="ghost" className="w-full justify-start gap-2 text-destructive hover:bg-destructive/10" onClick={() => { setIsOpen(false); handleSignOut(); }}>
+                    <LogOut className="h-4 w-4" /> Sign Out
+                  </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="outline" className="w-full gap-2" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}><User className="h-4 w-4" /> Sign In</Button>
-                  <Button className="w-full gap-2" onClick={() => { setIsOpen(false); setAuthTab("signup"); setAuthOpen(true); }}><Zap className="h-4 w-4" /> Get Started</Button>
+                  <Button variant="outline" className="w-full gap-2" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}>
+                    <User className="h-4 w-4" /> Sign In
+                  </Button>
+                  <Button className="w-full gap-2" onClick={() => { setIsOpen(false); setAuthTab("signup"); setAuthOpen(true); }}>
+                    <Zap className="h-4 w-4" /> Get Started
+                  </Button>
                 </>
               )}
             </div>
