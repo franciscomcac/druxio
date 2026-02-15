@@ -18,7 +18,7 @@ const Newsletter = () => {
       <div className="container mx-auto px-4">
         <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-2">
           {/* Stay Updated card */}
-          <div className="rounded-lg border border-border/30 bg-card/50 p-8 flex flex-col">
+          <div className="rounded-lg border border-border bg-card p-8 flex flex-col">
             <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Mail className="h-6 w-6" />
             </div>
@@ -41,7 +41,7 @@ const Newsletter = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   maxLength={255}
-                  className="flex-1 h-11 rounded-lg bg-background/60 border-border/40"
+                  className="flex-1 h-11 rounded-lg bg-background border-border"
                 />
                 <Button type="submit" className="gap-2 h-11 rounded-lg px-5">
                   Subscribe <ArrowRight className="h-4 w-4" />
@@ -51,7 +51,7 @@ const Newsletter = () => {
           </div>
 
           {/* Become an Expert card */}
-          <div className="rounded-lg border border-primary/20 bg-gradient-to-br from-primary/[0.08] to-card/60 p-8 flex flex-col">
+          <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-card p-8 flex flex-col">
             <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <Sparkles className="h-6 w-6" />
             </div>

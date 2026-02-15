@@ -56,7 +56,7 @@ const Testimonials = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 lg:flex h-10 w-10 rounded-full border border-border/30 hover:bg-card"
+            className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 lg:flex h-10 w-10 rounded-full border border-border hover:bg-card"
             onClick={() => { setIsAutoPlaying(false); changeIndex((currentIndex - 1 + testimonials.length) % testimonials.length); }}
           >
             <ChevronLeft className="h-5 w-5" />
@@ -64,7 +64,7 @@ const Testimonials = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 lg:flex h-10 w-10 rounded-full border border-border/30 hover:bg-card"
+            className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 lg:flex h-10 w-10 rounded-full border border-border hover:bg-card"
             onClick={() => { setIsAutoPlaying(false); changeIndex((currentIndex + 1) % testimonials.length); }}
           >
             <ChevronRight className="h-5 w-5" />
@@ -74,7 +74,7 @@ const Testimonials = () => {
             {visible.map((t, i) => (
               <div
                 key={`${t.name}-${currentIndex}-${i}`}
-                className="rounded-xl border border-border/40 bg-card/70 p-7 flex flex-col transition-all duration-300 hover:border-primary/30"
+                className="rounded-xl border border-border bg-card p-7 flex flex-col transition-all duration-300 hover:border-primary/30"
                 style={{ transitionDelay: `${i * 50}ms` }}
               >
                 <div className="flex items-center justify-between mb-5">

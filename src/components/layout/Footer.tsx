@@ -26,7 +26,7 @@ const footerLinks = {
 
 const Footer = () => {
   return (
-    <footer className="border-t border-border/20 bg-card/30">
+    <footer className="border-t border-border bg-card/30">
       <div className="container mx-auto px-4 py-16">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
@@ -45,7 +45,7 @@ const Footer = () => {
                 { icon: <Github className="h-4 w-4" />, href: "https://github.com", label: "GitHub" },
                 { icon: <Linkedin className="h-4 w-4" />, href: "https://linkedin.com", label: "LinkedIn" },
               ].map((s) => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/30 bg-card/40 text-muted-foreground transition-all duration-300 hover:bg-primary/[0.08] hover:text-primary hover:border-primary/20" aria-label={s.label}>
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-all duration-300 hover:bg-primary/[0.08] hover:text-primary hover:border-primary/20" aria-label={s.label}>
                   {s.icon}
                 </a>
               ))}
@@ -66,7 +66,7 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border/20 pt-8 md:flex-row">
+        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
           <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Duxio. All rights reserved.</p>
           <span className="text-sm text-muted-foreground">🇪🇺 EUR payments via Stripe</span>
         </div>

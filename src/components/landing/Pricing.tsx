@@ -40,7 +40,7 @@ const Pricing = () => {
           ].map((plan, i) => (
             <Card
               key={plan.title}
-              className={`transition-all duration-500 hover:-translate-y-2 animate-slide-up ${plan.highlight ? "border-primary/30 shadow-glow bg-card/80" : "border-border/30 bg-card/40"}`}
+              className={`transition-all duration-500 hover:-translate-y-2 animate-slide-up ${plan.highlight ? "border-primary/30 shadow-glow bg-card" : "border-border bg-card"}`}
               style={{ animationDelay: `${i * 150}ms` }}
             >
               <CardHeader className="text-center">
