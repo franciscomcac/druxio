@@ -24,35 +24,73 @@ import {
 const CATEGORY_TREE = [
   {
     id: "Gaming", label: "Gaming", icon: Gamepad2,
-    subs: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends"],
+    subs: [
+      { id: "Valorant", services: ["Boosting", "Coaching", "VOD Review", "Carry / Duo Partner", "Account Leveling"] },
+      { id: "Fortnite", services: ["Coaching", "Creative Builds", "Carry / Duo", "Account Leveling"] },
+      { id: "Minecraft", services: ["Custom Build", "Server Setup", "Modding", "Redstone Engineering", "Skin / Texture Art"] },
+      { id: "CS2", services: ["Boosting", "Coaching", "VOD Review", "Carry / Duo"] },
+      { id: "Apex Legends", services: ["Boosting", "Coaching", "Badge Unlocking", "Carry / Duo"] },
+      { id: "League of Legends", services: ["Boosting", "Coaching", "VOD Review", "Duo Queue", "Champion Mastery"] },
+    ],
   },
   {
     id: "Tech", label: "Tech", icon: Code,
-    subs: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress"],
+    subs: [
+      { id: "Discord Bots", services: ["Custom Bot", "Bot Hosting", "Bot Configuration"] },
+      { id: "Web Development", services: ["Full Website", "Landing Page", "Bug Fixes", "API Integration"] },
+      { id: "SEO", services: ["Audit", "On-Page SEO", "Link Building", "Keyword Research"] },
+      { id: "Server Setup", services: ["VPS Setup", "Game Server", "Docker / DevOps"] },
+      { id: "App Development", services: ["Mobile App", "Desktop App", "Prototype"] },
+      { id: "WordPress", services: ["Theme Setup", "Plugin Development", "Migration"] },
+    ],
   },
   {
     id: "Business", label: "Business", icon: Briefcase,
-    subs: ["Marketing", "Startup Advice", "E-commerce", "Accounting"],
+    subs: [
+      { id: "Marketing", services: ["Social Media", "Ad Campaigns", "Email Marketing", "Brand Strategy"] },
+      { id: "Startup Advice", services: ["Business Plan", "Pitch Deck", "Fundraising", "Mentorship"] },
+      { id: "E-commerce", services: ["Store Setup", "Product Listing", "Dropshipping", "Analytics"] },
+      { id: "Accounting", services: ["Bookkeeping", "Tax Prep", "Financial Modeling"] },
+    ],
   },
   {
     id: "Creative", label: "Creative", icon: Palette,
-    subs: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails"],
+    subs: [
+      { id: "Graphic Design", services: ["Logo", "Social Media Graphics", "Branding Kit", "Illustration"] },
+      { id: "Video Editing", services: ["Short Form", "Long Form", "Motion Graphics", "Color Grading"] },
+      { id: "Ad Copy", services: ["Sales Copy", "Product Descriptions", "Email Sequences"] },
+      { id: "Thumbnails", services: ["YouTube Thumbnails", "Stream Overlays", "Banner Art"] },
+    ],
   },
   {
     id: "Music", label: "Music", icon: Music,
-    subs: ["Production", "Mixing & Mastering", "Guitar Lessons"],
+    subs: [
+      { id: "Production", services: ["Beat Making", "Full Production", "Sound Design"] },
+      { id: "Mixing & Mastering", services: ["Mixing", "Mastering", "Stem Mixing"] },
+      { id: "Guitar Lessons", services: ["Beginner", "Intermediate", "Advanced", "Song Learning"] },
+    ],
   },
   {
     id: "Fitness", label: "Fitness", icon: Dumbbell,
-    subs: ["Personal Training", "Nutrition Plans"],
+    subs: [
+      { id: "Personal Training", services: ["Workout Plan", "Live Coaching", "Form Check"] },
+      { id: "Nutrition Plans", services: ["Meal Plan", "Macro Coaching", "Diet Review"] },
+    ],
   },
   {
     id: "Languages", label: "Languages", icon: Globe,
-    subs: ["English", "Spanish"],
+    subs: [
+      { id: "English", services: ["Conversation", "Writing", "TOEFL Prep", "Business English"] },
+      { id: "Spanish", services: ["Conversation", "Grammar", "DELE Prep"] },
+    ],
   },
   {
     id: "Content", label: "Content", icon: Video,
-    subs: ["Streaming", "YouTube", "TikTok"],
+    subs: [
+      { id: "Streaming", services: ["Stream Setup", "OBS Config", "Growth Strategy"] },
+      { id: "YouTube", services: ["Channel Strategy", "Video SEO", "Script Writing"] },
+      { id: "TikTok", services: ["Content Strategy", "Editing", "Growth Hacks"] },
+    ],
   },
 ];
 
@@ -64,6 +102,7 @@ const CategoryAccordion = ({
   onToggle: (category: string) => void;
 }) => {
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
+  const [expandedSubs, setExpandedSubs] = useState<string[]>([]);
 
   const toggleExpand = (groupId: string) => {
     setExpandedGroups((prev) =>
@@ -71,17 +110,30 @@ const CategoryAccordion = ({
     );
   };
 
-  const getSubKey = (groupId: string, sub: string) => `${groupId}: ${sub}`;
+  const toggleSubExpand = (subKey: string) => {
+    setExpandedSubs((prev) =>
+      prev.includes(subKey) ? prev.filter((s) => s !== subKey) : [...prev, subKey]
+    );
+  };
 
-  const countSubscribed = (group: typeof CATEGORY_TREE[0]) =>
-    group.subs.filter((s) => subscribedCategories.includes(getSubKey(group.id, s))).length;
+  const getServiceKey = (groupId: string, subId: string, service: string) =>
+    `${groupId}: ${subId}: ${service}`;
+
+  const countGroupSubscribed = (group: typeof CATEGORY_TREE[0]) =>
+    group.subs.reduce(
+      (acc, sub) => acc + sub.services.filter((s) => subscribedCategories.includes(getServiceKey(group.id, sub.id, s))).length,
+      0
+    );
+
+  const countSubSubscribed = (groupId: string, sub: typeof CATEGORY_TREE[0]["subs"][0]) =>
+    sub.services.filter((s) => subscribedCategories.includes(getServiceKey(groupId, sub.id, s))).length;
 
   return (
     <div className="space-y-1">
       {CATEGORY_TREE.map((group) => {
         const Icon = group.icon;
         const isExpanded = expandedGroups.includes(group.id);
-        const subCount = countSubscribed(group);
+        const groupCount = countGroupSubscribed(group);
 
         return (
           <div key={group.id}>
@@ -95,12 +147,12 @@ const CategoryAccordion = ({
               <div className="flex-1 text-left">
                 <p className="font-semibold text-foreground">{group.label}</p>
                 <p className="text-xs text-muted-foreground">
-                  {subCount > 0 ? `${subCount} subscribed` : "Not subscribed"}
+                  {groupCount > 0 ? `${groupCount} service${groupCount > 1 ? "s" : ""} subscribed` : "Not subscribed"}
                 </p>
               </div>
-              {subCount > 0 && (
+              {groupCount > 0 && (
                 <Badge variant="secondary" className="bg-primary/[0.08] text-primary text-xs mr-2">
-                  {subCount}
+                  {groupCount}
                 </Badge>
               )}
               {isExpanded ? (
@@ -111,20 +163,56 @@ const CategoryAccordion = ({
             </button>
 
             {isExpanded && (
-              <div className="ml-4 mb-2 border-l border-border/30 pl-4 space-y-0.5 animate-fade-in">
+              <div className="ml-4 mb-2 border-l border-border/30 pl-2 space-y-0.5 animate-fade-in">
                 {group.subs.map((sub) => {
-                  const key = getSubKey(group.id, sub);
-                  const isActive = subscribedCategories.includes(key);
+                  const subKey = `${group.id}:${sub.id}`;
+                  const isSubExpanded = expandedSubs.includes(subKey);
+                  const subCount = countSubSubscribed(group.id, sub);
+
                   return (
-                    <div
-                      key={sub}
-                      className="flex items-center justify-between rounded-lg px-4 py-3 transition-colors hover:bg-accent/30"
-                    >
-                      <span className="text-sm text-foreground">{sub}</span>
-                      <Switch
-                        checked={isActive}
-                        onCheckedChange={() => onToggle(key)}
-                      />
+                    <div key={sub.id}>
+                      <button
+                        onClick={() => toggleSubExpand(subKey)}
+                        className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 transition-colors hover:bg-accent/30"
+                      >
+                        <div className="flex-1 text-left">
+                          <p className="text-sm font-medium text-foreground">{sub.id}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {subCount > 0 ? `${subCount} of ${sub.services.length}` : `${sub.services.length} services`}
+                          </p>
+                        </div>
+                        {subCount > 0 && (
+                          <Badge variant="secondary" className="bg-primary/[0.08] text-primary text-xs mr-1">
+                            {subCount}
+                          </Badge>
+                        )}
+                        {isSubExpanded ? (
+                          <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </button>
+
+                      {isSubExpanded && (
+                        <div className="ml-4 mb-1 border-l border-border/20 pl-3 space-y-0.5 animate-fade-in">
+                          {sub.services.map((service) => {
+                            const key = getServiceKey(group.id, sub.id, service);
+                            const isActive = subscribedCategories.includes(key);
+                            return (
+                              <div
+                                key={service}
+                                className="flex items-center justify-between rounded-lg px-3 py-2 transition-colors hover:bg-accent/20"
+                              >
+                                <span className="text-sm text-foreground">{service}</span>
+                                <Switch
+                                  checked={isActive}
+                                  onCheckedChange={() => onToggle(key)}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
