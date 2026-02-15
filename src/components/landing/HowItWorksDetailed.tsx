@@ -93,7 +93,7 @@ const HowItWorks = () => {
               <div className="relative flex flex-col md:flex-row gap-6 rounded-2xl border border-border bg-card/60 p-6 md:p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow">
                 {/* Left: number + icon */}
                 <div className="flex md:flex-col items-center md:items-start gap-4 md:gap-3 shrink-0 md:w-20">
-                  <span className="text-5xl font-bold text-primary/40 select-none drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]">
+                  <span className="text-5xl font-bold text-primary/70 select-none drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]">
                     0{index + 1}
                   </span>
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary transition-transform duration-500 group-hover:scale-110">
@@ -104,11 +104,11 @@ const HowItWorks = () => {
                 {/* Right: content */}
                 <div className="flex-1">
                   <h3 className="mb-3 text-xl font-semibold text-foreground">{step.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed mb-4">{step.description}</p>
+                  <p className="text-foreground/70 leading-relaxed mb-4">{step.description}</p>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {step.details.map((detail, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <CheckCircle className="h-4 w-4 text-primary/60 shrink-0 mt-0.5" />
+                        <CheckCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                         <span>{detail}</span>
                       </li>
                     ))}
