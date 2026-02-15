@@ -61,29 +61,27 @@ const Testimonials = () => {
             <ChevronRight className="h-5 w-5" />
           </Button>
 
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {visible.map((t, i) => (
               <div
                 key={`${t.name}-${currentIndex}-${i}`}
-                className="relative overflow-hidden rounded-lg border border-border/30 bg-card/50 p-6 flex flex-col gap-4 transition-all duration-300 hover:border-primary/20"
+                className="rounded-xl border border-border/40 bg-card/70 p-7 flex flex-col transition-all duration-300 hover:border-primary/30"
               >
-                {/* Decorative quote mark */}
-                <span className="absolute -right-2 -top-4 text-[120px] font-serif leading-none text-primary/[0.04] select-none pointer-events-none">"</span>
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-0.5">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex gap-1">
                     {Array.from({ length: t.rating }).map((_, j) => (
                       <Star key={j} className="h-4 w-4 fill-primary text-primary" />
                     ))}
                   </div>
-                  <Badge variant="outline" className="text-xs border-primary/20 text-primary rounded-sm">
+                  <Badge variant="outline" className="text-xs border-primary/30 text-primary rounded-sm px-2.5">
                     {t.category}
                   </Badge>
                 </div>
 
-                <p className="text-sm text-foreground/90 leading-relaxed flex-1">"{t.content}"</p>
+                <p className="text-[15px] text-foreground leading-relaxed flex-1 mb-6 font-medium">"{t.content}"</p>
 
-                <div className="flex items-center gap-3 pt-2">
-                  <div className="h-9 w-9 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
                     {t.initials}
                   </div>
                   <div>
