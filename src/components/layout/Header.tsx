@@ -63,8 +63,8 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <span className="text-lg font-bold text-foreground">Duxio</span>
+        <Link to="/" className="flex items-center group">
+          <span className="text-lg font-bold text-foreground">Dux<span className="relative inline-block"><Zap className="h-3 w-3 absolute -top-0.5 left-1/2 -translate-x-1/2 text-primary fill-primary" />i</span>o</span>
         </Link>
 
         {/* Center nav */}
