@@ -611,7 +611,7 @@ const PostRequest = () => {
                   </div>
 
                    <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Estimated Time Needed</label>
+                    <label className="text-sm font-medium text-foreground">Max Time</label>
                     <div className="flex gap-2">
                       <Input
                         type="number"
