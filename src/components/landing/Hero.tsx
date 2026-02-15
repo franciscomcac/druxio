@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLiveStats } from "@/hooks/use-live-stats";
 import { Button } from "@/components/ui/button";
@@ -6,19 +6,76 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Shield, Clock, Users, Star, CheckCircle, Zap, Send, ChevronDown } from "lucide-react";
 
-const floatingTasks = [
-  { title: "Fix Minecraft server TPS drops", category: "Gaming", budget: "€12", expert: "JM", rating: "4.9", delay: "0s", position: "top-[8%] left-[2%]", size: "w-[260px]", rotate: "-2deg" },
-  { title: "Discord bot with slash commands", category: "Tech", budget: "€15", expert: "SK", rating: "5.0", delay: "0.3s", position: "top-[4%] right-[3%]", size: "w-[240px]", rotate: "1.5deg" },
-  { title: "Logo redesign for startup", category: "Creative", budget: "€25", expert: "ER", rating: "4.8", delay: "0.6s", position: "bottom-[18%] left-[1%]", size: "w-[230px]", rotate: "1deg" },
-  { title: "SEO audit + keyword report", category: "Business", budget: "€30", expert: "DL", rating: "4.7", delay: "0.9s", position: "bottom-[22%] right-[2%]", size: "w-[250px]", rotate: "-1.5deg" },
-  { title: "Valorant coaching Silver→Gold", category: "Gaming", budget: "€20", expert: "AT", rating: "5.0", delay: "1.2s", position: "top-[42%] left-[0%]", size: "w-[220px]", rotate: "2deg" },
-  { title: "Mix & master 2 tracks", category: "Music", budget: "€40", expert: "LT", rating: "4.9", delay: "1.5s", position: "top-[38%] right-[1%]", size: "w-[210px]", rotate: "-2.5deg" },
+const taskPool = [
+  { title: "Fix Minecraft server TPS drops", category: "Gaming", budget: "€12", expert: "JM", rating: "4.9" },
+  { title: "Discord bot with slash commands", category: "Tech", budget: "€15", expert: "SK", rating: "5.0" },
+  { title: "Logo redesign for startup", category: "Creative", budget: "€25", expert: "ER", rating: "4.8" },
+  { title: "SEO audit + keyword report", category: "Business", budget: "€30", expert: "DL", rating: "4.7" },
+  { title: "Valorant coaching Silver→Gold", category: "Gaming", budget: "€20", expert: "AT", rating: "5.0" },
+  { title: "Mix & master 2 tracks", category: "Music", budget: "€40", expert: "LT", rating: "4.9" },
+  { title: "WordPress site speed optimization", category: "Tech", budget: "€18", expert: "MR", rating: "4.8" },
+  { title: "Fortnite map design & testing", category: "Gaming", budget: "€22", expert: "KL", rating: "4.7" },
+  { title: "Instagram growth strategy", category: "Business", budget: "€28", expert: "NP", rating: "4.9" },
+  { title: "Podcast intro jingle creation", category: "Music", budget: "€35", expert: "AV", rating: "5.0" },
+  { title: "Twitch overlay + alerts package", category: "Creative", budget: "€30", expert: "TS", rating: "4.8" },
+  { title: "Python script for data scraping", category: "Tech", budget: "€20", expert: "RK", rating: "4.6" },
+  { title: "Roblox game scripting help", category: "Gaming", budget: "€16", expert: "BN", rating: "4.9" },
+  { title: "Brand identity kit for café", category: "Creative", budget: "€45", expert: "JW", rating: "5.0" },
+  { title: "TikTok ad campaign setup", category: "Business", budget: "€25", expert: "CM", rating: "4.7" },
+  { title: "Beat production (trap/drill)", category: "Music", budget: "€50", expert: "ZD", rating: "4.9" },
+];
+
+const cardSlots = [
+  { position: "top-[8%] left-[2%]", size: "w-[260px]", rotate: "-2deg" },
+  { position: "top-[4%] right-[3%]", size: "w-[240px]", rotate: "1.5deg" },
+  { position: "bottom-[18%] left-[1%]", size: "w-[230px]", rotate: "1deg" },
+  { position: "bottom-[22%] right-[2%]", size: "w-[250px]", rotate: "-1.5deg" },
+  { position: "top-[42%] left-[0%]", size: "w-[220px]", rotate: "2deg" },
+  { position: "top-[38%] right-[1%]", size: "w-[210px]", rotate: "-2.5deg" },
 ];
 
 const Hero = () => {
   const [taskTitle, setTaskTitle] = useState("");
   const navigate = useNavigate();
   const stats = useLiveStats();
+
+  const [slotIndices, setSlotIndices] = useState(() =>
+    cardSlots.map((_, i) => i % taskPool.length)
+  );
+  const [fadingSlots, setFadingSlots] = useState<boolean[]>(() =>
+    cardSlots.map(() => false)
+  );
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const slotToChange = Math.floor(Math.random() * cardSlots.length);
+
+      setFadingSlots(prev => {
+        const next = [...prev];
+        next[slotToChange] = true;
+        return next;
+      });
+
+      setTimeout(() => {
+        setSlotIndices(prev => {
+          const next = [...prev];
+          let newIdx: number;
+          do {
+            newIdx = Math.floor(Math.random() * taskPool.length);
+          } while (prev.includes(newIdx));
+          next[slotToChange] = newIdx;
+          return next;
+        });
+        setFadingSlots(prev => {
+          const next = [...prev];
+          next[slotToChange] = false;
+          return next;
+        });
+      }, 400);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleQuickPost = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,38 +96,40 @@ const Hero = () => {
       {/* Subtle grid */}
       <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--primary)/0.012)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--primary)/0.012)_1px,transparent_1px)] bg-[size:80px_80px] pointer-events-none" />
 
-      {/* Floating task cards — asymmetric, layered */}
-      {floatingTasks.map((task, i) => (
-        <div
-          key={i}
-          className={`absolute ${task.position} ${task.size} hidden lg:block pointer-events-none animate-fade-in`}
-          style={{
-            animationDelay: task.delay,
-            transform: `rotate(${task.rotate})`,
-            opacity: 0,
-            animationFillMode: "forwards",
-          }}
-        >
-          <div className="rounded-sm border border-border bg-card/90 backdrop-blur-sm p-3.5 shadow-md transition-all hover:border-primary/20">
-            <div className="flex items-center justify-between mb-2">
-              <Badge variant="outline" className="text-[9px] border-primary/20 text-primary/70 rounded-sm px-1.5 py-0">{task.category}</Badge>
-              <span className="text-xs font-bold text-foreground">{task.budget}</span>
-            </div>
-            <p className="text-xs font-medium text-foreground/80 mb-2 leading-snug">{task.title}</p>
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-              <div className="h-5 w-5 rounded-sm bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">{task.expert}</div>
-              <div className="flex items-center gap-0.5">
-                <Star className="h-2.5 w-2.5 fill-primary text-primary" />
-                <span>{task.rating}</span>
+      {/* Floating task cards — cycling */}
+      {cardSlots.map((slot, i) => {
+        const task = taskPool[slotIndices[i]];
+        return (
+          <div
+            key={i}
+            className={`absolute ${slot.position} ${slot.size} hidden lg:block pointer-events-none transition-opacity duration-400`}
+            style={{
+              transform: `rotate(${slot.rotate})`,
+              opacity: fadingSlots[i] ? 0 : 1,
+              transitionDuration: "400ms",
+            }}
+          >
+            <div className="rounded-sm border border-border bg-card/90 backdrop-blur-sm p-3.5 shadow-md transition-all hover:border-primary/20">
+              <div className="flex items-center justify-between mb-2">
+                <Badge variant="outline" className="text-[9px] border-primary/20 text-primary/70 rounded-sm px-1.5 py-0">{task.category}</Badge>
+                <span className="text-xs font-bold text-foreground">{task.budget}</span>
               </div>
-              <span className="ml-auto flex items-center gap-0.5">
-                <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary/60" /></span>
-                quoted
-              </span>
+              <p className="text-xs font-medium text-foreground/80 mb-2 leading-snug">{task.title}</p>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <div className="h-5 w-5 rounded-sm bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">{task.expert}</div>
+                <div className="flex items-center gap-0.5">
+                  <Star className="h-2.5 w-2.5 fill-primary text-primary" />
+                  <span>{task.rating}</span>
+                </div>
+                <span className="ml-auto flex items-center gap-0.5">
+                  <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary/60" /></span>
+                  quoted
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       <div className="container relative z-10 mx-auto px-4">
         <div className="mx-auto max-w-3xl text-center">
