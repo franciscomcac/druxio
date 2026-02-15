@@ -6,12 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
   DollarSign, Star, Clock, Bell, Send, Loader2, Settings, Target, TrendingUp, Zap, MessageSquare,
+  Package, CheckCircle2, AlertTriangle, ArrowRight,
 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 interface Job {
   id: string;
@@ -24,6 +28,12 @@ interface Job {
   created_at: string;
   expires_at: string | null;
   buyer_id: string;
+}
+
+interface OrderData {
+  job: any;
+  quote: any;
+  buyerProfile: any;
 }
 
 interface ExpertDashboardProps {
@@ -48,21 +58,25 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const [quoteMessage, setQuoteMessage] = useState("");
   const [sendingQuote, setSendingQuote] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(true);
+
+  // Orders state
+  const [orders, setOrders] = useState<OrderData[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Fetch open jobs
   useEffect(() => {
     const fetchJobs = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       const { data: jobs } = await supabase
         .from("jobs").select("*").eq("status", "open")
         .order("created_at", { ascending: false }).limit(20);
-      // Filter out the expert's own buyer posts
       const filtered = (jobs || []).filter(j => j.buyer_id !== profile?.id);
       setOpenJobs(filtered);
       setLoadingJobs(false);
 
-      // Fetch which jobs the expert already quoted on
       if (user && jobs && jobs.length > 0) {
         const jobIds = jobs.map(j => j.id);
         const { data: myQuotes } = await supabase
@@ -91,6 +105,50 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     return () => { supabase.removeChannel(channel); };
   }, []);
 
+  // Fetch expert's orders (jobs where expert has an accepted quote)
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: myQuotes } = await supabase
+        .from("quotes")
+        .select("*")
+        .eq("expert_id", user.id)
+        .eq("status", "accepted");
+
+      if (!myQuotes || myQuotes.length === 0) {
+        setLoadingOrders(false);
+        return;
+      }
+
+      const orderPromises = myQuotes.map(async (quote) => {
+        const { data: job } = await supabase
+          .from("jobs")
+          .select("*")
+          .eq("id", quote.job_id)
+          .single();
+
+        let buyerProfile = null;
+        if (job) {
+          const { data: bp } = await supabase
+            .from("profiles")
+            .select("display_name, avatar_url")
+            .eq("id", job.buyer_id)
+            .single();
+          buyerProfile = bp;
+        }
+
+        return { job, quote, buyerProfile };
+      });
+
+      const results = (await Promise.all(orderPromises)).filter(o => o.job);
+      setOrders(results);
+      setLoadingOrders(false);
+    };
+    fetchOrders();
+  }, []);
+
   const handleSendQuote = async () => {
     if (!quoteDialog || !quotePrice) return;
     setSendingQuote(true);
@@ -114,7 +172,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     if (error) {
       toast({ title: "Error sending quote", description: error.message, variant: "destructive" });
     } else {
-      // Create a pending session so both buyer and expert can chat
       const { data: sessionData } = await supabase.from("sessions").insert({
         mentor_id: session.user.id,
         mentee_id: quoteDialog.buyer_id,
@@ -124,7 +181,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         session_type: "chat",
       }).select().single();
 
-      // If expert included a message, insert it as first chat message
       if (quoteMessage && sessionData) {
         await supabase.from("messages").insert({
           session_id: sessionData.id,
@@ -144,12 +200,66 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     setQuoteMessage("");
   };
 
+  const ongoingOrders = orders.filter(o => o.job.status === "accepted");
+  const completedOrders = orders.filter(o => o.job.status === "completed");
+  const disputedOrders = orders.filter(o => o.job.status === "disputed");
+
   const statCards = [
     { icon: <DollarSign className="h-6 w-6" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Earnings" },
     { icon: <Target className="h-6 w-6" />, value: profile?.total_sessions || 0, label: "Jobs Completed" },
     { icon: <Star className="h-6 w-6" />, value: profile?.rating_avg?.toFixed(1) || "0.0", label: "Rating" },
-    { icon: <Zap className="h-6 w-6" />, value: subscribedCategories.length, label: "Subscribed Categories" },
+    { icon: <Zap className="h-6 w-6" />, value: subscribedCategories.length, label: "Categories" },
   ];
+
+  const renderOrderCard = (order: OrderData) => {
+    const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive"; icon: any }> = {
+      accepted: { label: "Ongoing", variant: "default", icon: Clock },
+      completed: { label: "Completed", variant: "secondary", icon: CheckCircle2 },
+      disputed: { label: "Disputed", variant: "destructive", icon: AlertTriangle },
+    };
+    const config = statusMap[order.job.status] || statusMap.accepted;
+    const StatusIcon = config.icon;
+
+    return (
+      <div
+        key={order.job.id}
+        onClick={() => navigate(`/order/${order.job.id}`)}
+        className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 cursor-pointer transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03]"
+      >
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <Avatar className="h-9 w-9 border border-border/30 shrink-0">
+            <AvatarImage src={order.buyerProfile?.avatar_url} />
+            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+              {order.buyerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="font-medium text-foreground truncate">{order.job.title}</p>
+            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+              <span>{order.buyerProfile?.display_name || "Client"}</span>
+              <span>·</span>
+              <span>€{Number(order.quote.price).toFixed(2)}</span>
+              <span>·</span>
+              <span>{formatDistanceToNow(new Date(order.job.created_at), { addSuffix: true })}</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Badge variant={config.variant} className="gap-1">
+            <StatusIcon className="h-3 w-3" />
+            {config.label}
+          </Badge>
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
+    );
+  };
+
+  const renderEmptyState = (message: string) => (
+    <div className="text-center py-10 text-muted-foreground">
+      <p className="text-sm">{message}</p>
+    </div>
+  );
 
   return (
     <div className="space-y-8">
@@ -215,61 +325,108 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         ))}
       </div>
 
-      {/* Main Content */}
+      {/* Main Content with Tabs */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms]">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="relative">
-                      <Bell className="h-5 w-5 text-primary" />
-                      <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-primary animate-ping" />
-                    </div>
-                    Live Requests
-                  </CardTitle>
-                  <CardDescription className="mt-1">Open requests matching your categories</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loadingJobs ? (
-                <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
-              ) : openJobs.length > 0 ? (
-                <div className="space-y-3">
-                  {openJobs.map((job, i) => (
-                    <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in" style={{ animationDelay: `${(i + 4) * 60}ms` }}>
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">{job.title}</p>
-                        <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
-                          <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
-                          <span className="font-bold text-foreground">€{job.budget_max}</span>
-                          <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
-                          <span>{timeAgo(job.created_at)}</span>
+            <CardContent className="pt-6">
+              <Tabs defaultValue="live" className="space-y-4">
+                <TabsList className="bg-background/60 border border-border/20 w-full justify-start">
+                  <TabsTrigger value="live" className="gap-1.5 relative">
+                    <Bell className="h-3.5 w-3.5" /> Live
+                    {openJobs.length > 0 && (
+                      <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                        {openJobs.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="ongoing" className="gap-1.5">
+                    <Clock className="h-3.5 w-3.5" /> Ongoing
+                    {ongoingOrders.length > 0 && (
+                      <span className="ml-1 text-xs text-muted-foreground">({ongoingOrders.length})</span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> Completed
+                    {completedOrders.length > 0 && (
+                      <span className="ml-1 text-xs text-muted-foreground">({completedOrders.length})</span>
+                    )}
+                  </TabsTrigger>
+                  <TabsTrigger value="disputed" className="gap-1.5">
+                    <AlertTriangle className="h-3.5 w-3.5" /> Disputed
+                    {disputedOrders.length > 0 && (
+                      <span className="ml-1 text-xs text-muted-foreground">({disputedOrders.length})</span>
+                    )}
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Live Requests */}
+                <TabsContent value="live" className="mt-0">
+                  {loadingJobs ? (
+                    <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+                  ) : openJobs.length > 0 ? (
+                    <div className="space-y-3">
+                      {openJobs.map((job, i) => (
+                        <div key={job.id} className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+                          <div className="flex-1">
+                            <p className="font-medium text-foreground">{job.title}</p>
+                            <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+                              <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
+                              <span className="font-bold text-foreground">€{job.budget_max}</span>
+                              <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
+                              <span>{timeAgo(job.created_at)}</span>
+                            </div>
+                          </div>
+                          {quotedJobIds.has(job.id) ? (
+                            <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
+                              <MessageSquare className="h-3 w-3" /> Chat
+                            </Button>
+                          ) : (
+                            <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
+                              <Send className="h-3 w-3" /> Quote
+                            </Button>
+                          )}
                         </div>
-                      </div>
-                      {quotedJobIds.has(job.id) ? (
-                        <Button size="sm" variant="outline" className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
-                          <MessageSquare className="h-3 w-3" /> Chat
-                        </Button>
-                      ) : (
-                        <Button size="sm" className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
-                          <Send className="h-3 w-3" /> Quote
-                        </Button>
-                      )}
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-primary/[0.06] flex items-center justify-center">
-                    <Bell className="h-7 w-7 text-primary/40" />
-                  </div>
-                  <p className="font-medium text-foreground mb-1">No open requests right now</p>
-                  <p className="text-sm">New requests will appear here in real-time</p>
-                </div>
-              )}
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-primary/[0.06] flex items-center justify-center">
+                        <Bell className="h-7 w-7 text-primary/40" />
+                      </div>
+                      <p className="font-medium text-foreground mb-1">No open requests right now</p>
+                      <p className="text-sm">New requests will appear here in real-time</p>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Ongoing Orders */}
+                <TabsContent value="ongoing" className="mt-0">
+                  {loadingOrders ? (
+                    <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+                  ) : ongoingOrders.length > 0 ? (
+                    <div className="space-y-3">{ongoingOrders.map(renderOrderCard)}</div>
+                  ) : renderEmptyState("No ongoing orders")}
+                </TabsContent>
+
+                {/* Completed Orders */}
+                <TabsContent value="completed" className="mt-0">
+                  {loadingOrders ? (
+                    <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+                  ) : completedOrders.length > 0 ? (
+                    <div className="space-y-3">{completedOrders.map(renderOrderCard)}</div>
+                  ) : renderEmptyState("No completed orders yet")}
+                </TabsContent>
+
+                {/* Disputed Orders */}
+                <TabsContent value="disputed" className="mt-0">
+                  {loadingOrders ? (
+                    <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+                  ) : disputedOrders.length > 0 ? (
+                    <div className="space-y-3">{disputedOrders.map(renderOrderCard)}</div>
+                  ) : renderEmptyState("No disputed orders")}
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>
@@ -303,6 +460,9 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
               </Button>
               <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
                 View Earnings <DollarSign className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/orders/sold")}>
+                All Sold Orders <Package className="h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
