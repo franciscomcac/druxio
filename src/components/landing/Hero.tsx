@@ -49,7 +49,7 @@ const Hero = () => {
             animationFillMode: "forwards",
           }}
         >
-          <div className="rounded-sm border border-border/30 bg-card/50 backdrop-blur-sm p-3.5 shadow-lg transition-all hover:border-primary/20">
+          <div className="rounded-sm border border-border bg-card/90 backdrop-blur-sm p-3.5 shadow-md transition-all hover:border-primary/20">
             <div className="flex items-center justify-between mb-2">
               <Badge variant="outline" className="text-[9px] border-primary/20 text-primary/70 rounded-sm px-1.5 py-0">{task.category}</Badge>
               <span className="text-xs font-bold text-foreground">{task.budget}</span>
