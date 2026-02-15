@@ -330,6 +330,7 @@ export type Database = {
           stripe_customer_id: string | null
           timezone: string | null
           total_sessions: number | null
+          total_spent: number | null
           updated_at: string | null
           wallet_balance: number | null
         }
@@ -350,6 +351,7 @@ export type Database = {
           stripe_customer_id?: string | null
           timezone?: string | null
           total_sessions?: number | null
+          total_spent?: number | null
           updated_at?: string | null
           wallet_balance?: number | null
         }
@@ -370,6 +372,7 @@ export type Database = {
           stripe_customer_id?: string | null
           timezone?: string | null
           total_sessions?: number | null
+          total_spent?: number | null
           updated_at?: string | null
           wallet_balance?: number | null
         }

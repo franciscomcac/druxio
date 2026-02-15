@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import RankBadge from "@/components/RankBadge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/layout/Header";
@@ -163,10 +164,11 @@ const Dashboard = () => {
               <h1 className="text-2xl font-bold text-foreground">
                 Welcome back, {profile?.display_name || "User"}
               </h1>
-              <div className="flex items-center gap-2 mt-1.5">
+              <div className="flex items-center gap-3 mt-1.5">
                 <Badge variant="outline" className={`border-primary/20 ${activeView === "client" ? "bg-primary/[0.08] text-primary" : "text-muted-foreground"}`}>
                   {activeView === "client" ? "Client" : "Expert"} Dashboard
                 </Badge>
+                <RankBadge totalSpent={profile?.total_spent || 0} />
               </div>
             </div>
           </div>
