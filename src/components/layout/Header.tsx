@@ -60,13 +60,13 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/30 bg-background/80 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow transition-shadow duration-300 group-hover:shadow-glow-lg">
-            <Zap className="h-5 w-5" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow transition-shadow duration-300 group-hover:shadow-glow-lg">
+            <Zap className="h-4 w-4" />
           </div>
-          <span className="text-xl font-bold text-foreground">Duxio</span>
+          <span className="text-lg font-bold text-foreground">Duxio</span>
         </Link>
 
         {/* Center nav */}
