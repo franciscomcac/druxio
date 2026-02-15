@@ -45,16 +45,16 @@ const QuickHelpForm = () => {
             <p className="text-muted-foreground text-lg animate-fade-in [animation-delay:200ms]">Tell us what you need — experts are notified instantly</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border/30 bg-card/60 p-8 backdrop-blur-xl shadow-lg animate-slide-up [animation-delay:300ms]">
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border bg-card/60 p-8 backdrop-blur-xl shadow-lg animate-slide-up [animation-delay:300ms]">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">What do you need help with?</label>
-              <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required className="bg-background/60 border-border/40 focus:border-primary/40" />
+              <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required className="bg-background/60 border-border focus:border-primary/40" />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Category</label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="bg-background/60 border-border/40"><SelectValue placeholder="Select a category" /></SelectTrigger>
+                <SelectTrigger className="bg-background/60 border-border"><SelectValue placeholder="Select a category" /></SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
                     <SelectItem key={c} value={c}>{c}</SelectItem>
@@ -74,7 +74,7 @@ const QuickHelpForm = () => {
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Deadline</label>
               <Select value={deadline} onValueChange={setDeadline}>
-                <SelectTrigger className="bg-background/60 border-border/40"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-background/60 border-border"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="15">15 minutes</SelectItem>
                   <SelectItem value="30">30 minutes</SelectItem>

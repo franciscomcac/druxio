@@ -318,7 +318,7 @@ const MentorProfile = () => {
                     <Card key={review.id}>
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
-                          <Avatar className="h-9 w-9 border border-border/30">
+                          <Avatar className="h-9 w-9 border border-border">
                             <AvatarImage src={review.reviewer_avatar} />
                             <AvatarFallback className="bg-primary/10 text-primary text-xs">
                               {review.reviewer_name?.charAt(0) || "A"}

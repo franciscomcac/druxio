@@ -472,7 +472,7 @@ const ActiveRequest = () => {
         </div>
 
         {/* Live feed bar */}
-        <div className="flex items-center justify-between rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm px-5 py-3 mb-6 animate-fade-in [animation-delay:100ms]">
+        <div className="flex items-center justify-between rounded-xl border border-border bg-card/60 backdrop-blur-sm px-5 py-3 mb-6 animate-fade-in [animation-delay:100ms]">
           <div className="flex items-center gap-2">
             <span className="relative flex h-3 w-3">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40 opacity-75" />
@@ -489,7 +489,7 @@ const ActiveRequest = () => {
         {/* Offers leaderboard */}
         <div className="mb-8 animate-fade-in [animation-delay:200ms]">
           {quotes.length === 0 ? (
-            <Card className="border-dashed border-border/30 bg-card/30">
+            <Card className="border-dashed border-border bg-card/30">
               <CardContent className="flex flex-col items-center py-16 text-muted-foreground">
                 <div className="relative mb-6">
                   <div className="h-16 w-16 rounded-2xl bg-primary/[0.08] flex items-center justify-center">
@@ -514,7 +514,7 @@ const ActiveRequest = () => {
                           ? "border-primary/40 bg-primary/[0.06] shadow-glow"
                           : isBuyer && selectedChatPartnerId === quote.expert_id
                           ? "border-primary/30 bg-primary/[0.04] shadow-glow"
-                          : "border-border/30 bg-card/60 hover:border-primary/20"
+                          : "border-border bg-card/60 hover:border-primary/20"
                       } ${isBuyer ? "cursor-pointer" : ""}`}
                       style={{ animationDelay: `${i * 80}ms` }}
                       onClick={() => isBuyer && setSelectedChatPartnerId(quote.expert_id)}
@@ -525,7 +525,7 @@ const ActiveRequest = () => {
                       </div>
 
                       {/* Avatar */}
-                      <Avatar className="h-11 w-11 border border-border/30 shrink-0">
+                      <Avatar className="h-11 w-11 border border-border shrink-0">
                         <AvatarImage src={quote.profile?.avatar_url || undefined} />
                         <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold text-sm">
                           {quote.profile?.display_name?.split(" ").map(n => n[0]).join("") || "E"}
@@ -612,7 +612,7 @@ const ActiveRequest = () => {
             <div className={`grid grid-cols-1 ${isBuyer ? "md:grid-cols-3" : ""} gap-4 h-[460px]`}>
               {/* Chat list — buyer only (sellers see only one chat) */}
               {isBuyer && (
-                <div className="md:col-span-1 rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm overflow-hidden h-full">
+                <div className="md:col-span-1 rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden h-full">
                   <ScrollArea className="h-full">
                     <div className="p-2 space-y-1">
                       {sortedQuotes.map((quote) => {
@@ -628,7 +628,7 @@ const ActiveRequest = () => {
                                 : "hover:bg-muted/30"
                             }`}
                           >
-                            <Avatar className="h-10 w-10 shrink-0 border border-border/30">
+                            <Avatar className="h-10 w-10 shrink-0 border border-border">
                               <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold text-xs">
                                 {quote.profile?.display_name?.split(" ").map(n => n[0]).join("") || "E"}
                               </AvatarFallback>
@@ -655,13 +655,13 @@ const ActiveRequest = () => {
               )}
 
               {/* Chat window */}
-              <div className={`${isBuyer ? "md:col-span-2" : ""} rounded-xl border border-border/30 bg-card/60 backdrop-blur-sm flex flex-col overflow-hidden h-full`}>
+              <div className={`${isBuyer ? "md:col-span-2" : ""} rounded-xl border border-border bg-card/60 backdrop-blur-sm flex flex-col overflow-hidden h-full`}>
                 {selectedChatPartnerId && sessionMap[selectedChatPartnerId] ? (
                   <>
                     {/* Chat header */}
-                    <div className="flex items-center justify-between border-b border-border/30 px-5 py-3">
+                    <div className="flex items-center justify-between border-b border-border px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-9 w-9 border border-border/30">
+                        <Avatar className="h-9 w-9 border border-border">
                           <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold text-xs">
                             {chatPartnerName.split(" ").map(n => n[0]).join("").charAt(0) || "U"}
                           </AvatarFallback>
@@ -715,7 +715,7 @@ const ActiveRequest = () => {
 
                     {/* Seller: new quote form */}
                     {!isBuyer && (
-                      <div className="border-t border-border/30 px-4 py-2">
+                      <div className="border-t border-border px-4 py-2">
                         {showQuoteForm ? (
                           <div className="space-y-2 animate-fade-in">
                             <div className="flex items-center justify-between">
@@ -731,7 +731,7 @@ const ActiveRequest = () => {
                                   value={newQuotePrice}
                                   onChange={(e) => setNewQuotePrice(e.target.value)}
                                   placeholder="Price (€)"
-                                  className="bg-background/60 border-border/40 h-8 text-sm"
+                                  className="bg-background/60 border-border h-8 text-sm"
                                 />
                               </div>
                               <div className="flex-1 flex gap-1">
@@ -741,9 +741,9 @@ const ActiveRequest = () => {
                                   value={newQuoteMinutes}
                                   onChange={(e) => setNewQuoteMinutes(e.target.value)}
                                   placeholder="Delivery"
-                                  className="bg-background/60 border-border/40 h-8 text-sm w-16"
+                                  className="bg-background/60 border-border h-8 text-sm w-16"
                                 />
-                                <div className="flex rounded-md border border-border/40 overflow-hidden h-8">
+                                <div className="flex rounded-md border border-border overflow-hidden h-8">
                                   {(["minutes", "hours", "days"] as const).map((unit) => (
                                     <button
                                       key={unit}
@@ -780,7 +780,7 @@ const ActiveRequest = () => {
                     )}
 
                     {/* Chat input */}
-                    <div className="border-t border-border/30 p-3">
+                    <div className="border-t border-border p-3">
                       <form
                         onSubmit={(e) => { e.preventDefault(); handleSendChat(); }}
                         className="flex gap-2"

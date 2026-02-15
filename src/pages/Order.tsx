@@ -463,7 +463,7 @@ const Order = () => {
               onClick={() => navigate(isBuyer ? `/mentor/${quote.expert_id}` : `/mentor/${job.buyer_id}`)}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 border border-border/30">
+                  <Avatar className="h-12 w-12 border border-border">
                     <AvatarImage src={otherPartyProfile?.avatar_url} />
                     <AvatarFallback className="bg-primary/10 text-primary font-bold">
                       {otherPartyProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
@@ -547,7 +547,7 @@ const Order = () => {
           {/* Right: Chat */}
           <div className="lg:col-span-2">
             <Card className="flex flex-col" style={{ height: 600 }}>
-              <CardHeader className="pb-3 border-b border-border/30 shrink-0">
+              <CardHeader className="pb-3 border-b border-border shrink-0">
                 <div className="flex items-center gap-3">
                   <MessageSquare className="h-5 w-5 text-primary" />
                   <CardTitle className="text-base">Chat with {otherPartyProfile?.display_name || otherPartyLabel}</CardTitle>
@@ -594,7 +594,7 @@ const Order = () => {
                   <div ref={chatEndRef} />
                 </div>
               </ScrollArea>
-              <div className="border-t border-border/30 p-3 shrink-0">
+              <div className="border-t border-border p-3 shrink-0">
                 <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex gap-2">
                   <Input
                     value={chatInput}
@@ -686,7 +686,7 @@ const Order = () => {
                 <button key={tag} type="button"
                   onClick={() => setReviewComment((prev) => prev.includes(tag) ? prev.replace(tag, "").replace(/\s{2,}/g, " ").trim() : (prev ? `${prev}, ${tag}` : tag))}
                   className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                    reviewComment.includes(tag) ? "bg-primary text-primary-foreground border-primary" : "bg-accent/40 text-muted-foreground border-border/40 hover:bg-accent"
+                    reviewComment.includes(tag) ? "bg-primary text-primary-foreground border-primary" : "bg-accent/40 text-muted-foreground border-border hover:bg-accent"
                   }`}>
                   {tag}
                 </button>

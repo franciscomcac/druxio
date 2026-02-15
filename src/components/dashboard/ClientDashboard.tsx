@@ -50,7 +50,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
-          <Card key={i} className="border-border/30 bg-card/60 backdrop-blur-xl transition-all duration-500 hover:shadow-glow hover:-translate-y-1 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
+          <Card key={i} className="border-border bg-card/60 backdrop-blur-xl transition-all duration-500 hover:shadow-glow hover:-translate-y-1 animate-fade-in" style={{ animationDelay: `${i * 80}ms` }}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/[0.08] text-primary">
@@ -69,7 +69,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
       {/* Main Content */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms]">
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms]">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2"><Zap className="h-5 w-5 text-primary" /> Your Requests</span>
@@ -84,7 +84,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
                   {myJobs.slice(0, 10).map((job, i) => (
                     <div
                       key={job.id}
-                      className="flex items-center justify-between rounded-xl border border-border/20 bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in cursor-pointer"
+                      className="flex items-center justify-between rounded-xl border border-border bg-background/40 p-4 transition-all duration-300 hover:border-primary/20 hover:bg-primary/[0.03] animate-fade-in cursor-pointer"
                       style={{ animationDelay: `${(i + 4) * 60}ms` }}
                       onClick={() => {
                         if (job.status === "open") navigate(`/request/${job.id}`);
@@ -121,13 +121,13 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
           </Card>
         </div>
 
-        <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
+        <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
           <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <Button className="w-full justify-between shadow-glow hover:shadow-glow-lg transition-shadow" onClick={() => navigate("/post-request")}>
               Post a Request <ArrowRight className="h-4 w-4" />
             </Button>
-            <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
+            <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
               Top Up Wallet <DollarSign className="h-4 w-4" />
             </Button>
           </CardContent>

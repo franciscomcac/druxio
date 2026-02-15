@@ -101,7 +101,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card/95 backdrop-blur-xl border-border/30 sm:max-w-md">
+      <DialogContent className="bg-card/95 backdrop-blur-xl border-border sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5 text-primary" /> Withdraw Funds
@@ -147,7 +147,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="bg-background/60 border-border/40"
+                className="bg-background/60 border-border"
               />
               <Button
                 type="button"
@@ -175,7 +175,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                 value={paypalEmail}
                 onChange={(e) => setPaypalEmail(e.target.value)}
                 placeholder="your@email.com"
-                className="bg-background/60 border-border/40"
+                className="bg-background/60 border-border"
               />
             </div>
           )}
@@ -186,7 +186,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
               <div className="space-y-2">
                 <Label>Token</Label>
                 <Select value={cryptoToken} onValueChange={(v) => { setCryptoToken(v); setCryptoNetwork(""); }}>
-                  <SelectTrigger className="bg-background/60 border-border/40">
+                  <SelectTrigger className="bg-background/60 border-border">
                     <SelectValue placeholder="Select token" />
                   </SelectTrigger>
                   <SelectContent>
@@ -201,7 +201,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                 <div className="space-y-2">
                   <Label>Network</Label>
                   <Select value={cryptoNetwork} onValueChange={setCryptoNetwork}>
-                    <SelectTrigger className="bg-background/60 border-border/40">
+                    <SelectTrigger className="bg-background/60 border-border">
                       <SelectValue placeholder="Select network" />
                     </SelectTrigger>
                     <SelectContent>
@@ -219,7 +219,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                   value={cryptoAddress}
                   onChange={(e) => setCryptoAddress(e.target.value)}
                   placeholder="Enter wallet address"
-                  className="bg-background/60 border-border/40 font-mono text-sm"
+                  className="bg-background/60 border-border font-mono text-sm"
                 />
               </div>
             </>
@@ -227,7 +227,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border/30">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-border">
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={loading} className="gap-2">

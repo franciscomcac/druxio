@@ -90,7 +90,7 @@ const HowItWorks = () => {
               className="group animate-slide-up"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="relative flex flex-col md:flex-row gap-6 rounded-2xl border border-border/40 bg-card/60 p-6 md:p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow">
+              <div className="relative flex flex-col md:flex-row gap-6 rounded-2xl border border-border bg-card/60 p-6 md:p-8 backdrop-blur-sm transition-all duration-500 hover:border-primary/20 hover:shadow-glow">
                 {/* Left: number + icon */}
                 <div className="flex md:flex-col items-center md:items-start gap-4 md:gap-3 shrink-0 md:w-20">
                   <span className="text-5xl font-bold text-primary/40 select-none drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]">

@@ -285,10 +285,10 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       <div
         key={order.job.id}
         onClick={() => navigate(`/order/${order.job.id}`)}
-        className="flex items-center justify-between rounded-sm border border-border/20 bg-background/40 p-4 cursor-pointer transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]"
+        className="flex items-center justify-between rounded-sm border border-border bg-background/40 p-4 cursor-pointer transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]"
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Avatar className="h-9 w-9 border border-border/30 shrink-0 rounded-sm">
+          <Avatar className="h-9 w-9 border border-border shrink-0 rounded-sm">
             <AvatarImage src={order.buyerProfile?.avatar_url} />
             <AvatarFallback className="bg-primary/10 text-primary text-xs">
               {order.buyerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
@@ -326,7 +326,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     <div className="space-y-8">
       {/* Quote Dialog */}
       <Dialog open={!!quoteDialog} onOpenChange={() => setQuoteDialog(null)}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border/30">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border">
           <DialogHeader>
             <DialogTitle>Send Quote</DialogTitle>
             <DialogDescription>
@@ -336,14 +336,14 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Your Price (€)</label>
-              <Input type="number" placeholder="e.g. 12" value={quotePrice} onChange={(e) => setQuotePrice(e.target.value)} min={1} max={quoteDialog?.budget_max} className="bg-background/60 border-border/40" />
+              <Input type="number" placeholder="e.g. 12" value={quotePrice} onChange={(e) => setQuotePrice(e.target.value)} min={1} max={quoteDialog?.budget_max} className="bg-background/60 border-border" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Estimated Delivery Time</label>
               <div className="flex gap-2">
-                <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={1} className="bg-background/60 border-border/40 flex-1" />
+                <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={1} className="bg-background/60 border-border flex-1" />
                 <Select value={quoteTimeUnit} onValueChange={(v: "minutes" | "hours" | "days") => setQuoteTimeUnit(v)}>
-                  <SelectTrigger className="w-[120px] bg-background/60 border-border/40">
+                  <SelectTrigger className="w-[120px] bg-background/60 border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -356,11 +356,11 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Message (optional)</label>
-              <Textarea placeholder="I can fix this quickly because..." value={quoteMessage} onChange={(e) => setQuoteMessage(e.target.value)} maxLength={500} className="bg-background/60 border-border/40" />
+              <Textarea placeholder="I can fix this quickly because..." value={quoteMessage} onChange={(e) => setQuoteMessage(e.target.value)} maxLength={500} className="bg-background/60 border-border" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setQuoteDialog(null)} className="border-border/30">Cancel</Button>
+            <Button variant="outline" onClick={() => setQuoteDialog(null)} className="border-border">Cancel</Button>
             <Button onClick={handleSendQuote} disabled={sendingQuote || !quotePrice} className="gap-2 shadow-glow">
               {sendingQuote ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send Quote
@@ -392,7 +392,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
-          <Card key={i} className="border-border/30 bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-1 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 80}ms` }}>
+          <Card key={i} className="border-border bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-1 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 80}ms` }}>
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-primary/[0.08] text-primary">{stat.icon}</div>
@@ -410,10 +410,10 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       {/* Main Content with Tabs */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms] rounded-sm">
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms] rounded-sm">
             <CardContent className="pt-6">
               <Tabs defaultValue="live" className="space-y-4">
-                <TabsList className="bg-background/60 border border-border/20 w-full justify-start">
+                <TabsList className="bg-background/60 border border-border w-full justify-start">
                   <TabsTrigger value="live" className="gap-1.5 relative">
                     <Bell className="h-3.5 w-3.5" /> Live
                     {openJobs.length > 0 && (
@@ -474,12 +474,12 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                               <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                              <div className="space-y-1.5 pl-4 border-l border-border/20 ml-4 mt-1 mb-2">
+                              <div className="space-y-1.5 pl-4 border-l border-border ml-4 mt-1 mb-2">
                                 {getSubGroups(items, j => j.category).map(({ sub, items: subItems }) => (
                                   <div key={sub}>
                                     <p className="text-xs font-medium text-muted-foreground px-2 py-1">{sub}</p>
                                     {subItems.map((job) => (
-                                      <div key={job.id} className="flex items-center justify-between rounded-sm border border-border/20 bg-background/40 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]">
+                                      <div key={job.id} className="flex items-center justify-between rounded-sm border border-border bg-background/40 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]">
                                         <div className="flex-1 min-w-0">
                                           <p className="font-medium text-foreground truncate">{job.title}</p>
                                           <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
@@ -532,7 +532,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                             <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
-                            <div className="space-y-2 pl-4 border-l border-border/20 ml-4 mt-1 mb-2">
+                            <div className="space-y-2 pl-4 border-l border-border ml-4 mt-1 mb-2">
                               {items.map(renderOrderCard)}
                             </div>
                           </CollapsibleContent>
@@ -557,7 +557,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                             <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
-                            <div className="space-y-2 pl-4 border-l border-border/20 ml-4 mt-1 mb-2">
+                            <div className="space-y-2 pl-4 border-l border-border ml-4 mt-1 mb-2">
                               {items.map(renderOrderCard)}
                             </div>
                           </CollapsibleContent>
@@ -582,7 +582,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                             <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
-                            <div className="space-y-2 pl-4 border-l border-border/20 ml-4 mt-1 mb-2">
+                            <div className="space-y-2 pl-4 border-l border-border ml-4 mt-1 mb-2">
                               {items.map(renderOrderCard)}
                             </div>
                           </CollapsibleContent>
@@ -597,7 +597,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         </div>
 
         <div className="space-y-6">
-          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
             <CardHeader><CardTitle className="text-lg">Your Categories</CardTitle></CardHeader>
             <CardContent>
               {subscribedCategories.length > 0 ? (
@@ -617,16 +617,16 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             </CardContent>
           </Card>
 
-          <Card className="border-border/30 bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:500ms] rounded-sm">
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:500ms] rounded-sm">
             <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/settings")}>
+              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/settings")}>
                 Manage Categories <Settings className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
+              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
                 View Earnings <DollarSign className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="w-full justify-between border-border/30 hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/orders/sold")}>
+              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/orders/sold")}>
                 All Sold Orders <Package className="h-4 w-4" />
               </Button>
             </CardContent>

@@ -163,7 +163,7 @@ const CategoryAccordion = ({
             </button>
 
             {isExpanded && (
-              <div className="ml-4 mb-2 border-l border-border/30 pl-2 space-y-0.5 animate-fade-in">
+              <div className="ml-4 mb-2 border-l border-border pl-2 space-y-0.5 animate-fade-in">
                 {group.subs.map((sub) => {
                   const subKey = `${group.id}:${sub.id}`;
                   const isSubExpanded = expandedSubs.includes(subKey);
@@ -194,7 +194,7 @@ const CategoryAccordion = ({
                       </button>
 
                       {isSubExpanded && (
-                        <div className="ml-4 mb-1 border-l border-border/20 pl-3 space-y-0.5 animate-fade-in">
+                        <div className="ml-4 mb-1 border-l border-border pl-3 space-y-0.5 animate-fade-in">
                           {sub.services.map((service) => {
                             const key = getServiceKey(group.id, sub.id, service);
                             const isActive = subscribedCategories.includes(key);
