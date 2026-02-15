@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNotificationSound } from "@/hooks/use-notification-sound";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,31 +30,47 @@ const NotificationsDropdown = () => {
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const playNotificationSound = useNotificationSound();
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
-    fetchNotifications();
-    
-    // Subscribe to realtime notifications
-    const channel = supabase
-      .channel("notifications")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-        },
-        (payload) => {
-          const newNotification = payload.new as Notification;
-          setNotifications((prev) => [newNotification, ...prev]);
-          setUnreadCount((prev) => prev + 1);
-          playNotificationSound();
-        }
-      )
-      .subscribe();
+    let userId: string | null = null;
+
+    const setup = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      userId = session.user.id;
+
+      fetchNotifications();
+
+      // Subscribe to realtime notifications for this user
+      const channel = supabase
+        .channel("notifications")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${session.user.id}`,
+          },
+          (payload) => {
+            const newNotification = payload.new as Notification;
+            setNotifications((prev) => [newNotification, ...prev]);
+            setUnreadCount((prev) => prev + 1);
+            playNotificationSound();
+          }
+        )
+        .subscribe();
+
+      channelRef.current = channel;
+    };
+
+    setup();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
     };
   }, []);
 
