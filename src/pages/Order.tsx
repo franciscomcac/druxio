@@ -33,7 +33,7 @@ const Order = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { checkContent } = useModeration();
+  const { softCheckContent } = useModeration();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
@@ -165,13 +165,16 @@ const Order = () => {
   const handleSendChat = async () => {
     if (!chatInput.trim() || !sessionId || !userId) return;
     setSendingChat(true);
-    const flagged = await checkContent(chatInput.trim(), "order chat message");
-    if (flagged) { setSendingChat(false); return; }
+    const messageText = chatInput.trim();
     const { error } = await supabase.from("messages").insert({
-      session_id: sessionId, sender_id: userId, content: chatInput.trim(),
+      session_id: sessionId, sender_id: userId, content: messageText,
     });
     if (error) toast({ title: "Failed to send", description: error.message, variant: "destructive" });
-    else setChatInput("");
+    else {
+      setChatInput("");
+      // Silent moderation — don't block, just alert admins if needed
+      softCheckContent(messageText, "order chat message", { job_id: jobId, sender_id: userId });
+    }
     setSendingChat(false);
   };
 
