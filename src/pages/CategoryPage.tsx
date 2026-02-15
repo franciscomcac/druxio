@@ -142,6 +142,56 @@ const CategoryPage = () => {
           </div>
         </section>
 
+        {/* Online Sellers */}
+        {!loading && experts.filter(e => e.is_online).length > 0 && (
+          <section className="py-10 border-t border-border/30">
+            <div className="container mx-auto px-4">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="h-2.5 w-2.5 rounded-full bg-chart-2 animate-pulse" />
+                <h2 className="text-lg font-semibold text-foreground">
+                  Online Sellers for {meta.label}
+                </h2>
+              </div>
+              <p className="text-sm text-muted-foreground mb-5">
+                Available right now — estimated response{" "}
+                <span className="font-medium text-foreground">
+                  ~{Math.min(...experts.filter(e => e.is_online).map(e => e.response_time_minutes || 5))} min
+                </span>
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {experts.filter(e => e.is_online).slice(0, 6).map(expert => (
+                  <Card
+                    key={expert.id}
+                    className="cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 border-chart-2/20"
+                    onClick={() => navigate(`/mentor/${expert.id}`)}
+                  >
+                    <CardContent className="flex items-center gap-3 p-3 pr-5">
+                      <div className="relative">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={expert.avatar_url} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                            {expert.display_name?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-chart-2 ring-2 ring-background" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground leading-tight">{expert.display_name}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          ~{expert.response_time_minutes || 5} min reply
+                          <span className="mx-1">·</span>
+                          ${(expert.hourly_rate || 2.50).toFixed(2)}/10min
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Subcategories */}
         <section className="py-8 border-t border-border/30">
           <div className="container mx-auto px-4">
