@@ -47,7 +47,11 @@ Available categories: ${allCategories.join(", ")}
 
 You must also pick the broad category from: ${BROAD_CATEGORIES.join(", ")}
 
-Be helpful but don't over-embellish. Keep the user's voice.`;
+IMPORTANT TONE RULES:
+- For Gaming requests: be casual and speak their language. You know what boosting, smurfing, carries, rank grinding, 1v1ing, brainrot, aura, skibidi, sigma, gyatt, and all the gaming/internet slang means. Don't formalize it too much — keep the vibe. If someone says "I need a cracked Roblox scripter" you know exactly what they mean. Understand terms like obby, blox fruits, da hood, mm2, pet sim, adopt me, bedwars, skyblock, hypixel, etc. Don't translate slang into corporate speak.
+- For non-gaming requests: keep it professional but approachable.
+
+Be helpful but don't over-embellish. Keep the user's voice and energy.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
