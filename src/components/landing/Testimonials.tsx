@@ -8,7 +8,7 @@ const testimonials = [
   { name: "Sarah K.", role: "Expert", initials: "SK", content: "I make €200/week just answering Discord bot questions in my spare time. The real-time pings mean I never miss a gig.", rating: 5, category: "Tech" },
   { name: "Marcus J.", role: "Buyer", initials: "MJ", content: "Needed SEO help urgently before a launch. Got a quote in under a minute, expert delivered in 20 min. Worth every cent.", rating: 5, category: "Business" },
   { name: "Elena R.", role: "Expert", initials: "ER", content: "As a graphic designer, Duxio fills my downtime perfectly. Quick jobs, instant payment, no negotiations.", rating: 5, category: "Creative" },
-  { name: "David L.", role: "Buyer", initials: "DL", content: "The escrow system gives me confidence. I only pay when the work is actually done. No scams.", rating: 5, category: "Gaming" },
+  { name: "David L.", role: "Buyer", initials: "DL", content: "The payment system gives me confidence. I only pay when the work is actually done. No scams.", rating: 5, category: "Gaming" },
 ];
 
 const Testimonials = () => {

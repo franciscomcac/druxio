@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.moderate-content]
 verify_jwt = false
+
+[functions.paypal-create-order]
+verify_jwt = false
+
+[functions.paypal-capture-order]
+verify_jwt = false
