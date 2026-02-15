@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -107,6 +108,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const [openJobs, setOpenJobs] = useState<Job[]>([]);
   const [quotedJobIds, setQuotedJobIds] = useState<Set<string>>(new Set());
   const [discardedJobIds, setDiscardedJobIds] = useState<Set<string>>(new Set());
+  const [discardConfirmJob, setDiscardConfirmJob] = useState<Job | null>(null);
   const [quoteDialog, setQuoteDialog] = useState<Job | null>(null);
   const [quotePrice, setQuotePrice] = useState("");
   const [quoteMinutes, setQuoteMinutes] = useState("20");
@@ -367,7 +369,27 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         </DialogContent>
       </Dialog>
 
-      {/* Stats */}
+      {/* Discard Confirmation */}
+      <AlertDialog open={!!discardConfirmJob} onOpenChange={(open) => !open && setDiscardConfirmJob(null)}>
+        <AlertDialogContent className="rounded-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard this request?</AlertDialogTitle>
+            <AlertDialogDescription>
+              "{discardConfirmJob?.title}" will be hidden from your feed. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-sm">Cancel</AlertDialogCancel>
+            <AlertDialogAction className="rounded-sm bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => {
+              if (discardConfirmJob) {
+                setDiscardedJobIds(prev => new Set([...prev, discardConfirmJob.id]));
+              }
+              setDiscardConfirmJob(null);
+            }}>Discard</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat, i) => (
           <Card key={i} className="border-border/30 bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-1 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 80}ms` }}>
@@ -472,13 +494,15 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                               <MessageSquare className="h-3 w-3" /> Chat
                                             </Button>
                                           ) : (
-                                            <Button size="sm" className="gap-1.5 rounded-sm" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
-                                              <Send className="h-3 w-3" /> Quote
-                                            </Button>
+                                            <>
+                                              <Button size="sm" className="gap-1.5 rounded-sm" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
+                                                <Send className="h-3 w-3" /> Quote
+                                              </Button>
+                                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDiscardConfirmJob(job)} title="Discard">
+                                                <X className="h-3.5 w-3.5" />
+                                              </Button>
+                                            </>
                                           )}
-                                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDiscardedJobIds(prev => new Set([...prev, job.id]))} title="Discard">
-                                            <X className="h-3.5 w-3.5" />
-                                          </Button>
                                         </div>
                                       </div>
                                     ))}
