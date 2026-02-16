@@ -110,21 +110,8 @@ const HowItWorks = () => {
       </div>
 
       <div className="container mx-auto px-4 pt-16 pb-20 relative z-10">
-        {/* Header — right-aligned */}
-        <div className="flex flex-col items-end text-right mb-14 max-w-2xl ml-auto">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-            How It Works
-          </p>
-          <h2 className="mb-4 text-4xl md:text-5xl font-bold text-foreground leading-tight">
-            From request to done — here's exactly what happens
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            No sign-up fees, no subscriptions, no browsing. Post what you need and let experts compete for your job.
-          </p>
-        </div>
-
         {/* Vertical connector line */}
-        <div className="hidden md:block absolute left-1/2 top-[280px] bottom-32 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
+        <div className="hidden md:block absolute left-1/2 top-[80px] bottom-32 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
 
         {/* Steps — alternating left/right */}
         <div className="relative">
@@ -180,8 +167,22 @@ const HowItWorks = () => {
                   }`} />
                 </div>
 
-                {/* Right spacer */}
-                <div className={`hidden md:block w-[45%] ${isLeft ? "" : "md:order-1"}`} />
+                {/* Right spacer — or header for step 1 */}
+                <div className={`hidden md:block w-[45%] ${isLeft ? "" : "md:order-1"}`}>
+                  {index === 0 && (
+                    <div className="flex flex-col items-end text-right ml-8">
+                      <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+                        How It Works
+                      </p>
+                      <h2 className="mb-4 text-4xl md:text-5xl font-bold text-foreground leading-tight">
+                        From request to done — here's exactly what happens
+                      </h2>
+                      <p className="text-muted-foreground text-lg">
+                        No sign-up fees, no subscriptions, no browsing. Post what you need and let experts compete for your job.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
