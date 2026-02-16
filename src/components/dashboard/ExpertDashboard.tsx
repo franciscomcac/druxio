@@ -26,6 +26,7 @@ interface Job {
   title: string;
   description: string | null;
   category: string;
+  subcategory: string | null;
   budget_max: number;
   deadline_minutes: number;
   status: string;
@@ -414,7 +415,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
               {previewJob?.title}
             </DialogTitle>
             <DialogDescription className="flex items-center gap-3 pt-1">
-              <Badge variant="secondary" className="text-xs">{previewJob?.category}</Badge>
+              <Badge variant="secondary" className="text-xs">{previewJob?.category}{previewJob?.subcategory ? `: ${previewJob.subcategory}` : ""}</Badge>
               <span className="font-semibold text-foreground">€{previewJob?.budget_max}</span>
               <span className="flex items-center gap-1 text-xs"><Clock className="h-3 w-3" /> {formatDeliveryTime(previewJob?.deadline_minutes || 0)}</span>
             </DialogDescription>
@@ -541,7 +542,10 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                     {subItems.map((job) => (
                                       <div key={job.id} className="flex items-center justify-between rounded-sm border border-border bg-background/40 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]">
                                         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setPreviewJob(job)}>
-                                          <p className="font-medium text-foreground truncate hover:text-primary transition-colors">{job.title}</p>
+                                          <p className="font-medium text-foreground truncate hover:text-primary transition-colors">
+                                            {job.title}
+                                            {job.subcategory && <span className="ml-2 text-xs font-normal text-muted-foreground">· {job.subcategory}</span>}
+                                          </p>
                                           <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
                                             <span className="font-bold text-foreground">€{job.budget_max}</span>
                                             <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(job.deadline_minutes)}</span>
