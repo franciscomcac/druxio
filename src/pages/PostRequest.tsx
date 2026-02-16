@@ -282,16 +282,22 @@ const PostRequest = () => {
   } | null>(null);
 
   // Track auth state reactively & auto-submit after auth
+  const pendingSubmitTriggered = useRef(false);
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       const uid = session?.user?.id || null;
       setUserId(uid);
-      if (uid && pendingSubmitRef.current) {
+      if (uid && pendingSubmitRef.current && !pendingSubmitTriggered.current) {
         pendingSubmitRef.current = false;
+        pendingSubmitTriggered.current = true;
+        // Use a longer delay to ensure state is settled, then retry submit
         setTimeout(() => {
+          pendingSubmitTriggered.current = false;
           const form = document.getElementById("post-request-form") as HTMLFormElement;
-          form?.requestSubmit();
-        }, 100);
+          if (form) {
+            form.requestSubmit();
+          }
+        }, 500);
       }
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
