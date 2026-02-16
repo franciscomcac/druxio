@@ -127,7 +127,7 @@ const HowItWorks = () => {
         <div className="hidden md:block absolute left-1/2 top-[280px] bottom-32 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
 
         {/* Steps — alternating left/right */}
-        <div className="space-y-8 md:space-y-12 relative">
+        <div className="relative">
           {steps.map((step, index) => {
             const isLeft = index % 2 === 0;
             const isVisible = visibleSet.has(index);
@@ -142,7 +142,7 @@ const HowItWorks = () => {
                     ? "opacity-100 translate-y-0"
                     : `opacity-0 translate-y-12 ${isLeft ? "md:-translate-x-8" : "md:translate-x-8"}`
                 }`}
-                style={{ transitionDelay: "100ms" }}
+                style={{ transitionDelay: "100ms", marginTop: index === 0 ? 0 : "-6rem" }}
               >
                 {/* Left spacer or content */}
                 <div className={`w-full md:w-[45%] ${isLeft ? "" : "md:order-2"}`}>
