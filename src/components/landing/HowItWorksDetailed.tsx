@@ -170,7 +170,7 @@ const HowItWorks = () => {
                 {/* Right spacer — or header for step 1 */}
                 <div className={`hidden md:block w-[45%] ${isLeft ? "" : "md:order-1"}`}>
                   {index === 0 && (
-                    <div className="flex flex-col items-end text-right ml-8">
+                    <div className="flex flex-col items-end text-right ml-8 -mt-16">
                       <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
                         How It Works
                       </p>
