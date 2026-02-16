@@ -15,6 +15,7 @@ import {
   ArrowLeft, Clock, MessageSquare, Send, Loader2, ShieldCheck,
   AlertTriangle, CheckCircle2, Timer, Star,
   FileText, Package, CreditCard, XCircle, Undo2,
+  Paperclip, X, Image as ImageIcon,
 } from "lucide-react";
 import { formatDistanceToNow, differenceInSeconds, addMinutes } from "date-fns";
 import {
@@ -27,6 +28,7 @@ interface ChatMessage {
   content: string;
   sender_id: string;
   created_at: string;
+  image_urls: string[] | null;
 }
 
 const Order = () => {
@@ -36,6 +38,7 @@ const Order = () => {
   const { softCheckContent } = useModeration();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -49,6 +52,9 @@ const Order = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [sendingChat, setSendingChat] = useState(false);
+  const [pendingImages, setPendingImages] = useState<{ file: File; preview: string }[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   // Countdown
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -127,7 +133,7 @@ const Order = () => {
     if (!sessionId) return;
     const loadMessages = async () => {
       const { data } = await supabase
-        .from("messages").select("id, content, sender_id, created_at")
+        .from("messages").select("id, content, sender_id, created_at, image_urls")
         .eq("session_id", sessionId).order("created_at", { ascending: true });
       if (data) setMessages(data);
     };
@@ -162,18 +168,64 @@ const Order = () => {
     return () => clearInterval(interval);
   }, [quote, job]);
 
+  // Image handling
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    const previews = files.map((file) => ({ file, preview: URL.createObjectURL(file) }));
+    setPendingImages((prev) => [...prev, ...previews].slice(0, 4));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removePendingImage = (index: number) => {
+    setPendingImages((prev) => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const uploadImages = async (): Promise<string[]> => {
+    if (!userId || pendingImages.length === 0) return [];
+    const urls: string[] = [];
+    for (const { file } of pendingImages) {
+      const ext = file.name.split(".").pop();
+      const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("chat-images").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("chat-images").getPublicUrl(path);
+      urls.push(data.publicUrl);
+    }
+    return urls;
+  };
+
   const handleSendChat = async () => {
-    if (!chatInput.trim() || !sessionId || !userId) return;
+    if (!chatInput.trim() && pendingImages.length === 0) return;
+    if (!sessionId || !userId) return;
     setSendingChat(true);
     const messageText = chatInput.trim();
-    const { error } = await supabase.from("messages").insert({
-      session_id: sessionId, sender_id: userId, content: messageText,
-    });
-    if (error) toast({ title: "Failed to send", description: error.message, variant: "destructive" });
-    else {
+
+    try {
+      let imageUrls: string[] = [];
+      if (pendingImages.length > 0) {
+        setUploadingImages(true);
+        imageUrls = await uploadImages();
+        pendingImages.forEach((p) => URL.revokeObjectURL(p.preview));
+        setPendingImages([]);
+        setUploadingImages(false);
+      }
+
+      const { error } = await supabase.from("messages").insert({
+        session_id: sessionId, sender_id: userId,
+        content: messageText || (imageUrls.length > 0 ? "📷 Image" : ""),
+        image_urls: imageUrls.length > 0 ? imageUrls : null,
+      });
+      if (error) throw error;
       setChatInput("");
-      // Silent moderation — don't block, just alert admins if needed
-      softCheckContent(messageText, "order chat message", { job_id: jobId, sender_id: userId });
+      if (messageText) {
+        softCheckContent(messageText, "order chat message", { job_id: jobId, sender_id: userId });
+      }
+    } catch (err: any) {
+      toast({ title: "Failed to send", description: err.message, variant: "destructive" });
     }
     setSendingChat(false);
   };
@@ -345,9 +397,33 @@ const Order = () => {
   }
 
   if (!job || !quote) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      {/* Lightbox */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setLightboxImage(null)}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 text-primary-foreground hover:bg-accent/20"
+            onClick={() => setLightboxImage(null)}
+          >
+            <X className="h-6 w-6" />
+          </Button>
+          <img
+            src={lightboxImage}
+            alt="Full size"
+            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+
         <main className="container mx-auto px-4 py-16 text-center">
           <p className="text-muted-foreground">Order not found or not yet accepted.</p>
           <Button className="mt-4" onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
@@ -593,7 +669,21 @@ const Order = () => {
                               ? "bg-primary text-primary-foreground rounded-br-md"
                               : "bg-muted/40 text-foreground rounded-bl-md"
                           }`}>
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                            <p className="whitespace-pre-wrap">{msg.content === "📷 Image" ? "" : msg.content}</p>
+                            {/* Image attachments */}
+                            {msg.image_urls && msg.image_urls.length > 0 && (
+                              <div className={`grid gap-1.5 mt-1.5 ${msg.image_urls.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+                                {msg.image_urls.map((url, i) => (
+                                  <img
+                                    key={i}
+                                    src={url}
+                                    alt="Attachment"
+                                    className="rounded-lg max-h-48 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => setLightboxImage(url)}
+                                  />
+                                ))}
+                              </div>
+                            )}
                             <p className={`text-[10px] mt-1 ${isMe ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                               {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
                             </p>
@@ -619,7 +709,42 @@ const Order = () => {
                 </div>
               </ScrollArea>
               <div className="border-t border-border p-3 shrink-0">
+                {/* Pending image previews */}
+                {pendingImages.length > 0 && (
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    {pendingImages.map((img, i) => (
+                      <div key={i} className="relative h-16 w-16">
+                        <img src={img.preview} alt="Preview" className="h-16 w-16 rounded-md object-cover border border-border" />
+                        <button
+                          type="button"
+                          onClick={() => removePendingImage(i)}
+                          className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-xs"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleFileSelect}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={sendingChat || pendingImages.length >= 4}
+                    title="Attach images"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
                   <Input
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
@@ -627,7 +752,7 @@ const Order = () => {
                     className="flex-1"
                     disabled={sendingChat}
                   />
-                  <Button type="submit" size="icon" disabled={!chatInput.trim() || sendingChat}>
+                  <Button type="submit" size="icon" disabled={(!chatInput.trim() && pendingImages.length === 0) || sendingChat}>
                     {sendingChat ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </form>
