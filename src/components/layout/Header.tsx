@@ -89,7 +89,7 @@ const Header = () => {
               </Link>
             </>
           )}
-          <ThemeToggle />
+          {/* ThemeToggle disabled — dark mode only */}
           {user ? (
             <>
               {/* Post Request - primary CTA */}
