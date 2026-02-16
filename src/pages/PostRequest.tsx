@@ -431,6 +431,15 @@ const PostRequest = () => {
         setShowAuthDialog(true);
         return;
       }
+      // Always get fresh session to avoid stale userId after OAuth redirect
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const currentUserId = freshSession?.user?.id;
+      if (!currentUserId) {
+        pendingSubmitRef.current = true;
+        setShowAuthDialog(true);
+        return;
+      }
+      setUserId(currentUserId);
 
       const mainCategory = category.split(":")[0]?.trim() || category;
       
@@ -440,7 +449,7 @@ const PostRequest = () => {
       const { data, error } = await supabase
         .from("jobs")
         .insert({
-          buyer_id: userId,
+          buyer_id: currentUserId,
           title,
           description: description || null,
           category,
