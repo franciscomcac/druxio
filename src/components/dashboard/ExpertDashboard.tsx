@@ -45,6 +45,18 @@ interface ExpertDashboardProps {
   subscribedCategories: string[];
 }
 
+const formatDeliveryTime = (minutes: number) => {
+  if (minutes >= 1440) {
+    const days = Math.round(minutes / 1440);
+    return `${days} day${days !== 1 ? "s" : ""}`;
+  }
+  if (minutes >= 60) {
+    const hours = Math.round(minutes / 60);
+    return `${hours}h`;
+  }
+  return `${minutes}min`;
+};
+
 const timeAgo = (date: string) => {
   const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
   if (mins < 1) return "just now";
@@ -404,7 +416,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             <DialogDescription className="flex items-center gap-3 pt-1">
               <Badge variant="secondary" className="text-xs">{previewJob?.category}</Badge>
               <span className="font-semibold text-foreground">€{previewJob?.budget_max}</span>
-              <span className="flex items-center gap-1 text-xs"><Clock className="h-3 w-3" /> {previewJob?.deadline_minutes}min</span>
+              <span className="flex items-center gap-1 text-xs"><Clock className="h-3 w-3" /> {formatDeliveryTime(previewJob?.deadline_minutes || 0)}</span>
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
@@ -532,7 +544,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                           <p className="font-medium text-foreground truncate hover:text-primary transition-colors">{job.title}</p>
                                           <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
                                             <span className="font-bold text-foreground">€{job.budget_max}</span>
-                                            <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {job.deadline_minutes}min</span>
+                                            <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(job.deadline_minutes)}</span>
                                             <span>{timeAgo(job.created_at)}</span>
                                           </div>
                                         </div>
