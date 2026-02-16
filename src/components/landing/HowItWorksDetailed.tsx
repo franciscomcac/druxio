@@ -109,9 +109,9 @@ const HowItWorks = () => {
         />
       </div>
 
-      <div className="container mx-auto px-4 pt-24 pb-32 relative z-10">
+      <div className="container mx-auto px-4 pt-16 pb-20 relative z-10">
         {/* Header */}
-        <div className="text-center mb-24 max-w-3xl mx-auto">
+        <div className="text-center mb-12 max-w-3xl mx-auto">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
             How It Works
           </p>
@@ -127,7 +127,7 @@ const HowItWorks = () => {
         <div className="hidden md:block absolute left-1/2 top-[280px] bottom-32 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
 
         {/* Steps — alternating left/right */}
-        <div className="space-y-16 md:space-y-24 relative">
+        <div className="space-y-8 md:space-y-12 relative">
           {steps.map((step, index) => {
             const isLeft = index % 2 === 0;
             const isVisible = visibleSet.has(index);
