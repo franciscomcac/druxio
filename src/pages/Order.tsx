@@ -726,7 +726,7 @@ const Order = () => {
                     ))}
                   </div>
                 )}
-                <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex gap-2">
+                <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex items-end gap-2">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -739,20 +739,28 @@ const Order = () => {
                     type="button"
                     variant="ghost"
                     size="icon"
+                    className="shrink-0 mb-0.5"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={sendingChat || pendingImages.length >= 4}
                     title="Attach images"
                   >
                     <Paperclip className="h-4 w-4" />
                   </Button>
-                  <Input
+                  <Textarea
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendChat();
+                      }
+                    }}
                     placeholder="Type a message..."
-                    className="flex-1"
+                    className="flex-1 min-h-[120px] max-h-[120px] resize-none overflow-y-auto"
                     disabled={sendingChat}
+                    rows={5}
                   />
-                  <Button type="submit" size="icon" disabled={(!chatInput.trim() && pendingImages.length === 0) || sendingChat}>
+                  <Button type="submit" size="icon" className="shrink-0 mb-0.5" disabled={(!chatInput.trim() && pendingImages.length === 0) || sendingChat}>
                     {sendingChat ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </form>
