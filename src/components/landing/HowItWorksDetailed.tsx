@@ -110,23 +110,17 @@ const HowItWorks = () => {
       </div>
 
       <div className="container mx-auto px-4 pt-16 pb-20 relative z-10">
-        {/* Header — left-aligned with right decorative accent */}
-        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6 mb-14">
-          <div className="max-w-2xl">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-              How It Works
-            </p>
-            <h2 className="mb-4 text-4xl md:text-5xl font-bold text-foreground leading-tight">
-              From request to done — here's exactly what happens
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              No sign-up fees, no subscriptions, no browsing. Post what you need and let experts compete for your job.
-            </p>
-          </div>
-          <div className="hidden md:flex flex-col items-end gap-2 text-right shrink-0">
-            <span className="text-6xl font-bold text-primary/10 select-none font-mono leading-none">5</span>
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">Simple steps</span>
-          </div>
+        {/* Header — right-aligned */}
+        <div className="flex flex-col items-end text-right mb-14 max-w-2xl ml-auto">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+            How It Works
+          </p>
+          <h2 className="mb-4 text-4xl md:text-5xl font-bold text-foreground leading-tight">
+            From request to done — here's exactly what happens
+          </h2>
+          <p className="text-muted-foreground text-lg">
+            No sign-up fees, no subscriptions, no browsing. Post what you need and let experts compete for your job.
+          </p>
         </div>
 
         {/* Vertical connector line */}
