@@ -748,17 +748,28 @@ const Order = () => {
                   </Button>
                   <Textarea
                     value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
+                    onChange={(e) => {
+                      setChatInput(e.target.value);
+                      // Auto-grow up to 5 lines
+                      e.target.style.height = 'auto';
+                      const lineHeight = 20;
+                      const maxHeight = lineHeight * 5 + 16; // 5 lines + padding
+                      e.target.style.height = Math.min(e.target.scrollHeight, maxHeight) + 'px';
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {
                         e.preventDefault();
                         handleSendChat();
+                        // Reset height after send
+                        const target = e.target as HTMLTextAreaElement;
+                        setTimeout(() => { target.style.height = 'auto'; }, 0);
                       }
                     }}
                     placeholder="Type a message..."
-                    className="flex-1 min-h-[120px] max-h-[120px] resize-none overflow-y-auto"
+                    className="flex-1 min-h-[40px] resize-none overflow-y-auto py-2"
+                    style={{ height: 'auto', maxHeight: '116px' }}
                     disabled={sendingChat}
-                    rows={5}
+                    rows={1}
                   />
                   <Button type="submit" size="icon" className="shrink-0 mb-0.5" disabled={(!chatInput.trim() && pendingImages.length === 0) || sendingChat}>
                     {sendingChat ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
