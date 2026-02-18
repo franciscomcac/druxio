@@ -71,99 +71,112 @@ const Inbox = () => {
   const [isMentor, setIsMentor] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
 
-  useEffect(() => {
-    const fetchUserAndSessions = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-      setUserId(user.id);
+  const fetchUserAndSessions = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setUserId(user.id);
 
-      // Check if user is a mentor
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
-      
-      const hasMentorRole = roles?.some(r => r.role === "mentor") || false;
-      setIsMentor(hasMentorRole);
+    // Check if user is a mentor
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+    
+    const hasMentorRole = roles?.some(r => r.role === "mentor") || false;
+    setIsMentor(hasMentorRole);
 
-      // Fetch sessions
-      const { data: sessionsData, error } = await supabase
-        .from("sessions")
-        .select("*")
-        .or(`mentee_id.eq.${user.id},mentor_id.eq.${user.id}`)
-        .order("created_at", { ascending: false });
+    // Fetch sessions
+    const { data: sessionsData, error } = await supabase
+      .from("sessions")
+      .select("*")
+      .or(`mentee_id.eq.${user.id},mentor_id.eq.${user.id}`)
+      .order("created_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching sessions:", error);
-        setLoading(false);
-        return;
-      }
+    if (error) {
+      console.error("Error fetching sessions:", error);
+      setLoading(false);
+      return;
+    }
 
-      // Only show sessions linked to paid/accepted orders
-      // For buyer: find jobs they own with accepted quotes, match mentor_id
-      // For seller: find accepted quotes they have, match mentee_id (buyer)
-      const { data: acceptedQuotes } = await supabase
-        .from("quotes")
-        .select("expert_id, job_id, status")
-        .eq("status", "accepted");
+    // Only show sessions linked to paid/accepted orders
+    const { data: acceptedQuotes } = await supabase
+      .from("quotes")
+      .select("expert_id, job_id, status")
+      .eq("status", "accepted");
 
-      // Build a set of valid (mentor_id, mentee_id) pairs from accepted quotes
-      const validPairs = new Set<string>();
-      const jobIdMap = new Map<string, string>(); // "mentorId-menteeId" -> jobId
-      if (acceptedQuotes) {
-        for (const q of acceptedQuotes) {
-          const { data: jobData } = await supabase
-            .from("jobs")
-            .select("id, buyer_id")
-            .eq("id", q.job_id)
-            .single();
-          if (jobData) {
-            const key = `${q.expert_id}-${jobData.buyer_id}`;
-            validPairs.add(key);
-            jobIdMap.set(key, jobData.id);
-          }
+    const validPairs = new Set<string>();
+    const jobIdMap = new Map<string, string>();
+    if (acceptedQuotes) {
+      for (const q of acceptedQuotes) {
+        const { data: jobData } = await supabase
+          .from("jobs")
+          .select("id, buyer_id")
+          .eq("id", q.job_id)
+          .single();
+        if (jobData) {
+          const key = `${q.expert_id}-${jobData.buyer_id}`;
+          validPairs.add(key);
+          jobIdMap.set(key, jobData.id);
         }
       }
+    }
 
-      // Filter sessions to only those with an accepted order
-      const paidSessions = (sessionsData || []).filter(s => {
-        const key = `${s.mentor_id}-${s.mentee_id}`;
-        return validPairs.has(key);
-      });
+    const paidSessions = (sessionsData || []).filter(s => {
+      const key = `${s.mentor_id}-${s.mentee_id}`;
+      return validPairs.has(key);
+    });
 
-      // Enrich with profiles, messages, job links
-      const enrichedSessions = await Promise.all(
-        paidSessions.map(async (session) => {
-          const [menteeProfile, mentorProfile, lastMessage, unreadMessages] = await Promise.all([
-            supabase.from("profiles").select("display_name, avatar_url, rating_avg").eq("id", session.mentee_id).single(),
-            supabase.from("profiles").select("display_name, avatar_url, rating_avg").eq("id", session.mentor_id).single(),
-            supabase.from("messages").select("content, created_at").eq("session_id", session.id).order("created_at", { ascending: false }).limit(1).single(),
-            supabase.from("messages").select("id", { count: "exact" }).eq("session_id", session.id).eq("is_read", false).neq("sender_id", user.id),
-          ]);
+    const enrichedSessions = await Promise.all(
+      paidSessions.map(async (session) => {
+        const [menteeProfile, mentorProfile, lastMessage, unreadMessages] = await Promise.all([
+          supabase.from("profiles").select("display_name, avatar_url, rating_avg").eq("id", session.mentee_id).single(),
+          supabase.from("profiles").select("display_name, avatar_url, rating_avg").eq("id", session.mentor_id).single(),
+          supabase.from("messages").select("content, created_at").eq("session_id", session.id).order("created_at", { ascending: false }).limit(1).single(),
+          supabase.from("messages").select("id", { count: "exact" }).eq("session_id", session.id).eq("is_read", false).neq("sender_id", user.id),
+        ]);
 
-          const pairKey = `${session.mentor_id}-${session.mentee_id}`;
-          const linkedJobId = jobIdMap.get(pairKey) || null;
+        const pairKey = `${session.mentor_id}-${session.mentee_id}`;
+        const linkedJobId = jobIdMap.get(pairKey) || null;
 
-          return {
-            ...session,
-            mentee_profile: menteeProfile.data,
-            mentor_profile: mentorProfile.data,
-            last_message: lastMessage.data,
-            unread_count: unreadMessages.count || 0,
-            linked_job_id: linkedJobId,
-          };
-        })
-      );
+        return {
+          ...session,
+          mentee_profile: menteeProfile.data,
+          mentor_profile: mentorProfile.data,
+          last_message: lastMessage.data,
+          unread_count: unreadMessages.count || 0,
+          linked_job_id: linkedJobId,
+        };
+      })
+    );
 
-      setSessions(enrichedSessions);
-      setLoading(false);
-    };
+    setSessions(enrichedSessions);
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchUserAndSessions();
   }, [navigate]);
+
+  // Realtime: refetch on session or quote changes
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel("inbox-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "sessions" }, () => {
+        fetchUserAndSessions();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
+        fetchUserAndSessions();
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => {
+        fetchUserAndSessions();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId]);
 
   const filterSessions = (status: string) => {
     if (status === "active") {

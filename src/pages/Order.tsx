@@ -128,6 +128,22 @@ const Order = () => {
     load();
   }, [jobId, navigate]);
 
+  // Realtime: update job/quote status without refresh
+  useEffect(() => {
+    if (!jobId) return;
+    const channel = supabase
+      .channel(`order-status-${jobId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "jobs", filter: `id=eq.${jobId}` }, (payload) => {
+        setJob((prev: any) => prev ? { ...prev, ...payload.new } : payload.new);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, (payload) => {
+        const updated = payload.new as any;
+        if (updated.job_id === jobId) setQuote((prev: any) => prev ? { ...prev, ...updated } : updated);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [jobId]);
+
   // Load messages & realtime
   useEffect(() => {
     if (!sessionId) return;
