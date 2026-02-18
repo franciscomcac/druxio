@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLiveStats } from "@/hooks/use-live-stats";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Shield, Clock, Users, Star, CheckCircle, Zap, Send, ChevronDown } from "lucide-react";
+import { ArrowRight, Shield, Clock, Users, Star, ChevronDown } from "lucide-react";
 
 const taskPool = [
   { title: "Fix Minecraft server TPS drops", category: "Gaming", budget: "€12", expert: "JM", rating: "4.9" },
@@ -25,6 +25,24 @@ const taskPool = [
   { title: "Beat production (trap/drill)", category: "Music", budget: "€50", expert: "ZD", rating: "4.9" },
 ];
 
+const placeholderExamples = [
+  "Fix my Minecraft server lag",
+  "Build a Discord bot for my server",
+  "Design a logo for my startup",
+  "Valorant coaching — Silver to Gold",
+  "Write SEO copy for my landing page",
+  "Mix and master my track",
+  "Set up my WordPress site speed",
+  "Create a TikTok ad campaign",
+  "Make a Twitch overlay package",
+  "Help with Python data scraping",
+  "Roblox scripting for my game",
+  "Instagram growth strategy for my brand",
+  "Fortnite map design & testing",
+  "Podcast intro jingle creation",
+  "Brand identity kit for my café",
+];
+
 const cardSlots = [
   { position: "top-[6%] left-[2%]", size: "w-[260px]", rotate: "-2deg" },
   { position: "top-[4%] right-[3%]", size: "w-[240px]", rotate: "1.5deg" },
@@ -36,6 +54,8 @@ const cardSlots = [
 
 const Hero = () => {
   const [taskTitle, setTaskTitle] = useState("");
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+  const [placeholderVisible, setPlaceholderVisible] = useState(true);
   const navigate = useNavigate();
   const stats = useLiveStats();
 
@@ -46,6 +66,7 @@ const Hero = () => {
     cardSlots.map(() => false)
   );
 
+  // Rotate floating task cards
   useEffect(() => {
     const interval = setInterval(() => {
       const slotToChange = Math.floor(Math.random() * cardSlots.length);
@@ -77,6 +98,19 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Rotate placeholder text every 3s (only when not typing)
+  useEffect(() => {
+    if (taskTitle) return;
+    const interval = setInterval(() => {
+      setPlaceholderVisible(false);
+      setTimeout(() => {
+        setPlaceholderIdx(prev => (prev + 1) % placeholderExamples.length);
+        setPlaceholderVisible(true);
+      }, 350);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [taskTitle]);
+
   const handleQuickPost = (e: React.FormEvent) => {
     e.preventDefault();
     if (taskTitle.trim()) {
@@ -88,7 +122,7 @@ const Hero = () => {
 
   return (
     <section id="hero-section" className="relative bg-background pt-12 pb-16 md:pt-16 md:pb-24 overflow-hidden min-h-[calc(100vh-4rem)] flex items-center">
-      {/* Gradient blobs — asymmetric */}
+      {/* Gradient blobs */}
       <div className="absolute top-[-10%] left-[-5%] h-[600px] w-[600px] rounded-full bg-primary/[0.07] blur-[160px] pointer-events-none" />
       <div className="absolute bottom-[-15%] right-[-8%] h-[500px] w-[500px] rounded-full bg-primary/[0.05] blur-[140px] pointer-events-none" />
       <div className="absolute top-[30%] right-[15%] h-[300px] w-[300px] rounded-full bg-primary/[0.03] blur-[100px] pointer-events-none" />
@@ -109,7 +143,7 @@ const Hero = () => {
               transitionDuration: "400ms",
             }}
           >
-            <div className="rounded-sm border border-border bg-card/90 backdrop-blur-sm p-3.5 shadow-md transition-all hover:border-primary/20">
+            <div className="rounded-sm border border-border bg-card/90 backdrop-blur-sm p-3.5 shadow-md">
               <div className="flex items-center justify-between mb-2">
                 <Badge variant="outline" className="text-[9px] border-primary/20 text-primary/70 rounded-sm px-1.5 py-0">{task.category}</Badge>
                 <span className="text-xs font-bold text-foreground">{task.budget}</span>
@@ -122,7 +156,10 @@ const Hero = () => {
                   <span>{task.rating}</span>
                 </div>
                 <span className="ml-auto flex items-center gap-0.5">
-                  <span className="relative flex h-1.5 w-1.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40" /><span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary/60" /></span>
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary/60" />
+                  </span>
                   quoted
                 </span>
               </div>
@@ -154,15 +191,26 @@ const Hero = () => {
             Describe what you need. Verified experts compete with fixed-price quotes in under 2 minutes.
           </p>
 
-          {/* Inline task form — THE main CTA */}
+          {/* Inline task form */}
           <form onSubmit={handleQuickPost} className="mx-auto max-w-xl mb-6 animate-fade-in [animation-delay:300ms]">
             <div className="flex gap-2 p-1.5 border border-border bg-card/60 rounded-sm backdrop-blur-sm">
-              <Input
-                value={taskTitle}
-                onChange={(e) => setTaskTitle(e.target.value)}
-                placeholder='e.g. "Fix my Minecraft server lag"'
-                className="h-12 rounded-sm border-0 bg-transparent text-base placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
-              />
+              <div className="relative flex-1">
+                <Input
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                  placeholder=""
+                  className="h-12 rounded-sm border-0 bg-transparent text-base placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                {/* Animated placeholder — only shown when input is empty */}
+                {!taskTitle && (
+                  <span
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-muted-foreground/50 truncate max-w-[calc(100%-1.5rem)] transition-opacity duration-300 select-none"
+                    style={{ opacity: placeholderVisible ? 1 : 0 }}
+                  >
+                    e.g. &ldquo;{placeholderExamples[placeholderIdx]}&rdquo;
+                  </span>
+                )}
+              </div>
               <Button type="submit" size="lg" className="h-12 px-8 rounded-sm gap-2 font-bold shrink-0 text-base">
                 Post Task <ArrowRight className="h-5 w-5" />
               </Button>
