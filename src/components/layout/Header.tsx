@@ -106,22 +106,6 @@ const Header = () => {
                 <Wallet className="h-4 w-4 text-primary" />
                 <span className="text-foreground">{format(balance ?? 0)}</span>
               </Button>
-              {/* Currency selector pill */}
-              <div className="flex items-center rounded-full border border-border/50 bg-muted/30 overflow-hidden text-xs font-medium">
-                {CURRENCIES.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setCurrency(c)}
-                    className={`px-2.5 py-1 transition-colors ${
-                      currency === c
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
               <Link to="/inbox">
                 <Button variant="ghost" size="icon" className={`relative hover:bg-primary/[0.06] ${isActive("/inbox") ? "bg-primary/[0.06]" : ""}`}>
                   <MessageSquare className="h-5 w-5" />
@@ -158,6 +142,26 @@ const Header = () => {
                       <DropdownMenuItem onClick={() => navigate("/admin")} className="hover:bg-primary/[0.06]"><ShieldCheck className="mr-2 h-4 w-4" /> Admin</DropdownMenuItem>
                     </>
                   )}
+                  <DropdownMenuSeparator className="bg-border/30" />
+                  {/* Currency selector */}
+                  <div className="px-2 py-1.5">
+                    <p className="text-xs text-muted-foreground mb-1.5">Currency</p>
+                    <div className="flex items-center rounded-full border border-border/50 bg-muted/30 overflow-hidden text-xs font-medium w-full">
+                      {CURRENCIES.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setCurrency(c)}
+                          className={`flex-1 py-1 transition-colors ${
+                            currency === c
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <DropdownMenuSeparator className="bg-border/30" />
                   <DropdownMenuItem onClick={handleSignOut} className="hover:bg-destructive/10"><LogOut className="mr-2 h-4 w-4" /> Sign Out</DropdownMenuItem>
                 </DropdownMenuContent>
@@ -250,6 +254,26 @@ const Header = () => {
                         <Button variant="ghost" className="w-full justify-start gap-2 h-11"><ShieldCheck className="h-4 w-4" /> Admin</Button>
                       </Link>
                     )}
+                    <hr className="border-border/30 my-2" />
+                    {/* Currency selector in mobile sheet */}
+                    <div className="px-1 pb-1">
+                      <p className="text-xs text-muted-foreground mb-1.5 px-2">Currency</p>
+                      <div className="flex items-center rounded-full border border-border/50 bg-muted/30 overflow-hidden text-xs font-medium">
+                        {CURRENCIES.map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setCurrency(c)}
+                            className={`flex-1 py-1.5 transition-colors ${
+                              currency === c
+                                ? "bg-primary text-primary-foreground"
+                                : "text-muted-foreground hover:text-foreground"
+                            }`}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <hr className="border-border/30 my-2" />
                     <Button variant="ghost" className="w-full justify-start gap-2 h-11 text-destructive hover:bg-destructive/10" onClick={() => { setIsOpen(false); handleSignOut(); }}>
                       <LogOut className="h-4 w-4" /> Sign Out
