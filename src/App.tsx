@@ -24,6 +24,7 @@ import PurchasedOrders from "./pages/PurchasedOrders";
 import SoldOrders from "./pages/SoldOrders";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import Notifications from "./pages/Notifications";
 import CategoryPage from "./pages/CategoryPage";
 import SupportWidget from "./components/support/SupportWidget";
 import FeedbackWidget from "./components/feedback/FeedbackWidget";
@@ -66,6 +67,7 @@ const App = () => (
             <Route path="/orders/purchased" element={<PurchasedOrders />} />
             <Route path="/orders/sold" element={<SoldOrders />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/notifications" element={<Notifications />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
