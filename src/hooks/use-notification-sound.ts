@@ -6,19 +6,24 @@ const NOTIFICATION_DURATION = 0.25;
 export function useNotificationSound() {
   const contextRef = useRef<AudioContext | null>(null);
 
-  const play = useCallback(() => {
+  const play = useCallback(async () => {
     try {
+      // Create context lazily (requires a prior user gesture to unlock)
       if (!contextRef.current) {
         contextRef.current = new AudioContext();
       }
       const ctx = contextRef.current;
 
-      // Resume context if suspended (browser autoplay policy)
-      if (ctx.state === "suspended") {
-        ctx.resume();
+      // Always await resume — this is essential for background tabs.
+      // Browsers suspend AudioContext when the tab is backgrounded;
+      // resume() re-activates it even from a non-visible tab.
+      if (ctx.state === "suspended" || ctx.state === "interrupted") {
+        await ctx.resume();
       }
 
-      const now = ctx.currentTime;
+      // Schedule slightly in the future so the tones survive any brief
+      // suspension that happens between resume() and actual playback.
+      const now = ctx.currentTime + 0.05;
 
       const playTone = (freq: number, start: number, duration: number, volume: number) => {
         const osc = ctx.createOscillator();
@@ -30,10 +35,10 @@ export function useNotificationSound() {
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(start);
-        osc.stop(start + duration);
+        osc.stop(start + duration + 0.01);
       };
 
-      // Three-tone ascending chime — louder and more noticeable
+      // Three-tone ascending chime
       playTone(NOTIFICATION_FREQUENCY, now, NOTIFICATION_DURATION, 0.5);
       playTone(NOTIFICATION_FREQUENCY * 1.25, now + 0.15, NOTIFICATION_DURATION, 0.45);
       playTone(NOTIFICATION_FREQUENCY * 1.5, now + 0.30, NOTIFICATION_DURATION * 1.4, 0.4);
