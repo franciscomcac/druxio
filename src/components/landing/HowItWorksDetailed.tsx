@@ -59,7 +59,7 @@ const steps = [
       "Review the delivered work",
       "Approve to release payment",
       "Leave a rating and written review",
-      "10% platform fee — no hidden costs",
+      "5% platform fee — no hidden costs",
     ],
   },
 ];
