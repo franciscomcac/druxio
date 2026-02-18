@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, ArrowRight, CheckCircle, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
 const Newsletter = () => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const ref = useScrollReveal<HTMLElement>();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,11 +16,11 @@ const Newsletter = () => {
   };
 
   return (
-    <section className="bg-background py-24">
+    <section ref={ref} className="bg-background py-24">
       <div className="container mx-auto px-4">
         <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-2">
           {/* Stay Updated card */}
-          <div className="rounded-lg border border-border bg-card p-8 flex flex-col">
+          <div className="rounded-lg border border-border bg-card p-8 flex flex-col reveal reveal-left">
             <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Mail className="h-6 w-6" />
             </div>
@@ -51,8 +53,8 @@ const Newsletter = () => {
           </div>
 
           {/* Become an Expert card */}
-          <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-card p-8 flex flex-col">
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-card p-8 flex flex-col reveal reveal-right delay-150">
+            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground glow-pulse">
               <Sparkles className="h-6 w-6" />
             </div>
             <h3 className="mb-2 text-2xl font-bold text-foreground">Become an Expert</h3>

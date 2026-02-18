@@ -1,7 +1,9 @@
 import { useLiveStats } from "@/hooks/use-live-stats";
+import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
 const LiveStats = () => {
   const stats = useLiveStats();
+  const ref = useScrollReveal<HTMLElement>();
 
   const items = [
     { value: stats.expertsOnline, label: "Experts Online" },
@@ -11,15 +13,18 @@ const LiveStats = () => {
   ];
 
   return (
-    <section className="border-y border-border bg-card/30 py-5">
+    <section ref={ref} className="border-y border-border bg-card/30 py-6">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
+        <div className="flex flex-wrap items-center justify-center gap-10 md:gap-20">
           {items.map((stat, i) => (
-            <div key={i} className="text-center">
-              <p className="text-lg font-bold text-foreground tabular-nums">
+            <div
+              key={i}
+              className={`text-center reveal delay-${i * 100 + 100}`}
+            >
+              <p className="text-2xl font-bold text-primary tabular-nums">
                 {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
               </p>
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">{stat.label}</p>
             </div>
           ))}
         </div>

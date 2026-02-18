@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Send, Bell, Handshake, CheckCircle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
 const steps = [
   { num: "01", icon: <Send className="h-6 w-6" />, title: "Describe Your Need", description: "Pick a category and tell us what you need done." },
@@ -11,11 +12,12 @@ const steps = [
 
 const HowItWorks = () => {
   const navigate = useNavigate();
+  const ref = useScrollReveal<HTMLElement>();
 
   return (
-    <section id="how-it-works" className="bg-background py-24">
+    <section id="how-it-works" ref={ref} className="bg-background py-24">
       <div className="container mx-auto px-4">
-        <div className="mb-14 max-w-lg">
+        <div className="mb-14 max-w-lg reveal">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">How It Works</p>
           <h2 className="mb-4 text-4xl font-bold text-foreground leading-tight">
             From request to done in four steps
@@ -29,7 +31,7 @@ const HowItWorks = () => {
           {steps.map((step, i) => (
             <div
               key={i}
-              className="group relative rounded-lg border border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:bg-card/80"
+              className={`group relative rounded-lg border border-border bg-card p-6 transition-all duration-300 hover:border-primary/40 hover:bg-card/80 reveal delay-${i * 100 + 100}`}
             >
               <span className="text-4xl font-bold text-primary font-mono block mb-4">
                 {step.num}
@@ -43,7 +45,7 @@ const HowItWorks = () => {
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 reveal delay-500">
           <Button onClick={() => navigate("/post-request")} className="gap-2 rounded-sm">
             Post a Task <ArrowRight className="h-4 w-4" />
           </Button>
