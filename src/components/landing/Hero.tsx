@@ -174,14 +174,14 @@ const Hero = () => {
           </p>
 
           {/* Trust row */}
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-10 text-sm text-muted-foreground animate-fade-in [animation-delay:500ms]">
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 animate-fade-in [animation-delay:500ms]">
             {[
-              { icon: <Shield className="h-4 w-4" />, text: "Escrow-protected payments" },
-              { icon: <Clock className="h-4 w-4" />, text: "~90s average response" },
-              { icon: <Users className="h-4 w-4" />, text: "500+ verified experts" },
+              { icon: <Shield className="h-5 w-5" />, text: "Escrow-protected payments" },
+              { icon: <Clock className="h-5 w-5" />, text: "~90s average response" },
+              { icon: <Users className="h-5 w-5" />, text: "500+ verified experts" },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-primary/60">{item.icon}</span>
+              <div key={i} className="flex items-center gap-2.5 text-base text-muted-foreground">
+                <span className="text-primary/70">{item.icon}</span>
                 <span>{item.text}</span>
               </div>
             ))}
