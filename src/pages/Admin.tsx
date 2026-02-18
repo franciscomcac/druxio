@@ -241,9 +241,16 @@ const Admin = () => {
     return () => { supabase.removeChannel(ch); };
   }, [selectedTicket]);
 
-  // Scroll support chat to bottom
+  // Scroll support chat to bottom (scroll only the chat container, not the page)
   useEffect(() => {
-    supportBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = supportBottomRef.current;
+    if (!el) return;
+    const container = el.closest("[data-radix-scroll-area-viewport]") as HTMLElement | null;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    } else {
+      el.scrollIntoView({ block: "nearest" });
+    }
   }, [ticketMessages]);
 
   // Reload withdrawals when filter changes
