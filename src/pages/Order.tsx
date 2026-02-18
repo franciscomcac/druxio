@@ -444,13 +444,13 @@ const Order = () => {
   const getPaymentStatusInfo = () => {
     switch (paymentStatus) {
       case "paid":
-        return { label: "Paid — In Progress", color: "text-blue-500", bg: "bg-blue-500/10" };
+        return { label: "Paid — In Progress", color: "text-primary", bg: "bg-primary/10" };
       case "delivered":
-        return { label: "Delivered — Awaiting Confirmation", color: "text-purple-500", bg: "bg-purple-500/10" };
+        return { label: "Delivered — Awaiting Confirmation", color: "text-chart-2", bg: "bg-chart-2/10" };
       case "completed":
-        return { label: "Completed — Payment Released", color: "text-green-500", bg: "bg-green-500/10" };
+        return { label: "Completed — Payment Released", color: "text-chart-3", bg: "bg-chart-3/10" };
       default:
-        return { label: "Paid", color: "text-blue-500", bg: "bg-blue-500/10" };
+        return { label: "Paid", color: "text-primary", bg: "bg-primary/10" };
     }
   };
 
@@ -459,24 +459,24 @@ const Order = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-6 max-w-5xl">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-5xl">
         {/* Back button & title */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate(isBuyer ? "/orders/purchased" : "/orders/sold")}>
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigate(isBuyer ? "/orders/purchased" : "/orders/sold")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">{job.title}</h1>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground leading-snug line-clamp-2">{job.title}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <Badge variant="outline">{job.category}</Badge>
-              <Badge variant={isCompleted ? "default" : isDisputed ? "destructive" : "secondary"}>
+              <Badge variant="outline" className="text-xs">{job.category}</Badge>
+              <Badge variant={isCompleted ? "default" : isDisputed ? "destructive" : "secondary"} className="text-xs">
                 {isCompleted ? "Completed" : isDisputed ? "Disputed" : "In Progress"}
               </Badge>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Left: Order details + Actions */}
           <div className="lg:col-span-1 space-y-4">
             {/* Payment Status */}
@@ -639,14 +639,14 @@ const Order = () => {
             )}
             {isBuyer && isCompleted && hasReviewed && (
               <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-green-500" /> Review submitted
+                <CheckCircle2 className="h-4 w-4 text-chart-3" /> Review submitted
               </div>
             )}
           </div>
 
           {/* Right: Chat */}
           <div className="lg:col-span-2">
-            <Card className="flex flex-col" style={{ height: 600 }}>
+            <Card className="flex flex-col" style={{ height: "min(600px, 65vh)" }}>
               <CardHeader className="pb-3 border-b border-border shrink-0">
                 <div className="flex items-center gap-3">
                   <MessageSquare className="h-5 w-5 text-primary" />
@@ -787,7 +787,7 @@ const Order = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-500" /> Confirm Delivery
+              <CheckCircle2 className="h-5 w-5 text-chart-3" /> Confirm Delivery
             </DialogTitle>
             <DialogDescription>
               Once you confirm, the payment will be released to the seller's wallet. This action cannot be undone.

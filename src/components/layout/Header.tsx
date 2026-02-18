@@ -9,9 +9,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
-import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck, Search, Bell } from "lucide-react";
+import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck } from "lucide-react";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +26,6 @@ const Header = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'TOKEN_REFRESHED' && !session) return;
-      
       setUser(session?.user || null);
       if (session?.user) {
         setAuthOpen(false);
@@ -63,13 +61,12 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link to="/" className="flex items-center group">
+        <Link to="/" className="flex items-center shrink-0">
           <span className="text-lg font-bold text-foreground">Dux<Zap className="inline h-4 w-4 text-primary fill-primary -mx-0.5" />o</span>
         </Link>
 
-        {/* Right actions */}
+        {/* Desktop right actions */}
         <div className="hidden items-center gap-1.5 md:flex">
-          {/* Nav links */}
           <Link to="/how-it-works">
             <Button variant="ghost" size="sm" className={`text-sm font-medium ${isActive("/how-it-works") ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
               How It Works
@@ -89,33 +86,23 @@ const Header = () => {
               </Link>
             </>
           )}
-          {/* ThemeToggle disabled — dark mode only */}
           {user ? (
             <>
-              {/* Post Request - primary CTA */}
               <Link to="/post-request">
                 <Button size="sm" className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow">
                   <Plus className="h-4 w-4" /> Post Request
                 </Button>
               </Link>
-
-              {/* Balance */}
               <Button variant="ghost" size="sm" className="gap-1.5 hover:bg-primary/[0.06] text-sm font-medium" onClick={() => navigate("/wallet")}>
                 <Wallet className="h-4 w-4 text-primary" />
                 <span className="text-foreground">€{(balance ?? 0).toFixed(2)}</span>
               </Button>
-
-              {/* Messages */}
               <Link to="/inbox">
                 <Button variant="ghost" size="icon" className={`relative hover:bg-primary/[0.06] ${isActive("/inbox") ? "bg-primary/[0.06]" : ""}`}>
                   <MessageSquare className="h-5 w-5" />
                 </Button>
               </Link>
-
-              {/* Notifications */}
               <NotificationsDropdown />
-
-              {/* Profile dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -163,58 +150,104 @@ const Header = () => {
           )}
         </div>
 
-        {/* Mobile menu */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon"><Menu className="h-6 w-6" /></Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-80 bg-card/95 backdrop-blur-xl border-border/30">
-            <div className="flex flex-col gap-2 pt-8">
-              <Link to="/how-it-works" onClick={() => setIsOpen(false)}>
-                <Button variant="ghost" className="w-full justify-start gap-2 text-base">How It Works</Button>
+        {/* Mobile right: icon shortcuts + hamburger */}
+        <div className="flex items-center gap-1 md:hidden">
+          {user ? (
+            <>
+              {/* Post Request — primary CTA always visible */}
+              <Link to="/post-request">
+                <Button size="sm" className="h-8 w-8 p-0 shadow-glow">
+                  <Plus className="h-4 w-4" />
+                </Button>
               </Link>
-              <hr className="border-border/30 my-2" />
-              {user ? (
-                <>
-                  <Link to="/post-request" onClick={() => setIsOpen(false)}>
-                    <Button className="w-full gap-2 mb-2"><Plus className="h-4 w-4" /> Post Request</Button>
-                  </Link>
-                  <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-2"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
-                  </Link>
-                  <Link to="/orders/purchased" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-2"><Package className="h-4 w-4" /> Purchased Orders</Button>
-                  </Link>
-                  <Link to="/orders/sold" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-2"><Wallet className="h-4 w-4" /> Sold Orders</Button>
-                  </Link>
-                  <Link to="/inbox" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-2"><MessageSquare className="h-4 w-4" /> Messages</Button>
-                  </Link>
-                  <Link to="/wallet" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-2"><Wallet className="h-4 w-4" /> Balance: €{(balance ?? 0).toFixed(2)}</Button>
-                  </Link>
-                  <Link to="/settings" onClick={() => setIsOpen(false)}>
-                    <Button variant="ghost" className="w-full justify-start gap-2"><Settings className="h-4 w-4" /> Settings</Button>
-                  </Link>
-                  <hr className="border-border/30 my-2" />
-                  <Button variant="ghost" className="w-full justify-start gap-2 text-destructive hover:bg-destructive/10" onClick={() => { setIsOpen(false); handleSignOut(); }}>
-                    <LogOut className="h-4 w-4" /> Sign Out
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="outline" className="w-full gap-2" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}>
-                    <User className="h-4 w-4" /> Sign In
-                  </Button>
-                  <Button className="w-full gap-2" onClick={() => { setIsOpen(false); setAuthTab("signup"); setAuthOpen(true); }}>
-                    <Zap className="h-4 w-4" /> Get Started
-                  </Button>
-                </>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+              {/* Notifications */}
+              <NotificationsDropdown />
+              {/* Inbox */}
+              <Link to="/inbox">
+                <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-primary/[0.06]">
+                  <MessageSquare className="h-5 w-5" />
+                </Button>
+              </Link>
+            </>
+          ) : null}
+
+          {/* Hamburger */}
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9"><Menu className="h-5 w-5" /></Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72 bg-card/95 backdrop-blur-xl border-border/30">
+              <div className="flex flex-col gap-1 pt-6">
+                {user ? (
+                  <>
+                    {/* User info */}
+                    <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-lg bg-primary/[0.04] border border-border/30">
+                      <Avatar className="h-10 w-10 border border-border/40 shrink-0">
+                        <AvatarImage src={profile?.avatar_url} />
+                        <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
+                          {profile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{profile?.display_name || "User"}</p>
+                        <button
+                          className="text-xs text-primary font-medium"
+                          onClick={() => { setIsOpen(false); navigate("/wallet"); }}
+                        >
+                          €{(balance ?? 0).toFixed(2)} balance
+                        </button>
+                      </div>
+                    </div>
+
+                    <Link to="/post-request" onClick={() => setIsOpen(false)}>
+                      <Button className="w-full gap-2 mb-2 shadow-glow"><Plus className="h-4 w-4" /> Post Request</Button>
+                    </Link>
+                    <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
+                    </Link>
+                    <Link to="/orders/purchased" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Package className="h-4 w-4" /> Purchased Orders</Button>
+                    </Link>
+                    <Link to="/orders/sold" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Wallet className="h-4 w-4" /> Sold Orders</Button>
+                    </Link>
+                    <Link to="/inbox" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><MessageSquare className="h-4 w-4" /> Messages</Button>
+                    </Link>
+                    <Link to="/wallet" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Wallet className="h-4 w-4" /> Wallet</Button>
+                    </Link>
+                    <Link to="/settings" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Settings className="h-4 w-4" /> Settings</Button>
+                    </Link>
+                    {isAdminUser && (
+                      <Link to="/admin" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start gap-2 h-11"><ShieldCheck className="h-4 w-4" /> Admin</Button>
+                      </Link>
+                    )}
+                    <hr className="border-border/30 my-2" />
+                    <Button variant="ghost" className="w-full justify-start gap-2 h-11 text-destructive hover:bg-destructive/10" onClick={() => { setIsOpen(false); handleSignOut(); }}>
+                      <LogOut className="h-4 w-4" /> Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/how-it-works" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11">How It Works</Button>
+                    </Link>
+                    <hr className="border-border/30 my-2" />
+                    <Button variant="outline" className="w-full gap-2 h-11" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}>
+                      <User className="h-4 w-4" /> Sign In
+                    </Button>
+                    <Button className="w-full gap-2 h-11" onClick={() => { setIsOpen(false); setAuthTab("signup"); setAuthOpen(true); }}>
+                      <Zap className="h-4 w-4" /> Get Started
+                    </Button>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
       <QuickAuthDialog open={authOpen} onOpenChange={setAuthOpen} defaultTab={authTab} />
     </header>
