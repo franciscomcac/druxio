@@ -481,153 +481,126 @@ const ActiveRequest = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-start justify-between mb-6 animate-fade-in">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} className="hover:bg-primary/[0.06]">
+        <div className="flex items-start justify-between mb-4 sm:mb-6 animate-fade-in gap-3">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">{job.title}</h1>
-              <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                <Badge variant="outline" className="border-primary/20 text-primary/80">{job.category}</Badge>
-                {job.description && <span className="truncate max-w-xs">{job.description}</span>}
-                {!isBuyer && (
-                  <>
-                    <Badge variant="secondary">Seller View</Badge>
-                    {buyerProfile && <RankBadge totalSpent={buyerProfile.total_spent || 0} />}
-                  </>
-                )}
+            <div className="min-w-0">
+              <h1 className="text-base sm:text-2xl font-bold text-foreground line-clamp-2 leading-snug">{job.title}</h1>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
+                {!isBuyer && <Badge variant="secondary" className="text-xs">Seller View</Badge>}
               </div>
             </div>
           </div>
           {isBuyer && (
-            <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={handleCancelRequest}>
-              <XCircle className="h-4 w-4" /> Cancel request
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 h-9 px-2" onClick={handleCancelRequest}>
+              <XCircle className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs">Cancel</span>
             </Button>
           )}
         </div>
 
         {/* Live feed bar */}
-        <div className="flex items-center justify-between rounded-xl border border-border bg-card/60 backdrop-blur-sm px-5 py-3 mb-6 animate-fade-in [animation-delay:100ms]">
+        <div className="flex items-center justify-between rounded-xl border border-border bg-card/60 backdrop-blur-sm px-3 sm:px-5 py-2.5 mb-4 sm:mb-6 animate-fade-in [animation-delay:100ms]">
           <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
+            <span className="relative flex h-2.5 w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40 opacity-75" />
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
             </span>
-            <span className="text-sm font-semibold text-foreground">Offers live feed</span>
+            <span className="text-sm font-semibold text-foreground">Live feed</span>
           </div>
-          <div className="flex items-center gap-5 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5"><Users className="h-3.5 w-3.5 text-primary/60" /> Notified sellers: {onlineCount}</span>
-            <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5 text-primary/60" /> Offers: {quotes.length}</span>
+          <div className="flex items-center gap-3 sm:gap-5 text-xs sm:text-sm text-muted-foreground">
+            <span className="flex items-center gap-1"><Users className="h-3 w-3 text-primary/60" /> {onlineCount}</span>
+            <span className="flex items-center gap-1"><Eye className="h-3 w-3 text-primary/60" /> {quotes.length}</span>
           </div>
         </div>
 
         {/* Offers leaderboard */}
-        <div className="mb-8 animate-fade-in [animation-delay:200ms]">
+        <div className="mb-6 sm:mb-8 animate-fade-in [animation-delay:200ms]">
           {quotes.length === 0 ? (
-            <Card className="border-dashed border-border bg-card/30">
-              <CardContent className="flex flex-col items-center py-16 text-muted-foreground">
-                <div className="relative mb-6">
-                  <div className="h-16 w-16 rounded-2xl bg-primary/[0.08] flex items-center justify-center">
-                    <Send className="h-7 w-7 text-primary/60" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary animate-ping opacity-40" />
+            <div className="rounded-xl border border-dashed border-border bg-card/30 py-12 flex flex-col items-center text-muted-foreground">
+              <div className="relative mb-4">
+                <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center">
+                  <Send className="h-6 w-6 text-primary/60" />
                 </div>
-                <p className="font-semibold text-foreground mb-1">Waiting for expert offers...</p>
-                <p className="text-sm">Offers usually arrive within 90 seconds</p>
-              </CardContent>
-            </Card>
+                <div className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-primary animate-ping opacity-40" />
+              </div>
+              <p className="font-semibold text-foreground mb-1 text-sm">Waiting for expert offers...</p>
+              <p className="text-xs">Offers usually arrive within 90 seconds</p>
+            </div>
           ) : (
-            <ScrollArea className="max-h-[340px] rounded-xl">
-              <div className="space-y-2 pr-2">
+            <ScrollArea className="max-h-[320px] rounded-xl">
+              <div className="space-y-2 pr-1">
                 {sortedQuotes.map((quote, i) => {
                   const isMyQuote = quote.expert_id === userId;
                   return (
                     <div
                       key={quote.id}
-                      className={`flex items-center gap-4 rounded-xl border p-4 transition-all duration-300 animate-slide-up ${
+                      className={`flex items-center gap-2 sm:gap-4 rounded-xl border p-3 sm:p-4 transition-all duration-300 animate-slide-up ${
                         isMyQuote
                           ? "border-primary/40 bg-primary/[0.06] shadow-glow"
                           : isBuyer && selectedChatPartnerId === quote.expert_id
-                          ? "border-primary/30 bg-primary/[0.04] shadow-glow"
+                          ? "border-primary/30 bg-primary/[0.04]"
                           : "border-border bg-card/60 hover:border-primary/20"
                       } ${isBuyer ? "cursor-pointer" : ""}`}
                       style={{ animationDelay: `${i * 80}ms` }}
                       onClick={() => isBuyer && setSelectedChatPartnerId(quote.expert_id)}
                     >
-                      {/* Rank */}
-                      <div className="text-lg font-bold text-muted-foreground w-6 text-center shrink-0">
-                        {i + 1}
-                      </div>
+                      <div className="text-sm font-bold text-muted-foreground w-5 text-center shrink-0">{i + 1}</div>
 
-                      {/* Avatar */}
-                      <Avatar className="h-11 w-11 border border-border shrink-0">
+                      <Avatar className="h-9 w-9 sm:h-11 sm:w-11 border border-border shrink-0">
                         <AvatarImage src={quote.profile?.avatar_url || undefined} />
-                        <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold text-sm">
+                        <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold text-xs">
                           {quote.profile?.display_name?.split(" ").map(n => n[0]).join("") || "E"}
                         </AvatarFallback>
                       </Avatar>
 
-                      {/* Seller info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-foreground">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-semibold text-foreground text-sm truncate">
                             {isMyQuote ? `${quote.profile?.display_name || "You"} (You)` : quote.profile?.display_name || "Expert"}
                           </span>
-                          {quote.profile?.rating_avg ? (
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Star className="h-3 w-3 fill-primary text-primary" />
-                              {Math.round((quote.profile.rating_avg / 5) * 100)}% ({quote.profile?.total_sessions ?? 0})
-                            </span>
-                          ) : null}
+                          {quote.id === recommendedId && (
+                            <Badge className="bg-primary/20 text-primary border-0 text-[10px] px-1.5">Best</Badge>
+                          )}
+                          {quote.id === fastestId && quote.id !== recommendedId && (
+                            <Badge variant="secondary" className="text-[10px] px-1.5">Fastest</Badge>
+                          )}
                         </div>
+                        {quote.profile?.rating_avg ? (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Star className="h-3 w-3 fill-primary text-primary" />
+                            {Math.round((quote.profile.rating_avg / 5) * 100)}%
+                          </span>
+                        ) : null}
                       </div>
 
-                      {/* Badges */}
-                      <div className="flex items-center gap-2">
-                        {quote.id === recommendedId && (
-                          <Badge className="bg-primary/20 text-primary border-0 text-xs">Recommended</Badge>
-                        )}
-                        {quote.id === fastestId && quote.id !== recommendedId && (
-                          <Badge variant="secondary" className="text-xs">Fastest</Badge>
-                        )}
-                        {isMyQuote && (
-                          <Badge variant="outline" className="text-xs border-primary/30 text-primary">Your Offer</Badge>
-                        )}
+                      <div className="shrink-0 text-right">
+                        <p className="text-base sm:text-lg font-bold text-foreground">€{quote.price.toFixed(2)}</p>
+                        <p className="text-[10px] text-muted-foreground">{formatDeliveryTime(quote.estimated_minutes)}</p>
                       </div>
 
-                      {/* Delivery time */}
-                      <div className="text-right shrink-0 hidden sm:block">
-                        <p className="text-xs text-muted-foreground">Delivery time</p>
-                        <p className="text-sm font-medium text-foreground">
-                          {formatDeliveryTime(quote.estimated_minutes)}
-                        </p>
-                      </div>
-
-                      {/* Price */}
-                      <div className="shrink-0 min-w-[70px] text-right">
-                        <p className="text-lg font-bold text-foreground">€{quote.price.toFixed(2)}</p>
-                      </div>
-
-                      {/* Actions — buyer only */}
                       {isBuyer && (
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex flex-col sm:flex-row items-center gap-1 shrink-0">
+                          <Button
+                            size="sm"
+                            className="gap-1 shadow-glow h-8 px-2.5 text-xs"
+                            onClick={(e) => { e.stopPropagation(); handleAcceptQuote(quote); }}
+                          >
+                            <CreditCard className="h-3 w-3" />
+                            <span className="hidden sm:inline">Pay</span>
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="gap-1.5 text-muted-foreground hover:text-primary hover:bg-primary/[0.06]"
+                            className="gap-1 text-muted-foreground hover:text-primary hover:bg-primary/[0.06] h-8 px-2 text-xs"
                             onClick={(e) => { e.stopPropagation(); setSelectedChatPartnerId(quote.expert_id); }}
                           >
-                            <MessageSquare className="h-3.5 w-3.5" /> Chat
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="gap-1.5 shadow-glow hover:shadow-glow-lg transition-shadow"
-                            onClick={(e) => { e.stopPropagation(); handleAcceptQuote(quote); }}
-                          >
-                            <CreditCard className="h-3.5 w-3.5" /> Pay & Accept
+                            <MessageSquare className="h-3 w-3" />
                           </Button>
                         </div>
                       )}
@@ -642,15 +615,15 @@ const ActiveRequest = () => {
         {/* Live chat section */}
         {(isBuyer ? quotes.length > 0 : !!myQuote) && (
           <div className="animate-fade-in [animation-delay:300ms]">
-            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" />
+            <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-primary" />
               {isBuyer ? "Live chat with sellers" : `Chat with ${buyerProfile?.display_name || "Buyer"}`}
             </h2>
 
-            <div className={`grid grid-cols-1 ${isBuyer ? "md:grid-cols-3" : ""} gap-4 h-[460px]`}>
-              {/* Chat list — buyer only (sellers see only one chat) */}
+            <div className={`grid grid-cols-1 ${isBuyer ? "md:grid-cols-3" : ""} gap-3 sm:gap-4`} style={{ height: "min(460px, 60vh)" }}>
+              {/* Chat list — buyer only */}
               {isBuyer && (
-                <div className="md:col-span-1 rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden h-full">
+                <div className="md:col-span-1 rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden hidden md:block">
                   <ScrollArea className="h-full">
                     <div className="p-2 space-y-1">
                       {sortedQuotes.map((quote) => {
@@ -661,12 +634,10 @@ const ActiveRequest = () => {
                             key={quote.expert_id}
                             onClick={() => setSelectedChatPartnerId(quote.expert_id)}
                             className={`w-full flex items-center gap-3 rounded-lg p-3 text-left transition-colors ${
-                              selectedChatPartnerId === quote.expert_id
-                                ? "bg-primary/[0.08]"
-                                : "hover:bg-muted/30"
+                              selectedChatPartnerId === quote.expert_id ? "bg-primary/[0.08]" : "hover:bg-muted/30"
                             }`}
                           >
-                            <Avatar className="h-10 w-10 shrink-0 border border-border">
+                            <Avatar className="h-9 w-9 shrink-0 border border-border">
                               <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold text-xs">
                                 {quote.profile?.display_name?.split(" ").map(n => n[0]).join("") || "E"}
                               </AvatarFallback>
@@ -674,14 +645,9 @@ const ActiveRequest = () => {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
                                 <span className="font-medium text-sm text-foreground truncate">{quote.profile?.display_name || "Expert"}</span>
-                                {lastMsg && (
-                                  <span className="text-[10px] text-muted-foreground shrink-0">
-                                    {formatDistanceToNow(new Date(lastMsg.created_at), { addSuffix: false })}
-                                  </span>
-                                )}
                               </div>
                               <p className="text-xs text-muted-foreground truncate mt-0.5">
-                                {lastMsg ? lastMsg.content : `€${quote.price.toFixed(2)} · ${quote.estimated_minutes} min`}
+                                {lastMsg ? lastMsg.content : `€${quote.price.toFixed(2)}`}
                               </p>
                             </div>
                           </button>
@@ -692,12 +658,36 @@ const ActiveRequest = () => {
                 </div>
               )}
 
+              {/* On mobile for buyer: seller selector as horizontal pill tabs */}
+              {isBuyer && (
+                <div className="md:hidden flex gap-2 overflow-x-auto pb-1 -mt-1 mb-1">
+                  {sortedQuotes.map((q) => (
+                    <button
+                      key={q.expert_id}
+                      onClick={() => setSelectedChatPartnerId(q.expert_id)}
+                      className={`shrink-0 flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                        selectedChatPartnerId === q.expert_id
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border text-muted-foreground hover:border-primary/30"
+                      }`}
+                    >
+                      <Avatar className="h-5 w-5 shrink-0">
+                        <AvatarFallback className="bg-primary/10 text-primary text-[8px] font-bold">
+                          {q.profile?.display_name?.split(" ").map(n => n[0]).join("") || "E"}
+                        </AvatarFallback>
+                      </Avatar>
+                      {q.profile?.display_name?.split(" ")[0] || "Expert"} · €{q.price}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               {/* Chat window */}
               <div className={`${isBuyer ? "md:col-span-2" : ""} rounded-xl border border-border bg-card/60 backdrop-blur-sm flex flex-col overflow-hidden h-full`}>
                 {selectedChatPartnerId && sessionMap[selectedChatPartnerId] ? (
                   <>
                     {/* Chat header */}
-                    <div className="flex items-center justify-between border-b border-border px-5 py-3">
+                    <div className="flex items-center justify-between border-b border-border px-3 sm:px-5 py-2.5 sm:py-3">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9 border border-border">
                           <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold text-xs">

@@ -131,28 +131,22 @@ const Wallet = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
         {/* Balance Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-3">
-            <DollarSign className="h-8 w-8 text-primary" /> Balance
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 flex items-center gap-2">
+            <DollarSign className="h-7 w-7 text-primary" /> Balance
           </h1>
-          <p className="text-muted-foreground">
-            Your unified balance — earnings, refunds, top-ups, and payments all in one place.
-          </p>
+          <p className="text-muted-foreground text-sm">All your earnings, payments, and refunds in one place.</p>
         </div>
 
         {/* Main Balance Card */}
-        <Card className="border-primary/30 bg-primary/[0.04] mb-8">
-          <CardContent className="p-8 text-center">
-            <p className="text-sm text-muted-foreground mb-2">Available Balance</p>
-            <p className="text-5xl font-bold text-foreground">€{balance.toFixed(2)}</p>
+        <Card className="border-primary/30 bg-primary/[0.04] mb-6">
+          <CardContent className="p-6 sm:p-8 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Available Balance</p>
+            <p className="text-4xl sm:text-5xl font-bold text-foreground">€{balance.toFixed(2)}</p>
             <p className="text-xs text-muted-foreground mt-2">All earnings, refunds & top-ups minus payments</p>
-            <Button
-              className="mt-4 gap-2"
-              onClick={() => setWithdrawOpen(true)}
-              disabled={balance <= 0}
-            >
+            <Button className="mt-4 gap-2 w-full sm:w-auto" onClick={() => setWithdrawOpen(true)} disabled={balance <= 0}>
               <ArrowUpRight className="h-4 w-4" /> Withdraw
             </Button>
           </CardContent>

@@ -546,7 +546,7 @@ const PostRequest = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-10">
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-4xl">
 
         {/* Step indicator for wizard steps */}
         {wizardStep !== "waiting" && (
@@ -584,7 +584,7 @@ const PostRequest = () => {
               <p className="text-muted-foreground">Choose a category to find the right experts.</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {BROAD_CATEGORIES.map((cat, i) => {
                 const Icon = cat.icon;
                 return (
