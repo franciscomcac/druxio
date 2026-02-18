@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, MessageSquare, UserPlus, CheckCircle, Clock, Loader2 } from "lucide-react";
+import { Bell, MessageSquare, UserPlus, CheckCircle, Clock, Loader2, Wallet, ArrowRight } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -124,8 +124,9 @@ const NotificationsDropdown = () => {
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
 
-    // Navigate based on notification type
-    if (notification.data?.job_id && ["dispute_raised", "dispute_resolved", "refund_issued", "order_completed", "order_cancelled"].includes(notification.type)) {
+    if (notification.type === "withdrawal_completed" || notification.type === "withdrawal_rejected") {
+      navigate("/wallet");
+    } else if (notification.data?.job_id && ["dispute_raised", "dispute_resolved", "refund_issued", "order_completed", "order_cancelled"].includes(notification.type)) {
       navigate(`/order/${notification.data.job_id}`);
     } else if (notification.type === "new_request" && notification.data?.job_id) {
       navigate(`/request/${notification.data.job_id}`);
@@ -152,6 +153,10 @@ const NotificationsDropdown = () => {
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "session_reminder":
         return <Clock className="h-4 w-4 text-amber-500" />;
+      case "withdrawal_completed":
+        return <Wallet className="h-4 w-4 text-green-500" />;
+      case "withdrawal_rejected":
+        return <Wallet className="h-4 w-4 text-destructive" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground" />;
     }
@@ -227,6 +232,18 @@ const NotificationsDropdown = () => {
             ))
           )}
         </ScrollArea>
+        <DropdownMenuSeparator />
+        <div className="p-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full gap-2 text-xs text-muted-foreground hover:text-foreground"
+            onClick={() => navigate("/notifications")}
+          >
+            View all notifications
+            <ArrowRight className="h-3 w-3" />
+          </Button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
