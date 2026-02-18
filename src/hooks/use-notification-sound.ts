@@ -1,10 +1,32 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const NOTIFICATION_FREQUENCY = 830; // ~Ab5
 const NOTIFICATION_DURATION = 0.25;
 
 export function useNotificationSound() {
   const contextRef = useRef<AudioContext | null>(null);
+
+  // Unlock AudioContext on the very first user interaction anywhere on the page
+  useEffect(() => {
+    const unlock = () => {
+      if (!contextRef.current) {
+        contextRef.current = new AudioContext();
+      }
+      if (contextRef.current.state === "suspended" || (contextRef.current.state as string) === "interrupted") {
+        contextRef.current.resume().catch(() => {});
+      }
+    };
+
+    window.addEventListener("click", unlock, { once: true, capture: true });
+    window.addEventListener("keydown", unlock, { once: true, capture: true });
+    window.addEventListener("touchstart", unlock, { once: true, capture: true });
+
+    return () => {
+      window.removeEventListener("click", unlock, { capture: true });
+      window.removeEventListener("keydown", unlock, { capture: true });
+      window.removeEventListener("touchstart", unlock, { capture: true });
+    };
+  }, []);
 
   const play = useCallback(async () => {
     try {
