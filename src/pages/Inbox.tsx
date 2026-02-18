@@ -219,7 +219,7 @@ const Inbox = () => {
     return (
       <Card 
         className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/30 bg-card/50 backdrop-blur-sm"
-        onClick={() => session.linked_job_id ? navigate(`/order/${session.linked_job_id}`) : navigate(`/session/${session.id}`)}
+        onClick={() => session.linked_job_id ? navigate(`/order/${session.linked_job_id}`, { state: { from: "/inbox" } }) : navigate(`/session/${session.id}`)}
       >
         <CardContent className="p-4">
           <div className="flex items-start gap-4">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useModeration } from "@/hooks/use-moderation";
 import Header from "@/components/layout/Header";
@@ -34,6 +34,8 @@ interface ChatMessage {
 const Order = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromPath: string | undefined = (location.state as any)?.from;
   const { toast } = useToast();
   const { softCheckContent } = useModeration();
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -516,7 +518,7 @@ const Order = () => {
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-5xl">
         {/* Back button & title */}
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
-          <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigate(isBuyer ? "/orders/purchased" : "/orders/sold")}>
+          <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigate(fromPath ?? (isBuyer ? "/orders/purchased" : "/orders/sold"))}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1 min-w-0">
