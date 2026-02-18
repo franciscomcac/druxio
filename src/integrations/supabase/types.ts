@@ -121,6 +121,39 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          category: string
+          created_at: string | null
+          email: string | null
+          id: string
+          message: string
+          rating: number
+          user_id: string | null
+          user_type: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          message: string
+          rating: number
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          message?: string
+          rating?: number
+          user_id?: string | null
+          user_type?: string | null
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           accepted_quote_id: string | null

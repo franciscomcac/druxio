@@ -27,7 +27,7 @@ import {
   ShieldCheck, AlertTriangle, Package, Users, Search, Loader2,
   CheckCircle2, XCircle, Eye, Ban, RefreshCw, DollarSign,
   MessageSquare, Clock, ArrowRight, BarChart3, Wallet, ArrowDownToLine,
-  Headphones, Send, Bot, User,
+  Headphones, Send, Bot, User, MessageSquarePlus, Star, Trash2,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -110,6 +110,17 @@ interface SupportMessage {
   created_at: string;
 }
 
+interface FeedbackRow {
+  id: string;
+  user_id: string | null;
+  rating: number;
+  category: string;
+  message: string;
+  user_type: string | null;
+  email: string | null;
+  created_at: string;
+}
+
 // ─── Component ───────────────────────────────────────────────────
 
 const Admin = () => {
@@ -161,6 +172,12 @@ const Admin = () => {
   const [adminId, setAdminId] = useState<string | null>(null);
   const supportBottomRef = useRef<HTMLDivElement>(null);
 
+  // Feedback
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackRow[]>([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackRatingFilter, setFeedbackRatingFilter] = useState("all");
+  const [feedbackCategoryFilter, setFeedbackCategoryFilter] = useState("all");
+
   // Stats
   const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0 });
 
@@ -197,6 +214,7 @@ const Admin = () => {
     if (activeTab === "users") loadUsers();
     if (activeTab === "withdrawals") loadWithdrawals();
     if (activeTab === "support") loadSupportTickets();
+    if (activeTab === "feedback") loadFeedback();
     loadStats();
   }, [isAdmin, activeTab]);
 
@@ -425,6 +443,22 @@ const Admin = () => {
 
     setSupportTickets(enriched);
     setSupportLoading(false);
+  };
+
+  const loadFeedback = async () => {
+    setFeedbackLoading(true);
+    const { data } = await supabase
+      .from("feedback")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setFeedbackItems((data as unknown as FeedbackRow[]) || []);
+    setFeedbackLoading(false);
+  };
+
+  const deleteFeedback = async (id: string) => {
+    await supabase.from("feedback").delete().eq("id", id);
+    setFeedbackItems(prev => prev.filter(f => f.id !== id));
+    toast({ title: "Feedback deleted" });
   };
 
   const openSupportTicket = async (ticket: SupportTicket) => {
@@ -766,6 +800,10 @@ const Admin = () => {
             <TabsTrigger value="support" className="gap-2">
               <Headphones className="h-4 w-4" />
               Support
+            </TabsTrigger>
+            <TabsTrigger value="feedback" className="gap-2">
+              <MessageSquarePlus className="h-4 w-4" />
+              Feedback
             </TabsTrigger>
           </TabsList>
 
@@ -1248,6 +1286,129 @@ const Admin = () => {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          {/* ═══ FEEDBACK TAB ═══ */}
+          <TabsContent value="feedback">
+            {feedbackLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Summary bar */}
+                {feedbackItems.length > 0 && (() => {
+                  const avg = feedbackItems.reduce((s, f) => s + f.rating, 0) / feedbackItems.length;
+                  return (
+                    <div className="flex flex-wrap items-center gap-4 p-4 rounded-lg bg-muted/50 border border-border">
+                      <div className="flex items-center gap-2">
+                        <Star className="h-4 w-4 text-primary fill-primary" />
+                        <span className="text-sm font-semibold text-foreground">{avg.toFixed(1)} avg rating</span>
+                      </div>
+                      <span className="text-sm text-muted-foreground">{feedbackItems.length} submission{feedbackItems.length !== 1 ? "s" : ""}</span>
+                      <div className="flex items-center gap-2 ml-auto">
+                        <Select value={feedbackRatingFilter} onValueChange={setFeedbackRatingFilter}>
+                          <SelectTrigger className="w-32 h-8 text-xs">
+                            <SelectValue placeholder="All ratings" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All ratings</SelectItem>
+                            <SelectItem value="5">★★★★★ (5)</SelectItem>
+                            <SelectItem value="4">★★★★ (4)</SelectItem>
+                            <SelectItem value="3">★★★ (3)</SelectItem>
+                            <SelectItem value="2">★★ (2)</SelectItem>
+                            <SelectItem value="1">★ (1)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={feedbackCategoryFilter} onValueChange={setFeedbackCategoryFilter}>
+                          <SelectTrigger className="w-40 h-8 text-xs">
+                            <SelectValue placeholder="All categories" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All categories</SelectItem>
+                            <SelectItem value="posting_request">Posting a request</SelectItem>
+                            <SelectItem value="finding_expert">Finding an expert</SelectItem>
+                            <SelectItem value="payments">Payments & wallet</SelectItem>
+                            <SelectItem value="mobile">Mobile experience</SelectItem>
+                            <SelectItem value="expert_tools">Expert tools</SelectItem>
+                            <SelectItem value="search">Search & filters</SelectItem>
+                            <SelectItem value="inbox">Inbox & chat</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Feedback list */}
+                {feedbackItems
+                  .filter(f => feedbackRatingFilter === "all" || String(f.rating) === feedbackRatingFilter)
+                  .filter(f => feedbackCategoryFilter === "all" || f.category === feedbackCategoryFilter)
+                  .length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center text-muted-foreground">
+                      <MessageSquarePlus className="h-12 w-12 mx-auto mb-3 text-primary/40" />
+                      <p className="font-semibold text-foreground">No feedback yet</p>
+                      <p className="text-sm">Submissions will appear here once users share their thoughts.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-3">
+                    {feedbackItems
+                      .filter(f => feedbackRatingFilter === "all" || String(f.rating) === feedbackRatingFilter)
+                      .filter(f => feedbackCategoryFilter === "all" || f.category === feedbackCategoryFilter)
+                      .map(f => (
+                        <Card key={f.id} className="hover:border-primary/30 transition-colors">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  {/* Stars */}
+                                  <div className="flex">
+                                    {[1,2,3,4,5].map(n => (
+                                      <Star key={n} className={`h-3.5 w-3.5 ${n <= f.rating ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+                                    ))}
+                                  </div>
+                                  <Badge
+                                    variant="outline"
+                                    className={
+                                      f.rating >= 4 ? "border-primary/40 text-primary" :
+                                      f.rating === 3 ? "border-muted-foreground/40" :
+                                      "border-destructive/40 text-destructive"
+                                    }
+                                  >
+                                    {f.rating >= 4 ? "Positive" : f.rating === 3 ? "Neutral" : "Critical"}
+                                  </Badge>
+                                  {f.user_type && (
+                                    <Badge variant="secondary" className="text-xs">{f.user_type}</Badge>
+                                  )}
+                                  <Badge variant="outline" className="text-xs capitalize">
+                                    {f.category.replace(/_/g, " ")}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-foreground mb-1">{f.message}</p>
+                                <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                                  {f.email && <span>📧 {f.email}</span>}
+                                  <span>{formatDistanceToNow(new Date(f.created_at), { addSuffix: true })}</span>
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                                onClick={() => deleteFeedback(f.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>

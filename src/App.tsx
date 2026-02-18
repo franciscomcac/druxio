@@ -23,6 +23,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
 import SupportWidget from "./components/support/SupportWidget";
+import FeedbackWidget from "./components/feedback/FeedbackWidget";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <SupportWidget />
+          <FeedbackWidget />
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
