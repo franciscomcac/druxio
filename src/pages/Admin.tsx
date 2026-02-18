@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -711,7 +709,6 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Page header */}
         <div className="flex items-center gap-3 mb-6">
@@ -1419,7 +1416,7 @@ const Admin = () => {
           </TabsContent>
         </Tabs>
       </main>
-      <Footer />
+      
 
       {/* ═══ Dispute Resolution Dialog ═══ */}
       <Dialog open={!!disputeAction && !!selectedDispute} onOpenChange={() => { setDisputeAction(null); setSelectedDispute(null); setDisputeNote(""); }}>

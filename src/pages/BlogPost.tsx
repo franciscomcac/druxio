@@ -1,6 +1,4 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getBlogPost, blogPosts } from "@/data/blog-posts";
@@ -103,15 +101,11 @@ const BlogPost = () => {
 
   if (!post) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="container mx-auto px-4 py-24 text-center max-w-xl">
-          <p className="text-4xl mb-4">📄</p>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Post not found</h1>
-          <p className="text-muted-foreground mb-6">This article doesn't exist or has been removed.</p>
-          <Button onClick={() => navigate("/blog")}>Back to Blog</Button>
-        </div>
-        <Footer />
+      <div className="container mx-auto px-4 py-24 text-center max-w-xl">
+        <p className="text-4xl mb-4">📄</p>
+        <h1 className="text-2xl font-bold text-foreground mb-2">Post not found</h1>
+        <p className="text-muted-foreground mb-6">This article doesn't exist or has been removed.</p>
+        <Button onClick={() => navigate("/blog")}>Back to Blog</Button>
       </div>
     );
   }
@@ -121,9 +115,7 @@ const BlogPost = () => {
   const next = blogPosts[currentIndex + 1] ?? null;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <>
       {/* Breadcrumb */}
       <div className="border-b border-border bg-card/40">
         <div className="container mx-auto px-4 py-3 max-w-3xl">
@@ -210,9 +202,7 @@ const BlogPost = () => {
           </div>
         )}
       </article>
-
-      <Footer />
-    </div>
+    </>
   );
 };
 

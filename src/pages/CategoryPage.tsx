@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -81,12 +79,10 @@ const CategoryPage = () => {
   if (!meta) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Category not found</h1>
           <Button onClick={() => navigate("/")}>Go Home</Button>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -95,7 +91,7 @@ const CategoryPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       <main>
         {/* Hero */}
         <section className="relative py-16 overflow-hidden">
@@ -279,7 +275,7 @@ const CategoryPage = () => {
           </div>
         </section>
       </main>
-      <Footer />
+      
     </div>
   );
 };

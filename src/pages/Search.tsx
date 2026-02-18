@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import AvailabilityBadge from "@/components/experts/AvailabilityBadge";
 import { useFavorites } from "@/hooks/use-favorites";
 import { Button } from "@/components/ui/button";
@@ -150,7 +148,7 @@ const Search = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       
       <main className="container mx-auto px-4 py-8">
         {/* Search Header */}
@@ -424,7 +422,7 @@ const Search = () => {
         </div>
       </main>
 
-      <Footer />
+      
     </div>
   );
 };
