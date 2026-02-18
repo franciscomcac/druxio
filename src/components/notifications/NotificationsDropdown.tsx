@@ -116,7 +116,8 @@ const NotificationsDropdown = () => {
       .eq("user_id", session.user.id)
       .eq("is_read", false);
 
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    // Remove all notifications from the list and clear the badge
+    setNotifications([]);
     setUnreadCount(0);
   };
 
