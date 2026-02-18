@@ -70,6 +70,8 @@ const Inbox = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [isMentor, setIsMentor] = useState(false);
   const [activeTab, setActiveTab] = useState("active");
+  // roleTab is set after we know if the user is a mentor
+  const [roleTab, setRoleTab] = useState<"selling" | "buying" | null>(null);
 
   const fetchUserAndSessions = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -87,6 +89,7 @@ const Inbox = () => {
     
     const hasMentorRole = roles?.some(r => r.role === "mentor") || false;
     setIsMentor(hasMentorRole);
+    setRoleTab(prev => prev ?? (hasMentorRole ? "selling" : "buying"));
 
     // Fetch sessions
     const { data: sessionsData, error } = await supabase
@@ -328,39 +331,16 @@ const Inbox = () => {
     </div>
   );
 
-  const GroupedSessionList = ({ filtered }: { filtered: Session[] }) => {
-    const { selling, buying } = splitByRole(filtered);
-    if (filtered.length === 0) return null;
+  const RoleFilteredList = ({ filtered }: { filtered: Session[] }) => {
+    const visibleSessions = filtered.filter(s =>
+      roleTab === "selling" ? s.mentor_id === userId : s.mentee_id === userId
+    );
+    if (visibleSessions.length === 0) return <EmptyState type={activeTab} />;
     return (
-      <div className="space-y-6">
-        {selling.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Store className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">Selling</h3>
-              <Badge variant="secondary" className="text-xs">{selling.length}</Badge>
-            </div>
-            <div className="space-y-3">
-              {selling.map((session) => (
-                <SessionCard key={session.id} session={session} />
-              ))}
-            </div>
-          </div>
-        )}
-        {buying.length > 0 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <ShoppingCart className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">Buying</h3>
-              <Badge variant="secondary" className="text-xs">{buying.length}</Badge>
-            </div>
-            <div className="space-y-3">
-              {buying.map((session) => (
-                <SessionCard key={session.id} session={session} />
-              ))}
-            </div>
-          </div>
-        )}
+      <div className="space-y-3">
+        {visibleSessions.map((session) => (
+          <SessionCard key={session.id} session={session} />
+        ))}
       </div>
     );
   };
@@ -440,7 +420,43 @@ const Inbox = () => {
           </div>
         )}
 
-        {/* Tabs */}
+        {/* Role toggle: Expert (Selling) / Buyer (Buying) */}
+        {roleTab !== null && (
+          <div className="flex items-center gap-2 mb-4">
+            {isMentor && (
+              <Button
+                variant={roleTab === "selling" ? "default" : "outline"}
+                size="sm"
+                className="gap-2"
+                onClick={() => setRoleTab("selling")}
+              >
+                <Store className="h-4 w-4" />
+                Expert
+                {sessions.filter(s => s.mentor_id === userId).length > 0 && (
+                  <Badge variant={roleTab === "selling" ? "secondary" : "outline"} className="ml-1">
+                    {sessions.filter(s => s.mentor_id === userId).length}
+                  </Badge>
+                )}
+              </Button>
+            )}
+            <Button
+              variant={roleTab === "buying" ? "default" : "outline"}
+              size="sm"
+              className="gap-2"
+              onClick={() => setRoleTab("buying")}
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Buyer
+              {sessions.filter(s => s.mentee_id === userId).length > 0 && (
+                <Badge variant={roleTab === "buying" ? "secondary" : "outline"} className="ml-1">
+                  {sessions.filter(s => s.mentee_id === userId).length}
+                </Badge>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Status Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
             <TabsTrigger value="active" className="gap-2">
@@ -461,33 +477,15 @@ const Inbox = () => {
           </TabsList>
 
           <TabsContent value="active" className="mt-0">
-            {loading ? (
-              <LoadingSkeleton />
-            ) : activeSessions.length > 0 ? (
-              <GroupedSessionList filtered={activeSessions} />
-            ) : (
-              <EmptyState type="active" />
-            )}
+            {loading ? <LoadingSkeleton /> : <RoleFilteredList filtered={activeSessions} />}
           </TabsContent>
 
           <TabsContent value="completed" className="mt-0">
-            {loading ? (
-              <LoadingSkeleton />
-            ) : completedSessions.length > 0 ? (
-              <GroupedSessionList filtered={completedSessions} />
-            ) : (
-              <EmptyState type="completed" />
-            )}
+            {loading ? <LoadingSkeleton /> : <RoleFilteredList filtered={completedSessions} />}
           </TabsContent>
 
           <TabsContent value="all" className="mt-0">
-            {loading ? (
-              <LoadingSkeleton />
-            ) : sessions.length > 0 ? (
-              <GroupedSessionList filtered={sessions} />
-            ) : (
-              <EmptyState type="" />
-            )}
+            {loading ? <LoadingSkeleton /> : <RoleFilteredList filtered={sessions} />}
           </TabsContent>
         </Tabs>
       </main>
