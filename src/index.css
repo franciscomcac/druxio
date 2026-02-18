@@ -75,59 +75,65 @@
   }
 
   .dark {
-    --background: 224 20% 6%;
-    --foreground: 210 20% 93%;
+    /* Deep navy — Duxio signature dark */
+    --background: 222 47% 4%;
+    --foreground: 210 30% 95%;
 
-    --card: 224 18% 9%;
-    --card-foreground: 210 20% 93%;
+    --card: 222 40% 7%;
+    --card-foreground: 210 30% 95%;
 
-    --popover: 224 18% 10%;
-    --popover-foreground: 210 20% 93%;
+    --popover: 222 40% 8%;
+    --popover-foreground: 210 30% 95%;
 
-    --primary: 220 70% 55%;
-    --primary-foreground: 0 0% 100%;
+    /* Electric cyan — Duxio signature accent */
+    --primary: 188 100% 48%;
+    --primary-foreground: 222 47% 5%;
 
-    --secondary: 220 14% 15%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary: 222 30% 13%;
+    --secondary-foreground: 210 20% 80%;
 
-    --muted: 220 12% 18%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 222 25% 12%;
+    --muted-foreground: 220 15% 52%;
 
-    --accent: 220 14% 13%;
-    --accent-foreground: 210 20% 88%;
+    --accent: 222 30% 11%;
+    --accent-foreground: 210 25% 88%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 12% 16%;
-    --input: 220 12% 18%;
-    --ring: 220 70% 55%;
+    --border: 222 25% 13%;
+    --input: 222 25% 14%;
+    --ring: 188 100% 48%;
 
-    --sidebar-background: 224 20% 5%;
-    --sidebar-foreground: 210 20% 93%;
-    --sidebar-primary: 220 70% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 13%;
-    --sidebar-accent-foreground: 210 20% 88%;
-    --sidebar-border: 220 12% 16%;
-    --sidebar-ring: 220 70% 55%;
+    --sidebar-background: 222 47% 3%;
+    --sidebar-foreground: 210 30% 95%;
+    --sidebar-primary: 188 100% 48%;
+    --sidebar-primary-foreground: 222 47% 5%;
+    --sidebar-accent: 222 30% 11%;
+    --sidebar-accent-foreground: 210 25% 88%;
+    --sidebar-border: 222 25% 13%;
+    --sidebar-ring: 188 100% 48%;
 
-    --chart-1: 220 70% 55%;
-    --chart-2: 200 80% 60%;
+    --chart-1: 188 100% 48%;
+    --chart-2: 200 90% 60%;
     --chart-3: 160 84% 45%;
     --chart-4: 220 10% 50%;
     --chart-5: 220 13% 35%;
 
-    --sidebar: 224 20% 5%;
+    --sidebar: 222 47% 3%;
 
-    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.2);
-    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.3), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
-    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.35), 0 1px 2px -1px hsl(0 0% 0% / 0.2);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.2);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.2);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.2);
-    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.5);
+    /* Glow effects using Duxio cyan */
+    --shadow-glow: 0 0 30px hsl(188 100% 48% / 0.25);
+    --shadow-glow-lg: 0 0 60px hsl(188 100% 48% / 0.35);
+
+    --shadow-2xs: 0 1px 2px 0px hsl(0 0% 0% / 0.3);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.35);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.4), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.45), 0 1px 2px -1px hsl(0 0% 0% / 0.3);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.4), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.3);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.6);
   }
 }
 
@@ -138,5 +144,77 @@
 
   body {
     @apply bg-background text-foreground;
+    scroll-behavior: smooth;
   }
 }
+
+/* ── Scroll-reveal animation classes ─────────────────────────────── */
+@layer utilities {
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal-right.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .reveal-scale {
+    opacity: 0;
+    transform: scale(0.92);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .reveal-scale.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Stagger delays */
+  .delay-100 { transition-delay: 100ms; }
+  .delay-150 { transition-delay: 150ms; }
+  .delay-200 { transition-delay: 200ms; }
+  .delay-300 { transition-delay: 300ms; }
+  .delay-400 { transition-delay: 400ms; }
+  .delay-500 { transition-delay: 500ms; }
+  .delay-600 { transition-delay: 600ms; }
+}
+
+/* ── Duxio cyan glow keyframe ─────────────────────────────────────── */
+@keyframes cyan-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(188 100% 48% / 0); }
+  50%       { box-shadow: 0 0 20px 4px hsl(188 100% 48% / 0.25); }
+}
+
+.glow-pulse {
+  animation: cyan-pulse 3s ease-in-out infinite;
+}
+

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
 const testimonials = [
   { name: "Alex M.", role: "Buyer", initials: "AM", content: "Posted a Minecraft server debug request at 11pm — had 3 quotes in 90 seconds. Fixed in 15 minutes for €8. Insane.", rating: 5, category: "Gaming" },
@@ -15,6 +16,7 @@ const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const ref = useScrollReveal<HTMLElement>();
 
   const changeIndex = (newIndex: number) => {
     setIsTransitioning(true);
@@ -43,15 +45,15 @@ const Testimonials = () => {
   const visible = getVisible();
 
   return (
-    <section className="bg-card/20 py-24">
+    <section ref={ref} className="bg-card/20 py-24">
       <div className="container mx-auto px-4">
-        <div className="mb-14 max-w-lg">
+        <div className="mb-14 max-w-lg reveal">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">Testimonials</p>
           <h2 className="mb-3 text-4xl font-bold text-foreground leading-tight">Loved by Buyers & Experts</h2>
           <p className="text-muted-foreground text-lg">Real stories from our community</p>
         </div>
 
-        <div className="relative">
+        <div className="relative reveal delay-200">
           {/* Nav arrows */}
           <Button
             variant="ghost"

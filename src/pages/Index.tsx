@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import Hero from "@/components/landing/Hero";
 import LiveStats from "@/components/landing/LiveStats";
 import HowItWorks from "@/components/landing/HowItWorks";
+import MentorSpotlight from "@/components/landing/MentorSpotlight";
 import Testimonials from "@/components/landing/Testimonials";
 import Newsletter from "@/components/landing/Newsletter";
 
@@ -14,6 +15,7 @@ const Index = () => {
         <Hero />
         <LiveStats />
         <HowItWorks />
+        <MentorSpotlight />
         <Testimonials />
         <Newsletter />
       </main>
@@ -23,3 +25,4 @@ const Index = () => {
 };
 
 export default Index;
+
