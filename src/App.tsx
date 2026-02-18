@@ -26,6 +26,10 @@ import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
 import SupportWidget from "./components/support/SupportWidget";
 import FeedbackWidget from "./components/feedback/FeedbackWidget";
+import { usePresence } from "./hooks/use-presence";
+
+// Registers the presence heartbeat inside the Router context
+const PresenceTracker = () => { usePresence(); return null; };
 
 const queryClient = new QueryClient();
 
@@ -59,6 +63,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <PresenceTracker />
           <SupportWidget />
           <FeedbackWidget />
         </BrowserRouter>
