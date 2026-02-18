@@ -1,6 +1,4 @@
 import { Link } from "react-router-dom";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { blogPosts } from "@/data/blog-posts";
@@ -16,9 +14,7 @@ const Blog = () => {
   const [featured, ...rest] = blogPosts;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-
+    <>
       {/* Hero */}
       <div className="border-b border-border bg-card/50">
         <div className="container mx-auto px-4 py-14 max-w-4xl text-center">
@@ -101,9 +97,7 @@ const Blog = () => {
           ))}
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </>
   );
 };
 

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useModeration } from "@/hooks/use-moderation";
-import Header from "@/components/layout/Header";
 import RankBadge from "@/components/RankBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -480,7 +479,6 @@ const ActiveRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4 sm:mb-6 animate-fade-in gap-3">

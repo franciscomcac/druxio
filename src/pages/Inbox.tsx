@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -369,7 +367,6 @@ const Inbox = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
         {/* Page Header */}
         <div className="mb-8">
@@ -489,7 +486,6 @@ const Inbox = () => {
           </TabsContent>
         </Tabs>
       </main>
-      <Footer />
     </div>
   );
 };

@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import CategoryTemplateFields from "@/components/post-request/CategoryTemplateFields";
 import { supabase } from "@/integrations/supabase/client";
 import { useModeration } from "@/hooks/use-moderation";
-import Header from "@/components/layout/Header";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -545,7 +544,6 @@ const PostRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-4xl">
 
         {/* Step indicator for wizard steps */}

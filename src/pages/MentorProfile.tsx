@@ -1,8 +1,6 @@
 import { useState, useEffect, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import SimilarExperts from "@/components/experts/SimilarExperts";
 import PortfolioSection from "@/components/experts/PortfolioSection";
 import AvailabilityBadge from "@/components/experts/AvailabilityBadge";
@@ -125,12 +123,10 @@ const MentorProfile = () => {
   if (!mentor) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Seller not found</h1>
           <Button onClick={() => navigate("/search")}>Browse Sellers</Button>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -147,7 +143,7 @@ const MentorProfile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Top actions bar */}
@@ -408,7 +404,7 @@ const MentorProfile = () => {
         
       </main>
 
-      <Footer />
+      
     </div>
   );
 };

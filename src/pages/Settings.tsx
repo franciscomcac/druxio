@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -305,7 +303,7 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Settings</h1>
@@ -471,7 +469,7 @@ const Settings = () => {
           </TabsContent>
         </Tabs>
       </main>
-      <Footer />
+      
     </div>
   );
 };

@@ -1,8 +1,6 @@
 import { useState, useEffect, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -170,7 +168,7 @@ const PurchasedOrders = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      
       <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center gap-3 mb-6">
           <Package className="h-6 w-6 text-primary" />
@@ -222,7 +220,7 @@ const PurchasedOrders = () => {
           </Tabs>
         )}
       </main>
-      <Footer />
+      
     </div>
   );
 };

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import RankBadge from "@/components/RankBadge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -163,7 +162,6 @@ const Dashboard = () => {
       )}
       <SellerConsentDialog open={showSellerConsent} onOpenChange={setShowSellerConsent} onAccept={handleSellerConsentAccept} />
 
-      <Header />
 
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-7xl">
         {/* ── Profile Header ── */}

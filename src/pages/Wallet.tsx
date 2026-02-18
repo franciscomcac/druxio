@@ -2,8 +2,6 @@ import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBalance } from "@/hooks/use-balance";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -130,7 +128,7 @@ const Wallet = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
         {/* Balance Header */}
         <div className="mb-8">
@@ -269,7 +267,7 @@ const Wallet = () => {
           onSuccess={() => { refetchBalance(); loadTransactions(); }}
         />
       </main>
-      <Footer />
+      
     </div>
   );
 };

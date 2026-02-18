@@ -2,8 +2,6 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useModeration } from "@/hooks/use-moderation";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -419,7 +417,6 @@ const Order = () => {
   if (!job || !quote) {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       {/* Lightbox */}
       {lightboxImage && (
@@ -514,7 +511,7 @@ const Order = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-5xl">
         {/* Back button & title */}
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
@@ -836,7 +833,7 @@ const Order = () => {
           </div>
         </div>
       </main>
-      <Footer />
+      
 
       {/* Confirm Delivery Dialog */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
