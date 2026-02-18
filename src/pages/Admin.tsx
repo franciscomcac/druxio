@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import {
   ShieldCheck, AlertTriangle, Package, Users, Search, Loader2,
   CheckCircle2, XCircle, Eye, Ban, RefreshCw, DollarSign,
   MessageSquare, Clock, ArrowRight, BarChart3, Wallet, ArrowDownToLine,
+  Headphones, Send, Bot, User,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -86,6 +88,28 @@ interface WithdrawalRow {
   created_at: string;
 }
 
+interface SupportTicket {
+  id: string;
+  user_id: string;
+  user_name: string;
+  role_type: string;
+  category: string;
+  problem: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  lastMessage?: string;
+}
+
+interface SupportMessage {
+  id: string;
+  ticket_id: string;
+  sender_id: string;
+  sender_type: "user" | "admin" | "bot";
+  content: string;
+  created_at: string;
+}
+
 // ─── Component ───────────────────────────────────────────────────
 
 const Admin = () => {
@@ -126,8 +150,19 @@ const Admin = () => {
   const [withdrawalNote, setWithdrawalNote] = useState("");
   const [withdrawalActionLoading, setWithdrawalActionLoading] = useState(false);
 
+  // Support
+  const [supportTickets, setSupportTickets] = useState<SupportTicket[]>([]);
+  const [supportLoading, setSupportLoading] = useState(false);
+  const [supportFilter, setSupportFilter] = useState("all");
+  const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
+  const [ticketMessages, setTicketMessages] = useState<SupportMessage[]>([]);
+  const [adminReply, setAdminReply] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
+  const [adminId, setAdminId] = useState<string | null>(null);
+  const supportBottomRef = useRef<HTMLDivElement>(null);
+
   // Stats
-  const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0 });
+  const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0 });
 
   // ─── Auth check ─────────────────────────────────────────────────
 
@@ -161,13 +196,47 @@ const Admin = () => {
     if (activeTab === "orders") loadOrders();
     if (activeTab === "users") loadUsers();
     if (activeTab === "withdrawals") loadWithdrawals();
+    if (activeTab === "support") loadSupportTickets();
     loadStats();
   }, [isAdmin, activeTab]);
+
+  // Get admin's own user id
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setAdminId(data.user?.id || null));
+  }, []);
+
+  // Realtime for selected support ticket
+  useEffect(() => {
+    if (!selectedTicket) return;
+    const ch = supabase
+      .channel(`admin-support-${selectedTicket.id}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "support_messages",
+        filter: `ticket_id=eq.${selectedTicket.id}`,
+      }, (payload) => {
+        const msg = payload.new as SupportMessage;
+        setTicketMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, { ...msg, sender_type: msg.sender_type as "user" | "admin" | "bot" }]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedTicket]);
+
+  // Scroll support chat to bottom
+  useEffect(() => {
+    supportBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [ticketMessages]);
 
   // Reload withdrawals when filter changes
   useEffect(() => {
     if (isAdmin && activeTab === "withdrawals") loadWithdrawals();
   }, [withdrawalFilter]);
+
+  // Reload support when filter changes
+  useEffect(() => {
+    if (isAdmin && activeTab === "support") loadSupportTickets();
+  }, [supportFilter]);
 
   // ─── Data loaders ───────────────────────────────────────────────
 
@@ -186,6 +255,7 @@ const Admin = () => {
       totalUsers: usersCount.count || 0,
       revenue,
       pendingWithdrawals: pendingWdCount.count || 0,
+      openSupport: 0,
     });
   };
 
@@ -324,7 +394,76 @@ const Admin = () => {
     setWithdrawalsLoading(false);
   };
 
+  const loadSupportTickets = async () => {
+    setSupportLoading(true);
+    let query = supabase
+      .from("support_tickets")
+      .select("*")
+      .order("updated_at", { ascending: false });
+    if (supportFilter !== "all") query = query.eq("status", supportFilter);
+
+    const { data: tickets } = await query;
+    if (!tickets) { setSupportLoading(false); return; }
+
+    const enriched: SupportTicket[] = await Promise.all(
+      tickets.map(async (t) => {
+        const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", t.user_id).single();
+        const { data: lastMsg } = await supabase
+          .from("support_messages")
+          .select("content")
+          .eq("ticket_id", t.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        return {
+          ...t,
+          user_name: profile?.display_name || "Unknown",
+          lastMessage: lastMsg?.content,
+        };
+      })
+    );
+
+    setSupportTickets(enriched);
+    setSupportLoading(false);
+  };
+
+  const openSupportTicket = async (ticket: SupportTicket) => {
+    setSelectedTicket(ticket);
+    const { data: msgs } = await supabase
+      .from("support_messages")
+      .select("*")
+      .eq("ticket_id", ticket.id)
+      .order("created_at");
+    setTicketMessages((msgs || []).map(m => ({ ...m, sender_type: m.sender_type as "user" | "admin" | "bot" })));
+    if (ticket.status === "waiting") {
+      await supabase.from("support_tickets").update({ status: "live" }).eq("id", ticket.id);
+    }
+  };
+
+  const sendAdminReply = async () => {
+    if (!adminReply.trim() || !selectedTicket || !adminId || sendingReply) return;
+    setSendingReply(true);
+    const content = adminReply.trim();
+    setAdminReply("");
+    await supabase.from("support_messages").insert({
+      ticket_id: selectedTicket.id,
+      sender_id: adminId,
+      sender_type: "admin",
+      content,
+    });
+    setSendingReply(false);
+  };
+
+  const closeTicket = async (ticketId: string) => {
+    await supabase.from("support_tickets").update({ status: "closed" }).eq("id", ticketId);
+    toast({ title: "Ticket closed" });
+    setSelectedTicket(null);
+    setTicketMessages([]);
+    loadSupportTickets();
+  };
+
   // ─── Actions ────────────────────────────────────────────────────
+
 
   const handleDisputeResolve = async (action: "refund" | "release") => {
     if (!selectedDispute) return;
@@ -623,6 +762,10 @@ const Admin = () => {
               <ArrowDownToLine className="h-4 w-4" />
               Withdrawals
               {stats.pendingWithdrawals > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingWithdrawals}</Badge>}
+            </TabsTrigger>
+            <TabsTrigger value="support" className="gap-2">
+              <Headphones className="h-4 w-4" />
+              Support
             </TabsTrigger>
           </TabsList>
 
@@ -956,6 +1099,155 @@ const Admin = () => {
                 </ScrollArea>
               </Card>
             )}
+          </TabsContent>
+
+          {/* ═══ SUPPORT TAB ═══ */}
+          <TabsContent value="support">
+            <div className="flex flex-col md:flex-row gap-4 h-[600px]">
+              {/* Ticket List */}
+              <div className="w-full md:w-72 shrink-0 flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Select value={supportFilter} onValueChange={setSupportFilter}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="waiting">Waiting</SelectItem>
+                      <SelectItem value="live">Live</SelectItem>
+                      <SelectItem value="closed">Closed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="icon" onClick={loadSupportTickets}>
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
+                <ScrollArea className="flex-1 border border-border rounded-lg overflow-hidden">
+                  {supportLoading ? (
+                    <div className="p-4 space-y-3">
+                      {[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+                    </div>
+                  ) : supportTickets.length === 0 ? (
+                    <div className="p-6 text-center text-muted-foreground text-sm">
+                      <Headphones className="h-8 w-8 mx-auto mb-2 text-primary/40" />
+                      No support tickets
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-border">
+                      {supportTickets.map((ticket) => (
+                        <button
+                          key={ticket.id}
+                          onClick={() => openSupportTicket(ticket)}
+                          className={cn(
+                            "w-full text-left p-3 hover:bg-muted/50 transition-colors",
+                            selectedTicket?.id === ticket.id && "bg-primary/5 border-l-2 border-primary"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-sm font-medium text-foreground truncate">{ticket.user_name}</span>
+                            <Badge
+                              variant={ticket.status === "waiting" ? "destructive" : ticket.status === "live" ? "default" : "secondary"}
+                              className="text-[10px] shrink-0"
+                            >
+                              {ticket.status}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">{ticket.problem}</p>
+                          {ticket.lastMessage && (
+                            <p className="text-[11px] text-muted-foreground/70 truncate mt-0.5">{ticket.lastMessage}</p>
+                          )}
+                          <p className="text-[10px] text-muted-foreground/50 mt-1">
+                            {formatDistanceToNow(new Date(ticket.updated_at), { addSuffix: true })}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
+
+              {/* Chat Panel */}
+              <div className="flex-1 border border-border rounded-lg flex flex-col overflow-hidden">
+                {!selectedTicket ? (
+                  <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <MessageSquare className="h-10 w-10 mx-auto mb-3 text-primary/30" />
+                      <p className="text-sm font-medium text-foreground">Select a ticket</p>
+                      <p className="text-xs">Choose a conversation from the left to start replying</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Header */}
+                    <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-card/60 shrink-0">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{selectedTicket.user_name}</p>
+                        <p className="text-xs text-muted-foreground">{selectedTicket.category} · {selectedTicket.problem}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="capitalize text-xs">{selectedTicket.role_type}</Badge>
+                        {selectedTicket.status !== "closed" && (
+                          <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => closeTicket(selectedTicket.id)}>
+                            Close Ticket
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Messages */}
+                    <ScrollArea className="flex-1 px-4 py-3">
+                      <div className="space-y-3">
+                        {ticketMessages.map((msg) => {
+                          const isAdmin = msg.sender_type === "admin";
+                          const isBot = msg.sender_type === "bot";
+                          return (
+                            <div key={msg.id} className={cn("flex gap-2", isAdmin ? "flex-row-reverse" : "flex-row")}>
+                              <Avatar className="h-7 w-7 shrink-0 mt-0.5">
+                                <AvatarFallback className={cn(
+                                  "text-[10px] font-bold",
+                                  isAdmin ? "bg-primary/20 text-primary" : isBot ? "bg-muted text-muted-foreground" : "bg-secondary text-secondary-foreground"
+                                )}>
+                                  {isAdmin ? "A" : isBot ? <Bot className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className={cn(
+                                "max-w-[75%] rounded-2xl px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap",
+                                isAdmin ? "bg-primary text-primary-foreground rounded-tr-sm" : isBot ? "bg-muted/60 text-foreground rounded-tl-sm border border-border/50" : "bg-secondary text-secondary-foreground rounded-tl-sm"
+                              )}>
+                                {!isAdmin && !isBot && <p className="text-[10px] font-semibold text-muted-foreground mb-0.5">{selectedTicket.user_name}</p>}
+                                {msg.content}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <div ref={supportBottomRef} />
+                      </div>
+                    </ScrollArea>
+
+                    {/* Reply Input */}
+                    {selectedTicket.status !== "closed" ? (
+                      <div className="px-3 pb-3 pt-2 border-t border-border shrink-0 flex gap-2">
+                        <Input
+                          placeholder="Type a reply..."
+                          value={adminReply}
+                          onChange={e => setAdminReply(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAdminReply(); } }}
+                          className="h-9 text-sm"
+                          disabled={sendingReply}
+                        />
+                        <Button size="icon" className="h-9 w-9 shrink-0" onClick={sendAdminReply} disabled={sendingReply || !adminReply.trim()}>
+                          {sendingReply ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="px-4 py-3 border-t border-border text-center text-xs text-muted-foreground shrink-0">
+                        This ticket is closed
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </main>
