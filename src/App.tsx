@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import Index from "./pages/Index";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import Blog from "./pages/Blog";
@@ -38,6 +39,7 @@ const GlobalSoundListener = () => { useGlobalSound(); return null; };
 const queryClient = new QueryClient();
 
 const App = () => (
+  <CurrencyProvider>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark" disableTransitionOnChange>
       <TooltipProvider>
@@ -75,6 +77,7 @@ const App = () => (
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
+  </CurrencyProvider>
 );
 
 export default App;

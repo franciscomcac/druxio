@@ -11,6 +11,9 @@ import {
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
 import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck } from "lucide-react";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
+import { useCurrency, Currency } from "@/contexts/CurrencyContext";
+
+const CURRENCIES: Currency[] = ["EUR", "USD", "GBP"];
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,6 +23,7 @@ const Header = () => {
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const { balance } = useBalance();
+  const { currency, setCurrency, format } = useCurrency();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -100,8 +104,24 @@ const Header = () => {
               </Link>
               <Button variant="ghost" size="sm" className="gap-1.5 hover:bg-primary/[0.06] text-sm font-medium" onClick={() => navigate("/wallet")}>
                 <Wallet className="h-4 w-4 text-primary" />
-                <span className="text-foreground">€{(balance ?? 0).toFixed(2)}</span>
+                <span className="text-foreground">{format(balance ?? 0)}</span>
               </Button>
+              {/* Currency selector pill */}
+              <div className="flex items-center rounded-full border border-border/50 bg-muted/30 overflow-hidden text-xs font-medium">
+                {CURRENCIES.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCurrency(c)}
+                    className={`px-2.5 py-1 transition-colors ${
+                      currency === c
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
               <Link to="/inbox">
                 <Button variant="ghost" size="icon" className={`relative hover:bg-primary/[0.06] ${isActive("/inbox") ? "bg-primary/[0.06]" : ""}`}>
                   <MessageSquare className="h-5 w-5" />
@@ -199,7 +219,7 @@ const Header = () => {
                           className="text-xs text-primary font-medium"
                           onClick={() => { setIsOpen(false); navigate("/wallet"); }}
                         >
-                          €{(balance ?? 0).toFixed(2)} balance
+                          {format(balance ?? 0)} balance
                         </button>
                       </div>
                     </div>
