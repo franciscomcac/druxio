@@ -113,7 +113,7 @@ const SoldOrders = () => {
         key={order.job.id}
         className="cursor-pointer border-border bg-background/40 hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
         onClick={() => {
-          if (order.job.status === "accepted") navigate(`/order/${order.job.id}`);
+          if (order.job.status === "accepted") navigate(`/order/${order.job.id}`, { state: { from: "/orders/sold" } });
         }}
       >
         <CardContent className="p-5">

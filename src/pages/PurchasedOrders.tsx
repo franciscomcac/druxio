@@ -117,7 +117,7 @@ const PurchasedOrders = () => {
         className="cursor-pointer border-border bg-background/40 hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
         onClick={() => {
           if (order.job.status === "accepted" || order.job.status === "completed" || order.job.status === "disputed") {
-            navigate(`/order/${order.job.id}`);
+            navigate(`/order/${order.job.id}`, { state: { from: "/orders/purchased" } });
           } else if (order.job.status === "open") {
             navigate(`/request/${order.job.id}`);
           }
