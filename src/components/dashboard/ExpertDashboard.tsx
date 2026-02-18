@@ -3,7 +3,7 @@ import { useNotificationSound } from "@/hooks/use-notification-sound";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
-  DollarSign, Star, Clock, Bell, Send, Loader2, Settings, Target, TrendingUp, Zap, MessageSquare,
-  Package, CheckCircle2, AlertTriangle, ArrowRight, X, ChevronRight, FolderOpen, FileText, Eye,
+  DollarSign, Star, Clock, Bell, Send, Loader2, Settings, Target, Zap, MessageSquare,
+  Package, CheckCircle2, AlertTriangle, ArrowRight, X, ChevronRight, FileText,
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -47,22 +47,16 @@ interface ExpertDashboardProps {
 }
 
 const formatDeliveryTime = (minutes: number) => {
-  if (minutes >= 1440) {
-    const days = Math.round(minutes / 1440);
-    return `${days} day${days !== 1 ? "s" : ""}`;
-  }
-  if (minutes >= 60) {
-    const hours = Math.round(minutes / 60);
-    return `${hours}h`;
-  }
+  if (minutes >= 1440) { const d = Math.round(minutes / 1440); return `${d}d`; }
+  if (minutes >= 60) { const h = Math.round(minutes / 60); return `${h}h`; }
   return `${minutes}min`;
 };
 
 const timeAgo = (date: string) => {
   const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  return `${Math.floor(mins / 60)}h ago`;
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  return `${Math.floor(mins / 60)}h`;
 };
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -77,19 +71,12 @@ const getCategoryGroup = (category: string) => {
 
 type GroupedItems<T> = { broad: string; sub: string | null; icon: any; items: T[] }[];
 
-function groupByCategory<T>(
-  items: T[],
-  getCat: (item: T) => string,
-  subscribedCats: string[]
-): GroupedItems<T> {
-  // Build set of subscribed broad categories
+function groupByCategory<T>(items: T[], getCat: (item: T) => string, subscribedCats: string[]): GroupedItems<T> {
   const subscribedBroads = new Set(subscribedCats.map(c => c.split(":")[0]?.trim() || c));
-  
   const map = new Map<string, { icon: any; subs: Map<string, T[]> }>();
   for (const item of items) {
     const cat = getCat(item);
     const { broad, icon } = getCategoryGroup(cat);
-    // Only include items whose broad category the seller is subscribed to
     if (!subscribedBroads.has(broad)) continue;
     if (!map.has(broad)) map.set(broad, { icon, subs: new Map() });
     const subCat = cat.includes(":") ? cat.split(":").slice(1).join(":").trim() : null;
@@ -131,8 +118,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const [sendingQuote, setSendingQuote] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [previewJob, setPreviewJob] = useState<Job | null>(null);
-
-  // Orders state
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
@@ -140,7 +125,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const { toast } = useToast();
   const playNotificationSound = useNotificationSound();
 
-  // Fetch open jobs
   useEffect(() => {
     const fetchJobs = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -153,14 +137,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
       if (user && jobs && jobs.length > 0) {
         const jobIds = jobs.map(j => j.id);
-        const { data: myQuotes } = await supabase
-          .from("quotes")
-          .select("job_id")
-          .eq("expert_id", user.id)
-          .in("job_id", jobIds);
-        if (myQuotes) {
-          setQuotedJobIds(new Set(myQuotes.map(q => q.job_id)));
-        }
+        const { data: myQuotes } = await supabase.from("quotes").select("job_id").eq("expert_id", user.id).in("job_id", jobIds);
+        if (myQuotes) setQuotedJobIds(new Set(myQuotes.map(q => q.job_id)));
       }
     };
     fetchJobs();
@@ -180,40 +158,20 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     return () => { supabase.removeChannel(channel); };
   }, []);
 
-  // Fetch expert's orders (jobs where expert has an accepted quote)
   useEffect(() => {
     const fetchOrders = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      const { data: myQuotes } = await supabase
-        .from("quotes")
-        .select("*")
-        .eq("expert_id", user.id)
-        .eq("status", "accepted");
-
-      if (!myQuotes || myQuotes.length === 0) {
-        setLoadingOrders(false);
-        return;
-      }
+      const { data: myQuotes } = await supabase.from("quotes").select("*").eq("expert_id", user.id).eq("status", "accepted");
+      if (!myQuotes || myQuotes.length === 0) { setLoadingOrders(false); return; }
 
       const orderPromises = myQuotes.map(async (quote) => {
-        const { data: job } = await supabase
-          .from("jobs")
-          .select("*")
-          .eq("id", quote.job_id)
-          .single();
-
+        const { data: job } = await supabase.from("jobs").select("*").eq("id", quote.job_id).single();
         let buyerProfile = null;
         if (job) {
-          const { data: bp } = await supabase
-            .from("profiles")
-            .select("display_name, avatar_url")
-            .eq("id", job.buyer_id)
-            .single();
+          const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", job.buyer_id).single();
           buyerProfile = bp;
         }
-
         return { job, quote, buyerProfile };
       });
 
@@ -227,7 +185,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const handleSendQuote = async () => {
     if (!quoteDialog || !quotePrice) return;
     setSendingQuote(true);
-
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
@@ -257,11 +214,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       }).select().single();
 
       if (quoteMessage && sessionData) {
-        await supabase.from("messages").insert({
-          session_id: sessionData.id,
-          sender_id: session.user.id,
-          content: quoteMessage,
-        });
+        await supabase.from("messages").insert({ session_id: sessionData.id, sender_id: session.user.id, content: quoteMessage });
       }
 
       setQuotedJobIds((prev) => new Set([...prev, quoteDialog.id]));
@@ -283,53 +236,45 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const ratingPercent = ratingValue > 0 ? Math.round((ratingValue / 5) * 100) : 0;
 
   const statCards = [
-    { icon: <DollarSign className="h-6 w-6" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Earnings", subtitle: null },
-    { icon: <Target className="h-6 w-6" />, value: profile?.total_sessions || 0, label: "Jobs Completed", subtitle: null },
-    { icon: <Star className="h-6 w-6" />, value: ratingValue.toFixed(1), label: "Rating", subtitle: ratingValue > 0 ? `${ratingPercent}% satisfaction` : null },
-    { icon: <Zap className="h-6 w-6" />, value: subscribedCategories.length, label: "Categories", subtitle: null },
+    { icon: <DollarSign className="h-5 w-5" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Earnings" },
+    { icon: <Target className="h-5 w-5" />, value: profile?.total_sessions || 0, label: "Completed" },
+    { icon: <Star className="h-5 w-5" />, value: ratingValue > 0 ? ratingValue.toFixed(1) : "—", label: "Rating" },
+    { icon: <Zap className="h-5 w-5" />, value: subscribedCategories.length, label: "Categories" },
   ];
 
   const renderOrderCard = (order: OrderData) => {
     const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive"; icon: any }> = {
       accepted: { label: "Ongoing", variant: "default", icon: Clock },
-      completed: { label: "Completed", variant: "secondary", icon: CheckCircle2 },
+      completed: { label: "Done", variant: "secondary", icon: CheckCircle2 },
       disputed: { label: "Disputed", variant: "destructive", icon: AlertTriangle },
     };
     const config = statusMap[order.job.status] || statusMap.accepted;
     const StatusIcon = config.icon;
 
     return (
-      <div
+      <button
         key={order.job.id}
         onClick={() => navigate(`/order/${order.job.id}`)}
-        className="flex items-center justify-between rounded-sm border border-border bg-background/40 p-4 cursor-pointer transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]"
+        className="w-full text-left flex items-center gap-3 rounded-sm border border-border bg-background/40 p-3 cursor-pointer transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03] active:scale-[0.99]"
       >
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <Avatar className="h-9 w-9 border border-border shrink-0 rounded-sm">
-            <AvatarImage src={order.buyerProfile?.avatar_url} />
-            <AvatarFallback className="bg-primary/10 text-primary text-xs">
-              {order.buyerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0">
-            <p className="font-medium text-foreground truncate">{order.job.title}</p>
-            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-              <span>{order.buyerProfile?.display_name || "Client"}</span>
-              <span>·</span>
-              <span>€{Number(order.quote.price).toFixed(2)}</span>
-              <span>·</span>
-              <span>{formatDistanceToNow(new Date(order.job.created_at), { addSuffix: true })}</span>
-            </div>
-          </div>
+        <Avatar className="h-8 w-8 border border-border shrink-0 rounded-sm">
+          <AvatarImage src={order.buyerProfile?.avatar_url} />
+          <AvatarFallback className="bg-primary/10 text-primary text-xs">
+            {order.buyerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-foreground truncate text-sm">{order.job.title}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {order.buyerProfile?.display_name || "Client"} · €{Number(order.quote.price).toFixed(2)}
+          </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Badge variant={config.variant} className="gap-1">
-            <StatusIcon className="h-3 w-3" />
-            {config.label}
-          </Badge>
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-        </div>
-      </div>
+        <Badge variant={config.variant} className="gap-1 shrink-0 text-[10px] px-1.5 py-0.5">
+          <StatusIcon className="h-3 w-3" />
+          <span className="hidden sm:inline">{config.label}</span>
+        </Badge>
+        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+      </button>
     );
   };
 
@@ -340,110 +285,133 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   );
 
   return (
-    <div className="space-y-8">
-      {/* Quote Dialog */}
+    <div className="space-y-5 sm:space-y-8">
+      {/* ── Quote Dialog ── */}
       <Dialog open={!!quoteDialog} onOpenChange={() => setQuoteDialog(null)}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border w-[calc(100vw-32px)] max-w-md mx-auto rounded-xl">
           <DialogHeader>
-            <DialogTitle>Send Quote</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base">Send Quote</DialogTitle>
+            <DialogDescription className="text-xs">
               {quoteDialog?.title} — Budget: up to €{quoteDialog?.budget_max}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
+          <div className="space-y-3">
+            <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Your Price (€)</label>
-              <Input type="number" placeholder="e.g. 12" value={quotePrice} onChange={(e) => setQuotePrice(e.target.value)} min={1} max={quoteDialog?.budget_max} className="bg-background/60 border-border" />
+              <Input
+                type="number"
+                inputMode="decimal"
+                placeholder="e.g. 12"
+                value={quotePrice}
+                onChange={(e) => setQuotePrice(e.target.value)}
+                min={1}
+                max={quoteDialog?.budget_max}
+                className="bg-background/60 border-border h-11 text-base"
+              />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Estimated Delivery Time</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">Delivery Time</label>
               <div className="flex gap-2">
-                <Input type="number" value={quoteMinutes} onChange={(e) => setQuoteMinutes(e.target.value)} min={1} className="bg-background/60 border-border flex-1" />
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  value={quoteMinutes}
+                  onChange={(e) => setQuoteMinutes(e.target.value)}
+                  min={1}
+                  className="bg-background/60 border-border flex-1 h-11 text-base"
+                />
                 <Select value={quoteTimeUnit} onValueChange={(v: "minutes" | "hours" | "days") => setQuoteTimeUnit(v)}>
-                  <SelectTrigger className="w-[120px] bg-background/60 border-border">
+                  <SelectTrigger className="w-[110px] bg-background/60 border-border h-11">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="minutes">Minutes</SelectItem>
+                    <SelectItem value="minutes">Min</SelectItem>
                     <SelectItem value="hours">Hours</SelectItem>
                     <SelectItem value="days">Days</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Message (optional)</label>
-              <Textarea placeholder="I can fix this quickly because..." value={quoteMessage} onChange={(e) => setQuoteMessage(e.target.value)} maxLength={500} className="bg-background/60 border-border" />
+              <Textarea
+                placeholder="I can fix this quickly because..."
+                value={quoteMessage}
+                onChange={(e) => setQuoteMessage(e.target.value)}
+                maxLength={500}
+                className="bg-background/60 border-border text-sm resize-none"
+                rows={3}
+              />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setQuoteDialog(null)} className="border-border">Cancel</Button>
-            <Button onClick={handleSendQuote} disabled={sendingQuote || !quotePrice} className="gap-2 shadow-glow">
+          <DialogFooter className="flex-row gap-2 sm:gap-2">
+            <Button variant="outline" onClick={() => setQuoteDialog(null)} className="border-border flex-1">Cancel</Button>
+            <Button onClick={handleSendQuote} disabled={sendingQuote || !quotePrice} className="gap-2 shadow-glow flex-1">
               {sendingQuote ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send Quote
+              Send
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Discard Confirmation */}
+      {/* ── Discard Confirmation ── */}
       <AlertDialog open={!!discardConfirmJob} onOpenChange={(open) => !open && setDiscardConfirmJob(null)}>
-        <AlertDialogContent className="rounded-sm">
+        <AlertDialogContent className="rounded-xl w-[calc(100vw-32px)] max-w-sm mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard this request?</AlertDialogTitle>
-            <AlertDialogDescription>
-              "{discardConfirmJob?.title}" will be hidden from your feed. This cannot be undone.
+            <AlertDialogTitle>Discard request?</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
+              "{discardConfirmJob?.title}" will be hidden from your feed.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-sm">Cancel</AlertDialogCancel>
-            <AlertDialogAction className="rounded-sm bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => {
-              if (discardConfirmJob) {
-                setDiscardedJobIds(prev => new Set([...prev, discardConfirmJob.id]));
-              }
-              setDiscardConfirmJob(null);
-            }}>Discard</AlertDialogAction>
+          <AlertDialogFooter className="flex-row gap-2">
+            <AlertDialogCancel className="flex-1">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (discardConfirmJob) setDiscardedJobIds(prev => new Set([...prev, discardConfirmJob.id]));
+                setDiscardConfirmJob(null);
+              }}
+            >
+              Discard
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      {/* Job Preview Dialog */}
+
+      {/* ── Job Preview Dialog ── */}
       <Dialog open={!!previewJob} onOpenChange={() => setPreviewJob(null)}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border sm:max-w-lg">
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border w-[calc(100vw-32px)] max-w-lg mx-auto rounded-xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-primary" />
-              {previewJob?.title}
+            <DialogTitle className="flex items-center gap-2 text-base pr-8">
+              <FileText className="h-4 w-4 text-primary shrink-0" />
+              <span className="line-clamp-2">{previewJob?.title}</span>
             </DialogTitle>
-            <DialogDescription className="flex items-center gap-3 pt-1">
+            <DialogDescription className="flex items-center gap-2 flex-wrap pt-1">
               <Badge variant="secondary" className="text-xs">{previewJob?.category}{previewJob?.subcategory ? `: ${previewJob.subcategory}` : ""}</Badge>
               <span className="font-semibold text-foreground">€{previewJob?.budget_max}</span>
               <span className="flex items-center gap-1 text-xs"><Clock className="h-3 w-3" /> {formatDeliveryTime(previewJob?.deadline_minutes || 0)}</span>
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Description</p>
-              <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                {previewJob?.description || "No description provided."}
-              </p>
-            </div>
+          <div className="py-2">
+            <p className="text-xs font-medium text-muted-foreground mb-1.5">Description</p>
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto">
+              {previewJob?.description || "No description provided."}
+            </p>
           </div>
-          <DialogFooter className="gap-2 sm:gap-2">
-            <Button variant="ghost" onClick={() => setPreviewJob(null)} className="rounded-sm">
-              Dismiss
-            </Button>
+          <DialogFooter className="flex-row gap-2">
+            <Button variant="ghost" onClick={() => setPreviewJob(null)} className="flex-1">Dismiss</Button>
             {previewJob && !quotedJobIds.has(previewJob.id) && (
-              <Button className="gap-1.5 rounded-sm" onClick={() => {
+              <Button className="gap-1.5 flex-1" onClick={() => {
                 const job = previewJob;
                 setPreviewJob(null);
                 setQuoteDialog(job);
                 setQuotePrice(String(Math.round(job.budget_max * 0.8)));
               }}>
-                <Send className="h-3.5 w-3.5" /> Send Quote
+                <Send className="h-3.5 w-3.5" /> Quote
               </Button>
             )}
             {previewJob && quotedJobIds.has(previewJob.id) && (
-              <Button variant="outline" className="gap-1.5 rounded-sm border-primary/30 text-primary" onClick={() => { navigate(`/request/${previewJob.id}`); setPreviewJob(null); }}>
+              <Button variant="outline" className="gap-1.5 flex-1 border-primary/30 text-primary" onClick={() => { navigate(`/request/${previewJob.id}`); setPreviewJob(null); }}>
                 <MessageSquare className="h-3.5 w-3.5" /> Chat
               </Button>
             )}
@@ -451,16 +419,16 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         </DialogContent>
       </Dialog>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ── Stats — 2 cols mobile, 4 desktop ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {statCards.map((stat, i) => (
-          <Card key={i} className="border-border bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-1 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 80}ms` }}>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-primary/[0.08] text-primary">{stat.icon}</div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  {stat.subtitle && <p className="text-xs text-primary mt-0.5">{stat.subtitle}</p>}
+          <Card key={i} className="border-border bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-0.5 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 60}ms` }}>
+            <CardContent className="p-4 sm:pt-6">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-sm bg-primary/[0.08] text-primary shrink-0">{stat.icon}</div>
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl font-bold text-foreground leading-none">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1 truncate">{stat.label}</p>
                 </div>
               </div>
             </CardContent>
@@ -468,38 +436,38 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         ))}
       </div>
 
-      {/* Main Content with Tabs */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      {/* ── Main area — full width tabs + stacked sidebar ── */}
+      <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms] rounded-sm">
-            <CardContent className="pt-6">
-              <Tabs defaultValue="live" className="space-y-4">
-                <TabsList className="bg-background/60 border border-border w-full justify-start">
-                  <TabsTrigger value="live" className="gap-1.5 relative">
-                    <Bell className="h-3.5 w-3.5" /> Live
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:200ms] rounded-sm">
+            <CardContent className="pt-4 px-2 sm:px-6">
+              <Tabs defaultValue="live" className="space-y-3">
+                {/* Tabs — icon + short label on mobile, full on desktop */}
+                <TabsList className="bg-background/60 border border-border w-full grid grid-cols-4 h-10">
+                  <TabsTrigger value="live" className="gap-1 text-xs px-1">
+                    <Bell className="h-3.5 w-3.5 shrink-0" />
+                    <span>Live</span>
                     {openJobs.length > 0 && (
-                      <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                      <span className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
                         {openJobs.length}
                       </span>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="ongoing" className="gap-1.5">
-                    <Clock className="h-3.5 w-3.5" /> Ongoing
-                    {ongoingOrders.length > 0 && (
-                      <span className="ml-1 text-xs text-muted-foreground">({ongoingOrders.length})</span>
-                    )}
+                  <TabsTrigger value="ongoing" className="gap-1 text-xs px-1">
+                    <Clock className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Ongoing</span>
+                    <span className="sm:hidden">Active</span>
+                    {ongoingOrders.length > 0 && <span className="text-[9px] text-muted-foreground">({ongoingOrders.length})</span>}
                   </TabsTrigger>
-                  <TabsTrigger value="completed" className="gap-1.5">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Completed
-                    {completedOrders.length > 0 && (
-                      <span className="ml-1 text-xs text-muted-foreground">({completedOrders.length})</span>
-                    )}
+                  <TabsTrigger value="completed" className="gap-1 text-xs px-1">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Completed</span>
+                    <span className="sm:hidden">Done</span>
                   </TabsTrigger>
-                  <TabsTrigger value="disputed" className="gap-1.5">
-                    <AlertTriangle className="h-3.5 w-3.5" /> Disputed
-                    {disputedOrders.length > 0 && (
-                      <span className="ml-1 text-xs text-muted-foreground">({disputedOrders.length})</span>
-                    )}
+                  <TabsTrigger value="disputed" className="gap-1 text-xs px-1">
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Disputed</span>
+                    <span className="sm:hidden">Issues</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -510,59 +478,80 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   ) : (() => {
                     const visibleJobs = openJobs.filter(j => !discardedJobIds.has(j.id));
                     if (visibleJobs.length === 0) return (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <div className="mx-auto mb-4 h-16 w-16 rounded-sm bg-primary/[0.06] flex items-center justify-center">
-                          <Bell className="h-7 w-7 text-primary/40" />
+                      <div className="text-center py-10 text-muted-foreground">
+                        <div className="mx-auto mb-3 h-12 w-12 rounded-sm bg-primary/[0.06] flex items-center justify-center">
+                          <Bell className="h-6 w-6 text-primary/40" />
                         </div>
-                        <p className="font-medium text-foreground mb-1">No open requests right now</p>
-                        <p className="text-sm">New requests will appear here in real-time</p>
+                        <p className="font-medium text-foreground mb-1 text-sm">No open requests</p>
+                        <p className="text-xs">New requests will appear here in real-time</p>
                       </div>
                     );
                     const grouped = groupByCategory(visibleJobs.slice(0, 10), j => j.category, subscribedCategories);
                     if (grouped.length === 0) return (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <p className="text-sm">No requests matching your subscribed categories</p>
+                      <div className="text-center py-10 text-muted-foreground">
+                        <p className="text-sm">No requests matching your categories</p>
                       </div>
                     );
                     return (
-                      <div className="space-y-2">
+                      <div className="space-y-1.5">
                         {grouped.map(({ broad, icon: CatIcon, items }) => (
                           <Collapsible key={broad} defaultOpen={grouped.length <= 3}>
-                            <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
-                              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
-                              <CatIcon className="h-4 w-4 text-primary" />
+                            <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-2 py-2 hover:bg-primary/[0.04] transition-colors group">
+                              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90 shrink-0" />
+                              <CatIcon className="h-4 w-4 text-primary shrink-0" />
                               <span className="text-sm font-semibold text-foreground">{broad}</span>
                               <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                              <div className="space-y-1.5 pl-4 border-l border-border ml-4 mt-1 mb-2">
+                              <div className="space-y-1 pl-3 border-l border-border ml-4 mt-1 mb-2">
                                 {getSubGroups(items, j => j.category).map(({ sub, items: subItems }) => (
                                   <div key={sub}>
                                     <p className="text-xs font-medium text-muted-foreground px-2 py-1">{sub}</p>
                                     {subItems.map((job) => (
-                                      <div key={job.id} className="flex items-center justify-between rounded-sm border border-border bg-background/40 p-4 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03]">
+                                      <div
+                                        key={job.id}
+                                        className="flex items-center gap-2 rounded-sm border border-border bg-background/40 p-3 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03] mb-1.5"
+                                      >
+                                        {/* Info — tappable to preview */}
                                         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setPreviewJob(job)}>
-                                          <p className="font-medium text-foreground truncate hover:text-primary transition-colors">
+                                          <p className="font-medium text-foreground text-sm leading-snug line-clamp-1 hover:text-primary transition-colors">
                                             {job.title}
-                                            {job.subcategory && <span className="ml-2 text-xs font-normal text-muted-foreground">· {job.subcategory}</span>}
                                           </p>
-                                          <div className="flex items-center gap-3 mt-1.5 text-sm text-muted-foreground">
+                                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
                                             <span className="font-bold text-foreground">€{job.budget_max}</span>
-                                            <span className="flex items-center gap-1"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(job.deadline_minutes)}</span>
+                                            <span className="flex items-center gap-0.5"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(job.deadline_minutes)}</span>
                                             <span>{timeAgo(job.created_at)}</span>
                                           </div>
                                         </div>
-                                        <div className="flex items-center gap-1.5 shrink-0">
+
+                                        {/* Actions */}
+                                        <div className="flex items-center gap-1 shrink-0">
                                           {quotedJobIds.has(job.id) ? (
-                                            <Button size="sm" variant="outline" className="gap-1.5 rounded-sm border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate(`/request/${job.id}`)}>
-                                              <MessageSquare className="h-3 w-3" /> Chat
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-8 px-2.5 gap-1 rounded-sm border-primary/30 text-primary hover:bg-primary/10 text-xs"
+                                              onClick={() => navigate(`/request/${job.id}`)}
+                                            >
+                                              <MessageSquare className="h-3 w-3" />
+                                              <span className="hidden sm:inline">Chat</span>
                                             </Button>
                                           ) : (
                                             <>
-                                              <Button size="sm" className="gap-1.5 rounded-sm" onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}>
-                                                <Send className="h-3 w-3" /> Quote
+                                              <Button
+                                                size="sm"
+                                                className="h-8 px-2.5 gap-1 rounded-sm text-xs"
+                                                onClick={() => { setQuoteDialog(job); setQuotePrice(String(Math.round(job.budget_max * 0.8))); }}
+                                              >
+                                                <Send className="h-3 w-3" />
+                                                <span className="hidden sm:inline">Quote</span>
                                               </Button>
-                                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => setDiscardConfirmJob(job)} title="Discard">
+                                              <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="h-8 w-8 p-0 rounded-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0"
+                                                onClick={() => setDiscardConfirmJob(job)}
+                                              >
                                                 <X className="h-3.5 w-3.5" />
                                               </Button>
                                             </>
@@ -581,106 +570,101 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   })()}
                 </TabsContent>
 
-                {/* Ongoing Orders */}
                 <TabsContent value="ongoing" className="mt-0">
-                  {loadingOrders ? (
-                    <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
-                  ) : ongoingOrders.length > 0 ? (
-                    <div className="space-y-2">
-                      {groupByCategory(ongoingOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
-                        <Collapsible key={broad} defaultOpen>
-                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
-                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
-                            <CatIcon className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-semibold text-foreground">{broad}</span>
-                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="space-y-2 pl-4 border-l border-border ml-4 mt-1 mb-2">
-                              {items.map(renderOrderCard)}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ))}
-                    </div>
-                  ) : renderEmptyState("No ongoing orders")}
+                  {loadingOrders ? <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+                    : ongoingOrders.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {groupByCategory(ongoingOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
+                          <Collapsible key={broad} defaultOpen>
+                            <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-2 py-2 hover:bg-primary/[0.04] transition-colors group">
+                              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90 shrink-0" />
+                              <CatIcon className="h-4 w-4 text-primary shrink-0" />
+                              <span className="text-sm font-semibold text-foreground">{broad}</span>
+                              <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="space-y-1.5 pl-3 border-l border-border ml-4 mt-1 mb-2">
+                                {items.map(renderOrderCard)}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ))}
+                      </div>
+                    ) : renderEmptyState("No ongoing orders")}
                 </TabsContent>
 
-                {/* Completed Orders */}
                 <TabsContent value="completed" className="mt-0">
-                  {loadingOrders ? (
-                    <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
-                  ) : completedOrders.length > 0 ? (
-                    <div className="space-y-2">
-                      {groupByCategory(completedOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
-                        <Collapsible key={broad} defaultOpen>
-                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
-                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
-                            <CatIcon className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-semibold text-foreground">{broad}</span>
-                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="space-y-2 pl-4 border-l border-border ml-4 mt-1 mb-2">
-                              {items.map(renderOrderCard)}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ))}
-                    </div>
-                  ) : renderEmptyState("No completed orders yet")}
+                  {loadingOrders ? <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+                    : completedOrders.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {groupByCategory(completedOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
+                          <Collapsible key={broad} defaultOpen>
+                            <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-2 py-2 hover:bg-primary/[0.04] transition-colors group">
+                              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90 shrink-0" />
+                              <CatIcon className="h-4 w-4 text-primary shrink-0" />
+                              <span className="text-sm font-semibold text-foreground">{broad}</span>
+                              <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="space-y-1.5 pl-3 border-l border-border ml-4 mt-1 mb-2">
+                                {items.map(renderOrderCard)}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ))}
+                      </div>
+                    ) : renderEmptyState("No completed orders yet")}
                 </TabsContent>
 
-                {/* Disputed Orders */}
                 <TabsContent value="disputed" className="mt-0">
-                  {loadingOrders ? (
-                    <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
-                  ) : disputedOrders.length > 0 ? (
-                    <div className="space-y-2">
-                      {groupByCategory(disputedOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
-                        <Collapsible key={broad} defaultOpen>
-                          <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-3 py-2.5 hover:bg-primary/[0.04] transition-colors group">
-                            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
-                            <CatIcon className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-semibold text-foreground">{broad}</span>
-                            <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="space-y-2 pl-4 border-l border-border ml-4 mt-1 mb-2">
-                              {items.map(renderOrderCard)}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ))}
-                    </div>
-                  ) : renderEmptyState("No disputed orders")}
+                  {loadingOrders ? <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
+                    : disputedOrders.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {groupByCategory(disputedOrders, o => o.job.category, subscribedCategories).map(({ broad, icon: CatIcon, items }) => (
+                          <Collapsible key={broad} defaultOpen>
+                            <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-2 py-2 hover:bg-primary/[0.04] transition-colors group">
+                              <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90 shrink-0" />
+                              <CatIcon className="h-4 w-4 text-primary shrink-0" />
+                              <span className="text-sm font-semibold text-foreground">{broad}</span>
+                              <Badge variant="secondary" className="ml-auto text-[10px] h-5 bg-primary/[0.08] text-primary border-0">{items.length}</Badge>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="space-y-1.5 pl-3 border-l border-border ml-4 mt-1 mb-2">
+                                {items.map(renderOrderCard)}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        ))}
+                      </div>
+                    ) : renderEmptyState("No disputed orders")}
                 </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
-            <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-lg">Your Categories</CardTitle>
-              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => navigate("/settings")}>
+        {/* ── Sidebar — stacks below on mobile ── */}
+        <div className="space-y-4">
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms] rounded-sm">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 px-4">
+              <CardTitle className="text-base">Your Categories</CardTitle>
+              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={() => navigate("/settings")}>
                 Edit
               </Button>
             </CardHeader>
-            <CardContent className="pb-4">
+            <CardContent className="pb-4 px-4">
               {subscribedCategories.length > 0 ? (
-                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+                <div className="flex gap-2 flex-wrap">
                   {subscribedCategories.map((cat) => (
-                    <span key={cat} className="shrink-0 rounded-sm border border-border bg-muted/50 px-3 py-1.5 text-xs font-medium text-foreground">
+                    <span key={cat} className="rounded-sm border border-border bg-muted/50 px-2.5 py-1 text-xs font-medium text-foreground">
                       {cat.replace(/^[^:]+:\s*/, "")}
                     </span>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-4 text-muted-foreground">
-                  <p className="text-sm mb-2">Subscribe to categories to receive requests</p>
-                  <Button variant="link" size="sm" className="text-primary" onClick={() => navigate("/settings")}>
+                <div className="text-center py-3 text-muted-foreground">
+                  <p className="text-xs mb-2">Subscribe to categories to receive requests</p>
+                  <Button variant="link" size="sm" className="text-primary h-auto p-0 text-xs" onClick={() => navigate("/settings")}>
                     Manage Categories
                   </Button>
                 </div>
@@ -688,16 +672,16 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             </CardContent>
           </Card>
 
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:500ms] rounded-sm">
-            <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/settings")}>
+          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
+            <CardHeader className="pb-2 px-4"><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
+            <CardContent className="space-y-2.5 px-4 pb-4">
+              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20 h-10 text-sm" onClick={() => navigate("/settings")}>
                 Manage Categories <Settings className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/wallet")}>
+              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20 h-10 text-sm" onClick={() => navigate("/wallet")}>
                 View Earnings <DollarSign className="h-4 w-4" />
               </Button>
-              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20" onClick={() => navigate("/orders/sold")}>
+              <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20 h-10 text-sm" onClick={() => navigate("/orders/sold")}>
                 All Sold Orders <Package className="h-4 w-4" />
               </Button>
             </CardContent>
