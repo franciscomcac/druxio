@@ -72,6 +72,11 @@ const Header = () => {
               How It Works
             </Button>
           </Link>
+          <Link to="/blog">
+            <Button variant="ghost" size="sm" className={`text-sm font-medium ${location.pathname.startsWith("/blog") ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
+              Blog
+            </Button>
+          </Link>
           {user && (
             <>
               <Link to="/dashboard">
@@ -234,6 +239,9 @@ const Header = () => {
                   <>
                     <Link to="/how-it-works" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start gap-2 h-11">How It Works</Button>
+                    </Link>
+                    <Link to="/blog" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11">Blog</Button>
                     </Link>
                     <hr className="border-border/30 my-2" />
                     <Button variant="outline" className="w-full gap-2 h-11" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}>
