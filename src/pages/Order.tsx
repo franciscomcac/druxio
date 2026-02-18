@@ -55,6 +55,8 @@ const Order = () => {
   const [pendingImages, setPendingImages] = useState<{ file: File; preview: string }[]>([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Countdown
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -420,23 +422,59 @@ const Order = () => {
       {/* Lightbox */}
       {lightboxImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backdropFilter: "blur(12px)", background: "rgba(0,0,0,0.85)" }}
           onClick={() => setLightboxImage(null)}
         >
+          {/* Close */}
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 text-primary-foreground hover:bg-accent/20"
+            className="absolute top-4 right-4 z-10 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 rounded-full"
             onClick={() => setLightboxImage(null)}
           >
             <X className="h-6 w-6" />
           </Button>
+
+          {/* Prev */}
+          {lightboxImages.length > 1 && lightboxIndex > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-4 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 rounded-full"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => i - 1); setLightboxImage(lightboxImages[lightboxIndex - 1]); }}
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+          )}
+
+          {/* Image */}
           <img
             src={lightboxImage}
             alt="Full size"
-            className="max-h-[90vh] max-w-[90vw] object-contain rounded-lg"
+            className="max-h-[88vh] max-w-[88vw] object-contain rounded-xl shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            style={{ boxShadow: "0 25px 60px rgba(0,0,0,0.6)" }}
           />
+
+          {/* Next */}
+          {lightboxImages.length > 1 && lightboxIndex < lightboxImages.length - 1 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-14 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 rounded-full"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => i + 1); setLightboxImage(lightboxImages[lightboxIndex + 1]); }}
+            >
+              <ArrowLeft className="h-6 w-6 rotate-180" />
+            </Button>
+          )}
+
+          {/* Counter */}
+          {lightboxImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-primary-foreground/70 text-sm bg-black/40 px-3 py-1 rounded-full">
+              {lightboxIndex + 1} / {lightboxImages.length}
+            </div>
+          )}
         </div>
       )}
 
@@ -694,8 +732,8 @@ const Order = () => {
                                     key={i}
                                     src={url}
                                     alt="Attachment"
-                                    className="rounded-lg max-h-48 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => setLightboxImage(url)}
+                                    className="rounded-lg max-h-48 w-full object-cover cursor-pointer hover:opacity-90 hover:scale-[1.02] transition-all duration-150"
+                                    onClick={() => { setLightboxImages(msg.image_urls!); setLightboxIndex(i); setLightboxImage(url); }}
                                   />
                                 ))}
                               </div>
