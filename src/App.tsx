@@ -27,9 +27,13 @@ import CategoryPage from "./pages/CategoryPage";
 import SupportWidget from "./components/support/SupportWidget";
 import FeedbackWidget from "./components/feedback/FeedbackWidget";
 import { usePresence } from "./hooks/use-presence";
+import { useGlobalSound } from "./hooks/use-global-sound";
 
 // Registers the presence heartbeat inside the Router context
 const PresenceTracker = () => { usePresence(); return null; };
+
+// Plays chime on any incoming notification, message, or quote — app-wide
+const GlobalSoundListener = () => { useGlobalSound(); return null; };
 
 const queryClient = new QueryClient();
 
@@ -64,6 +68,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <PresenceTracker />
+          <GlobalSoundListener />
           <SupportWidget />
           <FeedbackWidget />
         </BrowserRouter>
