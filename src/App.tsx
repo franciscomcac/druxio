@@ -22,6 +22,7 @@ import SoldOrders from "./pages/SoldOrders";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
+import SupportWidget from "./components/support/SupportWidget";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <SupportWidget />
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
