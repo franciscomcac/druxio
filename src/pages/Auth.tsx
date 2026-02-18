@@ -81,11 +81,8 @@ const Auth = () => {
 
       <Card className="w-full max-w-md relative z-10">
         <CardHeader className="text-center">
-          <Link to="/" className="inline-flex items-center justify-center gap-2 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Zap className="h-6 w-6" />
-            </div>
-            <span className="text-2xl font-bold text-foreground">Duxio</span>
+          <Link to="/" className="inline-flex items-center justify-center mb-4">
+            <span className="text-2xl font-bold text-foreground">Dux<Zap className="inline h-5 w-5 text-primary fill-primary -mx-0.5" />o</span>
           </Link>
           <CardTitle className="text-2xl">
             {activeTab === "login" ? "Welcome back" : "Create an account"}
