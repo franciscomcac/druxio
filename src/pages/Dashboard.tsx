@@ -79,6 +79,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     let isMounted = true;
+    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
@@ -99,12 +100,24 @@ const Dashboard = () => {
         navigate("/auth");
       } else {
         fetchData(session.user.id);
+
+        // Realtime: update dashboard when jobs or quotes change
+        realtimeChannel = supabase
+          .channel("dashboard-realtime")
+          .on("postgres_changes", { event: "*", schema: "public", table: "jobs", filter: `buyer_id=eq.${session.user.id}` }, () => {
+            if (isMounted) fetchData(session.user.id);
+          })
+          .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
+            if (isMounted) fetchData(session.user.id);
+          })
+          .subscribe();
       }
     });
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+      if (realtimeChannel) supabase.removeChannel(realtimeChannel);
     };
   }, []);
 

@@ -29,63 +29,78 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 const PurchasedOrders = () => {
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
-  useEffect(() => {
-    const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate("/auth"); return; }
+  const load = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { navigate("/auth"); return; }
+    setUserId(user.id);
 
-      // Get all jobs where I'm the buyer
-      const { data: jobs } = await supabase
-        .from("jobs")
+    const { data: jobs } = await supabase
+      .from("jobs")
+      .select("*")
+      .eq("buyer_id", user.id)
+      .order("created_at", { ascending: false });
+
+    if (!jobs || jobs.length === 0) { setLoading(false); return; }
+
+    const orderPromises = jobs.map(async (job) => {
+      const { data: quotes } = await supabase
+        .from("quotes")
         .select("*")
-        .eq("buyer_id", user.id)
+        .eq("job_id", job.id)
+        .eq("status", "accepted");
+
+      const quote = quotes?.[0] || null;
+
+      let sellerProfile = null;
+      if (quote) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url, rating_avg")
+          .eq("id", quote.expert_id)
+          .single();
+        sellerProfile = profile;
+      }
+
+      const { data: txns } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("type", "session_payment")
         .order("created_at", { ascending: false });
 
-      if (!jobs || jobs.length === 0) { setLoading(false); return; }
+      const transaction = txns?.find(t => t.description?.includes(job.id)) || txns?.[0] || null;
 
-      const orderPromises = jobs.map(async (job) => {
-        // Get accepted quote for this job
-        const { data: quotes } = await supabase
-          .from("quotes")
-          .select("*")
-          .eq("job_id", job.id)
-          .eq("status", "accepted");
+      return { job, quote, sellerProfile, transaction };
+    });
 
-        const quote = quotes?.[0] || null;
+    const results = await Promise.all(orderPromises);
+    setOrders(results);
+    setLoading(false);
+  };
 
-        let sellerProfile = null;
-        if (quote) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("display_name, avatar_url, rating_avg")
-            .eq("id", quote.expert_id)
-            .single();
-          sellerProfile = profile;
-        }
-
-        // Get transaction
-        const { data: txns } = await supabase
-          .from("transactions")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("type", "session_payment")
-          .order("created_at", { ascending: false });
-
-        const transaction = txns?.find(t => t.description?.includes(job.id)) || txns?.[0] || null;
-
-        return { job, quote, sellerProfile, transaction };
-      });
-
-      const results = await Promise.all(orderPromises);
-      setOrders(results);
-      setLoading(false);
-    };
+  useEffect(() => {
     load();
   }, [navigate]);
+
+  // Realtime: refetch on job or quote updates
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel("purchased-orders-realtime")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "jobs" }, () => {
+        load();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
+        load();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId]);
 
   const activeOrders = orders.filter(o => o.job.status === "accepted");
   const completedOrders = orders.filter(o => o.job.status === "completed");

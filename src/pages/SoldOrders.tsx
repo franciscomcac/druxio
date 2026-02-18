@@ -27,61 +27,77 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 const SoldOrders = () => {
   const [orders, setOrders] = useState<SoldOrderData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
-  useEffect(() => {
-    const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate("/auth"); return; }
+  const load = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { navigate("/auth"); return; }
+    setUserId(user.id);
 
-      // Get all accepted quotes where I'm the expert
-      const { data: quotes } = await supabase
-        .from("quotes")
+    const { data: quotes } = await supabase
+      .from("quotes")
+      .select("*")
+      .eq("expert_id", user.id)
+      .eq("status", "accepted")
+      .order("created_at", { ascending: false });
+
+    if (!quotes || quotes.length === 0) { setLoading(false); return; }
+
+    const orderPromises = quotes.map(async (quote) => {
+      const { data: job } = await supabase
+        .from("jobs")
         .select("*")
-        .eq("expert_id", user.id)
-        .eq("status", "accepted")
-        .order("created_at", { ascending: false });
+        .eq("id", quote.job_id)
+        .single();
 
-      if (!quotes || quotes.length === 0) { setLoading(false); return; }
-
-      const orderPromises = quotes.map(async (quote) => {
-        const { data: job } = await supabase
-          .from("jobs")
-          .select("*")
-          .eq("id", quote.job_id)
+      let buyerProfile = null;
+      if (job) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, avatar_url")
+          .eq("id", job.buyer_id)
           .single();
+        buyerProfile = profile;
+      }
 
-        let buyerProfile = null;
-        if (job) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("display_name, avatar_url")
-            .eq("id", job.buyer_id)
-            .single();
-          buyerProfile = profile;
-        }
+      const { data: earnings } = await supabase
+        .from("transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("type", "session_earning")
+        .ilike("description", `%${quote.id}%`);
 
-        // Get earnings for this order
-        const { data: earnings } = await supabase
-          .from("transactions")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("type", "session_earning")
-          .ilike("description", `%${quote.id}%`);
+      const earning = earnings?.[0] || null;
 
-        const earning = earnings?.[0] || null;
+      return { job, quote, buyerProfile, earning };
+    });
 
-        return { job, quote, buyerProfile, earning };
-      });
+    const results = await Promise.all(orderPromises);
+    setOrders(results.filter(o => o.job));
+    setLoading(false);
+  };
 
-      const results = await Promise.all(orderPromises);
-      setOrders(results.filter(o => o.job));
-      setLoading(false);
-    };
+  useEffect(() => {
     load();
   }, [navigate]);
+
+  // Realtime: refetch on job or quote updates
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel("sold-orders-realtime")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "jobs" }, () => {
+        load();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
+        load();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [userId]);
 
   const activeOrders = orders.filter(o => o.job.status === "accepted");
   const completedOrders = orders.filter(o => o.job.status === "completed");

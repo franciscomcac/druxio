@@ -180,6 +180,19 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       setLoadingOrders(false);
     };
     fetchOrders();
+
+    // Realtime: update expert orders when job status changes
+    const ordersChannel = supabase
+      .channel("expert-orders-realtime")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "jobs" }, () => {
+        fetchOrders();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
+        fetchOrders();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(ordersChannel); };
   }, []);
 
   const handleSendQuote = async () => {
