@@ -23,6 +23,8 @@ const CRYPTO_OPTIONS = [
   { token: "ETH", networks: ["Ethereum"] },
 ];
 
+const FEE_RATE = 0.05; // 5% withdrawal fee
+
 const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: WithdrawalDialogProps) => {
   const [method, setMethod] = useState<"paypal" | "crypto">("paypal");
   const [amount, setAmount] = useState("");
@@ -35,6 +37,10 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
 
   const selectedTokenNetworks = CRYPTO_OPTIONS.find(c => c.token === cryptoToken)?.networks || [];
 
+  const numAmount = parseFloat(amount) || 0;
+  const feeAmount = numAmount * FEE_RATE;
+  const receiveAmount = numAmount - feeAmount;
+
   const resetForm = () => {
     setAmount("");
     setPaypalEmail("");
@@ -44,7 +50,6 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
   };
 
   const handleSubmit = async () => {
-    const numAmount = parseFloat(amount);
     if (isNaN(numAmount) || numAmount <= 0) {
       toast({ title: "Amount must be greater than 0", variant: "destructive" });
       return;
@@ -85,9 +90,9 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
       if (data?.error) throw new Error(data.error);
 
       if (data?.status === "completed") {
-        toast({ title: "Withdrawal sent! 🎉", description: `€${numAmount.toFixed(2)} sent to your PayPal.` });
+        toast({ title: "Withdrawal sent! 🎉", description: `€${receiveAmount.toFixed(2)} sent to your PayPal (after 5% fee).` });
       } else {
-        toast({ title: "Withdrawal submitted ⏳", description: `€${numAmount.toFixed(2)} is pending. Processing may take 24-48h.` });
+        toast({ title: "Withdrawal submitted ⏳", description: `€${receiveAmount.toFixed(2)} pending. Processing may take 24-48h.` });
       }
       resetForm();
       onOpenChange(false);
@@ -159,10 +164,21 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                 Max
               </Button>
             </div>
-            {method === "paypal" && parseFloat(amount) >= 10 && (
-              <p className="text-xs text-muted-foreground">
-                2% fee: €{(parseFloat(amount) * 0.02).toFixed(2)} — You receive: €{(parseFloat(amount) * 0.98).toFixed(2)}
-              </p>
+            {numAmount > 0 && (
+              <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1 text-xs">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Withdrawal amount</span>
+                  <span>€{numAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Platform fee (5%)</span>
+                  <span className="text-destructive">−€{feeAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-semibold text-foreground border-t border-border/40 pt-1 mt-1">
+                  <span>You receive</span>
+                  <span className="text-primary">€{receiveAmount.toFixed(2)}</span>
+                </div>
+              </div>
             )}
           </div>
 
@@ -232,7 +248,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
           </Button>
           <Button onClick={handleSubmit} disabled={loading} className="gap-2">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
-            Withdraw €{amount || "0.00"}
+            Withdraw {numAmount > 0 ? `€${numAmount.toFixed(2)}` : "€0.00"}
           </Button>
         </DialogFooter>
       </DialogContent>
