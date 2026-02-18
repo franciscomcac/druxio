@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Zap, Github, Twitter, Linkedin } from "lucide-react";
 
+
 const footerLinks = {
   Product: [
     { label: "Post a Request", href: "/post-request" },
@@ -30,11 +31,8 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
-            <Link to="/" className="mb-5 flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-glow">
-                <Zap className="h-5 w-5" />
-              </div>
-              <span className="text-xl font-bold text-foreground">Duxio</span>
+            <Link to="/" className="mb-5 flex items-center">
+              <span className="text-xl font-bold text-foreground">Dux<Zap className="inline h-4 w-4 text-primary fill-primary -mx-0.5" />o</span>
             </Link>
             <p className="mb-6 max-w-xs text-sm text-muted-foreground leading-relaxed">
               Real-time micro-tasks platform. Post what you need, get expert quotes in seconds.
