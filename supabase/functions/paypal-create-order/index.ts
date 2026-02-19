@@ -25,12 +25,19 @@ function calcBuyerTotal(basePrice: number) {
 async function getPayPalAccessToken(): Promise<string> {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
   const secret = Deno.env.get("PAYPAL_SECRET");
+
+  // DEBUG: log credential info (first 8 chars + length) so we can diagnose
+  console.log(`[PayPal Debug] API URL: ${PAYPAL_API}`);
+  console.log(`[PayPal Debug] Client ID present: ${!!clientId}, prefix: ${clientId?.slice(0, 8)}, length: ${clientId?.length}`);
+  console.log(`[PayPal Debug] Secret present: ${!!secret}, prefix: ${secret?.slice(0, 8)}, length: ${secret?.length}`);
+
   if (!clientId || !secret) throw new Error("PayPal credentials not configured");
 
+  const authString = btoa(`${clientId}:${secret}`);
   const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
     method: "POST",
     headers: {
-      Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
+      Authorization: `Basic ${authString}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: "grant_type=client_credentials",
