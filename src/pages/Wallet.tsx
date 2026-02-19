@@ -214,8 +214,8 @@ const Wallet = () => {
             <CardContent className="p-4 flex items-start gap-3">
               <Receipt className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-foreground text-sm">5% + 5% Fee Split</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Buyers 5% checkout, sellers 5% payout.</p>
+                <p className="font-semibold text-foreground text-sm">Transparent Fees</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Buyers: 5% platform + PayPal processing. Sellers: 5% payout fee. PayPal withdrawal: +2% (max €1).</p>
               </div>
             </CardContent>
           </Card>
