@@ -62,9 +62,15 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
     setCryptoAddress("");
   };
 
+  const CRYPTO_MIN = 10;
+
   const handleSubmit = async () => {
     if (isNaN(numAmount) || numAmount <= 0) {
       toast({ title: "Amount must be greater than 0", variant: "destructive" });
+      return;
+    }
+    if (method === "crypto" && numAmount < CRYPTO_MIN) {
+      toast({ title: `Minimum crypto withdrawal is €${CRYPTO_MIN}.00`, variant: "destructive" });
       return;
     }
     if (numAmount > balance) {
@@ -156,11 +162,11 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
           {/* Amount */}
           <div className="space-y-2">
             <Label>Amount (€)</Label>
-            <div className="flex gap-2">
+          <div className="flex gap-2">
               <Input
                 type="number"
                 step="0.01"
-                min="0.01"
+                min={method === "crypto" ? "10" : "0.01"}
                 max={balance}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -177,6 +183,9 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                 Max
               </Button>
             </div>
+            {method === "crypto" && (
+              <p className="text-xs text-muted-foreground">Minimum crypto withdrawal: €10.00</p>
+            )}
             {numAmount > 0 && (
               <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1.5 text-xs">
                 <div className="flex justify-between text-muted-foreground">
