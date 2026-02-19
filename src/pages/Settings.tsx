@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import TimezoneSelect from "@/components/settings/TimezoneSelect";
 import PortfolioSection from "@/components/experts/PortfolioSection";
 import {
-  User, Bell, Shield, CreditCard, Loader2, Save, Camera, Clock, Tag, X,
+  User, Bell, Shield, Loader2, Save, Camera, Clock, Tag, X,
   ChevronDown, ChevronUp, Wifi, WifiOff, Image,
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
@@ -321,7 +321,7 @@ const Settings = () => {
             )}
             <TabsTrigger value="notifications" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Bell className="h-4 w-4" /> Notifications</TabsTrigger>
             <TabsTrigger value="security" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Shield className="h-4 w-4" /> Security</TabsTrigger>
-            <TabsTrigger value="billing" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><CreditCard className="h-4 w-4" /> Billing</TabsTrigger>
+            
           </TabsList>
 
           <TabsContent value="profile">
@@ -444,26 +444,6 @@ const Settings = () => {
                   <p className="text-sm text-muted-foreground mb-4">Once deleted, there's no going back</p>
                   <Button variant="destructive">Delete Account</Button>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="billing">
-            <Card>
-              <CardHeader><CardTitle>Billing & Payments</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-accent/30">
-                  <h3 className="font-medium text-foreground mb-2">Payment Method</h3>
-                  <p className="text-sm text-muted-foreground mb-4">No payment method on file</p>
-                  <Button variant="outline" className="gap-2"><CreditCard className="h-4 w-4" /> Add Payment Method</Button>
-                </div>
-                {isMentor && (
-                  <div className="p-4 rounded-lg bg-accent/30">
-                    <h3 className="font-medium text-foreground mb-2">Payout Settings</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Set up Stripe Connect to receive payouts</p>
-                    <Button variant="outline">Connect Stripe</Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>
