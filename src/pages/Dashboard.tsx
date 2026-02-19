@@ -39,8 +39,11 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const fetchData = async (userId: string, retryCount = 0) => {
+  const fetchData = async (userId: string) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/auth"); return; }
+
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", userId),
@@ -51,35 +54,31 @@ const Dashboard = () => {
       let resolvedProfile = profileRes.data;
       let userRoles = rolesRes.data || [];
 
-      // If no profile/roles yet (trigger may be delayed for brand-new accounts), retry up to 3 times
-      if (!resolvedProfile || userRoles.length === 0) {
-        if (retryCount < 3) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchData(userId, retryCount + 1);
-        }
-        // After retries, upsert a fallback profile so the page can render
-        if (!resolvedProfile) {
-          const { data: { session } } = await supabase.auth.getSession();
-          const displayName =
-            session?.user?.user_metadata?.display_name ||
-            session?.user?.user_metadata?.full_name ||
-            session?.user?.email?.split("@")[0] ||
-            "User";
-          const { data: upserted, error: upsertErr } = await supabase
-            .from("profiles")
-            .upsert({ id: userId, display_name: displayName }, { onConflict: "id" })
-            .select()
-            .single();
-          if (upsertErr) {
-            console.error("Profile upsert error:", upsertErr);
-          } else {
-            resolvedProfile = upserted;
-          }
-        }
-        // Fallback role insert if still missing
-        if (userRoles.length === 0) {
-          await supabase.from("user_roles").upsert({ user_id: userId, role: "mentee" }, { onConflict: "user_id,role" });
-          userRoles = [{ role: "mentee" }];
+      // Ensure profile exists (fallback for accounts created before trigger was set up)
+      if (!resolvedProfile) {
+        const displayName =
+          session.user?.user_metadata?.display_name ||
+          session.user?.user_metadata?.full_name ||
+          session.user?.email?.split("@")[0] ||
+          "User";
+        const { data: upserted } = await supabase
+          .from("profiles")
+          .upsert({ id: userId, display_name: displayName }, { onConflict: "id" })
+          .select()
+          .single();
+        resolvedProfile = upserted;
+      }
+
+      // Ensure role exists (fallback for accounts created before trigger was set up)
+      if (userRoles.length === 0) {
+        const { error: roleErr } = await supabase
+          .from("user_roles")
+          .insert({ user_id: userId, role: "mentee" });
+        if (!roleErr) userRoles = [{ role: "mentee" }];
+        // If insert errored it likely already exists — re-fetch
+        if (roleErr) {
+          const { data: refetched } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+          userRoles = refetched || [];
         }
       }
 
