@@ -395,42 +395,92 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
       {/* ── Job Preview Dialog ── */}
       <Dialog open={!!previewJob} onOpenChange={() => setPreviewJob(null)}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border w-[calc(100vw-32px)] max-w-lg mx-auto rounded-xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base pr-8">
-              <FileText className="h-4 w-4 text-primary shrink-0" />
-              <span className="line-clamp-2">{previewJob?.title}</span>
-            </DialogTitle>
-            <DialogDescription className="flex items-center gap-2 flex-wrap pt-1">
-              <Badge variant="secondary" className="text-xs">{previewJob?.category}{previewJob?.subcategory ? `: ${previewJob.subcategory}` : ""}</Badge>
-              <span className="font-semibold text-foreground">€{previewJob?.budget_max}</span>
-              <span className="flex items-center gap-1 text-xs"><Clock className="h-3 w-3" /> {formatDeliveryTime(previewJob?.deadline_minutes || 0)}</span>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-2">
-            <p className="text-xs font-medium text-muted-foreground mb-1.5">Description</p>
-            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap max-h-40 overflow-y-auto">
-              {previewJob?.description || "No description provided."}
-            </p>
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border w-[calc(100vw-32px)] max-w-lg mx-auto rounded-xl overflow-hidden p-0">
+          {/* Header band */}
+          <div className="px-5 pt-5 pb-4 border-b border-border">
+            <div className="flex items-start gap-3 pr-7">
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-semibold text-foreground text-base leading-snug">{previewJob?.title}</h2>
+                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                  {(() => {
+                    const parts = (previewJob?.category || "").split(":");
+                    const broad = parts[0]?.trim();
+                    const sub = parts[1]?.trim();
+                    return (
+                      <>
+                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">{broad}</Badge>
+                        {sub && <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-primary/25 text-primary/80">{sub}</Badge>}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
           </div>
-          <DialogFooter className="flex-row gap-2">
-            <Button variant="ghost" onClick={() => setPreviewJob(null)} className="flex-1">Dismiss</Button>
+
+          {/* Body */}
+          <div className="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+            {/* Key specs grid */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-lg border border-border bg-background/40 p-3 space-y-0.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Budget</p>
+                <p className="text-lg font-bold text-primary">{previewJob ? `€${previewJob.budget_max}` : "—"}</p>
+                <p className="text-[10px] text-muted-foreground">Maximum offered</p>
+              </div>
+              <div className="rounded-lg border border-border bg-background/40 p-3 space-y-0.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Max Delivery</p>
+                <p className="text-lg font-bold text-foreground">{previewJob ? formatDeliveryTime(previewJob.deadline_minutes) : "—"}</p>
+                <p className="text-[10px] text-muted-foreground">Buyer's deadline</p>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Description</p>
+              <div className="rounded-lg border border-border bg-background/40 p-3">
+                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                  {previewJob?.description || <span className="text-muted-foreground italic">No description provided.</span>}
+                </p>
+              </div>
+            </div>
+
+            {/* Meta */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Posted {previewJob ? timeAgo(previewJob.created_at) : "—"} ago
+              </span>
+              {previewJob?.expires_at && (
+                <span className="flex items-center gap-1 text-chart-4">
+                  <Clock className="h-3 w-3" />
+                  Expires {timeAgo(previewJob.expires_at)}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Footer actions */}
+          <div className="flex gap-2 px-5 py-4 border-t border-border">
+            <Button variant="ghost" onClick={() => setPreviewJob(null)} className="flex-1 border border-border">Dismiss</Button>
             {previewJob && !quotedJobIds.has(previewJob.id) && (
-              <Button className="gap-1.5 flex-1" onClick={() => {
+              <Button className="gap-1.5 flex-1 shadow-glow" onClick={() => {
                 const job = previewJob;
                 setPreviewJob(null);
                 setQuoteDialog(job);
                 setQuotePrice(String(Math.round(job.budget_max * 0.8)));
               }}>
-                <Send className="h-3.5 w-3.5" /> Quote
+                <Send className="h-3.5 w-3.5" /> Send Quote
               </Button>
             )}
             {previewJob && quotedJobIds.has(previewJob.id) && (
               <Button variant="outline" className="gap-1.5 flex-1 border-primary/30 text-primary" onClick={() => { navigate(`/request/${previewJob.id}`); setPreviewJob(null); }}>
-                <MessageSquare className="h-3.5 w-3.5" /> Chat
+                <MessageSquare className="h-3.5 w-3.5" /> Open Chat
               </Button>
             )}
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
