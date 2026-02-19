@@ -25,18 +25,17 @@ const CRYPTO_OPTIONS = [
 ];
 
 // Fee constants (must match withdraw edge function)
-const PLATFORM_FEE_RATE = 0.05;          // 5% platform fee on all withdrawals
+// Platform fee (5%) is taken at order completion — NOT at withdrawal
 const PAYPAL_PAYOUT_RATE = 0.02;         // PayPal Payouts: 2% of amount
 const PAYPAL_PAYOUT_CAP = 1.00;          // PayPal Payouts: capped at €1.00
 
 function calcFees(grossAmount: number, method: "paypal" | "crypto") {
-  const platformFee = Math.round(grossAmount * PLATFORM_FEE_RATE * 100) / 100;
   const paypalFee = method === "paypal"
     ? Math.min(Math.round(grossAmount * PAYPAL_PAYOUT_RATE * 100) / 100, PAYPAL_PAYOUT_CAP)
     : 0;
-  const totalFee = Math.round((platformFee + paypalFee) * 100) / 100;
+  const totalFee = paypalFee;
   const netAmount = Math.round((grossAmount - totalFee) * 100) / 100;
-  return { platformFee, paypalFee, totalFee, netAmount };
+  return { platformFee: 0, paypalFee, totalFee, netAmount };
 }
 
 const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: WithdrawalDialogProps) => {
@@ -184,20 +183,18 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                   <span>Withdrawal amount</span>
                   <span>{format(numAmount)}</span>
                 </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Platform fee (5%)</span>
-                  <span className="text-destructive">−{format(platformFee)}</span>
-                </div>
                 {method === "paypal" && paypalFee > 0 && (
                   <div className="flex justify-between text-muted-foreground">
                     <span>PayPal payout fee (2%, max €1.00)</span>
                     <span className="text-destructive">−{format(paypalFee)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-muted-foreground border-t border-border/40 pt-1">
-                  <span>Total fees</span>
-                  <span className="text-destructive">−{format(totalFee)}</span>
-                </div>
+                {method === "crypto" && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>Network fee</span>
+                    <span className="text-muted-foreground">Covered by network</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-semibold text-foreground border-t border-border/40 pt-1 mt-1">
                   <span>You receive</span>
                   <span className="text-primary">{format(receiveAmount)}</span>

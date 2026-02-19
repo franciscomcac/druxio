@@ -6,16 +6,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Platform withdrawal fee: 5% on all methods
-const PLATFORM_FEE_RATE = 0.05;
-
+// Platform fee (5%) is deducted at order completion — NOT at withdrawal
 // PayPal Payouts fee: 2% of amount, capped at €1.00 (EUR standard)
 const PAYPAL_PAYOUT_RATE = 0.02;
 const PAYPAL_PAYOUT_CAP = 1.00;
 
 function calcWithdrawalFees(grossAmount: number, method: string) {
-  const platformFee = Math.round(grossAmount * PLATFORM_FEE_RATE * 100) / 100;
-
   let paypalPayoutFee = 0;
   if (method === "paypal") {
     paypalPayoutFee = Math.min(
@@ -24,10 +20,10 @@ function calcWithdrawalFees(grossAmount: number, method: string) {
     );
   }
 
-  const totalFee = Math.round((platformFee + paypalPayoutFee) * 100) / 100;
+  const totalFee = paypalPayoutFee;
   const netAmount = Math.round((grossAmount - totalFee) * 100) / 100;
 
-  return { platformFee, paypalPayoutFee, totalFee, netAmount };
+  return { platformFee: 0, paypalPayoutFee, totalFee, netAmount };
 }
 
 Deno.serve(async (req) => {
@@ -115,9 +111,11 @@ Deno.serve(async (req) => {
     // Build description
     let description: string;
     if (method === "paypal") {
-      description = `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — platform fee €${platformFee.toFixed(2)} + PayPal fee €${paypalPayoutFee.toFixed(2)}`;
+      description = paypalPayoutFee > 0
+        ? `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — PayPal fee €${paypalPayoutFee.toFixed(2)}`
+        : `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email})`;
     } else {
-      description = `Withdrawal to ${crypto_token} (${crypto_network}) — platform fee €${platformFee.toFixed(2)}`;
+      description = `Withdrawal to ${crypto_token} (${crypto_network})`;
     }
 
     // Create transaction record (pending)
