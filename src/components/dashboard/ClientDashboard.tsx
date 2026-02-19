@@ -1,8 +1,8 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import RankBadge from "@/components/RankBadge";
 import {
@@ -44,10 +44,31 @@ const statusColor: Record<string, string> = {
 const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  // Map of job_id -> accepted quote price
+  const [quotePrices, setQuotePrices] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const jobsWithQuote = myJobs.filter(j => j.status === "accepted" || j.status === "completed" || j.status === "disputed");
+    if (jobsWithQuote.length === 0) return;
+
+    const fetchPrices = async () => {
+      const results = await Promise.all(
+        jobsWithQuote.map(job =>
+          supabase.from("quotes").select("price").eq("job_id", job.id).eq("status", "accepted").maybeSingle()
+        )
+      );
+      const map: Record<string, number> = {};
+      results.forEach((res, i) => {
+        if (res.data?.price != null) map[jobsWithQuote[i].id] = Number(res.data.price);
+      });
+      setQuotePrices(map);
+    };
+    fetchPrices();
+  }, [myJobs]);
 
   const statCards = [
     { icon: <DollarSign className="h-5 w-5" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Wallet" },
-    { icon: <Target className="h-5 w-5" />, value: myJobs.filter(j => j.status === "complete").length, label: "Completed" },
+    { icon: <Target className="h-5 w-5" />, value: myJobs.filter(j => j.status === "completed").length, label: "Completed" },
     { icon: <Zap className="h-5 w-5" />, value: myJobs.filter(j => j.status === "open").length, label: "Active" },
     { icon: <Star className="h-5 w-5" />, value: myJobs.length, label: "Total" },
   ];
@@ -106,7 +127,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
                       style={{ animationDelay: `${(i + 3) * 50}ms` }}
                       onClick={() => {
                         if (job.status === "open") navigate(`/request/${job.id}`);
-                        else if (job.status === "accepted") navigate(`/order/${job.id}`);
+                        else if (job.status === "accepted" || job.status === "completed" || job.status === "disputed") navigate(`/order/${job.id}`);
                       }}
                     >
                       {/* Status dot */}
@@ -117,7 +138,9 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <span className="text-xs text-primary/80 font-medium">{job.category}</span>
                           <span className="text-xs text-muted-foreground">·</span>
-                          <span className="text-xs font-semibold text-foreground">€{job.budget_max}</span>
+                          <span className="text-xs font-semibold text-foreground">
+                            {quotePrices[job.id] != null ? `€${quotePrices[job.id]}` : `up to €${job.budget_max}`}
+                          </span>
                           <span className="text-xs text-muted-foreground hidden sm:inline">· {timeAgo(job.created_at)}</span>
                         </div>
                       </div>
