@@ -418,9 +418,42 @@ const Inbox = () => {
     const isMe = msg.sender_id === userId;
     const isOfferMsg = msg.content.startsWith("📋 New offer:");
     const isJobMsg = msg.content.startsWith("📋 Order Request");
-    const isAutoCard = isOfferMsg || isJobMsg;
+    const isVideoCall = msg.content.startsWith("📹 Video Call") || msg.content.includes("meet.google.com/");
+    const isImageOnly = ["📎 Image", "📷 Image"].includes(msg.content.trim());
+    const isAutoCard = isOfferMsg || isJobMsg || isVideoCall;
 
+    // ── Styled card messages ──
     if (isAutoCard) {
+      if (isVideoCall) {
+        const url = msg.content.match(/https?:\/\/[^\s]+/)?.[0] ?? null;
+        return (
+          <div key={msg.id} className="flex justify-center my-3">
+            <div className="rounded-xl px-4 py-3 text-sm border bg-primary/10 border-primary/30 max-w-xs w-full">
+              <p className="font-semibold text-[10px] mb-2 uppercase tracking-widest text-primary">
+                📹 Video Call
+              </p>
+              <p className="text-foreground text-xs mb-3 leading-relaxed">
+                A video call session has been scheduled.
+              </p>
+              {url && (
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-colors",
+                    "bg-primary text-primary-foreground hover:bg-primary/90"
+                  )}
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Join Call
+                </a>
+              )}
+            </div>
+          </div>
+        );
+      }
+
       const lines = msg.content.split("\n");
       return (
         <div key={msg.id} className="flex justify-center my-3">
@@ -444,6 +477,7 @@ const Inbox = () => {
       );
     }
 
+    // ── Regular bubble ──
     return (
       <div key={msg.id} className={cn("flex gap-2 mb-3", isMe ? "justify-end" : "justify-start")}>
         {!isMe && (
@@ -471,7 +505,8 @@ const Inbox = () => {
               ))}
             </div>
           )}
-          {msg.content && msg.content !== "📎 Image" && (
+          {/* Only show text bubble if there's real text content (not a placeholder) */}
+          {msg.content && !isImageOnly && (
             <div className={cn(
               "rounded-2xl px-3 py-2 text-sm leading-relaxed",
               isMe
