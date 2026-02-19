@@ -736,27 +736,38 @@ const Order = () => {
 
                       if (isMeetMsg && meetUrl) {
                         return (
-                          <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                            <div className="max-w-[75%] rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                              <div className="flex items-center gap-2 px-4 py-2 bg-chart-2/10 border-b border-border">
-                                <div className="h-7 w-7 rounded-full bg-chart-2/20 flex items-center justify-center">
-                                  <Video className="h-3.5 w-3.5 text-chart-2" />
-                                </div>
-                                <span className="text-sm font-semibold text-foreground">Video Call Scheduled</span>
+                          <div key={msg.id} className="flex justify-center my-3">
+                            <div className="w-full max-w-sm">
+                              {/* system label */}
+                              <div className="flex items-center gap-2 mb-2 justify-center">
+                                <div className="h-px flex-1 bg-border/60" />
+                                <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">System</span>
+                                <div className="h-px flex-1 bg-border/60" />
                               </div>
-                              <div className="px-4 py-3 space-y-3">
-                                <p className="text-xs text-muted-foreground truncate">{meetUrl.replace(/^https?:\/\//, "")}</p>
-                                <a
-                                  href={meetUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center justify-center gap-2 w-full rounded-lg bg-chart-2 text-white text-sm font-medium px-4 py-2 hover:bg-chart-2/90 transition-colors"
-                                >
-                                  Join Call <ExternalLink className="h-3.5 w-3.5" />
-                                </a>
-                                <p className="text-[10px] text-muted-foreground text-right">
-                                  {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                                </p>
+                              <div className="rounded-xl border border-primary/25 bg-primary/5 overflow-hidden">
+                                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-primary/15 bg-primary/8">
+                                  <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                                    <Video className="h-4 w-4 text-primary" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-foreground">Video Call Scheduled</p>
+                                    <p className="text-[10px] text-muted-foreground">Google Meet</p>
+                                  </div>
+                                </div>
+                                <div className="px-4 py-3 space-y-2.5">
+                                  <p className="text-xs text-muted-foreground font-mono truncate">{meetUrl.replace(/^https?:\/\//, "")}</p>
+                                  <a
+                                    href={meetUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 hover:opacity-90 transition-opacity"
+                                  >
+                                    Join Call <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                  <p className="text-[10px] text-muted-foreground/60 text-center">
+                                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -794,15 +805,29 @@ const Order = () => {
                     })
                   )}
                   {isDisputed && (
-                    <div className="flex justify-center my-4">
-                      <div className="max-w-[85%] rounded-2xl px-4 py-3 text-sm bg-destructive/10 border border-destructive/20 text-center">
-                        <div className="flex items-center justify-center gap-2 mb-1">
-                          <ShieldCheck className="h-4 w-4 text-destructive" />
-                          <span className="font-semibold text-destructive">Admin Notice</span>
+                    <div className="flex justify-center my-3">
+                      <div className="w-full max-w-sm">
+                        <div className="flex items-center gap-2 mb-2 justify-center">
+                          <div className="h-px flex-1 bg-border/60" />
+                          <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">System</span>
+                          <div className="h-px flex-1 bg-border/60" />
                         </div>
-                        <p className="text-muted-foreground text-xs">
-                          A dispute has been raised. Our admin team will review the case.
-                        </p>
+                        <div className="rounded-xl border border-destructive/30 bg-destructive/5 overflow-hidden">
+                          <div className="flex items-center gap-2.5 px-4 py-3 border-b border-destructive/20 bg-destructive/8">
+                            <div className="h-8 w-8 rounded-lg bg-destructive/15 flex items-center justify-center shrink-0">
+                              <ShieldCheck className="h-4 w-4 text-destructive" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-destructive">Dispute Raised</p>
+                              <p className="text-[10px] text-muted-foreground">Under admin review</p>
+                            </div>
+                          </div>
+                          <div className="px-4 py-3">
+                            <p className="text-xs text-muted-foreground text-center">
+                              Our team will review this case and reach out to both parties within 24–48 hours.
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
