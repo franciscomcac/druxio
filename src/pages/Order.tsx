@@ -190,6 +190,11 @@ const Order = () => {
 
   useEffect(() => {
     if (!quote || !job) return;
+    // Stop timer once the order is delivered, completed, or disputed
+    if (job.escrow_status === "delivered" || job.escrow_status === "completed" || job.status === "completed" || job.status === "disputed" || job.status === "cancelled") {
+      setTimeLeft(null);
+      return;
+    }
     const acceptedAt = new Date(quote.created_at);
     const deadline = addMinutes(acceptedAt, quote.estimated_minutes);
     const tick = () => {
@@ -632,8 +637,8 @@ const Order = () => {
               </CardContent>
             </Card>
 
-            {/* Delivery countdown */}
-            {!isCompleted && (
+            {/* Delivery countdown — hide once delivered/completed */}
+            {!isCompleted && paymentStatus === "paid" && (
               <Card>
                 <CardContent className="p-5">
                   <div className="flex items-center gap-3 mb-3">
