@@ -1,491 +1,834 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  MessageSquare, 
-  Clock, 
-  CheckCircle2, 
-  XCircle, 
-  Play,
-  User,
-  Calendar,
-  ArrowRight,
+import {
+  Search,
+  Send,
+  ExternalLink,
+  ChevronLeft,
   Inbox as InboxIcon,
-  AlertCircle,
-  ShoppingCart,
-  Store,
-  Star,
+  ShoppingBag,
+  MessageSquare,
+  Clock,
+  CheckCircle2,
+  Package,
+  Loader2,
+  ImageIcon,
+  X,
+  ZoomIn,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
+import { cn } from "@/lib/utils";
 
-interface Session {
-  id: string;
-  status: string;
-  created_at: string;
-  start_time: string | null;
-  issue_description: string | null;
-  categories: string[] | null;
-  session_type: string | null;
-  mentee_id: string;
-  mentor_id: string;
-  price: number | null;
-  mentee_profile?: {
-    display_name: string | null;
-    avatar_url: string | null;
-    rating_avg: number | null;
-  };
-  mentor_profile?: {
-    display_name: string | null;
-    avatar_url: string | null;
-    rating_avg: number | null;
-  };
-  last_message?: {
-    content: string;
-    created_at: string;
-  };
-  unread_count?: number;
-  linked_job_id?: string | null; // job linked via quotes for order navigation
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface ConversationItem {
+  sessionId: string;
+  jobId: string | null;
+  jobTitle: string;
+  jobCategory: string;
+  jobStatus: string; // open | accepted | completed | delivered
+  otherUserId: string;
+  otherUserName: string;
+  otherUserAvatar: string | null;
+  otherUserOnline: boolean;
+  iAmSeller: boolean;
+  convType: "order" | "quote" | "delivered";
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  unreadCount: number;
+  myPrice?: number | null;
 }
 
-const statusConfig: Record<string, { label: string; icon: React.ReactNode; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  pending: { label: "Pending", icon: <Clock className="h-3 w-3" />, variant: "secondary" },
-  accepted: { label: "Accepted", icon: <CheckCircle2 className="h-3 w-3" />, variant: "default" },
-  live: { label: "Live", icon: <Play className="h-3 w-3" />, variant: "default" },
-  completed: { label: "Completed", icon: <CheckCircle2 className="h-3 w-3" />, variant: "outline" },
-  cancelled: { label: "Cancelled", icon: <XCircle className="h-3 w-3" />, variant: "destructive" },
+interface Message {
+  id: string;
+  content: string;
+  sender_id: string;
+  created_at: string;
+  image_urls: string[] | null;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const TYPE_CONFIG = {
+  order: {
+    label: "Order",
+    badgeClass: "bg-green-500/15 text-green-500 border-green-500/30",
+    icon: <ShoppingBag className="h-3 w-3" />,
+  },
+  quote: {
+    label: "Quote",
+    badgeClass: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
+    icon: <MessageSquare className="h-3 w-3" />,
+  },
+  delivered: {
+    label: "Delivered",
+    badgeClass: "bg-orange-500/15 text-orange-500 border-orange-500/30",
+    icon: <Package className="h-3 w-3" />,
+  },
 };
+
+function timeLabel(iso: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const now = new Date();
+  const diffHours = (now.getTime() - d.getTime()) / 3600000;
+  if (diffHours < 24) return format(d, "HH:mm");
+  if (diffHours < 48 * 24) return formatDistanceToNow(d, { addSuffix: true });
+  return format(d, "MMM d");
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const Inbox = () => {
   const navigate = useNavigate();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
+
   const [userId, setUserId] = useState<string | null>(null);
-  const [isMentor, setIsMentor] = useState(false);
-  const [activeTab, setActiveTab] = useState("active");
-  // roleTab is set after we know if the user is a mentor
-  const [roleTab, setRoleTab] = useState<"selling" | "buying" | null>(null);
+  const [conversations, setConversations] = useState<ConversationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [activeConv, setActiveConv] = useState<ConversationItem | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [msgLoading, setMsgLoading] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [showChat, setShowChat] = useState(false); // mobile: show chat panel
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const fetchUserAndSessions = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    setUserId(user.id);
+  // ── Fetch all conversations ────────────────────────────────────────────────
 
-    // Check if user is a mentor
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id);
-    
-    const hasMentorRole = roles?.some(r => r.role === "mentor") || false;
-    setIsMentor(hasMentorRole);
-    setRoleTab(prev => prev ?? (hasMentorRole ? "selling" : "buying"));
-
-    // Fetch sessions
-    const { data: sessionsData, error } = await supabase
+  const fetchConversations = useCallback(async (uid: string) => {
+    // 1. Fetch all sessions the user is part of
+    const { data: sessions } = await supabase
       .from("sessions")
-      .select("*")
-      .or(`mentee_id.eq.${user.id},mentor_id.eq.${user.id}`)
-      .order("created_at", { ascending: false });
+      .select("id, mentor_id, mentee_id, status, categories, issue_description, created_at")
+      .or(`mentee_id.eq.${uid},mentor_id.eq.${uid}`);
 
-    if (error) {
-      console.error("Error fetching sessions:", error);
+    if (!sessions || sessions.length === 0) {
+      setConversations([]);
       setLoading(false);
       return;
     }
 
-    // Only show sessions linked to paid/accepted orders
-    const { data: acceptedQuotes } = await supabase
-      .from("quotes")
-      .select("expert_id, job_id, status")
-      .eq("status", "accepted");
+    // 2. Gather all other user ids
+    const otherIds = [...new Set(sessions.map(s => s.mentor_id === uid ? s.mentee_id : s.mentor_id))];
 
-    const validPairs = new Set<string>();
-    const jobIdMap = new Map<string, string>();
-    if (acceptedQuotes) {
-      for (const q of acceptedQuotes) {
-        const { data: jobData } = await supabase
+    // 3. Fetch profiles in bulk
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name, avatar_url, is_online")
+      .in("id", otherIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
+    // 4. Fetch accepted quotes to find linked jobs (seller → buyer → job)
+    const { data: myQuotes } = await supabase
+      .from("quotes")
+      .select("id, job_id, expert_id, price, status")
+      .eq("expert_id", uid);
+
+    // 5. Fetch jobs: ones I bought OR ones I quoted on
+    const quotedJobIds = (myQuotes || []).map(q => q.job_id);
+    const { data: myBuyerJobs } = await supabase
+      .from("jobs")
+      .select("id, title, category, status, buyer_id, accepted_quote_id, delivered_at")
+      .eq("buyer_id", uid);
+
+    const { data: quotedJobs } = quotedJobIds.length
+      ? await supabase
           .from("jobs")
-          .select("id, buyer_id")
-          .eq("id", q.job_id)
-          .single();
-        if (jobData) {
-          const key = `${q.expert_id}-${jobData.buyer_id}`;
-          validPairs.add(key);
-          jobIdMap.set(key, jobData.id);
+          .select("id, title, category, status, buyer_id, accepted_quote_id, delivered_at")
+          .in("id", quotedJobIds)
+      : { data: [] };
+
+    const allJobs = [...(myBuyerJobs || []), ...(quotedJobs || [])];
+    const jobMap = new Map(allJobs.map(j => [j.id, j]));
+
+    // Build quote map: job_id → quote info (for sellers)
+    const quoteByJobId = new Map(
+      (myQuotes || []).map(q => [q.job_id, q])
+    );
+
+    // 6. For each session, find the linked job
+    //    - If I am seller (mentor): find a job where I quoted + buyer = mentee
+    //    - If I am buyer (mentee): find my job where seller = mentor
+
+    const convItems: ConversationItem[] = [];
+
+    for (const session of sessions) {
+      const iAmSeller = session.mentor_id === uid;
+      const otherId = iAmSeller ? session.mentee_id : session.mentor_id;
+      const otherProfile = profileMap.get(otherId);
+
+      let linkedJob: (typeof allJobs)[0] | undefined;
+      let myPrice: number | null = null;
+
+      if (iAmSeller) {
+        // Find a quoted job where buyer_id = mentee_id
+        linkedJob = allJobs.find(j =>
+          j.buyer_id === session.mentee_id &&
+          quoteByJobId.has(j.id)
+        );
+        if (linkedJob) {
+          myPrice = quoteByJobId.get(linkedJob.id)?.price ?? null;
         }
+      } else {
+        // Find my job where the mentor quoted
+        linkedJob = allJobs.find(j =>
+          j.buyer_id === uid &&
+          (myQuotes || []).some(q => q.job_id === j.id && q.expert_id === session.mentor_id)
+        );
+        // Or just any job I own linked to this session partner
+        if (!linkedJob) {
+          linkedJob = allJobs.find(j => j.buyer_id === uid);
+        }
+      }
+
+      // Determine conversation type
+      let convType: ConversationItem["convType"] = "quote";
+      if (linkedJob) {
+        if (linkedJob.delivered_at) convType = "delivered";
+        else if (["accepted", "in_progress", "completed"].includes(linkedJob.status)) convType = "order";
+        else convType = "quote";
+      }
+
+      // Last message + unread
+      const { data: lastMsgArr } = await supabase
+        .from("messages")
+        .select("content, created_at")
+        .eq("session_id", session.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      const { count: unreadCount } = await supabase
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("session_id", session.id)
+        .eq("is_read", false)
+        .neq("sender_id", uid);
+
+      const lastMsg = lastMsgArr?.[0] ?? null;
+
+      convItems.push({
+        sessionId: session.id,
+        jobId: linkedJob?.id ?? null,
+        jobTitle: linkedJob?.title ?? session.issue_description ?? session.categories?.[0] ?? "Conversation",
+        jobCategory: linkedJob?.category ?? session.categories?.[0] ?? "",
+        jobStatus: linkedJob?.status ?? "open",
+        otherUserId: otherId,
+        otherUserName: otherProfile?.display_name ?? (iAmSeller ? "Buyer" : "Expert"),
+        otherUserAvatar: otherProfile?.avatar_url ?? null,
+        otherUserOnline: otherProfile?.is_online ?? false,
+        iAmSeller,
+        convType,
+        lastMessage: lastMsg?.content ?? null,
+        lastMessageAt: lastMsg?.created_at ?? session.created_at,
+        unreadCount: unreadCount ?? 0,
+        myPrice,
+      });
+    }
+
+    // Sort: unread first, then by lastMessageAt desc
+    convItems.sort((a, b) => {
+      if (b.unreadCount !== a.unreadCount) return b.unreadCount - a.unreadCount;
+      const ta = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+      const tb = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+      return tb - ta;
+    });
+
+    setConversations(convItems);
+    setLoading(false);
+  }, []);
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { navigate("/auth"); return; }
+      setUserId(user.id);
+      fetchConversations(user.id);
+    });
+  }, [fetchConversations, navigate]);
+
+  // ── Global realtime: refresh sidebar on any message / session change ───────
+
+  useEffect(() => {
+    if (!userId) return;
+    const ch = supabase
+      .channel("inbox-global")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
+        const newMsg = payload.new as Message & { session_id: string };
+        // Update sidebar preview immediately without full refetch
+        setConversations(prev => prev.map(c => {
+          if (c.sessionId !== newMsg.session_id) return c;
+          return {
+            ...c,
+            lastMessage: newMsg.content,
+            lastMessageAt: newMsg.created_at,
+            unreadCount: newMsg.sender_id !== userId ? c.unreadCount + 1 : c.unreadCount,
+          };
+        }));
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "jobs" }, () => {
+        fetchConversations(userId);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [userId, fetchConversations]);
+
+  // ── Load messages for active conversation ──────────────────────────────────
+
+  const loadMessages = useCallback(async (conv: ConversationItem) => {
+    setMsgLoading(true);
+    setMessages([]);
+    const { data } = await supabase
+      .from("messages")
+      .select("id, content, sender_id, created_at, image_urls")
+      .eq("session_id", conv.sessionId)
+      .order("created_at", { ascending: true });
+    setMessages((data as Message[]) ?? []);
+    setMsgLoading(false);
+
+    // Mark unread as read
+    if (userId) {
+      await supabase
+        .from("messages")
+        .update({ is_read: true })
+        .eq("session_id", conv.sessionId)
+        .neq("sender_id", userId);
+      setConversations(prev => prev.map(c =>
+        c.sessionId === conv.sessionId ? { ...c, unreadCount: 0 } : c
+      ));
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    if (!activeConv) return;
+    loadMessages(activeConv);
+
+    // Per-conversation realtime
+    if (channelRef.current) supabase.removeChannel(channelRef.current);
+    const ch = supabase
+      .channel(`chat-${activeConv.sessionId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `session_id=eq.${activeConv.sessionId}` },
+        (payload) => {
+          const newMsg = payload.new as Message;
+          setMessages(prev => {
+            if (prev.find(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+          // Mark read immediately if from other user
+          if (newMsg.sender_id !== userId) {
+            supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id);
+          }
+        }
+      )
+      .subscribe();
+    channelRef.current = ch;
+    return () => { supabase.removeChannel(ch); };
+  }, [activeConv?.sessionId, loadMessages, userId]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // ── Select conversation ────────────────────────────────────────────────────
+
+  const selectConv = (conv: ConversationItem) => {
+    setActiveConv(conv);
+    setShowChat(true);
+    setInputText("");
+    setImageFiles([]);
+    setImagePreviewUrls([]);
+  };
+
+  // ── Send message ───────────────────────────────────────────────────────────
+
+  const sendMessage = async () => {
+    if (!activeConv || !userId || (!inputText.trim() && imageFiles.length === 0)) return;
+    setSending(true);
+
+    let uploadedUrls: string[] = [];
+    for (const file of imageFiles) {
+      const ext = file.name.split(".").pop();
+      const path = `${activeConv.sessionId}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("chat-images").upload(path, file);
+      if (!error) {
+        const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(path);
+        uploadedUrls.push(urlData.publicUrl);
       }
     }
 
-    const paidSessions = (sessionsData || []).filter(s => {
-      const key = `${s.mentor_id}-${s.mentee_id}`;
-      return validPairs.has(key);
+    await supabase.from("messages").insert({
+      session_id: activeConv.sessionId,
+      sender_id: userId,
+      content: inputText.trim() || (uploadedUrls.length > 0 ? "📎 Image" : ""),
+      image_urls: uploadedUrls,
     });
 
-    const enrichedSessions = await Promise.all(
-      paidSessions.map(async (session) => {
-        const [menteeProfile, mentorProfile, lastMessage, unreadMessages] = await Promise.all([
-          supabase.from("profiles").select("display_name, avatar_url, rating_avg").eq("id", session.mentee_id).single(),
-          supabase.from("profiles").select("display_name, avatar_url, rating_avg").eq("id", session.mentor_id).single(),
-          supabase.from("messages").select("content, created_at").eq("session_id", session.id).order("created_at", { ascending: false }).limit(1).single(),
-          supabase.from("messages").select("id", { count: "exact" }).eq("session_id", session.id).eq("is_read", false).neq("sender_id", user.id),
-        ]);
-
-        const pairKey = `${session.mentor_id}-${session.mentee_id}`;
-        const linkedJobId = jobIdMap.get(pairKey) || null;
-
-        return {
-          ...session,
-          mentee_profile: menteeProfile.data,
-          mentor_profile: mentorProfile.data,
-          last_message: lastMessage.data,
-          unread_count: unreadMessages.count || 0,
-          linked_job_id: linkedJobId,
-        };
-      })
-    );
-
-    setSessions(enrichedSessions);
-    setLoading(false);
+    setInputText("");
+    setImageFiles([]);
+    setImagePreviewUrls([]);
+    setSending(false);
   };
 
-  useEffect(() => {
-    fetchUserAndSessions();
-  }, [navigate]);
-
-  // Realtime: refetch on session or quote changes
-  useEffect(() => {
-    if (!userId) return;
-    const channel = supabase
-      .channel("inbox-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "sessions" }, () => {
-        fetchUserAndSessions();
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
-        fetchUserAndSessions();
-      })
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => {
-        fetchUserAndSessions();
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [userId]);
-
-  const filterSessions = (status: string) => {
-    if (status === "active") {
-      return sessions.filter(s => ["pending", "accepted", "live"].includes(s.status || ""));
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
-    if (status === "completed") {
-      return sessions.filter(s => s.status === "completed");
-    }
-    return sessions;
   };
 
-  const splitByRole = (filtered: Session[]) => {
-    const selling = filtered.filter(s => s.mentor_id === userId);
-    const buying = filtered.filter(s => s.mentee_id === userId);
-    return { selling, buying };
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setImageFiles(prev => [...prev, ...files]);
+    files.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = ev => setImagePreviewUrls(prev => [...prev, ev.target?.result as string]);
+      reader.readAsDataURL(f);
+    });
   };
 
-  const getOtherParticipant = (session: Session) => {
-    const iAmMentor = session.mentor_id === userId;
-    if (iAmMentor) {
-      return {
-        name: session.mentee_profile?.display_name || "Buyer",
-        avatar: session.mentee_profile?.avatar_url,
-        role: "Buyer",
-        rating: session.mentee_profile?.rating_avg,
-      };
-    }
-    return {
-      name: session.mentor_profile?.display_name || "Seller",
-      avatar: session.mentor_profile?.avatar_url,
-      role: "Seller",
-      rating: session.mentor_profile?.rating_avg,
-    };
+  const removeImage = (i: number) => {
+    setImageFiles(prev => prev.filter((_, idx) => idx !== i));
+    setImagePreviewUrls(prev => prev.filter((_, idx) => idx !== i));
   };
 
-  const SessionCard = ({ session }: { session: Session }) => {
-    const other = getOtherParticipant(session);
-    const status = statusConfig[session.status || "pending"];
+  // ── Message bubble renderer ────────────────────────────────────────────────
 
-    return (
-      <Card 
-        className="group cursor-pointer transition-all hover:shadow-md hover:border-primary/30 bg-card/50 backdrop-blur-sm"
-        onClick={() => session.linked_job_id ? navigate(`/order/${session.linked_job_id}`, { state: { from: "/inbox" } }) : navigate(`/session/${session.id}`)}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <div className="relative">
-              <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
-                <AvatarImage src={other.avatar || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary">
-                  {other.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              {session.status === "live" && (
-                <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-background" />
-              )}
-            </div>
+  const renderBubble = (msg: Message) => {
+    const isMe = msg.sender_id === userId;
+    const isOfferMsg = msg.content.startsWith("📋 New offer:");
+    const isJobMsg = msg.content.startsWith("📋 Order Request");
+    const isAutoCard = isOfferMsg || isJobMsg;
 
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-foreground truncate">{other.name}</h3>
-                  <span className="text-xs text-muted-foreground">• {other.role}</span>
-                  {other.rating ? (
-                    <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                      <Star className="h-3 w-3 fill-primary text-primary" />
-                      {other.rating.toFixed(1)}
-                    </span>
-                  ) : null}
-                </div>
-                <Badge variant={status.variant} className="gap-1 shrink-0">
-                  {status.icon}
-                  {status.label}
-                </Badge>
-              </div>
-
-              {/* Issue description */}
-              {session.issue_description && (
-                <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
-                  {session.issue_description}
-                </p>
-              )}
-
-              {/* Categories */}
-              {session.categories && session.categories.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {session.categories.slice(0, 3).map((cat) => (
-                    <Badge key={cat} variant="outline" className="text-xs font-normal">
-                      {cat}
-                    </Badge>
-                  ))}
-                  {session.categories.length > 3 && (
-                    <Badge variant="outline" className="text-xs font-normal">
-                      +{session.categories.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              )}
-
-              {/* Last message & time */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center gap-1 truncate">
-                  {session.last_message ? (
-                    <>
-                      <MessageSquare className="h-3 w-3" />
-                      <span className="truncate">{session.last_message.content}</span>
-                    </>
-                  ) : (
-                    <span className="italic">No messages yet</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {session.unread_count && session.unread_count > 0 ? (
-                    <span className="flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                      {session.unread_count}
-                    </span>
-                  ) : null}
-                  <span>{formatDistanceToNow(new Date(session.created_at), { addSuffix: true })}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Arrow */}
-            <ArrowRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-center" />
+    if (isAutoCard) {
+      const lines = msg.content.split("\n");
+      return (
+        <div key={msg.id} className="flex justify-center my-3">
+          <div className={cn(
+            "rounded-xl px-4 py-3 text-sm border max-w-xs w-full",
+            isOfferMsg
+              ? "bg-primary/10 border-primary/30"
+              : "bg-muted/60 border-border"
+          )}>
+            <p className={cn(
+              "font-semibold text-[10px] mb-2 uppercase tracking-widest",
+              isOfferMsg ? "text-primary" : "text-muted-foreground"
+            )}>
+              {isOfferMsg ? "💼 Offer" : "📄 Order Details"}
+            </p>
+            {lines.map((line, i) => (
+              <p key={i} className="text-foreground text-xs leading-relaxed">{line}</p>
+            ))}
           </div>
-        </CardContent>
-      </Card>
-    );
-  };
+        </div>
+      );
+    }
 
-  const EmptyState = ({ type }: { type: string }) => (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
-        <InboxIcon className="h-8 w-8 text-muted-foreground" />
-      </div>
-      <h3 className="font-semibold text-lg mb-1">No {type} sessions</h3>
-      <p className="text-muted-foreground text-sm max-w-sm">
-        {isMentor 
-          ? "When mentees request your help, their sessions will appear here."
-          : "Start a session with a mentor to see your conversations here."}
-      </p>
-      {!isMentor && (
-        <Button className="mt-4" onClick={() => navigate("/search")}>
-          Find a Mentor
-        </Button>
-      )}
-    </div>
-  );
-
-  const RoleFilteredList = ({ filtered }: { filtered: Session[] }) => {
-    const visibleSessions = filtered.filter(s =>
-      roleTab === "selling" ? s.mentor_id === userId : s.mentee_id === userId
-    );
-    if (visibleSessions.length === 0) return <EmptyState type={activeTab} />;
     return (
-      <div className="space-y-3">
-        {visibleSessions.map((session) => (
-          <SessionCard key={session.id} session={session} />
-        ))}
+      <div key={msg.id} className={cn("flex gap-2 mb-3", isMe ? "justify-end" : "justify-start")}>
+        {!isMe && (
+          <Avatar className="h-7 w-7 shrink-0 mt-1">
+            <AvatarImage src={activeConv?.otherUserAvatar ?? undefined} />
+            <AvatarFallback className="text-[10px] bg-muted">
+              {activeConv?.otherUserName?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        )}
+        <div className={cn("max-w-[70%] flex flex-col", isMe ? "items-end" : "items-start")}>
+          {msg.image_urls && msg.image_urls.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-1">
+              {msg.image_urls.map((url, i) => (
+                <div
+                  key={i}
+                  className="relative group cursor-pointer rounded-lg overflow-hidden"
+                  onClick={() => setLightboxSrc(url)}
+                >
+                  <img src={url} alt="attachment" className="h-32 w-auto object-cover rounded-lg" />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <ZoomIn className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {msg.content && msg.content !== "📎 Image" && (
+            <div className={cn(
+              "rounded-2xl px-3 py-2 text-sm leading-relaxed",
+              isMe
+                ? "bg-primary text-primary-foreground rounded-br-sm"
+                : "bg-muted text-foreground rounded-bl-sm"
+            )}>
+              {msg.content}
+            </div>
+          )}
+          <span className="text-[10px] text-muted-foreground mt-0.5 px-1">
+            {format(new Date(msg.created_at), "HH:mm")}
+          </span>
+        </div>
       </div>
     );
   };
 
-  const LoadingSkeleton = () => (
-    <div className="space-y-3">
-      {[1, 2, 3].map((i) => (
-        <Card key={i} className="bg-card/50">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-4">
-              <Skeleton className="h-12 w-12 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-24" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+  // ── Filtered conversations ─────────────────────────────────────────────────
+
+  const filtered = conversations.filter(c =>
+    search.trim() === "" ||
+    c.otherUserName.toLowerCase().includes(search.toLowerCase()) ||
+    c.jobTitle.toLowerCase().includes(search.toLowerCase()) ||
+    c.jobCategory.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const orders = filtered.filter(c => c.convType === "order" || c.convType === "delivered");
+  const quotes = filtered.filter(c => c.convType === "quote");
+
+  // ── Sidebar row ────────────────────────────────────────────────────────────
+
+  const ConvRow = ({ conv }: { conv: ConversationItem }) => {
+    const isActive = activeConv?.sessionId === conv.sessionId;
+    const cfg = TYPE_CONFIG[conv.convType];
+    return (
+      <button
+        onClick={() => selectConv(conv)}
+        className={cn(
+          "w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-muted/50 border-l-2",
+          isActive
+            ? "bg-primary/8 border-l-primary"
+            : "border-l-transparent"
+        )}
+      >
+        <div className="relative shrink-0">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={conv.otherUserAvatar ?? undefined} />
+            <AvatarFallback className="text-sm bg-muted">
+              {conv.otherUserName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          {conv.otherUserOnline && (
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-background" />
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1 mb-0.5">
+            <span className={cn("text-sm font-semibold truncate", isActive ? "text-primary" : "text-foreground")}>
+              {conv.otherUserName}
+            </span>
+            <span className="text-[10px] text-muted-foreground shrink-0">
+              {timeLabel(conv.lastMessageAt)}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 mb-1">
+            <span className={cn(
+              "inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border",
+              cfg.badgeClass
+            )}>
+              {cfg.icon}
+              {cfg.label}
+            </span>
+            <span className="text-[10px] text-muted-foreground truncate">{conv.jobTitle}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground truncate max-w-[160px]">
+              {conv.lastMessage ?? "No messages yet"}
+            </span>
+            {conv.unreadCount > 0 && (
+              <span className="shrink-0 h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                {conv.unreadCount > 99 ? "99+" : conv.unreadCount}
+              </span>
+            )}
+          </div>
+        </div>
+      </button>
+    );
+  };
+
+  // ── Section header ─────────────────────────────────────────────────────────
+
+  const SectionHeader = ({ label, count }: { label: string; count: number }) => (
+    <div className="px-4 pt-4 pb-1 flex items-center gap-2">
+      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+      <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-1.5 py-0.5">{count}</span>
     </div>
   );
 
-  const activeSessions = filterSessions("active");
-  const completedSessions = filterSessions("completed");
+  // ── Empty chat state ───────────────────────────────────────────────────────
+
+  const EmptyChatPlaceholder = () => (
+    <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center p-8">
+      <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+        <MessageSquare className="h-9 w-9 text-muted-foreground" />
+      </div>
+      <div>
+        <h3 className="font-semibold text-lg mb-1">Select a conversation</h3>
+        <p className="text-sm text-muted-foreground max-w-xs">
+          Choose a chat from the sidebar to start messaging. All your orders and quotes are in one place.
+        </p>
+      </div>
+    </div>
+  );
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
-        {/* Page Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <MessageSquare className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {isMentor ? "Your Tasks" : "Your Chats"}
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                {isMentor 
-                  ? "Manage session requests and ongoing mentorship" 
-                  : "View and continue your mentorship conversations"}
-              </p>
-            </div>
+    <div className="flex h-[calc(100vh-64px)] bg-background overflow-hidden">
+      {/* ── SIDEBAR ─────────────────────────────────────────────────────── */}
+      <aside className={cn(
+        "flex flex-col border-r border-border bg-card/30 w-full md:w-80 lg:w-96 shrink-0",
+        showChat && "hidden md:flex"
+      )}>
+        {/* Sidebar header */}
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-border shrink-0">
+          <InboxIcon className="h-5 w-5 text-primary" />
+          <h1 className="text-base font-bold text-foreground flex-1">Messages</h1>
+          {conversations.reduce((sum, c) => sum + c.unreadCount, 0) > 0 && (
+            <Badge variant="default" className="rounded-full">
+              {conversations.reduce((sum, c) => sum + c.unreadCount, 0)}
+            </Badge>
+          )}
+        </div>
+
+        {/* Search */}
+        <div className="px-4 py-3 border-b border-border shrink-0">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name or order..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="pl-9 bg-muted/40 border-border/50 h-9 text-sm"
+            />
           </div>
         </div>
 
-        {/* Stats Cards */}
-        {!loading && (
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <Card className="bg-card/50 backdrop-blur-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {sessions.filter(s => s.status === "pending").length}
+        {/* Conversation list */}
+        <ScrollArea className="flex-1">
+          {loading ? (
+            <div className="space-y-1 p-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="flex items-center gap-3 py-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-3 w-28" />
+                    <Skeleton className="h-3 w-full" />
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">Pending</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 backdrop-blur-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {sessions.filter(s => s.status === "live").length}
+              ))}
+            </div>
+          ) : conversations.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+              <InboxIcon className="h-12 w-12 text-muted-foreground mb-3" />
+              <p className="text-sm font-medium text-foreground mb-1">No conversations yet</p>
+              <p className="text-xs text-muted-foreground">Post a request or quote on a job to get started.</p>
+            </div>
+          ) : (
+            <>
+              {orders.length > 0 && (
+                <>
+                  <SectionHeader label="Orders & Delivered" count={orders.length} />
+                  {orders.map(c => <ConvRow key={c.sessionId} conv={c} />)}
+                </>
+              )}
+              {quotes.length > 0 && (
+                <>
+                  <SectionHeader label="Quotes & Offers" count={quotes.length} />
+                  {quotes.map(c => <ConvRow key={c.sessionId} conv={c} />)}
+                </>
+              )}
+              {filtered.length === 0 && search && (
+                <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  No results for "{search}"
                 </div>
-                <div className="text-xs text-muted-foreground">Live</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-card/50 backdrop-blur-sm">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-foreground">
-                  {sessions.filter(s => s.status === "completed").length}
-                </div>
-                <div className="text-xs text-muted-foreground">Completed</div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              )}
+            </>
+          )}
+        </ScrollArea>
+      </aside>
 
-        {/* Role toggle: Expert (Selling) / Buyer (Buying) */}
-        {roleTab !== null && (
-          <div className="flex items-center gap-2 mb-4">
-            {isMentor && (
+      {/* ── CHAT PANEL ──────────────────────────────────────────────────── */}
+      <div className={cn(
+        "flex-1 flex flex-col min-w-0",
+        !showChat && "hidden md:flex"
+      )}>
+        {!activeConv ? (
+          <EmptyChatPlaceholder />
+        ) : (
+          <>
+            {/* Chat header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/30 shrink-0">
+              {/* Mobile back button */}
               <Button
-                variant={roleTab === "selling" ? "default" : "outline"}
-                size="sm"
-                className="gap-2"
-                onClick={() => setRoleTab("selling")}
+                variant="ghost"
+                size="icon"
+                className="md:hidden shrink-0"
+                onClick={() => setShowChat(false)}
               >
-                <Store className="h-4 w-4" />
-                Expert
-                {sessions.filter(s => s.mentor_id === userId).length > 0 && (
-                  <Badge variant={roleTab === "selling" ? "secondary" : "outline"} className="ml-1">
-                    {sessions.filter(s => s.mentor_id === userId).length}
-                  </Badge>
-                )}
+                <ChevronLeft className="h-5 w-5" />
               </Button>
+
+              <div className="relative shrink-0">
+                <Avatar className="h-9 w-9">
+                  <AvatarImage src={activeConv.otherUserAvatar ?? undefined} />
+                  <AvatarFallback className="text-sm bg-muted">
+                    {activeConv.otherUserName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {activeConv.otherUserOnline && (
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background" />
+                )}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm text-foreground truncate">
+                    {activeConv.otherUserName}
+                  </span>
+                  <span className={cn(
+                    "inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border shrink-0",
+                    TYPE_CONFIG[activeConv.convType].badgeClass
+                  )}>
+                    {TYPE_CONFIG[activeConv.convType].icon}
+                    {activeConv.iAmSeller ? "Buyer" : "Expert"}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground truncate">{activeConv.jobTitle}</p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-1 shrink-0">
+                {activeConv.jobId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-xs h-8"
+                    onClick={() => navigate(activeConv.iAmSeller
+                      ? `/request/${activeConv.jobId}`
+                      : `/order/${activeConv.jobId}`
+                    )}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">
+                      {activeConv.iAmSeller ? "View Request" : "View Order"}
+                    </span>
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1 px-4 py-4">
+              {msgLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <MessageSquare className="h-8 w-8 text-muted-foreground mb-3" />
+                  <p className="text-sm text-muted-foreground">No messages yet. Say hello!</p>
+                </div>
+              ) : (
+                <>
+                  {messages.map(renderBubble)}
+                  <div ref={bottomRef} />
+                </>
+              )}
+            </ScrollArea>
+
+            {/* Image previews */}
+            {imagePreviewUrls.length > 0 && (
+              <div className="flex gap-2 px-4 py-2 border-t border-border bg-card/20 flex-wrap">
+                {imagePreviewUrls.map((url, i) => (
+                  <div key={i} className="relative group">
+                    <img src={url} alt="" className="h-16 w-16 object-cover rounded-lg" />
+                    <button
+                      onClick={() => removeImage(i)}
+                      className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
-            <Button
-              variant={roleTab === "buying" ? "default" : "outline"}
-              size="sm"
-              className="gap-2"
-              onClick={() => setRoleTab("buying")}
-            >
-              <ShoppingCart className="h-4 w-4" />
-              Buyer
-              {sessions.filter(s => s.mentee_id === userId).length > 0 && (
-                <Badge variant={roleTab === "buying" ? "secondary" : "outline"} className="ml-1">
-                  {sessions.filter(s => s.mentee_id === userId).length}
-                </Badge>
-              )}
-            </Button>
-          </div>
+
+            {/* Input bar */}
+            <div className="px-4 py-3 border-t border-border bg-card/20 shrink-0">
+              <div className="flex items-end gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleImageSelect}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImageIcon className="h-4 w-4" />
+                </Button>
+                <Textarea
+                  placeholder="Type a message…"
+                  value={inputText}
+                  onChange={e => setInputText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  rows={1}
+                  className="flex-1 min-h-[36px] max-h-32 resize-none text-sm bg-muted/40 border-border/50 rounded-xl py-2 leading-relaxed"
+                />
+                <Button
+                  size="icon"
+                  className="h-9 w-9 shrink-0 rounded-xl"
+                  onClick={sendMessage}
+                  disabled={sending || (!inputText.trim() && imageFiles.length === 0)}
+                >
+                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                </Button>
+              </div>
+            </div>
+          </>
         )}
+      </div>
 
-        {/* Status Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="active" className="gap-2">
-              <Play className="h-4 w-4" />
-              Active
-              {activeSessions.length > 0 && (
-                <Badge variant="secondary" className="ml-1">{activeSessions.length}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="gap-2">
-              <CheckCircle2 className="h-4 w-4" />
-              Completed
-            </TabsTrigger>
-            <TabsTrigger value="all" className="gap-2">
-              <InboxIcon className="h-4 w-4" />
-              All
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="active" className="mt-0">
-            {loading ? <LoadingSkeleton /> : <RoleFilteredList filtered={activeSessions} />}
-          </TabsContent>
-
-          <TabsContent value="completed" className="mt-0">
-            {loading ? <LoadingSkeleton /> : <RoleFilteredList filtered={completedSessions} />}
-          </TabsContent>
-
-          <TabsContent value="all" className="mt-0">
-            {loading ? <LoadingSkeleton /> : <RoleFilteredList filtered={sessions} />}
-          </TabsContent>
-        </Tabs>
-      </main>
+      {/* Lightbox */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setLightboxSrc(null)}
+        >
+          <button
+            onClick={() => setLightboxSrc(null)}
+            className="absolute top-4 right-4 text-white/70 hover:text-white"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <img
+            src={lightboxSrc}
+            alt="Full size"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={e => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 };

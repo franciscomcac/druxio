@@ -58,6 +58,7 @@ const App = () => (
               <Route path="/post-request" element={<PostRequest />} />
               <Route path="/request/:jobId" element={<ActiveRequest />} />
               <Route path="/session/:sessionId" element={<Session />} />
+              <Route path="/inbox" element={<Inbox />} />
             </Route>
 
             {/* Pages with footer */}
@@ -71,7 +72,6 @@ const App = () => (
               <Route path="/wallet" element={<Wallet />} />
               <Route path="/mentor/:mentorId" element={<MentorProfile />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/inbox" element={<Inbox />} />
               <Route path="/order/:jobId" element={<Order />} />
               <Route path="/orders/purchased" element={<PurchasedOrders />} />
               <Route path="/orders/sold" element={<SoldOrders />} />
