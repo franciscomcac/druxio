@@ -1,127 +1,81 @@
 
-# Feedback Form + Platform Improvements Plan
+## Add "Schedule a Call" Feature to Orders
 
-## What I Found Across the Codebase
+### What We're Building
 
-After reviewing every major page and component (landing, dashboard, search, profile, post-request, inbox, wallet, settings, support widget, header, footer), here is a curated list of improvements — the same kind of QOL and flow enhancements you see on top-tier gig/marketplace platforms like Eldorado, Fiverr, or Toptal.
+A polished way for sellers (and buyers) on the Order page to initiate a Google Meet video call directly from the order chat. The seller clicks a button, a Google Meet room link is generated instantly (no manual copy-paste needed), and it gets sent as a rich, clickable card in the chat so the buyer can join with one click.
 
----
+### How It Works
 
-## The Feedback Form
-
-A floating or embedded **"Give Feedback"** form where users can rate specific aspects of the platform and leave suggestions. This gets stored in the database for admin review.
-
-The form will cover:
-
-- **Overall experience** (star rating 1–5)
-- **Category** (Posting a request / Finding an expert / Payments / Mobile experience / Other)
-- **Specific suggestion or bug** (free text)
-- **User type** (Client / Expert / Just browsing)
-- **Optional email** for follow-up
-
-It will appear as a small persistent button (bottom-left corner, opposite the support widget on bottom-right) and open a compact modal. Admins can read all feedback from the Admin panel.
-
----
-
-## Identified Platform Improvements to Include in the Form as Suggestions (Pre-filled chips)
-
-These are real gaps I spotted while reading the code:
-
-### Landing Page
-- No "Browse Experts" CTA button in the Hero — only "Post Task". Some users want to browse first
-- The live stats bar (`LiveStats`) shows numbers but no context for new visitors
-- Testimonials are hardcoded — no real reviews shown here even though reviews exist in the DB
-
-### Search Page
-- No sort options (by rating, price, sessions) — `filteredMentors` has no `.sort()`
-- No empty state CTA when no experts match filters (just a generic "No experts found" message with no suggestions)
-- Mobile filter drawer slides in but overlaps content instead of using a proper sheet
-
-### Expert Profile Page
-- No "Hire / Post a request for this expert" button on the sticky card — users can only heart or share
-- The `About` tab is 3rd — Reviews should be last, About first (first impressions matter)
-
-### Post Request Flow
-- After posting, the "waiting" screen has a countdown but no way to edit the request
-- The AI-refine step has no loading skeleton, just a spinner, making it feel slow
-
-### Dashboard
-- No quick "resume" button for open/expired jobs — users have to navigate away
-- Expert dashboard has no earnings summary at a glance
-
-### Inbox
-- Sessions listed but no unread badge count visible in the tab UI on desktop
-- No way to archive/hide old closed sessions
-
-### Wallet
-- No visual chart of balance history over time — just a flat list
-
-### Settings
-- No "danger zone" / account deletion section visible
-- Rate-per-10min pricing isn't immediately obvious to new experts
-
-### General / Mobile
-- No bottom sticky navigation bar on mobile (Home, Inbox, Post, Wallet, Profile)
-- Support widget sits on top of content on mobile without smart repositioning
-
----
-
-## Technical Plan
-
-### 1. Database Migration
-Create a `feedback` table:
-```sql
-CREATE TABLE public.feedback (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid,  -- nullable (anon users can submit too)
-  rating integer NOT NULL CHECK (rating BETWEEN 1 AND 5),
-  category text NOT NULL,
-  message text NOT NULL,
-  user_type text,
-  email text,
-  created_at timestamptz DEFAULT now()
-);
-
--- RLS: anyone can insert, admins can read
-ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Anyone can submit feedback" ON public.feedback FOR INSERT WITH CHECK (true);
-CREATE POLICY "Admins can read feedback" ON public.feedback FOR SELECT USING (is_admin(auth.uid()));
+```text
+Seller clicks "Schedule a Call"
+         |
+         v
+Dialog opens with:
+  - "Create a Google Meet" button (opens meet.google.com/new in a new tab)
+  - Input to paste the generated link back
+  - "Send to Chat" button
+         |
+         v
+Link is sent as a special rich message in the order chat
+         |
+         v
+Buyer sees a "Join Video Call" card with green video icon + Join button
+Both parties can click to join anytime
 ```
 
-### 2. New Component: `src/components/feedback/FeedbackWidget.tsx`
-- Floating button bottom-left (opposite side from support widget)
-- Opens a `Dialog` with a multi-step form:
-  - Step 1: Star rating + user type selector
-  - Step 2: Category chips (Posting, Payments, Search, Mobile, Expert tools, Other)
-  - Step 3: Free-text + optional email
-  - Confirmation screen with thank-you message
-- Pre-filled suggestion chips so users can one-tap common feedback
-- Submits to `feedback` Supabase table
-- No auth required (user_id attached if logged in)
+### Why Google Meet (Not a Custom Solution)?
 
-### 3. Admin Panel — Feedback Tab
-Add a "Feedback" tab to `src/pages/Admin.tsx` alongside the existing Support tab:
-- Table of all feedback entries sorted by newest
-- Color-coded star ratings (1-2 = red, 3 = yellow, 4-5 = green)
-- Filter by category and rating
-- Total count + average rating shown at top
+- **Zero backend cost** — Google Meet is free for all users
+- **No API key required** — `meet.google.com/new` instantly creates a room
+- **Familiar & trusted** — Screen sharing, recording, captions all built in
+- **Works on any device** — Mobile and desktop
 
-### 4. Register `FeedbackWidget` globally in `src/App.tsx`
-Same pattern as `SupportWidget` — placed inside `BrowserRouter` so it's available on all routes.
+### Changes to Make
 
----
+**1. `src/pages/Order.tsx` — Add the Video Call button & UI**
 
-## Files to Create/Edit
+- Import `Video`, `ExternalLink` icons (already exist in the project)
+- Add state: `meetDialogOpen`, `meetLink`
+- Add a "Video Call" button in the left sidebar actions panel — visible to **both seller and buyer** when the order is active (not completed/cancelled)
+- The dialog contains:
+  - A prominent "Open Google Meet" button that opens `https://meet.google.com/new` in a new tab
+  - An input field to paste the generated link back
+  - A "Send Link to Chat" button
+- When sent, insert the message into the `messages` table with special content format: `📹 Video Call: <url>`
 
-| File | Action |
-|---|---|
-| `supabase/migrations/[timestamp].sql` | Create `feedback` table + RLS |
-| `src/components/feedback/FeedbackWidget.tsx` | New floating feedback component |
-| `src/App.tsx` | Register FeedbackWidget globally |
-| `src/pages/Admin.tsx` | Add Feedback tab with table view |
+**2. `src/pages/Order.tsx` — Render Meet links as rich cards in chat**
 
----
+- Update the message rendering loop to detect messages containing `meet.google.com` or the `📹 Video Call:` prefix
+- Instead of plain text, render a styled card with:
+  - Green video camera icon
+  - "Join Video Call" text
+  - Clickable button that opens the link
 
-## What the Feedback Form Covers (User-Facing)
+**3. `src/pages/Session.tsx` — Align with the same improved UX**
 
-The pre-filled suggestion chips inside the form will reflect exactly the real improvements listed above, so users can quickly tap what they want improved. This gives you actionable signal from real users about what to build next.
+- The Session page already has a basic version of this (a dialog with a paste input), but it lacks the "Open Google Meet" shortcut button
+- Add the `href="https://meet.google.com/new"` quick-create link to the existing dialog so it matches the Order page experience
+
+### Visual Layout of the Meet Card in Chat
+
+```text
+┌─────────────────────────────────────────┐
+│  📹  Video Call Scheduled               │
+│                                         │
+│  meet.google.com/abc-defg-hij           │
+│                                         │
+│  [  Join Call  →  ]                     │
+└─────────────────────────────────────────┘
+```
+
+### No Database Changes Needed
+
+The Meet link is just sent as a regular chat message in the existing `messages` table — no new columns or tables required. The special rendering is purely frontend-side by detecting the URL pattern in message content.
+
+### Technical Details
+
+- The "Schedule a Call" button will appear in the left sidebar of the Order page, below the existing seller/buyer action buttons, visible to both parties as long as the order is active
+- `meet.google.com/new` always creates a fresh room instantly — no account required for guests to join
+- Detection regex: `/meet\.google\.com\//` or message starts with `📹 Video Call:`
+- The rich card replaces the plain text render for those matching messages only
