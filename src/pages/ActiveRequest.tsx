@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Star, Check, Clock, Send, MessageSquare, XCircle, Users, ThumbsUp,
   ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck, RefreshCw, ChevronRight,
+  ImageIcon, X as XIcon,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
@@ -38,6 +39,7 @@ interface ChatMessage {
   content: string;
   sender_id: string;
   created_at: string;
+  image_urls?: string[] | null;
 }
 
 interface Job {
@@ -103,6 +105,16 @@ const ActiveRequest = () => {
   const [sellerChatInput, setSellerChatInput] = useState("");
   const [sendingSellerChat, setSendingSellerChat] = useState(false);
   const sellerChatEndRef = useRef<HTMLDivElement>(null);
+
+  // Image upload state — buyer chat
+  const [buyerImageFiles, setBuyerImageFiles] = useState<File[]>([]);
+  const [buyerImagePreviews, setBuyerImagePreviews] = useState<string[]>([]);
+  const buyerFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Image upload state — seller chat
+  const [sellerImageFiles, setSellerImageFiles] = useState<File[]>([]);
+  const [sellerImagePreviews, setSellerImagePreviews] = useState<string[]>([]);
+  const sellerFileInputRef = useRef<HTMLInputElement>(null);
 
   // Seller new offer form
   const [newQuotePrice, setNewQuotePrice] = useState("");
@@ -283,10 +295,10 @@ const ActiveRequest = () => {
     const loadMsgs = async () => {
       const { data } = await supabase
         .from("messages")
-        .select("id, content, sender_id, created_at")
+        .select("id, content, sender_id, created_at, image_urls")
         .eq("session_id", sid)
         .order("created_at", { ascending: true });
-      if (data) setSellerChatMessages(data);
+      if (data) setSellerChatMessages(data as ChatMessage[]);
     };
     loadMsgs();
 
@@ -398,8 +410,8 @@ const ActiveRequest = () => {
     const sid = sessionMap[selectedChatPartnerId];
     if (!sid) return;
     const loadMessages = async () => {
-      const { data } = await supabase.from("messages").select("id, content, sender_id, created_at").eq("session_id", sid).order("created_at", { ascending: true });
-      if (data) setChatMessages((prev) => ({ ...prev, [selectedChatPartnerId]: data }));
+      const { data } = await supabase.from("messages").select("id, content, sender_id, created_at, image_urls").eq("session_id", sid).order("created_at", { ascending: true });
+      if (data) setChatMessages((prev) => ({ ...prev, [selectedChatPartnerId]: data as ChatMessage[] }));
     };
     loadMessages();
     const channel = supabase.channel(`chat-${sid}`)
@@ -463,37 +475,77 @@ const ActiveRequest = () => {
   };
 
   const handleSendChat = async () => {
-    if (!chatInput.trim() || !selectedChatPartnerId || !userId) return;
+    if (!chatInput.trim() && buyerImageFiles.length === 0) return;
+    if (!selectedChatPartnerId || !userId) return;
     const sid = sessionMap[selectedChatPartnerId];
     if (!sid) return;
     setSendingChat(true);
     const messageContent = chatInput.trim();
-    const flagged = await checkContent(messageContent, "chat message");
-    if (flagged) { setSendingChat(false); return; }
+    if (messageContent) {
+      const flagged = await checkContent(messageContent, "chat message");
+      if (flagged) { setSendingChat(false); return; }
+    }
     setChatInput("");
-    const optimisticMsg: ChatMessage = { id: `temp-${Date.now()}`, content: messageContent, sender_id: userId, created_at: new Date().toISOString() };
-    setChatMessages((prev) => ({ ...prev, [selectedChatPartnerId]: [...(prev[selectedChatPartnerId] || []), optimisticMsg] }));
-    const { error } = await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content: messageContent });
+    setBuyerImageFiles([]);
+    setBuyerImagePreviews([]);
+
+    // Upload images
+    let uploadedUrls: string[] = [];
+    for (const file of buyerImageFiles) {
+      const ext = file.name.split(".").pop();
+      const path = `${sid}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("chat-images").upload(path, file);
+      if (!upErr) {
+        const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(path);
+        uploadedUrls.push(urlData.publicUrl);
+      }
+    }
+
+    const { error } = await supabase.from("messages").insert({
+      session_id: sid,
+      sender_id: userId,
+      content: messageContent || (uploadedUrls.length > 0 ? "📎 Image" : ""),
+      image_urls: uploadedUrls.length > 0 ? uploadedUrls : null,
+    });
     if (error) {
       toast({ title: "Failed to send message", description: error.message, variant: "destructive" });
-      setChatMessages((prev) => ({ ...prev, [selectedChatPartnerId]: (prev[selectedChatPartnerId] || []).filter(m => m.id !== optimisticMsg.id) }));
     }
     setSendingChat(false);
   };
 
   const handleSendSellerChat = async () => {
-    if (!sellerChatInput.trim() || !userId || !activeConvo?.sessionId) return;
+    if (!sellerChatInput.trim() && sellerImageFiles.length === 0) return;
+    if (!userId || !activeConvo?.sessionId) return;
     setSendingSellerChat(true);
     const content = sellerChatInput.trim();
-    const flagged = await checkContent(content, "chat message");
-    if (flagged) { setSendingSellerChat(false); return; }
+    if (content) {
+      const flagged = await checkContent(content, "chat message");
+      if (flagged) { setSendingSellerChat(false); return; }
+    }
     setSellerChatInput("");
-    const optimistic: ChatMessage = { id: `temp-${Date.now()}`, content, sender_id: userId, created_at: new Date().toISOString() };
-    setSellerChatMessages((prev) => [...prev, optimistic]);
-    const { error } = await supabase.from("messages").insert({ session_id: activeConvo.sessionId, sender_id: userId, content });
+    setSellerImageFiles([]);
+    setSellerImagePreviews([]);
+
+    // Upload images
+    let uploadedUrls: string[] = [];
+    for (const file of sellerImageFiles) {
+      const ext = file.name.split(".").pop();
+      const path = `${activeConvo.sessionId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("chat-images").upload(path, file);
+      if (!upErr) {
+        const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(path);
+        uploadedUrls.push(urlData.publicUrl);
+      }
+    }
+
+    const { error } = await supabase.from("messages").insert({
+      session_id: activeConvo.sessionId,
+      sender_id: userId,
+      content: content || (uploadedUrls.length > 0 ? "📎 Image" : ""),
+      image_urls: uploadedUrls.length > 0 ? uploadedUrls : null,
+    });
     if (error) {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
-      setSellerChatMessages((prev) => prev.filter(m => m.id !== optimistic.id));
     }
     setSendingSellerChat(false);
   };
@@ -551,11 +603,35 @@ const ActiveRequest = () => {
     setSubmittingQuote(false);
   };
 
+  // ── Image select helpers ──────────────────────────────────────────────────
+  const handleBuyerImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setBuyerImageFiles(prev => [...prev, ...files]);
+    files.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = ev => setBuyerImagePreviews(prev => [...prev, ev.target?.result as string]);
+      reader.readAsDataURL(f);
+    });
+    e.target.value = "";
+  };
+  const handleSellerImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSellerImageFiles(prev => [...prev, ...files]);
+    files.forEach(f => {
+      const reader = new FileReader();
+      reader.onload = ev => setSellerImagePreviews(prev => [...prev, ev.target?.result as string]);
+      reader.readAsDataURL(f);
+    });
+    e.target.value = "";
+  };
+
   // ── Message bubble renderer ────────────────────────────────────────────────
   const renderMessageBubble = (msg: ChatMessage, isMe: boolean) => {
     const isOfferMsg = msg.content.startsWith("📋 New offer:");
     const isJobMsg = msg.content.startsWith("📋 Order Request");
     const isAutoMsg = isOfferMsg || isJobMsg;
+    const hasImages = msg.image_urls && msg.image_urls.length > 0;
+    const isImageOnly = ["📎 Image", "📷 Image"].includes(msg.content.trim());
     return (
       <div key={msg.id} className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
         <div className={`max-w-[80%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
@@ -581,7 +657,21 @@ const ActiveRequest = () => {
             <div className={`rounded-2xl px-3 py-2 text-sm ${
               isMe ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-muted/50 text-foreground rounded-bl-sm"
             }`}>
-              <p className="whitespace-pre-wrap">{msg.content}</p>
+              {hasImages && (
+                <div className={`grid gap-1.5 mb-1.5 ${msg.image_urls!.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+                  {msg.image_urls!.map((url, i) => (
+                    <img
+                      key={i}
+                      src={url}
+                      alt="shared image"
+                      className="rounded-lg max-w-full object-cover cursor-pointer"
+                      style={{ maxHeight: "180px" }}
+                      onClick={() => window.open(url, "_blank")}
+                    />
+                  ))}
+                </div>
+              )}
+              {!isImageOnly && <p className="whitespace-pre-wrap">{msg.content}</p>}
               <p className={`text-[10px] mt-1 ${isMe ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                 {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
               </p>
@@ -591,6 +681,7 @@ const ActiveRequest = () => {
       </div>
     );
   };
+
 
   if (loading) {
     return (
@@ -744,18 +835,39 @@ const ActiveRequest = () => {
 
               {/* Chat input */}
               <div className="border-t border-border p-3 shrink-0 bg-card/20">
+                <input type="file" accept="image/*" multiple ref={sellerFileInputRef} className="hidden" onChange={handleSellerImageSelect} />
+                {sellerImagePreviews.length > 0 && (
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    {sellerImagePreviews.map((src, i) => (
+                      <div key={i} className="relative">
+                        <img src={src} alt="preview" className="h-14 w-14 object-cover rounded-lg border border-border" />
+                        <button
+                          type="button"
+                          onClick={() => { setSellerImageFiles(p => p.filter((_, idx) => idx !== i)); setSellerImagePreviews(p => p.filter((_, idx) => idx !== i)); }}
+                          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                        >
+                          <XIcon className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <form onSubmit={(e) => { e.preventDefault(); handleSendSellerChat(); }} className="flex gap-2">
+                  <Button type="button" variant="ghost" size="icon" className="shrink-0 h-9 w-9" onClick={() => sellerFileInputRef.current?.click()}>
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                  </Button>
                   <Input
                     value={sellerChatInput}
                     onChange={(e) => setSellerChatInput(e.target.value)}
                     placeholder="Reply to buyer..."
                     className="bg-background/60 border-border/40 focus:border-primary/40"
                   />
-                  <Button type="submit" size="icon" disabled={!sellerChatInput.trim() || sendingSellerChat} className="shrink-0">
+                  <Button type="submit" size="icon" disabled={(!sellerChatInput.trim() && sellerImageFiles.length === 0) || sendingSellerChat} className="shrink-0">
                     {sendingSellerChat ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </form>
               </div>
+
             </div>
 
             {/* ── Right panel: job details + update offer ───────────────────── */}
@@ -985,14 +1097,34 @@ const ActiveRequest = () => {
               </div>
             </ScrollArea>
             <div className="border-t border-border p-3 shrink-0 bg-card/20">
+              <input type="file" accept="image/*" multiple ref={buyerFileInputRef} className="hidden" onChange={handleBuyerImageSelect} />
+              {buyerImagePreviews.length > 0 && (
+                <div className="flex gap-2 mb-2 flex-wrap">
+                  {buyerImagePreviews.map((src, i) => (
+                    <div key={i} className="relative">
+                      <img src={src} alt="preview" className="h-14 w-14 object-cover rounded-lg border border-border" />
+                      <button
+                        type="button"
+                        onClick={() => { setBuyerImageFiles(p => p.filter((_, idx) => idx !== i)); setBuyerImagePreviews(p => p.filter((_, idx) => idx !== i)); }}
+                        className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                      >
+                        <XIcon className="h-2.5 w-2.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex gap-2">
+                <Button type="button" variant="ghost" size="icon" className="shrink-0 h-9 w-9" onClick={() => buyerFileInputRef.current?.click()}>
+                  <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                </Button>
                 <Input
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Type a message..."
                   className="bg-background/60 border-border/40 focus:border-primary/40"
                 />
-                <Button type="submit" size="icon" disabled={!chatInput.trim() || sendingChat}>
+                <Button type="submit" size="icon" disabled={(!chatInput.trim() && buyerImageFiles.length === 0) || sendingChat}>
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
