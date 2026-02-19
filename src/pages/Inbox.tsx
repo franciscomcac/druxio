@@ -368,13 +368,15 @@ const Inbox = () => {
     setImageFiles([]);
     setImagePreviewUrls([]);
 
-    // Mark all messages in this conversation as read immediately
-    if (userId && conv.unreadCount > 0) {
+    // Always mark messages as read when opening a conversation (not just when unreadCount > 0)
+    // This ensures read status persists even after navigating away and back
+    if (userId) {
       supabase
         .from("messages")
         .update({ is_read: true })
         .eq("session_id", conv.sessionId)
         .neq("sender_id", userId)
+        .eq("is_read", false)
         .then(() => {
           setConversations(prev => prev.map(c =>
             c.sessionId === conv.sessionId ? { ...c, unreadCount: 0 } : c
