@@ -244,9 +244,8 @@ const Inbox = () => {
       });
     }
 
-    // Sort: unread first, then by lastMessageAt desc
+    // Sort: by lastMessageAt desc only (unread badges show without reordering)
     convItems.sort((a, b) => {
-      if (b.unreadCount !== a.unreadCount) return b.unreadCount - a.unreadCount;
       const ta = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
       const tb = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
       return tb - ta;
@@ -285,17 +284,20 @@ const Inbox = () => {
         setConversations(prev => {
           const updated = prev.map(c => {
             if (c.sessionId !== newMsg.session_id) return c;
+            // Clean up placeholder text for sidebar preview
+            const previewText = ["📎 Image", "📷 Image"].includes(newMsg.content.trim())
+              ? "📷 Photo"
+              : newMsg.content;
             return {
               ...c,
-              lastMessage: newMsg.content,
+              lastMessage: previewText,
               lastMessageAt: newMsg.created_at,
               // Only increment unread if the conv is NOT currently open
               unreadCount: isFromOther && !isActiveConv ? c.unreadCount + 1 : c.unreadCount,
             };
           });
-          // Re-sort: unread first, then by most recent message
+          // Re-sort by latest message only
           return [...updated].sort((a, b) => {
-            if (b.unreadCount !== a.unreadCount) return b.unreadCount - a.unreadCount;
             const ta = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
             const tb = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
             return tb - ta;
@@ -321,19 +323,7 @@ const Inbox = () => {
       .order("created_at", { ascending: true });
     setMessages((data as Message[]) ?? []);
     setMsgLoading(false);
-
-    // Mark unread as read
-    if (userId) {
-      await supabase
-        .from("messages")
-        .update({ is_read: true })
-        .eq("session_id", conv.sessionId)
-        .neq("sender_id", userId);
-      setConversations(prev => prev.map(c =>
-        c.sessionId === conv.sessionId ? { ...c, unreadCount: 0 } : c
-      ));
-    }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     if (!activeConv) return;
@@ -377,6 +367,20 @@ const Inbox = () => {
     setInputText("");
     setImageFiles([]);
     setImagePreviewUrls([]);
+
+    // Mark all messages in this conversation as read immediately
+    if (userId && conv.unreadCount > 0) {
+      supabase
+        .from("messages")
+        .update({ is_read: true })
+        .eq("session_id", conv.sessionId)
+        .neq("sender_id", userId)
+        .then(() => {
+          setConversations(prev => prev.map(c =>
+            c.sessionId === conv.sessionId ? { ...c, unreadCount: 0 } : c
+          ));
+        });
+    }
   };
 
   // ── Send message ───────────────────────────────────────────────────────────
