@@ -440,6 +440,8 @@ const ActiveRequest = () => {
             clearInterval(pollInterval);
             paypalWindow?.close();
             toast({ title: "Payment successful! 🎉", description: `${paypalDialog.profile?.display_name || "The expert"} will start working now.` });
+            // Email seller: quote accepted (fire-and-forget)
+            supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
             setPaypalDialog(null);
             setPaypalLoading(false);
             navigate(`/order/${jobId}`);

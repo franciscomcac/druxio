@@ -165,6 +165,61 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Send withdrawal confirmation email (fire-and-forget)
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    if (resendKey) {
+      try {
+        const { data: userData } = await adminClient.auth.admin.getUserById(userId);
+        const userEmail = userData?.user?.email;
+        if (userEmail) {
+          const methodLabel = method === "paypal" ? `PayPal (${paypal_email})` : `${crypto_token} (${crypto_network})`;
+          const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+      <tr><td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:28px 32px;text-align:center;">
+        <span style="font-size:26px;font-weight:800;color:#fff;">Dux&#x26A1;o</span>
+      </td></tr>
+      <tr><td style="padding:32px 32px 24px;">
+        <h2 style="margin:0 0 12px;font-size:22px;font-weight:700;color:#111827;">Withdrawal submitted ✅</h2>
+        <p style="margin:0 0 10px;font-size:15px;color:#374151;line-height:1.6;">Your withdrawal request has been received and is being processed.</p>
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+          <tr><td style="padding:8px 12px;font-size:14px;color:#6b7280;font-weight:500;">Amount requested</td><td style="padding:8px 12px;font-size:14px;color:#111827;font-weight:600;">€${Number(amount).toFixed(2)}</td></tr>
+          <tr><td style="padding:8px 12px;font-size:14px;color:#6b7280;font-weight:500;">You will receive</td><td style="padding:8px 12px;font-size:14px;color:#111827;font-weight:600;">€${netAmount.toFixed(2)}</td></tr>
+          <tr><td style="padding:8px 12px;font-size:14px;color:#6b7280;font-weight:500;">Method</td><td style="padding:8px 12px;font-size:14px;color:#111827;font-weight:600;">${methodLabel}</td></tr>
+          <tr><td style="padding:8px 12px;font-size:14px;color:#6b7280;font-weight:500;">Processing time</td><td style="padding:8px 12px;font-size:14px;color:#111827;font-weight:600;">24–48 hours</td></tr>
+        </table>
+        <p style="margin:0 0 10px;font-size:15px;color:#374151;line-height:1.6;">Our team will process your withdrawal manually. You'll be notified once it's completed.</p>
+        <a href="https://duxio.lovable.app/wallet" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;">View Wallet</a>
+      </td></tr>
+      <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;">
+        <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you have an account on Duxio.<br/>
+        <a href="https://duxio.lovable.app" style="color:#7c3aed;text-decoration:none;">Visit Duxio</a></p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from: "Duxio <noreply@duxio.lovable.app>",
+              to: userEmail,
+              subject: `Withdrawal of €${Number(amount).toFixed(2)} submitted ✅`,
+              html,
+            }),
+          });
+        }
+      } catch (emailErr) {
+        console.error("Email send error:", emailErr);
+        // Don't fail the withdrawal if email fails
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
