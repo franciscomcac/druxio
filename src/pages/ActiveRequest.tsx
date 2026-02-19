@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
-import RankBadge from "@/components/RankBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,8 +11,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Star, Check, Clock, Send, MessageSquare, XCircle, Eye, Users, ThumbsUp,
-  ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck, RefreshCw,
+  Star, Check, Clock, Send, MessageSquare, XCircle, Users, ThumbsUp,
+  ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck, RefreshCw, ChevronRight,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
@@ -55,6 +54,24 @@ interface Job {
   deadline_minutes: number;
 }
 
+// Represents one seller-side conversation entry in the sidebar
+interface SellerConvo {
+  jobId: string;
+  jobTitle: string;
+  jobCategory: string;
+  jobStatus: string;
+  buyerId: string;
+  buyerName: string | null;
+  buyerAvatar: string | null;
+  myPrice: number;
+  myDelivery: number;
+  myQuoteId: string;
+  sessionId: string | null;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  unread: number;
+}
+
 const ActiveRequest = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
@@ -75,8 +92,23 @@ const ActiveRequest = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [sessionMap, setSessionMap] = useState<Record<string, string>>({});
 
-  // Buyer profile (for seller view)
-  const [buyerProfile, setBuyerProfile] = useState<{ display_name: string | null; avatar_url: string | null; total_spent?: number } | null>(null);
+  // Buyer profile (for single-buyer seller view — legacy, used in buyer layout)
+  const [buyerProfile, setBuyerProfile] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
+
+  // Seller multi-convo sidebar
+  const [sellerConvos, setSellerConvos] = useState<SellerConvo[]>([]);
+  const [activeConvoJobId, setActiveConvoJobId] = useState<string | null>(null);
+  const [activeConvo, setActiveConvo] = useState<SellerConvo | null>(null);
+  const [sellerChatMessages, setSellerChatMessages] = useState<ChatMessage[]>([]);
+  const [sellerChatInput, setSellerChatInput] = useState("");
+  const [sendingSellerChat, setSendingSellerChat] = useState(false);
+  const sellerChatEndRef = useRef<HTMLDivElement>(null);
+
+  // Seller new offer form
+  const [newQuotePrice, setNewQuotePrice] = useState("");
+  const [newQuoteMinutes, setNewQuoteMinutes] = useState("");
+  const [newQuoteUnit, setNewQuoteUnit] = useState<"minutes" | "hours" | "days">("minutes");
+  const [submittingQuote, setSubmittingQuote] = useState(false);
 
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
@@ -86,14 +118,13 @@ const ActiveRequest = () => {
   const [paypalLoading, setPaypalLoading] = useState(false);
   const { format } = useCurrency();
 
-  // Seller: new quote form state
-  const [newQuotePrice, setNewQuotePrice] = useState("");
-  const [newQuoteMinutes, setNewQuoteMinutes] = useState("");
-  const [newQuoteUnit, setNewQuoteUnit] = useState<"minutes" | "hours" | "days">("minutes");
-  const [submittingQuote, setSubmittingQuote] = useState(false);
-  const [showQuoteForm, setShowQuoteForm] = useState(false);
+  const formatDeliveryTime = (minutes: number) => {
+    if (minutes >= 1440) return `${Math.round(minutes / 1440)} day${Math.round(minutes / 1440) !== 1 ? "s" : ""}`;
+    if (minutes >= 60) return `${Math.round(minutes / 60)} hour${Math.round(minutes / 60) !== 1 ? "s" : ""}`;
+    return `${minutes} min`;
+  };
 
-  // Load job + quotes
+  // ── Load current job ───────────────────────────────────────────────────────
   useEffect(() => {
     const loadData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -116,7 +147,7 @@ const ActiveRequest = () => {
       setJob(jobData);
 
       if (!userIsBuyer) {
-        const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url, total_spent").eq("id", jobData.buyer_id).single();
+        const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", jobData.buyer_id).single();
         if (bp) setBuyerProfile(bp);
       }
 
@@ -141,7 +172,6 @@ const ActiveRequest = () => {
         }
       }
 
-      // Online count
       const { count } = await supabase.from("profiles").select("id", { count: "exact", head: true }).eq("is_online", true);
       setOnlineCount(count || 0);
 
@@ -150,9 +180,147 @@ const ActiveRequest = () => {
     loadData();
   }, [jobId]);
 
-  // Realtime: new quotes
+  // ── Load ALL seller convos for the sidebar ─────────────────────────────────
   useEffect(() => {
-    if (!jobId) return;
+    if (!userId || isBuyer) return;
+
+    const loadSellerConvos = async () => {
+      // Get all quotes by this seller
+      const { data: myQuotes } = await supabase
+        .from("quotes")
+        .select("id, job_id, price, estimated_minutes, status")
+        .eq("expert_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (!myQuotes || myQuotes.length === 0) return;
+
+      const convos: SellerConvo[] = [];
+
+      await Promise.all(myQuotes.map(async (q) => {
+        const { data: jobData } = await supabase.from("jobs").select("id, title, category, status, buyer_id, budget_min, budget_max, deadline_minutes").eq("id", q.job_id).single();
+        if (!jobData) return;
+
+        const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", jobData.buyer_id).single();
+
+        // Find session for this pair
+        const { data: session } = await supabase
+          .from("sessions")
+          .select("id")
+          .eq("mentor_id", userId)
+          .eq("mentee_id", jobData.buyer_id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        let lastMessage: string | null = null;
+        let lastMessageAt: string | null = null;
+        let unread = 0;
+
+        if (session) {
+          const { data: msgs } = await supabase
+            .from("messages")
+            .select("content, created_at, sender_id, is_read")
+            .eq("session_id", session.id)
+            .order("created_at", { ascending: false })
+            .limit(1);
+          if (msgs && msgs.length > 0) {
+            lastMessage = msgs[0].content;
+            lastMessageAt = msgs[0].created_at;
+          }
+          const { count } = await supabase
+            .from("messages")
+            .select("id", { count: "exact", head: true })
+            .eq("session_id", session.id)
+            .eq("is_read", false)
+            .neq("sender_id", userId);
+          unread = count || 0;
+        }
+
+        convos.push({
+          jobId: jobData.id,
+          jobTitle: jobData.title,
+          jobCategory: jobData.category,
+          jobStatus: jobData.status,
+          buyerId: jobData.buyer_id,
+          buyerName: bp?.display_name || null,
+          buyerAvatar: bp?.avatar_url || null,
+          myPrice: q.price,
+          myDelivery: q.estimated_minutes,
+          myQuoteId: q.id,
+          sessionId: session?.id || null,
+          lastMessage,
+          lastMessageAt,
+          unread,
+        });
+      }));
+
+      // Sort: current job first, then by last message time
+      convos.sort((a, b) => {
+        if (a.jobId === jobId) return -1;
+        if (b.jobId === jobId) return 1;
+        if (a.lastMessageAt && b.lastMessageAt) return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
+        return 0;
+      });
+
+      setSellerConvos(convos);
+
+      // Set active convo to current job
+      const currentConvo = convos.find(c => c.jobId === jobId);
+      if (currentConvo) {
+        setActiveConvoJobId(currentConvo.jobId);
+        setActiveConvo(currentConvo);
+      }
+    };
+
+    loadSellerConvos();
+  }, [userId, isBuyer, jobId]);
+
+  // ── Load messages for active seller convo ─────────────────────────────────
+  useEffect(() => {
+    if (!activeConvo?.sessionId) return;
+    const sid = activeConvo.sessionId;
+
+    const loadMsgs = async () => {
+      const { data } = await supabase
+        .from("messages")
+        .select("id, content, sender_id, created_at")
+        .eq("session_id", sid)
+        .order("created_at", { ascending: true });
+      if (data) setSellerChatMessages(data);
+    };
+    loadMsgs();
+
+    const channel = supabase
+      .channel(`seller-chat-${sid}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `session_id=eq.${sid}` },
+        (payload) => {
+          const newMsg = payload.new as ChatMessage;
+          setSellerChatMessages((prev) => {
+            if (prev.find(m => m.id === newMsg.id)) return prev;
+            const filtered = prev.filter(m => !(m.id.startsWith("temp-") && m.content === newMsg.content && m.sender_id === newMsg.sender_id));
+            return [...filtered, newMsg];
+          });
+          // Update last message in sidebar
+          setSellerConvos((prev) => prev.map(c =>
+            c.jobId === activeConvo.jobId
+              ? { ...c, lastMessage: newMsg.content, lastMessageAt: newMsg.created_at }
+              : c
+          ));
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [activeConvo?.sessionId, activeConvo?.jobId]);
+
+  // Scroll seller chat
+  useEffect(() => {
+    sellerChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [sellerChatMessages]);
+
+  // ── Realtime: new quotes (buyer) ───────────────────────────────────────────
+  useEffect(() => {
+    if (!jobId || !isBuyer) return;
     const channel = supabase
       .channel(`quotes-${jobId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "quotes", filter: `job_id=eq.${jobId}` },
@@ -166,7 +334,7 @@ const ActiveRequest = () => {
             updated.sort((a, b) => a.price - b.price);
             return updated;
           });
-          if (isBuyer && !selectedChatPartnerId) setSelectedChatPartnerId(q.expert_id);
+          if (!selectedChatPartnerId) setSelectedChatPartnerId(q.expert_id);
         }
       )
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes", filter: `job_id=eq.${jobId}` },
@@ -184,28 +352,13 @@ const ActiveRequest = () => {
     return () => { supabase.removeChannel(channel); };
   }, [jobId, selectedChatPartnerId, isBuyer]);
 
-  // Load sessions, create if missing — each party inserts only their own auto-message
+  // ── Sessions & auto-messages (buyer layout) ───────────────────────────────
   useEffect(() => {
-    if (!jobId || !userId || quotes.length === 0 || !job) return;
+    if (!jobId || !userId || quotes.length === 0 || !job || !isBuyer) return;
 
-    const formatDeliveryTimeLocal = (minutes: number) => {
-      if (minutes >= 1440) return `${Math.round(minutes / 1440)} day${Math.round(minutes / 1440) !== 1 ? "s" : ""}`;
-      if (minutes >= 60) return `${Math.round(minutes / 60)} hour${Math.round(minutes / 60) !== 1 ? "s" : ""}`;
-      return `${minutes} min`;
-    };
-
-    // Returns [sessionId, isNew]
     const findOrCreateSession = async (mentorId: string, menteeId: string): Promise<[string | null, boolean]> => {
-      const { data: existing } = await supabase
-        .from("sessions")
-        .select("id")
-        .eq("mentor_id", mentorId)
-        .eq("mentee_id", menteeId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { data: existing } = await supabase.from("sessions").select("id").eq("mentor_id", mentorId).eq("mentee_id", menteeId).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (existing) return [existing.id, false];
-
       const { data: newSession } = await supabase.from("sessions").insert({
         mentor_id: mentorId,
         mentee_id: menteeId,
@@ -214,44 +367,24 @@ const ActiveRequest = () => {
         categories: [job.category],
         session_type: "chat",
       }).select("id").single();
-
       return [newSession?.id || null, true];
     };
 
-    // Each party inserts only their own auto-message (RLS: sender_id = auth.uid())
     const sendAutoMessage = async (sid: string, isNew: boolean) => {
       if (!isNew || !userId) return;
-
-      if (isBuyer) {
-        const budgetLine = `\n💰 Budget: €${job.budget_min} – €${job.budget_max}`;
-        const deadlineLine = `\n⏱ Deadline: ${formatDeliveryTimeLocal(job.deadline_minutes)}`;
-        const descLine = job.description ? `\n\n📄 Details:\n${job.description}` : "";
-        const content = `📋 Order Request\n\n📌 ${job.title}\n🏷 Category: ${job.category}${budgetLine}${deadlineLine}${descLine}`;
-        await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
-      } else {
-        const sellerQuote = quotes.find(q => q.expert_id === userId);
-        if (sellerQuote) {
-          const content = `📋 New offer: €${sellerQuote.price.toFixed(2)} — delivery in ${formatDeliveryTimeLocal(sellerQuote.estimated_minutes)}`;
-          await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
-        }
-      }
+      const budgetLine = `\n💰 Budget: €${job.budget_min} – €${job.budget_max}`;
+      const deadlineLine = `\n⏱ Deadline: ${formatDeliveryTime(job.deadline_minutes)}`;
+      const descLine = job.description ? `\n\n📄 Details:\n${job.description}` : "";
+      const content = `📋 Order Request\n\n📌 ${job.title}\n🏷 Category: ${job.category}${budgetLine}${deadlineLine}${descLine}`;
+      await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
     };
 
     const loadSessions = async () => {
-      if (isBuyer) {
-        for (const quote of quotes) {
-          if (sessionMap[quote.expert_id]) continue;
-          const [sid, isNew] = await findOrCreateSession(quote.expert_id, userId!);
-          if (sid) {
-            setSessionMap((prev) => ({ ...prev, [quote.expert_id]: sid }));
-            await sendAutoMessage(sid, isNew);
-          }
-        }
-      } else {
-        if (sessionMap[job.buyer_id]) return;
-        const [sid, isNew] = await findOrCreateSession(userId!, job.buyer_id);
+      for (const quote of quotes) {
+        if (sessionMap[quote.expert_id]) continue;
+        const [sid, isNew] = await findOrCreateSession(quote.expert_id, userId!);
         if (sid) {
-          setSessionMap({ [job.buyer_id]: sid });
+          setSessionMap((prev) => ({ ...prev, [quote.expert_id]: sid }));
           await sendAutoMessage(sid, isNew);
         }
       }
@@ -259,122 +392,62 @@ const ActiveRequest = () => {
     loadSessions();
   }, [quotes, jobId, userId, isBuyer, job]);
 
-  // Load messages for selected chat partner
+  // ── Load messages for buyer chat ───────────────────────────────────────────
   useEffect(() => {
-    if (!selectedChatPartnerId) return;
+    if (!selectedChatPartnerId || !isBuyer) return;
     const sid = sessionMap[selectedChatPartnerId];
     if (!sid) return;
-
     const loadMessages = async () => {
-      const { data } = await supabase
-        .from("messages")
-        .select("id, content, sender_id, created_at")
-        .eq("session_id", sid)
-        .order("created_at", { ascending: true });
-      if (data) {
-        setChatMessages((prev) => ({ ...prev, [selectedChatPartnerId]: data }));
-      }
+      const { data } = await supabase.from("messages").select("id, content, sender_id, created_at").eq("session_id", sid).order("created_at", { ascending: true });
+      if (data) setChatMessages((prev) => ({ ...prev, [selectedChatPartnerId]: data }));
     };
     loadMessages();
-
-    const channel = supabase
-      .channel(`chat-${sid}`)
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `session_id=eq.${sid}`,
-      }, (payload) => {
+    const channel = supabase.channel(`chat-${sid}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `session_id=eq.${sid}` }, (payload) => {
         const newMsg = payload.new as ChatMessage;
         setChatMessages((prev) => {
-          const partnerId = selectedChatPartnerId;
-          const existing = prev[partnerId] || [];
+          const existing = prev[selectedChatPartnerId] || [];
           if (existing.find(m => m.id === newMsg.id)) return prev;
           const filtered = existing.filter(m => !(m.id.startsWith("temp-") && m.content === newMsg.content && m.sender_id === newMsg.sender_id));
-          return { ...prev, [partnerId]: [...filtered, newMsg] };
+          return { ...prev, [selectedChatPartnerId]: [...filtered, newMsg] };
         });
       })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
-  }, [selectedChatPartnerId, sessionMap]);
+  }, [selectedChatPartnerId, sessionMap, isBuyer]);
 
-  // Scroll chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages, selectedChatPartnerId]);
 
-  const handleAcceptQuote = (quote: QuoteWithProfile) => {
-    setPaypalDialog(quote);
-  };
+  // ── Handlers ───────────────────────────────────────────────────────────────
+  const handleAcceptQuote = (quote: QuoteWithProfile) => setPaypalDialog(quote);
 
   const handlePayPalCheckout = async () => {
     if (!paypalDialog || !jobId) return;
     setPaypalLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const createRes = await supabase.functions.invoke("paypal-create-order", {
-        body: { quoteId: paypalDialog.id, jobId },
-      });
+      const createRes = await supabase.functions.invoke("paypal-create-order", { body: { quoteId: paypalDialog.id, jobId } });
       if (createRes.error) throw new Error(createRes.error.message);
       if (createRes.data?.error) throw new Error(createRes.data.error);
-
       const { paypalOrderId, approvalUrl } = createRes.data;
       if (!approvalUrl) throw new Error("No PayPal approval URL received");
-
       const paypalWindow = window.open(approvalUrl, "_blank", "width=500,height=700");
-
       const pollInterval = setInterval(async () => {
         try {
-          const captureRes = await supabase.functions.invoke("paypal-capture-order", {
-            body: { paypalOrderId, quoteId: paypalDialog.id, jobId },
-          });
-
+          const captureRes = await supabase.functions.invoke("paypal-capture-order", { body: { paypalOrderId, quoteId: paypalDialog.id, jobId } });
           if (captureRes.data?.success) {
             clearInterval(pollInterval);
             paypalWindow?.close();
-
-            const otherExperts = quotes
-              .filter(q => q.expert_id !== paypalDialog.id && q.expert_id !== paypalDialog.expert_id)
-              .map(q => q.expert_id);
-            if (otherExperts.length > 0 && userId) {
-              const { data: sessionsToDelete } = await supabase
-                .from("sessions")
-                .select("id")
-                .in("mentor_id", otherExperts)
-                .eq("mentee_id", userId)
-                .eq("status", "pending");
-              if (sessionsToDelete && sessionsToDelete.length > 0) {
-                const sids = sessionsToDelete.map(s => s.id);
-                await supabase.from("messages").delete().in("session_id", sids);
-                await supabase.from("sessions").delete().in("id", sids);
-              }
-            }
-
-            toast({
-              title: "Payment successful! 🎉",
-              description: `Payment confirmed. ${paypalDialog.profile?.display_name || "The expert"} will start working now.`,
-            });
+            toast({ title: "Payment successful! 🎉", description: `${paypalDialog.profile?.display_name || "The expert"} will start working now.` });
             setPaypalDialog(null);
             setPaypalLoading(false);
             navigate(`/order/${jobId}`);
           }
-        } catch {
-          // keep polling
-        }
+        } catch { /* keep polling */ }
       }, 3000);
-
-      setTimeout(() => {
-        clearInterval(pollInterval);
-        if (paypalLoading) {
-          setPaypalLoading(false);
-          toast({ title: "Payment timeout", description: "Please try again if you haven't completed payment.", variant: "destructive" });
-        }
-      }, 300000);
+      setTimeout(() => { clearInterval(pollInterval); setPaypalLoading(false); }, 300000);
     } catch (err: any) {
-      console.error("PayPal checkout error:", err);
       toast({ title: "Checkout error", description: err.message, variant: "destructive" });
       setPaypalLoading(false);
     }
@@ -393,134 +466,94 @@ const ActiveRequest = () => {
     if (!sid) return;
     setSendingChat(true);
     const messageContent = chatInput.trim();
-
     const flagged = await checkContent(messageContent, "chat message");
     if (flagged) { setSendingChat(false); return; }
-
     setChatInput("");
-
-    const optimisticMsg: ChatMessage = {
-      id: `temp-${Date.now()}`,
-      content: messageContent,
-      sender_id: userId,
-      created_at: new Date().toISOString(),
-    };
-    setChatMessages((prev) => ({
-      ...prev,
-      [selectedChatPartnerId]: [...(prev[selectedChatPartnerId] || []), optimisticMsg],
-    }));
-
-    const { error } = await supabase.from("messages").insert({
-      session_id: sid,
-      sender_id: userId,
-      content: messageContent,
-    });
+    const optimisticMsg: ChatMessage = { id: `temp-${Date.now()}`, content: messageContent, sender_id: userId, created_at: new Date().toISOString() };
+    setChatMessages((prev) => ({ ...prev, [selectedChatPartnerId]: [...(prev[selectedChatPartnerId] || []), optimisticMsg] }));
+    const { error } = await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content: messageContent });
     if (error) {
       toast({ title: "Failed to send message", description: error.message, variant: "destructive" });
-      setChatMessages((prev) => ({
-        ...prev,
-        [selectedChatPartnerId]: (prev[selectedChatPartnerId] || []).filter(m => m.id !== optimisticMsg.id),
-      }));
+      setChatMessages((prev) => ({ ...prev, [selectedChatPartnerId]: (prev[selectedChatPartnerId] || []).filter(m => m.id !== optimisticMsg.id) }));
     }
     setSendingChat(false);
   };
 
-  const formatDeliveryTime = (minutes: number) => {
-    if (minutes >= 1440) return `${Math.round(minutes / 1440)} day${Math.round(minutes / 1440) !== 1 ? "s" : ""}`;
-    if (minutes >= 60) return `${Math.round(minutes / 60)} hour${Math.round(minutes / 60) !== 1 ? "s" : ""}`;
-    return `${minutes} min`;
+  const handleSendSellerChat = async () => {
+    if (!sellerChatInput.trim() || !userId || !activeConvo?.sessionId) return;
+    setSendingSellerChat(true);
+    const content = sellerChatInput.trim();
+    const flagged = await checkContent(content, "chat message");
+    if (flagged) { setSendingSellerChat(false); return; }
+    setSellerChatInput("");
+    const optimistic: ChatMessage = { id: `temp-${Date.now()}`, content, sender_id: userId, created_at: new Date().toISOString() };
+    setSellerChatMessages((prev) => [...prev, optimistic]);
+    const { error } = await supabase.from("messages").insert({ session_id: activeConvo.sessionId, sender_id: userId, content });
+    if (error) {
+      toast({ title: "Failed to send", description: error.message, variant: "destructive" });
+      setSellerChatMessages((prev) => prev.filter(m => m.id !== optimistic.id));
+    }
+    setSendingSellerChat(false);
+  };
+
+  const handleSwitchConvo = async (convo: SellerConvo) => {
+    setActiveConvoJobId(convo.jobId);
+    setActiveConvo(convo);
+    setSellerChatMessages([]);
+    setSellerChatInput("");
+    // If no session yet, create one and auto-send offer
+    if (!convo.sessionId && userId) {
+      const { data: existing } = await supabase.from("sessions").select("id").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (existing) {
+        const updated = { ...convo, sessionId: existing.id };
+        setActiveConvo(updated);
+        setSellerConvos(prev => prev.map(c => c.jobId === convo.jobId ? updated : c));
+      } else {
+        const { data: newSession } = await supabase.from("sessions").insert({
+          mentor_id: userId, mentee_id: convo.buyerId, status: "pending",
+          issue_description: convo.jobTitle, categories: [convo.jobCategory], session_type: "chat",
+        }).select("id").single();
+        if (newSession) {
+          const content = `📋 New offer: €${convo.myPrice.toFixed(2)} — delivery in ${formatDeliveryTime(convo.myDelivery)}`;
+          await supabase.from("messages").insert({ session_id: newSession.id, sender_id: userId, content });
+          const updated = { ...convo, sessionId: newSession.id };
+          setActiveConvo(updated);
+          setSellerConvos(prev => prev.map(c => c.jobId === convo.jobId ? updated : c));
+        }
+      }
+    }
   };
 
   const handleSubmitNewQuote = async () => {
-    if (!jobId || !userId) return;
+    if (!activeConvo || !userId) return;
     const price = parseFloat(newQuotePrice);
     const rawValue = parseInt(newQuoteMinutes) || 20;
     const minutes = newQuoteUnit === "days" ? rawValue * 1440 : newQuoteUnit === "hours" ? rawValue * 60 : rawValue;
-    if (isNaN(price) || price <= 0) {
-      toast({ title: "Enter a valid price", variant: "destructive" });
-      return;
-    }
+    if (isNaN(price) || price <= 0) { toast({ title: "Enter a valid price", variant: "destructive" }); return; }
     setSubmittingQuote(true);
-    const existingQuote = quotes.find(q => q.expert_id === userId);
-    let error: any;
-    if (existingQuote) {
-      const res = await supabase.from("quotes").update({
-        price,
-        estimated_minutes: minutes,
-        message: `Updated offer: €${price.toFixed(2)} — ${formatDeliveryTime(minutes)} delivery`,
-      }).eq("id", existingQuote.id);
-      error = res.error;
-    } else {
-      const res = await supabase.from("quotes").insert({
-        job_id: jobId,
-        expert_id: userId,
-        price,
-        estimated_minutes: minutes,
-        message: `Updated offer: €${price.toFixed(2)} — ${formatDeliveryTime(minutes)} delivery`,
-      });
-      error = res.error;
-    }
+    const { error } = await supabase.from("quotes").update({ price, estimated_minutes: minutes }).eq("id", activeConvo.myQuoteId);
     if (error) {
-      toast({ title: "Failed to submit offer", description: error.message, variant: "destructive" });
+      toast({ title: "Failed to update offer", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "New offer submitted! 🎉" });
+      toast({ title: "Offer updated!" });
+      const sid = activeConvo.sessionId;
+      if (sid) {
+        const content = `📋 New offer: €${price.toFixed(2)} — delivery in ${formatDeliveryTime(minutes)}`;
+        await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
+      }
+      setSellerConvos(prev => prev.map(c => c.jobId === activeConvo.jobId ? { ...c, myPrice: price, myDelivery: minutes } : c));
+      setActiveConvo(prev => prev ? { ...prev, myPrice: price, myDelivery: minutes } : prev);
       setNewQuotePrice("");
       setNewQuoteMinutes("");
-      setShowQuoteForm(false);
-      const sid = sessionMap[selectedChatPartnerId || ""];
-      if (sid) {
-        await supabase.from("messages").insert({
-          session_id: sid,
-          sender_id: userId,
-          content: `📋 New offer: €${price.toFixed(2)} — delivery in ${formatDeliveryTime(minutes)}`,
-        });
-      }
     }
     setSubmittingQuote(false);
   };
 
-  const selectedMessages = selectedChatPartnerId ? (chatMessages[selectedChatPartnerId] || []) : [];
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!job) return null;
-
-  const sortedQuotes = [...quotes].sort((a, b) => a.price - b.price);
-
-  const recommendedId = sortedQuotes.length > 0 ? (() => {
-    const maxPrice = Math.max(...sortedQuotes.map(q => q.price), 1);
-    return sortedQuotes.reduce((best, curr) => {
-      const currScore = (1 - curr.price / maxPrice) * 0.5 + ((curr.profile?.rating_avg || 0) / 5) * 0.5;
-      const bestScore = (1 - best.price / maxPrice) * 0.5 + ((best.profile?.rating_avg || 0) / 5) * 0.5;
-      return currScore > bestScore ? curr : best;
-    }).id;
-  })() : null;
-
-  const fastestId = sortedQuotes.length > 0
-    ? sortedQuotes.reduce((prev, curr) => curr.estimated_minutes < prev.estimated_minutes ? curr : prev).id
-    : null;
-
-  const myQuote = !isBuyer ? quotes.find(q => q.expert_id === userId) : null;
-  const selectedQuote = isBuyer
-    ? quotes.find(q => q.expert_id === selectedChatPartnerId)
-    : myQuote;
-
-  const chatPartnerName = isBuyer
-    ? selectedQuote?.profile?.display_name || "Expert"
-    : buyerProfile?.display_name || "Buyer";
-
-  // Helper: render a message bubble with special styling for auto-messages
+  // ── Message bubble renderer ────────────────────────────────────────────────
   const renderMessageBubble = (msg: ChatMessage, isMe: boolean) => {
     const isOfferMsg = msg.content.startsWith("📋 New offer:");
     const isJobMsg = msg.content.startsWith("📋 Order Request");
     const isAutoMsg = isOfferMsg || isJobMsg;
-
     return (
       <div key={msg.id} className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
         <div className={`max-w-[80%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
@@ -557,95 +590,205 @@ const ActiveRequest = () => {
     );
   };
 
-  // ── Seller-only: full-screen messenger layout ─────────────────────────────
-  if (!isBuyer && myQuote) {
-    const msgs = chatMessages[selectedChatPartnerId || ""] || [];
+  if (loading) {
     return (
-      <div className="h-screen bg-background flex flex-col overflow-hidden">
-        {/* Top bar */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/80 backdrop-blur-sm shrink-0">
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm text-foreground truncate">{job.title}</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!job) return null;
+
+  const sortedQuotes = [...quotes].sort((a, b) => a.price - b.price);
+  const recommendedId = sortedQuotes.length > 0 ? (() => {
+    const maxPrice = Math.max(...sortedQuotes.map(q => q.price), 1);
+    return sortedQuotes.reduce((best, curr) => {
+      const currScore = (1 - curr.price / maxPrice) * 0.5 + ((curr.profile?.rating_avg || 0) / 5) * 0.5;
+      const bestScore = (1 - best.price / maxPrice) * 0.5 + ((best.profile?.rating_avg || 0) / 5) * 0.5;
+      return currScore > bestScore ? curr : best;
+    }).id;
+  })() : null;
+  const fastestId = sortedQuotes.length > 0
+    ? sortedQuotes.reduce((prev, curr) => curr.estimated_minutes < prev.estimated_minutes ? curr : prev).id
+    : null;
+  const myQuote = !isBuyer ? quotes.find(q => q.expert_id === userId) : null;
+  const selectedQuote = isBuyer ? quotes.find(q => q.expert_id === selectedChatPartnerId) : myQuote;
+  const chatPartnerName = isBuyer ? selectedQuote?.profile?.display_name || "Expert" : buyerProfile?.display_name || "Buyer";
+  const selectedMessages = selectedChatPartnerId ? (chatMessages[selectedChatPartnerId] || []) : [];
+
+  // ── SELLER LAYOUT — multi-convo sidebar ────────────────────────────────────
+  if (!isBuyer) {
+    return (
+      <div className="h-screen bg-background flex overflow-hidden">
+
+        {/* ── Left sidebar: all conversations ──────────────────────────────── */}
+        <div className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
+          {/* Header */}
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px] border-primary/20 text-primary/80">{job.category}</Badge>
-              <Badge variant="secondary" className="text-[10px]">Seller View</Badge>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/dashboard")}>
+                <ArrowLeft className="h-3.5 w-3.5" />
+              </Button>
+              <p className="text-sm font-semibold text-foreground">My Orders</p>
             </div>
+            <Badge variant="secondary" className="text-[10px]">{sellerConvos.length}</Badge>
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-xs text-muted-foreground">Your offer</p>
-            <p className="text-base font-bold text-primary">{format(myQuote.price)}</p>
-          </div>
+
+          {/* Convo list */}
+          <ScrollArea className="flex-1">
+            {sellerConvos.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground px-4">
+                <MessageSquare className="h-8 w-8 opacity-30 mb-2" />
+                <p className="text-xs">No active orders yet</p>
+              </div>
+            ) : (
+              <div className="p-2 space-y-1">
+                {sellerConvos.map((convo) => {
+                  const isActive = activeConvoJobId === convo.jobId;
+                  return (
+                    <button
+                      key={convo.jobId}
+                      onClick={() => handleSwitchConvo(convo)}
+                      className={`w-full text-left rounded-xl p-3 transition-all ${
+                        isActive
+                          ? "bg-primary/10 border border-primary/20"
+                          : "hover:bg-muted/50 border border-transparent"
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <Avatar className="h-9 w-9 border border-border shrink-0">
+                          <AvatarImage src={convo.buyerAvatar || undefined} />
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                            {convo.buyerName?.[0] || "B"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                              {convo.buyerName || "Buyer"}
+                            </p>
+                            {convo.unread > 0 && (
+                              <span className="h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shrink-0">
+                                {convo.unread}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-muted-foreground truncate">{convo.jobTitle}</p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-[10px] text-primary font-semibold">€{convo.myPrice.toFixed(2)}</p>
+                            <Badge
+                              variant={convo.jobStatus === "open" ? "outline" : "secondary"}
+                              className="text-[9px] h-3.5 px-1"
+                            >
+                              {convo.jobStatus}
+                            </Badge>
+                          </div>
+                          {convo.lastMessage && (
+                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                              {convo.lastMessage.startsWith("📋") ? "📋 Auto message" : convo.lastMessage}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </ScrollArea>
         </div>
 
-        {/* Split pane */}
-        <div className="flex flex-1 min-h-0">
-          {/* Left sidebar — job context */}
-          <div className="hidden md:flex flex-col w-72 border-r border-border bg-card/40 shrink-0 overflow-y-auto">
-            {/* Buyer info */}
-            <div className="p-4 border-b border-border">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-3">Client</p>
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border border-border">
-                  <AvatarImage src={buyerProfile?.avatar_url || undefined} />
+        {/* ── Main area ─────────────────────────────────────────────────────── */}
+        {activeConvo ? (
+          <div className="flex flex-1 min-w-0">
+            {/* Chat */}
+            <div className="flex flex-col flex-1 min-h-0 min-w-0">
+              {/* Chat top bar */}
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/20 shrink-0">
+                <Avatar className="h-9 w-9 border border-border shrink-0">
+                  <AvatarImage src={activeConvo.buyerAvatar || undefined} />
                   <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
-                    {buyerProfile?.display_name?.split(" ").map(n => n[0]).join("") || "B"}
+                    {activeConvo.buyerName?.[0] || "B"}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-semibold text-sm text-foreground">{buyerProfile?.display_name || "Buyer"}</p>
-                  <p className="text-xs text-muted-foreground">Buyer</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-foreground">{activeConvo.buyerName || "Buyer"}</p>
+                  <p className="text-xs text-muted-foreground truncate">{activeConvo.jobTitle}</p>
                 </div>
+                <div className="text-right shrink-0">
+                  <p className="text-[10px] text-muted-foreground">Your offer</p>
+                  <p className="text-base font-bold text-primary">€{activeConvo.myPrice.toFixed(2)}</p>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="p-4 space-y-3">
+                  {sellerChatMessages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
+                      <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
+                        <MessageSquare className="h-7 w-7 text-primary/50" />
+                      </div>
+                      <p className="text-sm font-medium">No messages yet</p>
+                      <p className="text-xs mt-1 opacity-60">Your offer was sent automatically</p>
+                    </div>
+                  ) : (
+                    sellerChatMessages.map((msg) => renderMessageBubble(msg, msg.sender_id === userId))
+                  )}
+                  <div ref={sellerChatEndRef} />
+                </div>
+              </ScrollArea>
+
+              {/* Chat input */}
+              <div className="border-t border-border p-3 shrink-0 bg-card/20">
+                <form onSubmit={(e) => { e.preventDefault(); handleSendSellerChat(); }} className="flex gap-2">
+                  <Input
+                    value={sellerChatInput}
+                    onChange={(e) => setSellerChatInput(e.target.value)}
+                    placeholder="Reply to buyer..."
+                    className="bg-background/60 border-border/40 focus:border-primary/40"
+                  />
+                  <Button type="submit" size="icon" disabled={!sellerChatInput.trim() || sendingSellerChat} className="shrink-0">
+                    {sendingSellerChat ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </form>
               </div>
             </div>
 
-            {/* Job details */}
-            <div className="p-4 border-b border-border space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Request</p>
-              <p className="text-sm text-foreground font-medium">{job.title}</p>
-              <Badge variant="outline" className="text-[10px]">{job.category}</Badge>
-              {job.description && (
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-4">{job.description}</p>
-              )}
-              <div className="flex gap-3 pt-1">
-                <div>
-                  <p className="text-[10px] text-muted-foreground">Budget</p>
-                  <p className="text-xs font-semibold text-foreground">€{job.budget_min}–€{job.budget_max}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground">Deadline</p>
-                  <p className="text-xs font-semibold text-foreground">{formatDeliveryTime(job.deadline_minutes)}</p>
-                </div>
+            {/* ── Right panel: job details + update offer ───────────────────── */}
+            <div className="hidden lg:flex flex-col w-64 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
+              {/* Job details */}
+              <div className="p-4 border-b border-border space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Request</p>
+                <p className="text-sm font-semibold text-foreground">{activeConvo.jobTitle}</p>
+                <Badge variant="outline" className="text-[10px]">{activeConvo.jobCategory}</Badge>
               </div>
-            </div>
 
-            {/* Your offer */}
-            <div className="p-4 border-b border-border space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Your Offer</p>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Price</span>
-                <span className="font-bold text-primary">{format(myQuote.price)}</span>
+              {/* Your offer */}
+              <div className="p-4 border-b border-border space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Your Offer</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-bold text-primary">€{activeConvo.myPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Delivery</span>
+                  <span className="font-medium text-foreground">{formatDeliveryTime(activeConvo.myDelivery)}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Delivery</span>
-                <span className="font-medium text-foreground">{formatDeliveryTime(myQuote.estimated_minutes)}</span>
-              </div>
-            </div>
 
-            {/* Update offer */}
-            <div className="p-4 space-y-2 border-b border-border">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Update Offer</p>
-              <div className="space-y-2">
+              {/* Update offer */}
+              <div className="p-4 space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Update Offer</p>
                 <Input
                   type="number"
-                  placeholder="Price (€)"
+                  placeholder="New price (€)"
                   value={newQuotePrice}
                   onChange={(e) => setNewQuotePrice(e.target.value)}
                   className="text-sm h-8 bg-background/60"
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <Input
                     type="number"
                     placeholder="Time"
@@ -653,15 +796,18 @@ const ActiveRequest = () => {
                     onChange={(e) => setNewQuoteMinutes(e.target.value)}
                     className="text-sm h-8 bg-background/60 flex-1"
                   />
-                  <select
-                    value={newQuoteUnit}
-                    onChange={(e) => setNewQuoteUnit(e.target.value as any)}
-                    className="text-xs border border-border rounded-md px-2 h-8 bg-background text-foreground"
-                  >
-                    <option value="minutes">min</option>
-                    <option value="hours">hrs</option>
-                    <option value="days">days</option>
-                  </select>
+                  <div className="flex border border-border rounded-md overflow-hidden h-8 text-xs shrink-0">
+                    {(["minutes", "hours", "days"] as const).map((u) => (
+                      <button
+                        key={u}
+                        type="button"
+                        onClick={() => setNewQuoteUnit(u)}
+                        className={`px-2 transition-colors ${newQuoteUnit === u ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                      >
+                        {u === "minutes" ? "min" : u === "hours" ? "hr" : "day"}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <Button
                   size="sm"
@@ -669,75 +815,30 @@ const ActiveRequest = () => {
                   onClick={handleSubmitNewQuote}
                   disabled={submittingQuote || !newQuotePrice}
                 >
-                  {submittingQuote ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3 mr-1" />}
-                  Update Offer
+                  {submittingQuote ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                  Send Updated Offer
                 </Button>
               </div>
             </div>
           </div>
-
-          {/* Main chat area */}
-          <div className="flex flex-col flex-1 min-h-0">
-            {/* Chat header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/20 shrink-0">
-              <Avatar className="h-8 w-8 border border-border">
-                <AvatarImage src={buyerProfile?.avatar_url || undefined} />
-                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
-                  {buyerProfile?.display_name?.[0] || "B"}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">{buyerProfile?.display_name || "Buyer"}</p>
-                <p className="text-xs text-muted-foreground">Chat with buyer</p>
-              </div>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-            </div>
-
-            {/* Messages */}
-            <ScrollArea className="flex-1 min-h-0">
-              <div className="p-4 space-y-3">
-                {msgs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-                    <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
-                      <MessageSquare className="h-7 w-7 text-primary/50" />
-                    </div>
-                    <p className="text-sm font-medium">No messages yet</p>
-                    <p className="text-xs mt-1 opacity-60">Start the conversation</p>
-                  </div>
-                ) : (
-                  msgs.map((msg) => renderMessageBubble(msg, msg.sender_id === userId))
-                )}
-                <div ref={chatEndRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Chat input */}
-            <div className="border-t border-border p-3 shrink-0 bg-card/20">
-              <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex gap-2">
-                <Input
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Say something..."
-                  className="bg-background/60 border-border/40 focus:border-primary/40"
-                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendChat(); } }}
-                />
-                <Button type="submit" size="icon" disabled={!chatInput.trim() || sendingChat} className="shrink-0">
-                  {sendingChat ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </form>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            <div className="text-center">
+              <MessageSquare className="h-12 w-12 opacity-20 mx-auto mb-3" />
+              <p className="text-sm">Select a conversation</p>
             </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }
 
-  // ── Buyer layout ──────────────────────────────────────────────────────────
+  // ── BUYER LAYOUT ───────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
         {/* Header */}
-        <div className="mb-6 animate-fade-in">
+        <div className="mb-6">
           <div className="flex items-start gap-3">
             <Button variant="ghost" size="icon" className="mt-0.5 h-8 w-8 shrink-0" onClick={() => navigate("/dashboard")}>
               <ArrowLeft className="h-4 w-4" />
@@ -748,22 +849,20 @@ const ActiveRequest = () => {
                 <Badge variant="outline" className="text-xs border-primary/20 text-primary/80">{job.category}</Badge>
                 <Badge variant={job.status === "open" ? "default" : "secondary"} className="text-xs capitalize">{job.status}</Badge>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {onlineCount} online
+                  <Users className="h-3 w-3" />{onlineCount} online
                 </span>
               </div>
             </div>
             {isBuyer && job.status === "open" && (
               <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive shrink-0" onClick={handleCancelRequest}>
-                <XCircle className="h-4 w-4 mr-1" />
-                Cancel
+                <XCircle className="h-4 w-4 mr-1" />Cancel
               </Button>
             )}
           </div>
         </div>
 
-        {/* Offers leaderboard */}
-        <div className="mb-6 sm:mb-8 animate-fade-in [animation-delay:200ms]">
+        {/* Offers */}
+        <div className="mb-6 sm:mb-8">
           {quotes.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
@@ -788,63 +887,44 @@ const ActiveRequest = () => {
                   const isSelected = selectedChatPartnerId === quote.expert_id;
                   const isRecommended = quote.id === recommendedId;
                   const isFastest = quote.id === fastestId;
-                  const hasQuoted = isBuyer; // buyer always sees full leaderboard if they've already got quotes
                   return (
                     <div
                       key={quote.id}
                       onClick={() => setSelectedChatPartnerId(quote.expert_id)}
                       className={`relative rounded-xl border p-3 sm:p-4 cursor-pointer transition-all ${
-                        isSelected
-                          ? "border-primary/40 bg-primary/5 shadow-sm"
-                          : "border-border bg-card hover:border-primary/20 hover:bg-card/80"
+                        isSelected ? "border-primary/40 bg-primary/5 shadow-sm" : "border-border bg-card hover:border-primary/20"
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         <div className="relative shrink-0">
                           <Avatar className="h-10 w-10 border border-border">
                             <AvatarImage src={quote.profile?.avatar_url || undefined} />
-                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
-                              {quote.profile?.display_name?.[0] || "E"}
-                            </AvatarFallback>
+                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">{quote.profile?.display_name?.[0] || "E"}</AvatarFallback>
                           </Avatar>
-                          <span className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center text-[10px] font-bold text-muted-foreground">
-                            {i + 1}
-                          </span>
+                          <span className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center text-[10px] font-bold text-muted-foreground">{i + 1}</span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <p className="font-semibold text-sm text-foreground">{quote.profile?.display_name || "Expert"}</p>
                             {isRecommended && <Badge className="text-[10px] h-4 bg-primary/90">Recommended</Badge>}
-                            {isFastest && !isRecommended && <Badge variant="outline" className="text-[10px] h-4 border-amber-500/30 text-amber-500">Fastest</Badge>}
+                            {isFastest && !isRecommended && <Badge variant="outline" className="text-[10px] h-4">Fastest</Badge>}
                           </div>
                           <div className="flex items-center gap-3 mt-0.5">
                             {quote.profile?.rating_avg && quote.profile.rating_avg > 0 && (
                               <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                {quote.profile.rating_avg.toFixed(1)}
+                                <Star className="h-3 w-3 fill-primary text-primary" />{quote.profile.rating_avg.toFixed(1)}
                               </span>
                             )}
                             <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                              <Clock className="h-3 w-3" />
-                              {formatDeliveryTime(quote.estimated_minutes)}
+                              <Clock className="h-3 w-3" />{formatDeliveryTime(quote.estimated_minutes)}
                             </span>
-                            {quote.profile?.total_sessions && (
-                              <span className="text-xs text-muted-foreground">{quote.profile.total_sessions} sessions</span>
-                            )}
                           </div>
                         </div>
                         <div className="text-right shrink-0">
                           <p className="text-lg font-bold text-primary">{format(quote.price)}</p>
-                          {isBuyer && (
-                            <Button
-                              size="sm"
-                              className="mt-1 h-7 text-xs"
-                              onClick={(e) => { e.stopPropagation(); handleAcceptQuote(quote); }}
-                            >
-                              <CreditCard className="h-3 w-3 mr-1" />
-                              Accept & Pay
-                            </Button>
-                          )}
+                          <Button size="sm" className="mt-1 h-7 text-xs" onClick={(e) => { e.stopPropagation(); handleAcceptQuote(quote); }}>
+                            <CreditCard className="h-3 w-3 mr-1" />Accept & Pay
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -855,61 +935,40 @@ const ActiveRequest = () => {
           )}
         </div>
 
-        {/* Chat panel */}
-        <div className="animate-fade-in [animation-delay:400ms]">
+        {/* Chat */}
+        <div>
           <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-primary" />
-            {isBuyer ? "Live chat with sellers" : `Chat with ${buyerProfile?.display_name || "Buyer"}`}
+            <MessageSquare className="h-4 w-4 text-primary" />Live chat with sellers
           </h2>
-
-          {/* Tabs (buyer: one tab per expert) */}
-          {isBuyer && quotes.length > 1 && (
+          {quotes.length > 1 && (
             <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
               {sortedQuotes.map((q) => (
                 <button
                   key={q.expert_id}
                   onClick={() => setSelectedChatPartnerId(q.expert_id)}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0 ${
-                    selectedChatPartnerId === q.expert_id
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    selectedChatPartnerId === q.expert_id ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  <Avatar className="h-4 w-4">
-                    <AvatarFallback className="text-[8px]">{q.profile?.display_name?.[0] || "E"}</AvatarFallback>
-                  </Avatar>
+                  <Avatar className="h-4 w-4"><AvatarFallback className="text-[8px]">{q.profile?.display_name?.[0] || "E"}</AvatarFallback></Avatar>
                   {q.profile?.display_name || "Expert"}
                 </button>
               ))}
             </div>
           )}
-
           <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex flex-col" style={{ height: "420px" }}>
-            {/* Chat header */}
             {selectedQuote && (
               <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-card/60 shrink-0">
                 <Avatar className="h-7 w-7 border border-border">
-                  <AvatarImage src={isBuyer ? (selectedQuote.profile?.avatar_url || undefined) : (buyerProfile?.avatar_url || undefined)} />
-                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary">
-                    {chatPartnerName[0] || "?"}
-                  </AvatarFallback>
+                  <AvatarImage src={selectedQuote.profile?.avatar_url || undefined} />
+                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{chatPartnerName[0] || "?"}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{chatPartnerName}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {isBuyer ? `${format(selectedQuote.price)} · ${formatDeliveryTime(selectedQuote.estimated_minutes)} delivery` : "Buyer"}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{format(selectedQuote.price)} · {formatDeliveryTime(selectedQuote.estimated_minutes)} delivery</p>
                 </div>
-                {!isBuyer && myQuote && (
-                  <div className="text-right">
-                    <span className="text-xs text-muted-foreground">Your offer</span>
-                    <p className="text-lg font-bold text-primary">{format(myQuote.price)}</p>
-                  </div>
-                )}
               </div>
             )}
-
-            {/* Messages */}
             <ScrollArea className="flex-1 p-4 min-h-0">
               <div className="space-y-3">
                 {selectedMessages.length === 0 ? (
@@ -923,13 +982,8 @@ const ActiveRequest = () => {
                 <div ref={chatEndRef} />
               </div>
             </ScrollArea>
-
-            {/* Chat input */}
             <div className="border-t border-border p-3 shrink-0 bg-card/20">
-              <form
-                onSubmit={(e) => { e.preventDefault(); handleSendChat(); }}
-                className="flex gap-2"
-              >
+              <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex gap-2">
                 <Input
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
@@ -945,17 +999,14 @@ const ActiveRequest = () => {
         </div>
       </div>
 
-      {/* PayPal Checkout Dialog — buyer only */}
+      {/* PayPal Dialog */}
       <Dialog open={!!paypalDialog} onOpenChange={() => { if (!paypalLoading) setPaypalDialog(null); }}>
         <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              Confirm & Pay
+              <ShieldCheck className="h-5 w-5 text-primary" />Confirm & Pay
             </DialogTitle>
-            <DialogDescription>
-              Funds will be held in escrow until you confirm delivery.
-            </DialogDescription>
+            <DialogDescription>Funds will be held in escrow until you confirm delivery.</DialogDescription>
           </DialogHeader>
           {paypalDialog && (
             <div className="space-y-4">
@@ -975,18 +1026,14 @@ const ActiveRequest = () => {
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
                 <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
-                Funds are held securely in escrow and released to the expert only after you confirm delivery.
+                Funds are held in escrow and released only after you confirm delivery.
               </div>
             </div>
           )}
           <DialogFooter>
             <Button variant="ghost" onClick={() => setPaypalDialog(null)} disabled={paypalLoading}>Cancel</Button>
             <Button onClick={handlePayPalCheckout} disabled={paypalLoading} className="gap-2">
-              {paypalLoading ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
-              ) : (
-                <><CreditCard className="h-4 w-4" /> Pay with PayPal</>
-              )}
+              {paypalLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : <><CreditCard className="h-4 w-4" /> Pay with PayPal</>}
             </Button>
           </DialogFooter>
         </DialogContent>
