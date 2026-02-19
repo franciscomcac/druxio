@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -216,6 +217,7 @@ interface SupportMessage {
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export default function SupportWidget() {
+  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("role");
   const [role, setRole] = useState<"client" | "expert" | null>(null);
@@ -351,6 +353,9 @@ export default function SupportWidget() {
   const problems = role && category ? FLOW[role][category] : [];
 
   // ─── Render ─────────────────────────────────────────────────────
+
+  // Hide on inbox — the full-page chat UI makes the widget redundant
+  if (location.pathname === "/inbox") return null;
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
