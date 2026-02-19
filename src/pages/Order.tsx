@@ -183,9 +183,13 @@ const Order = () => {
     return () => { supabase.removeChannel(channel); };
   }, [sessionId]);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom within the chat ScrollArea (not the whole page)
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!chatScrollRef.current) return;
+    const viewport = chatScrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTop = viewport.scrollHeight;
+    }
   }, [messages]);
 
   useEffect(() => {
