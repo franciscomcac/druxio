@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useSEO } from "@/hooks/use-seo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getBlogPost, blogPosts } from "@/data/blog-posts";
@@ -98,6 +99,13 @@ const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const post = getBlogPost(slug || "");
+
+  useSEO({
+    title: post ? post.title : "Post Not Found",
+    description: post ? post.excerpt : undefined,
+    canonical: post ? `/blog/${post.slug}` : undefined,
+    ogType: "article",
+  });
 
   if (!post) {
     return (

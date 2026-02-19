@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -24,6 +25,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 };
 
 const SoldOrders = () => {
+  useSEO({ title: "Sold Orders", noIndex: true });
   const [orders, setOrders] = useState<SoldOrderData[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);

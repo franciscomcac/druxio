@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import RankBadge from "@/components/RankBadge";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,7 @@ interface Job {
 }
 
 const Dashboard = () => {
+  useSEO({ title: "Dashboard", noIndex: true });
   const [profile, setProfile] = useState<any>(null);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

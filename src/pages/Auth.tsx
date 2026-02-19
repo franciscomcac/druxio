@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { sendEmail, buildWelcomeEmail } from "@/lib/send-email";
@@ -27,6 +28,12 @@ const getPasswordStrength = (pwd: string): { level: number; label: string; color
 };
 
 const Auth = () => {
+  useSEO({
+    title: "Sign In",
+    description: "Create an account or sign in to Duxio. Post tasks, hire experts, and get work done instantly.",
+    canonical: "/auth",
+  });
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

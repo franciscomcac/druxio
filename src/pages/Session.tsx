@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useModeration } from "@/hooks/use-moderation";
@@ -63,6 +64,7 @@ interface Profile {
 }
 
 const Session = () => {
+  useSEO({ title: "Session", noIndex: true });
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();

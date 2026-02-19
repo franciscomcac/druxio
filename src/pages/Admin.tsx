@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -122,6 +123,7 @@ interface FeedbackRow {
 // ─── Component ───────────────────────────────────────────────────
 
 const Admin = () => {
+  useSEO({ title: "Admin", noIndex: true });
   const navigate = useNavigate();
   const { toast } = useToast();
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -26,6 +27,12 @@ const CategoryPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const meta = CATEGORY_META[slug || ""];
+
+  useSEO({
+    title: meta ? `${meta.label} Experts` : "Category",
+    description: meta ? `Find top ${meta.label} experts on Duxio. ${meta.description}. Get instant quotes and escrow-protected payments.` : undefined,
+    canonical: slug ? `/category/${slug}` : undefined,
+  });
 
   const { format } = useCurrency();
   const [experts, setExperts] = useState<any[]>([]);

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { sendEmail, buildOrderDeliveredEmail, buildPaymentReleasedEmail, buildOrderCancelledEmail, buildDisputeAdminEmail } from "@/lib/send-email";
@@ -32,6 +33,7 @@ interface ChatMessage {
 }
 
 const Order = () => {
+  useSEO({ title: "Order", noIndex: true });
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const location = useLocation();

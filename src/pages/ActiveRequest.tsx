@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -75,6 +76,7 @@ interface SellerConvo {
 }
 
 const ActiveRequest = () => {
+  useSEO({ title: "Active Request", noIndex: true });
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();

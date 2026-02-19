@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Zap, Loader2, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 
 const ResetPassword = () => {
+  useSEO({ title: "Reset Password", noIndex: true });
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
