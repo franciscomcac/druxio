@@ -481,28 +481,7 @@ const Inbox = () => {
                   {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
                 </p>
                 {activeConv?.jobId && (
-                  <div className="pt-1 flex flex-col gap-1.5">
-                    {!activeConv.iAmSeller && (
-                      <>
-                        <Button
-                          size="sm"
-                          className="w-full gap-1.5 h-8 text-xs"
-                          onClick={() => navigate(`/order/${activeConv.jobId}`)}
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Confirm Delivery
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="w-full gap-1.5 h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
-                          onClick={() => navigate(`/order/${activeConv.jobId}`)}
-                        >
-                          <AlertTriangle className="h-3.5 w-3.5" />
-                          Raise Dispute
-                        </Button>
-                      </>
-                    )}
+                  <div className="pt-1">
                     <Button
                       size="sm"
                       variant="ghost"
