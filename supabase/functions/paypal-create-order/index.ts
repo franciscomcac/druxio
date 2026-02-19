@@ -8,6 +8,20 @@ const corsHeaders = {
 
 const PAYPAL_API = "https://api-m.sandbox.paypal.com";
 
+// PayPal standard online checkout fee: 3.49% + €0.35 (EUR transactions)
+const PAYPAL_RATE = 0.0349;
+const PAYPAL_FIXED = 0.35;
+
+// Platform fee charged to the buyer
+const PLATFORM_RATE = 0.05;
+
+function calcBuyerTotal(basePrice: number) {
+  const platformFee = Math.round(basePrice * PLATFORM_RATE * 100) / 100;
+  const paypalFee = Math.round((basePrice * PAYPAL_RATE + PAYPAL_FIXED) * 100) / 100;
+  const total = Math.round((basePrice + platformFee + paypalFee) * 100) / 100;
+  return { platformFee, paypalFee, total };
+}
+
 async function getPayPalAccessToken(): Promise<string> {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
   const secret = Deno.env.get("PAYPAL_SECRET");
@@ -101,8 +115,7 @@ Deno.serve(async (req) => {
     }
 
     const basePrice = Number(quote.price);
-    const buyerFee = Math.round(basePrice * 0.05 * 100) / 100;
-    const totalAmount = Math.round((basePrice + buyerFee) * 100) / 100;
+    const { platformFee, paypalFee, total } = calcBuyerTotal(basePrice);
 
     // Create PayPal order
     const accessToken = await getPayPalAccessToken();
@@ -121,7 +134,7 @@ Deno.serve(async (req) => {
             description: `Duxio service payment`,
             amount: {
               currency_code: "EUR",
-              value: totalAmount.toFixed(2),
+              value: total.toFixed(2),
               breakdown: {
                 item_total: {
                   currency_code: "EUR",
@@ -129,7 +142,11 @@ Deno.serve(async (req) => {
                 },
                 handling: {
                   currency_code: "EUR",
-                  value: buyerFee.toFixed(2),
+                  value: platformFee.toFixed(2),
+                },
+                insurance: {
+                  currency_code: "EUR",
+                  value: paypalFee.toFixed(2),
                 },
               },
             },
@@ -164,6 +181,7 @@ Deno.serve(async (req) => {
         approvalUrl,
         quoteId,
         jobId,
+        breakdown: { basePrice, platformFee, paypalFee, total },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

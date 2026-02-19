@@ -6,6 +6,30 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Platform withdrawal fee: 5% on all methods
+const PLATFORM_FEE_RATE = 0.05;
+
+// PayPal Payouts fee: 2% of amount, capped at €1.00 (EUR standard)
+const PAYPAL_PAYOUT_RATE = 0.02;
+const PAYPAL_PAYOUT_CAP = 1.00;
+
+function calcWithdrawalFees(grossAmount: number, method: string) {
+  const platformFee = Math.round(grossAmount * PLATFORM_FEE_RATE * 100) / 100;
+
+  let paypalPayoutFee = 0;
+  if (method === "paypal") {
+    paypalPayoutFee = Math.min(
+      Math.round(grossAmount * PAYPAL_PAYOUT_RATE * 100) / 100,
+      PAYPAL_PAYOUT_CAP
+    );
+  }
+
+  const totalFee = Math.round((platformFee + paypalPayoutFee) * 100) / 100;
+  const netAmount = Math.round((grossAmount - totalFee) * 100) / 100;
+
+  return { platformFee, paypalPayoutFee, totalFee, netAmount };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -80,16 +104,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Calculate fee for PayPal withdrawals
-    const feeRate = method === "paypal" ? 0.02 : 0;
-    const fee = Math.round(amount * feeRate * 100) / 100;
-    const netAmount = Math.round((amount - fee) * 100) / 100;
+    const { platformFee, paypalPayoutFee, totalFee, netAmount } = calcWithdrawalFees(amount, method);
 
     // Deduct full amount from wallet
     await adminClient
       .from("profiles")
       .update({ wallet_balance: (profile.wallet_balance || 0) - amount })
       .eq("id", userId);
+
+    // Build description
+    let description: string;
+    if (method === "paypal") {
+      description = `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — platform fee €${platformFee.toFixed(2)} + PayPal fee €${paypalPayoutFee.toFixed(2)}`;
+    } else {
+      description = `Withdrawal to ${crypto_token} (${crypto_network}) — platform fee €${platformFee.toFixed(2)}`;
+    }
 
     // Create transaction record (pending)
     const { data: transaction, error: txError } = await adminClient
@@ -99,9 +128,7 @@ Deno.serve(async (req) => {
         amount,
         type: "withdrawal",
         status: "pending",
-        description: method === "paypal"
-          ? `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — €${fee.toFixed(2)} fee`
-          : `Withdrawal to ${crypto_token} (${crypto_network})`,
+        description,
       })
       .select()
       .single();
@@ -110,7 +137,7 @@ Deno.serve(async (req) => {
       // Rollback balance
       await adminClient
         .from("profiles")
-        .update({ wallet_balance: (profile.wallet_balance || 0) })
+        .update({ wallet_balance: profile.wallet_balance })
         .eq("id", userId);
       console.error("Transaction error:", txError);
       return new Response(JSON.stringify({ error: "Failed to create transaction" }), {
@@ -145,6 +172,7 @@ Deno.serve(async (req) => {
         success: true,
         status: "pending",
         message: "Withdrawal submitted. It will be processed manually within 24-48h.",
+        breakdown: { grossAmount: amount, platformFee, paypalPayoutFee, totalFee, netAmount },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

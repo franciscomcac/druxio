@@ -23,7 +23,20 @@ const CRYPTO_OPTIONS = [
   { token: "ETH", networks: ["Ethereum"] },
 ];
 
-const FEE_RATE = 0.05; // 5% withdrawal fee
+// Fee constants (must match withdraw edge function)
+const PLATFORM_FEE_RATE = 0.05;          // 5% platform fee on all withdrawals
+const PAYPAL_PAYOUT_RATE = 0.02;         // PayPal Payouts: 2% of amount
+const PAYPAL_PAYOUT_CAP = 1.00;          // PayPal Payouts: capped at €1.00
+
+function calcFees(grossAmount: number, method: "paypal" | "crypto") {
+  const platformFee = Math.round(grossAmount * PLATFORM_FEE_RATE * 100) / 100;
+  const paypalFee = method === "paypal"
+    ? Math.min(Math.round(grossAmount * PAYPAL_PAYOUT_RATE * 100) / 100, PAYPAL_PAYOUT_CAP)
+    : 0;
+  const totalFee = Math.round((platformFee + paypalFee) * 100) / 100;
+  const netAmount = Math.round((grossAmount - totalFee) * 100) / 100;
+  return { platformFee, paypalFee, totalFee, netAmount };
+}
 
 const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: WithdrawalDialogProps) => {
   const [method, setMethod] = useState<"paypal" | "crypto">("paypal");
@@ -38,8 +51,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
   const selectedTokenNetworks = CRYPTO_OPTIONS.find(c => c.token === cryptoToken)?.networks || [];
 
   const numAmount = parseFloat(amount) || 0;
-  const feeAmount = numAmount * FEE_RATE;
-  const receiveAmount = numAmount - feeAmount;
+  const { platformFee, paypalFee, totalFee, netAmount: receiveAmount } = calcFees(numAmount, method);
 
   const resetForm = () => {
     setAmount("");
@@ -90,9 +102,9 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
       if (data?.error) throw new Error(data.error);
 
       if (data?.status === "completed") {
-        toast({ title: "Withdrawal sent! 🎉", description: `€${receiveAmount.toFixed(2)} sent to your PayPal (after 5% fee).` });
+        toast({ title: "Withdrawal sent! 🎉", description: `€${receiveAmount.toFixed(2)} sent (after €${totalFee.toFixed(2)} fees).` });
       } else {
-        toast({ title: "Withdrawal submitted ⏳", description: `€${receiveAmount.toFixed(2)} pending. Processing may take 24-48h.` });
+        toast({ title: "Withdrawal submitted ⏳", description: `€${receiveAmount.toFixed(2)} will arrive after fees. Processing: 24-48h.` });
       }
       resetForm();
       onOpenChange(false);
@@ -165,14 +177,24 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
               </Button>
             </div>
             {numAmount > 0 && (
-              <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1 text-xs">
+              <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1.5 text-xs">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Withdrawal amount</span>
                   <span>€{numAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Platform fee (5%)</span>
-                  <span className="text-destructive">−€{feeAmount.toFixed(2)}</span>
+                  <span className="text-destructive">−€{platformFee.toFixed(2)}</span>
+                </div>
+                {method === "paypal" && paypalFee > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <span>PayPal payout fee (2%, max €1.00)</span>
+                    <span className="text-destructive">−€{paypalFee.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-muted-foreground border-t border-border/40 pt-1">
+                  <span>Total fees</span>
+                  <span className="text-destructive">−€{totalFee.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-foreground border-t border-border/40 pt-1 mt-1">
                   <span>You receive</span>

@@ -616,32 +616,51 @@ const Order = () => {
                 {job.description && (
                   <p className="text-sm text-muted-foreground">{job.description}</p>
                 )}
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Service price</span>
-                    <span className="font-medium text-foreground">€{Number(quote.price).toFixed(2)}</span>
-                  </div>
-                  {isBuyer && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Buyer fee (5%)</span>
-                      <span className="font-medium text-foreground">€{(quote.price * 0.05).toFixed(2)}</span>
+                {(() => {
+                  const base = Number(quote.price);
+                  // Buyer fees: 5% platform + 3.49% + €0.35 PayPal processing
+                  const buyerPlatformFee = Math.round(base * 0.05 * 100) / 100;
+                  const buyerPaypalFee = Math.round((base * 0.0349 + 0.35) * 100) / 100;
+                  const buyerTotal = Math.round((base + buyerPlatformFee + buyerPaypalFee) * 100) / 100;
+                  // Seller payout: 5% platform fee deducted
+                  const sellerPlatformFee = Math.round(base * 0.05 * 100) / 100;
+                  const sellerNet = Math.round((base - sellerPlatformFee) * 100) / 100;
+
+                  return (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Service price</span>
+                        <span className="font-medium text-foreground">€{base.toFixed(2)}</span>
+                      </div>
+                      {isBuyer && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Platform fee (5%)</span>
+                            <span className="font-medium text-foreground">+€{buyerPlatformFee.toFixed(2)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">PayPal processing (3.49% + €0.35)</span>
+                            <span className="font-medium text-foreground">+€{buyerPaypalFee.toFixed(2)}</span>
+                          </div>
+                        </>
+                      )}
+                      {isSeller && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Platform fee (5%)</span>
+                          <span className="font-medium text-foreground">−€{sellerPlatformFee.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-border pt-2 flex justify-between">
+                        <span className="font-semibold text-foreground">
+                          {isBuyer ? "Total paid" : "You'll earn"}
+                        </span>
+                        <span className="font-bold text-primary">
+                          €{isBuyer ? buyerTotal.toFixed(2) : sellerNet.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  {isSeller && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Platform fee (5%)</span>
-                      <span className="font-medium text-foreground">-€{(quote.price * 0.05).toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="border-t border-border pt-2 flex justify-between">
-                    <span className="font-semibold text-foreground">
-                      {isBuyer ? "Total paid" : "You'll earn"}
-                    </span>
-                    <span className="font-bold text-primary">
-                      €{isBuyer ? (quote.price * 1.05).toFixed(2) : (quote.price * 0.95).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
+                  );
+                })()}
               </CardContent>
             </Card>
 
