@@ -11,6 +11,7 @@ import HowItWorksPage from "./pages/HowItWorksPage";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import PostRequest from "./pages/PostRequest";
 import ActiveRequest from "./pages/ActiveRequest";
@@ -49,8 +50,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Auth page — no shared layout */}
+            {/* Auth pages — no shared layout */}
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* Pages without footer (full-screen / app-like) */}
             <Route element={<AppLayout showFooter={false} />}>
