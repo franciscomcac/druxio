@@ -23,6 +23,7 @@ import {
   ImageIcon,
   X,
   ZoomIn,
+  LayoutList,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -101,6 +102,7 @@ const Inbox = () => {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [showChat, setShowChat] = useState(false); // mobile: show chat panel
+  const [activeFilter, setActiveFilter] = useState<"all" | "order" | "quote" | "delivered">("all");
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
@@ -489,15 +491,28 @@ const Inbox = () => {
 
   // ── Filtered conversations ─────────────────────────────────────────────────
 
-  const filtered = conversations.filter(c =>
+  const searchFiltered = conversations.filter(c =>
     search.trim() === "" ||
     c.otherUserName.toLowerCase().includes(search.toLowerCase()) ||
     c.jobTitle.toLowerCase().includes(search.toLowerCase()) ||
     c.jobCategory.toLowerCase().includes(search.toLowerCase())
   );
 
-  const orders = filtered.filter(c => c.convType === "order" || c.convType === "delivered");
+  const filtered = activeFilter === "all"
+    ? searchFiltered
+    : searchFiltered.filter(c => c.convType === activeFilter);
+
+  const orders = filtered.filter(c => c.convType === "order");
+  const delivered = filtered.filter(c => c.convType === "delivered");
   const quotes = filtered.filter(c => c.convType === "quote");
+
+  // Counts for filter tabs (from search-filtered, ignoring active filter)
+  const tabCounts = {
+    all: searchFiltered.length,
+    order: searchFiltered.filter(c => c.convType === "order").length,
+    quote: searchFiltered.filter(c => c.convType === "quote").length,
+    delivered: searchFiltered.filter(c => c.convType === "delivered").length,
+  };
 
   // ── Sidebar row ────────────────────────────────────────────────────────────
 
@@ -618,6 +633,42 @@ const Inbox = () => {
           </div>
         </div>
 
+        {/* Filter tabs */}
+        <div className="px-3 py-2 border-b border-border shrink-0">
+          <div className="flex gap-1">
+            {([
+              { key: "all", label: "All", icon: <LayoutList className="h-3 w-3" /> },
+              { key: "order", label: "Active", icon: <ShoppingBag className="h-3 w-3" /> },
+              { key: "quote", label: "Quotes", icon: <MessageSquare className="h-3 w-3" /> },
+              { key: "delivered", label: "Completed", icon: <CheckCircle2 className="h-3 w-3" /> },
+            ] as const).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveFilter(tab.key)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1 py-1.5 px-1 rounded-md text-[11px] font-medium transition-all",
+                  activeFilter === tab.key
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                )}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+                {tabCounts[tab.key] > 0 && (
+                  <span className={cn(
+                    "rounded-full px-1 text-[9px] font-bold leading-4 min-w-4 text-center",
+                    activeFilter === tab.key
+                      ? "bg-primary-foreground/20 text-primary-foreground"
+                      : "bg-muted text-muted-foreground"
+                  )}>
+                    {tabCounts[tab.key]}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Conversation list */}
         <ScrollArea className="flex-1">
           {loading ? (
@@ -640,21 +691,36 @@ const Inbox = () => {
             </div>
           ) : (
             <>
-              {orders.length > 0 && (
+              {/* When showing "all", use sections; otherwise flat list */}
+              {activeFilter === "all" ? (
                 <>
-                  <SectionHeader label="Orders & Delivered" count={orders.length} />
-                  {orders.map(c => <ConvRow key={c.sessionId} conv={c} />)}
+                  {orders.length > 0 && (
+                    <>
+                      <SectionHeader label="Active Orders" count={orders.length} />
+                      {orders.map(c => <ConvRow key={c.sessionId} conv={c} />)}
+                    </>
+                  )}
+                  {delivered.length > 0 && (
+                    <>
+                      <SectionHeader label="Completed" count={delivered.length} />
+                      {delivered.map(c => <ConvRow key={c.sessionId} conv={c} />)}
+                    </>
+                  )}
+                  {quotes.length > 0 && (
+                    <>
+                      <SectionHeader label="Quotes & Offers" count={quotes.length} />
+                      {quotes.map(c => <ConvRow key={c.sessionId} conv={c} />)}
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  {filtered.map(c => <ConvRow key={c.sessionId} conv={c} />)}
                 </>
               )}
-              {quotes.length > 0 && (
-                <>
-                  <SectionHeader label="Quotes & Offers" count={quotes.length} />
-                  {quotes.map(c => <ConvRow key={c.sessionId} conv={c} />)}
-                </>
-              )}
-              {filtered.length === 0 && search && (
+              {filtered.length === 0 && (
                 <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                  No results for "{search}"
+                  {search ? `No results for "${search}"` : "Nothing here yet."}
                 </div>
               )}
             </>
