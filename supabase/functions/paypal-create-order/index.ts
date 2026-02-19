@@ -6,9 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PAYPAL_API = Deno.env.get("PAYPAL_MODE") === "live"
-  ? "https://api-m.paypal.com"
-  : "https://api-m.sandbox.paypal.com";
+const PAYPAL_API = "https://api-m.sandbox.paypal.com";
 
 // PayPal standard online checkout fee: 3.49% + €0.35 (EUR transactions)
 const PAYPAL_RATE = 0.0349;
