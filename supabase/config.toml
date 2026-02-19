@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.auto-release-funds]
 verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
