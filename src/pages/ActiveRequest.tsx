@@ -50,6 +50,9 @@ interface Job {
   created_at: string;
   expires_at: string | null;
   buyer_id: string;
+  budget_min: number;
+  budget_max: number;
+  deadline_minutes: number;
 }
 
 const ActiveRequest = () => {
@@ -203,7 +206,36 @@ const ActiveRequest = () => {
         categories: [job.category],
         session_type: "chat",
       }).select("id").single();
-      return newSession?.id || null;
+
+      const sid = newSession?.id;
+      if (!sid) return null;
+
+      // Auto-send welcome messages on newly created sessions
+      const sellerQuote = quotes.find(q => q.expert_id === mentorId);
+      const msgs: { session_id: string; sender_id: string; content: string }[] = [];
+
+      // 1. Buyer sends job details automatically
+      const budgetLine = job.budget_min && job.budget_max
+        ? `\n💰 Budget: €${job.budget_min} – €${job.budget_max}`
+        : "";
+      const deadlineLine = job.deadline_minutes
+        ? `\n⏱ Deadline: ${formatDeliveryTime(job.deadline_minutes)}`
+        : "";
+      const descLine = job.description ? `\n\n📄 Details:\n${job.description}` : "";
+      const buyerMsg = `📋 Order Request\n\n📌 ${job.title}\n🏷 Category: ${job.category}${budgetLine}${deadlineLine}${descLine}`;
+      msgs.push({ session_id: sid, sender_id: menteeId, content: buyerMsg });
+
+      // 2. Seller sends their offer automatically
+      if (sellerQuote) {
+        const offerMsg = `📋 New offer: €${sellerQuote.price.toFixed(2)} — delivery in ${formatDeliveryTime(sellerQuote.estimated_minutes)}`;
+        msgs.push({ session_id: sid, sender_id: mentorId, content: offerMsg });
+      }
+
+      if (msgs.length > 0) {
+        await supabase.from("messages").insert(msgs);
+      }
+
+      return sid;
     };
 
     const loadSessions = async () => {
