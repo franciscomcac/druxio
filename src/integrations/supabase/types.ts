@@ -163,6 +163,7 @@ export type Database = {
           category: string
           created_at: string | null
           deadline_minutes: number
+          delivered_at: string | null
           description: string | null
           escrow_status: string | null
           escrow_txn_id: string | null
@@ -181,6 +182,7 @@ export type Database = {
           category: string
           created_at?: string | null
           deadline_minutes?: number
+          delivered_at?: string | null
           description?: string | null
           escrow_status?: string | null
           escrow_txn_id?: string | null
@@ -199,6 +201,7 @@ export type Database = {
           category?: string
           created_at?: string | null
           deadline_minutes?: number
+          delivered_at?: string | null
           description?: string | null
           escrow_status?: string | null
           escrow_txn_id?: string | null

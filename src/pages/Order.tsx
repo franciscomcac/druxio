@@ -14,9 +14,9 @@ import {
   ArrowLeft, Clock, MessageSquare, Send, Loader2, ShieldCheck,
   AlertTriangle, CheckCircle2, Timer, Star,
   FileText, Package, CreditCard, XCircle, Undo2,
-  Paperclip, X, Image as ImageIcon, Video, ExternalLink,
+  Paperclip, X, Image as ImageIcon, Video, ExternalLink, Hourglass,
 } from "lucide-react";
-import { formatDistanceToNow, differenceInSeconds, addMinutes } from "date-fns";
+import { formatDistanceToNow, differenceInSeconds, addMinutes, addDays, isPast } from "date-fns";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -85,10 +85,17 @@ const Order = () => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
 
+  // Seller deliver confirmation dialog
+  const [deliverConfirmOpen, setDeliverConfirmOpen] = useState(false);
+  const [deliveringOrder, setDeliveringOrder] = useState(false);
+
   // Cancel delivery dialog (seller cancels)
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
+
+  // Auto-release countdown (3 days from delivered_at)
+  const [autoReleaseSecondsLeft, setAutoReleaseSecondsLeft] = useState<number | null>(null);
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -193,6 +200,19 @@ const Order = () => {
     return () => clearInterval(interval);
   }, [quote, job]);
 
+  // Auto-release countdown: 3 days from delivered_at
+  useEffect(() => {
+    if (!job?.delivered_at || job.escrow_status !== "delivered") return;
+    const autoReleaseAt = addDays(new Date(job.delivered_at), 3);
+    const tick = () => {
+      const remaining = differenceInSeconds(autoReleaseAt, new Date());
+      setAutoReleaseSecondsLeft(Math.max(0, remaining));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [job?.delivered_at, job?.escrow_status]);
+
   // Image handling
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -278,17 +298,31 @@ const Order = () => {
   // Seller marks as delivered
   const handleSellerDeliver = async () => {
     if (!jobId) return;
-    await supabase.from("jobs").update({ escrow_status: "delivered" }).eq("id", jobId);
-    setJob((prev: any) => prev ? { ...prev, escrow_status: "delivered" } : prev);
-    toast({ title: "Marked as delivered! 📦", description: "Waiting for buyer to confirm." });
+    setDeliveringOrder(true);
+    const now = new Date().toISOString();
+    await supabase.from("jobs").update({ escrow_status: "delivered", status: "in_progress", delivered_at: now }).eq("id", jobId);
+    setJob((prev: any) => prev ? { ...prev, escrow_status: "delivered", status: "in_progress", delivered_at: now } : prev);
+
+    // Send a system message in the chat
+    if (sessionId && userId) {
+      await supabase.from("messages").insert({
+        session_id: sessionId,
+        sender_id: userId,
+        content: "📦 DELIVERED: The seller has marked this order as delivered. Please review the work and confirm delivery to release payment, or raise a dispute if there is an issue. Payment will be automatically released in 3 days if no action is taken.",
+      });
+    }
+
     // Notify buyer
     if (job?.buyer_id) {
       await supabase.from("notifications").insert({
         user_id: job.buyer_id, type: "order_completed",
-        title: "Order delivered!", message: "The seller has marked your order as delivered. Please review and confirm.",
+        title: "Order delivered! 📦", message: "The seller has marked your order as delivered. Please confirm within 3 days or payment will be auto-released.",
         data: { job_id: jobId },
       });
     }
+    setDeliverConfirmOpen(false);
+    setDeliveringOrder(false);
+    toast({ title: "Marked as delivered! 📦", description: "The buyer has 3 days to confirm. Payment auto-releases if they don't act." });
   };
 
   // Buyer confirms delivery
@@ -649,7 +683,7 @@ const Order = () => {
               <div className="space-y-2">
                 {paymentStatus === "paid" && (
                   <>
-                    <Button className="w-full gap-2" onClick={handleSellerDeliver}>
+                    <Button className="w-full gap-2" onClick={() => setDeliverConfirmOpen(true)}>
                       <Package className="h-4 w-4" /> Mark as Delivered
                     </Button>
                     <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelOpen(true)}>
@@ -659,8 +693,15 @@ const Order = () => {
                 )}
                 {paymentStatus === "delivered" && (
                   <>
-                    <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2 p-3">
-                      <Clock className="h-4 w-4" /> Waiting for buyer to confirm delivery
+                    <div className="rounded-lg border border-border bg-primary/[0.03] p-3 space-y-1">
+                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                        <Hourglass className="h-4 w-4 text-primary" /> Awaiting buyer confirmation
+                      </div>
+                      {autoReleaseSecondsLeft !== null && autoReleaseSecondsLeft > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Auto-releases in <span className="font-semibold text-primary">{formatCountdown(autoReleaseSecondsLeft)}</span> if buyer doesn't act
+                        </p>
+                      )}
                     </div>
                     <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setCancelOpen(true)}>
                       <Undo2 className="h-4 w-4" /> Cancel Delivery
@@ -679,9 +720,25 @@ const Order = () => {
                   </div>
                 )}
                 {paymentStatus === "delivered" && (
-                  <Button className="w-full gap-2" onClick={() => setConfirmOpen(true)}>
-                    <CheckCircle2 className="h-4 w-4" /> Confirm Delivery & Release Payment
-                  </Button>
+                  <>
+                    <Button className="w-full gap-2" onClick={() => setConfirmOpen(true)}>
+                      <CheckCircle2 className="h-4 w-4" /> Confirm Delivery & Release Payment
+                    </Button>
+                    {/* 3-day auto-release notice */}
+                    <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                        <Hourglass className="h-3.5 w-3.5 text-primary shrink-0" /> Auto-release countdown
+                      </div>
+                      {autoReleaseSecondsLeft !== null && autoReleaseSecondsLeft > 0 ? (
+                        <p className="text-xs text-muted-foreground">
+                          Payment will be <span className="text-foreground font-medium">automatically released</span> to the seller in{" "}
+                          <span className="font-bold text-primary">{formatCountdown(autoReleaseSecondsLeft)}</span> if you don't confirm or dispute.
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">Auto-release is pending...</p>
+                      )}
+                    </div>
+                  </>
                 )}
                 <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setDisputeOpen(true)}>
                   <AlertTriangle className="h-4 w-4" /> Raise Dispute
@@ -733,6 +790,44 @@ const Order = () => {
                       const isMe = msg.sender_id === userId;
                       const isMeetMsg = msg.content.startsWith("📹 Video Call:") || msg.content.includes("meet.google.com/");
                       const meetUrl = isMeetMsg ? (msg.content.match(/https?:\/\/[^\s]+/)?.[0] ?? null) : null;
+                      const isDeliveryMsg = msg.content.startsWith("📦 DELIVERED:");
+
+                      // Delivery system message
+                      if (isDeliveryMsg) {
+                        return (
+                          <div key={msg.id} className="flex justify-center my-3">
+                            <div className="w-full max-w-sm">
+                              <div className="flex items-center gap-2 mb-2 justify-center">
+                                <div className="h-px flex-1 bg-border/60" />
+                                <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">System</span>
+                                <div className="h-px flex-1 bg-border/60" />
+                              </div>
+                              <div className="rounded-xl border border-chart-2/30 bg-chart-2/5 overflow-hidden">
+                                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-chart-2/20 bg-chart-2/8">
+                                  <div className="h-8 w-8 rounded-lg bg-chart-2/15 flex items-center justify-center shrink-0">
+                                    <Package className="h-4 w-4 text-chart-2" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-foreground">Order Delivered</p>
+                                    <p className="text-[10px] text-muted-foreground">Awaiting buyer confirmation</p>
+                                  </div>
+                                </div>
+                                <div className="px-4 py-3 space-y-2">
+                                  <p className="text-xs text-muted-foreground">
+                                    The seller has marked this order as delivered. Confirm delivery to release payment, or raise a dispute if there's an issue.
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground/70 font-medium">
+                                    ⏳ Payment auto-releases in 3 days if no action is taken.
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground/60 text-right">
+                                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
 
                       if (isMeetMsg && meetUrl) {
                         return (
@@ -907,6 +1002,41 @@ const Order = () => {
         </div>
       </main>
       
+
+      {/* Mark as Delivered Confirmation Dialog */}
+      <Dialog open={deliverConfirmOpen} onOpenChange={setDeliverConfirmOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-chart-2" /> Mark Order as Delivered
+            </DialogTitle>
+            <DialogDescription>
+              Confirm that you've completed the work and are ready to submit it for buyer review.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-2 text-sm">
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-chart-2 shrink-0 mt-0.5" />
+              <span>The buyer will be notified and asked to confirm delivery.</span>
+            </div>
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <Hourglass className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <span>If the buyer doesn't confirm or dispute within <strong className="text-foreground">3 days</strong>, payment is automatically released to you.</span>
+            </div>
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <Star className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <span>A 5-star review is auto-submitted if the order auto-completes.</span>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeliverConfirmOpen(false)} disabled={deliveringOrder}>Cancel</Button>
+            <Button onClick={handleSellerDeliver} disabled={deliveringOrder} className="gap-2">
+              {deliveringOrder ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />}
+              {deliveringOrder ? "Submitting..." : "Confirm Delivery"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Video Call Dialog */}
       <Dialog open={meetDialogOpen} onOpenChange={setMeetDialogOpen}>
