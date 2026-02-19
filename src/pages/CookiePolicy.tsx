@@ -88,7 +88,7 @@ const CookiePolicy = () => {
         </Section>
 
         <Section title="6. Contact">
-          <p>For questions about our use of cookies, email <a href="mailto:privacy@duxio.app" className="text-primary underline underline-offset-4">privacy@duxio.app</a>.</p>
+          <p>For questions about our use of cookies, email <a href="mailto:support@duxio.store" className="text-primary underline underline-offset-4">support@duxio.store</a>.</p>
         </Section>
       </div>
     </main>
