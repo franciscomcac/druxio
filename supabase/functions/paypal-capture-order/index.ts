@@ -128,15 +128,10 @@ Deno.serve(async (req) => {
     // Mark quote as accepted
     await serviceClient.from("quotes").update({ status: "accepted" }).eq("id", quoteId);
 
-    // Record transaction
-    await serviceClient.from("transactions").insert({
-      user_id: userId,
-      amount: capturedAmount,
-      type: "session_payment",
-      status: "completed",
-      description: `PayPal payment for job ${jobId}`,
-      stripe_payment_id: captureId,
-    });
+    // NOTE: We do NOT insert a session_payment transaction here.
+    // PayPal payments are external and do not go through the user's wallet balance.
+    // Inserting a session_payment would incorrectly deduct from their wallet balance.
+    // The payment is tracked via the job's escrow_status = "paid".
 
     // Create session for chat
     const { data: existingSession } = await serviceClient
