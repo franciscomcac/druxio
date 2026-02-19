@@ -996,7 +996,7 @@ const ActiveRequest = () => {
                 </h2>
                 <span className="text-xs text-muted-foreground">Sorted by price</span>
               </div>
-              <div className="space-y-2">
+          <div className={`space-y-2 ${sortedQuotes.length > 4 ? "max-h-[360px] overflow-y-auto pr-1" : ""}`}>
                 {sortedQuotes.map((quote, i) => {
                   const isSelected = selectedChatPartnerId === quote.expert_id;
                   const isRecommended = quote.id === recommendedId;
@@ -1070,7 +1070,7 @@ const ActiveRequest = () => {
               ))}
             </div>
           )}
-          <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex flex-col" style={{ height: "420px" }}>
+          <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex flex-col" style={{ height: "560px" }}>
             {selectedQuote && (
               <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-card/60 shrink-0">
                 <Avatar className="h-7 w-7 border border-border">
