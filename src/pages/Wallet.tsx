@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useCallback } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBalance } from "@/hooks/use-balance";
@@ -42,6 +43,7 @@ const typeLabels: Record<string, string> = {
 };
 
 const Wallet = () => {
+  useSEO({ title: "Wallet", noIndex: true });
   const navigate = useNavigate();
   const { format } = useCurrency();
   const [transactions, setTransactions] = useState<Transaction[]>([]);

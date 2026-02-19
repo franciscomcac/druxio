@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CategoryTemplateFields from "@/components/post-request/CategoryTemplateFields";
 import { supabase } from "@/integrations/supabase/client";
@@ -245,6 +246,7 @@ interface Quote {
 }
 
 const PostRequest = () => {
+  useSEO({ title: "Post a Request", noIndex: true });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();

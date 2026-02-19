@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -42,6 +43,12 @@ interface Category {
 }
 
 const Search = () => {
+  useSEO({
+    title: "Find Experts",
+    description: "Browse and search verified experts across gaming, tech, creative, business, and more. Compare ratings, prices, and availability.",
+    canonical: "/search",
+  });
+
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isFavorite, toggleFavorite } = useFavorites();

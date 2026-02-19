@@ -1,4 +1,5 @@
 import { useState, useEffect, useLayoutEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SimilarExperts from "@/components/experts/SimilarExperts";
@@ -64,6 +65,12 @@ const MentorProfile = () => {
   const [loading, setLoading] = useState(true);
   const [completedOrders, setCompletedOrders] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
+
+  useSEO({
+    title: mentor ? mentor.display_name : "Expert Profile",
+    description: mentor ? `${mentor.display_name} — ${mentor.bio?.slice(0, 140) || "Verified expert on Duxio"}` : undefined,
+    canonical: mentorId ? `/mentor/${mentorId}` : undefined,
+  });
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 

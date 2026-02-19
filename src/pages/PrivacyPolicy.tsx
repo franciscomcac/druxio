@@ -1,4 +1,5 @@
 import { Shield } from "lucide-react";
+import { useSEO } from "@/hooks/use-seo";
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="mb-10">
@@ -8,6 +9,12 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 );
 
 const PrivacyPolicy = () => {
+  useSEO({
+    title: "Privacy Policy",
+    description: "How Duxio collects, uses, and protects your personal data. Read our full privacy policy.",
+    canonical: "/privacy",
+  });
+
   return (
     <main className="min-h-screen py-16">
       <div className="container mx-auto max-w-3xl px-4">

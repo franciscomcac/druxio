@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -91,6 +92,7 @@ function timeLabel(iso: string | null) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const Inbox = () => {
+  useSEO({ title: "Inbox", noIndex: true });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 

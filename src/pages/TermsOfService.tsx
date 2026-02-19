@@ -1,4 +1,5 @@
 import { FileText } from "lucide-react";
+import { useSEO } from "@/hooks/use-seo";
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="mb-10">
@@ -8,6 +9,12 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 );
 
 const TermsOfService = () => {
+  useSEO({
+    title: "Terms of Service",
+    description: "Terms and conditions for using Duxio. Understand your rights and responsibilities as a user.",
+    canonical: "/terms",
+  });
+
   return (
     <main className="min-h-screen py-16">
       <div className="container mx-auto max-w-3xl px-4">

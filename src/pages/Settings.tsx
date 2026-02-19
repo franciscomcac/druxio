@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -224,6 +225,7 @@ const CategoryAccordion = ({
 };
 
 const Settings = () => {
+  useSEO({ title: "Settings", noIndex: true });
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);

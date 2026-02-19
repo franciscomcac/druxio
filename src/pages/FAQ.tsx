@@ -1,4 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useSEO } from "@/hooks/use-seo";
 import { Badge } from "@/components/ui/badge";
 import { HelpCircle } from "lucide-react";
 
@@ -132,6 +133,12 @@ const faqSections = [
 ];
 
 const FAQ = () => {
+  useSEO({
+    title: "Frequently Asked Questions",
+    description: "Find answers to common questions about Duxio — how to post tasks, hire experts, manage payments, and more.",
+    canonical: "/faq",
+  });
+
   return (
     <main className="min-h-screen py-16">
       <div className="container mx-auto max-w-3xl px-4">

@@ -1,4 +1,5 @@
 import { Cookie } from "lucide-react";
+import { useSEO } from "@/hooks/use-seo";
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <section className="mb-10">
@@ -16,6 +17,12 @@ const tableRows = [
 ];
 
 const CookiePolicy = () => {
+  useSEO({
+    title: "Cookie Policy",
+    description: "How Duxio uses cookies and similar technologies. Manage your cookie preferences.",
+    canonical: "/cookie-policy",
+  });
+
   return (
     <main className="min-h-screen py-16">
       <div className="container mx-auto max-w-3xl px-4">

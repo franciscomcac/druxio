@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useSEO } from "@/hooks/use-seo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { blogPosts } from "@/data/blog-posts";
@@ -11,6 +12,12 @@ const categoryColor: Record<string, string> = {
 };
 
 const Blog = () => {
+  useSEO({
+    title: "Blog",
+    description: "Tips, guides, and insights on getting work done faster with Duxio. Platform updates, expert advice, and freelancing best practices.",
+    canonical: "/blog",
+  });
+
   const [featured, ...rest] = blogPosts;
 
   return (
