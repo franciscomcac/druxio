@@ -109,6 +109,7 @@ const Inbox = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const activeConvRef = useRef<ConversationItem | null>(null);
 
   // ── Fetch all conversations ────────────────────────────────────────────────
 
@@ -273,16 +274,33 @@ const Inbox = () => {
       .channel("inbox-global")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, (payload) => {
         const newMsg = payload.new as Message & { session_id: string };
-        // Update sidebar preview immediately without full refetch
-        setConversations(prev => prev.map(c => {
-          if (c.sessionId !== newMsg.session_id) return c;
-          return {
-            ...c,
-            lastMessage: newMsg.content,
-            lastMessageAt: newMsg.created_at,
-            unreadCount: newMsg.sender_id !== userId ? c.unreadCount + 1 : c.unreadCount,
-          };
-        }));
+        const isActiveConv = activeConvRef.current?.sessionId === newMsg.session_id;
+        const isFromOther = newMsg.sender_id !== userId;
+
+        // If message is in the open conversation and from the other user → mark read immediately
+        if (isActiveConv && isFromOther) {
+          supabase.from("messages").update({ is_read: true }).eq("id", newMsg.id);
+        }
+
+        setConversations(prev => {
+          const updated = prev.map(c => {
+            if (c.sessionId !== newMsg.session_id) return c;
+            return {
+              ...c,
+              lastMessage: newMsg.content,
+              lastMessageAt: newMsg.created_at,
+              // Only increment unread if the conv is NOT currently open
+              unreadCount: isFromOther && !isActiveConv ? c.unreadCount + 1 : c.unreadCount,
+            };
+          });
+          // Re-sort: unread first, then by most recent message
+          return [...updated].sort((a, b) => {
+            if (b.unreadCount !== a.unreadCount) return b.unreadCount - a.unreadCount;
+            const ta = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+            const tb = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+            return tb - ta;
+          });
+        });
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "jobs" }, () => {
         fetchConversations(userId);
@@ -354,6 +372,7 @@ const Inbox = () => {
 
   const selectConv = (conv: ConversationItem) => {
     setActiveConv(conv);
+    activeConvRef.current = conv;
     setShowChat(true);
     setInputText("");
     setImageFiles([]);
