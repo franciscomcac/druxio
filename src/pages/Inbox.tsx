@@ -24,6 +24,8 @@ import {
   X,
   ZoomIn,
   LayoutList,
+  AlertTriangle,
+  Video,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -444,8 +446,80 @@ const Inbox = () => {
     const isOfferMsg = msg.content.startsWith("📋 New offer:");
     const isJobMsg = msg.content.startsWith("📋 Order Request");
     const isVideoCall = msg.content.startsWith("📹 Video Call") || msg.content.includes("meet.google.com/");
+    const isDeliveryMsg = msg.content.startsWith("📦 DELIVERED:");
     const isImageOnly = ["📎 Image", "📷 Image"].includes(msg.content.trim());
     const isAutoCard = isOfferMsg || isJobMsg || isVideoCall;
+
+    // ── Delivery system card ──
+    if (isDeliveryMsg) {
+      return (
+        <div key={msg.id} className="flex justify-center my-3">
+          <div className="w-full max-w-sm">
+            <div className="flex items-center gap-2 mb-2 justify-center">
+              <div className="h-px flex-1 bg-border/60" />
+              <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">System</span>
+              <div className="h-px flex-1 bg-border/60" />
+            </div>
+            <div className="rounded-xl border border-chart-2/30 bg-chart-2/5 overflow-hidden">
+              <div className="flex items-center gap-2.5 px-4 py-3 border-b border-chart-2/20 bg-chart-2/8">
+                <div className="h-8 w-8 rounded-lg bg-chart-2/15 flex items-center justify-center shrink-0">
+                  <Package className="h-4 w-4 text-chart-2" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Order Delivered</p>
+                  <p className="text-[10px] text-muted-foreground">Awaiting buyer confirmation</p>
+                </div>
+              </div>
+              <div className="px-4 py-3 space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  The seller has marked this order as delivered. Confirm delivery to release payment, or raise a dispute if there's an issue.
+                </p>
+                <p className="text-[10px] text-muted-foreground/70 font-medium">
+                  ⏳ Payment auto-releases in 3 days if no action is taken.
+                </p>
+                <p className="text-[10px] text-muted-foreground/60">
+                  {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                </p>
+                {activeConv?.jobId && (
+                  <div className="pt-1 flex flex-col gap-1.5">
+                    {!activeConv.iAmSeller && (
+                      <>
+                        <Button
+                          size="sm"
+                          className="w-full gap-1.5 h-8 text-xs"
+                          onClick={() => navigate(`/order/${activeConv.jobId}`)}
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Confirm Delivery
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full gap-1.5 h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30"
+                          onClick={() => navigate(`/order/${activeConv.jobId}`)}
+                        >
+                          <AlertTriangle className="h-3.5 w-3.5" />
+                          Raise Dispute
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full gap-1.5 h-8 text-xs text-muted-foreground"
+                      onClick={() => navigate(`/order/${activeConv.jobId}`)}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      View Order
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     // ── Styled card messages ──
     if (isAutoCard) {
@@ -453,27 +527,38 @@ const Inbox = () => {
         const url = msg.content.match(/https?:\/\/[^\s]+/)?.[0] ?? null;
         return (
           <div key={msg.id} className="flex justify-center my-3">
-            <div className="rounded-xl px-4 py-3 text-sm border bg-primary/10 border-primary/30 max-w-xs w-full">
-              <p className="font-semibold text-[10px] mb-2 uppercase tracking-widest text-primary">
-                📹 Video Call
-              </p>
-              <p className="text-foreground text-xs mb-3 leading-relaxed">
-                A video call session has been scheduled.
-              </p>
-              {url && (
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    "inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-colors",
-                    "bg-primary text-primary-foreground hover:bg-primary/90"
+            <div className="w-full max-w-sm">
+              <div className="flex items-center gap-2 mb-2 justify-center">
+                <div className="h-px flex-1 bg-border/60" />
+                <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">System</span>
+                <div className="h-px flex-1 bg-border/60" />
+              </div>
+              <div className="rounded-xl border border-primary/25 bg-primary/5 overflow-hidden">
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-primary/15 bg-primary/8">
+                  <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                    <Video className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Video Call Scheduled</p>
+                    <p className="text-[10px] text-muted-foreground">Google Meet</p>
+                  </div>
+                </div>
+                <div className="px-4 py-3 space-y-2.5">
+                  {url && (
+                    <>
+                      <p className="text-xs text-muted-foreground font-mono truncate">{url.replace(/^https?:\/\//, "")}</p>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 hover:opacity-90 transition-opacity"
+                      >
+                        Join Call <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </>
                   )}
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  Join Call
-                </a>
-              )}
+                </div>
+              </div>
             </div>
           </div>
         );
