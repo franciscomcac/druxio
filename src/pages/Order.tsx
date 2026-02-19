@@ -13,7 +13,7 @@ import {
   ArrowLeft, Clock, MessageSquare, Send, Loader2, ShieldCheck,
   AlertTriangle, CheckCircle2, Timer, Star,
   FileText, Package, CreditCard, XCircle, Undo2,
-  Paperclip, X, Image as ImageIcon,
+  Paperclip, X, Image as ImageIcon, Video, ExternalLink,
 } from "lucide-react";
 import { formatDistanceToNow, differenceInSeconds, addMinutes } from "date-fns";
 import {
@@ -73,6 +73,11 @@ const Order = () => {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+
+  // Video call dialog
+  const [meetDialogOpen, setMeetDialogOpen] = useState(false);
+  const [meetLink, setMeetLink] = useState("");
+  const [sendingMeet, setSendingMeet] = useState(false);
 
   // Confirm delivery dialog (buyer accepts)
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -246,6 +251,26 @@ const Order = () => {
       toast({ title: "Failed to send", description: err.message, variant: "destructive" });
     }
     setSendingChat(false);
+  };
+
+  const handleSendMeetLink = async () => {
+    if (!meetLink.trim() || !sessionId || !userId) return;
+    setSendingMeet(true);
+    try {
+      const url = meetLink.trim();
+      const { error } = await supabase.from("messages").insert({
+        session_id: sessionId,
+        sender_id: userId,
+        content: `📹 Video Call: ${url}`,
+      });
+      if (error) throw error;
+      setMeetLink("");
+      setMeetDialogOpen(false);
+      toast({ title: "Video call link sent! 📹", description: "The other party can now join your meeting." });
+    } catch (err: any) {
+      toast({ title: "Failed to send", description: err.message, variant: "destructive" });
+    }
+    setSendingMeet(false);
   };
 
   // Seller marks as delivered
@@ -684,6 +709,17 @@ const Order = () => {
               </div>
             )}
 
+            {/* Video Call button — visible to both parties when order is active */}
+            {!isCompleted && !isDisputed && job.status !== "cancelled" && sessionId && (
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => setMeetDialogOpen(true)}
+              >
+                <Video className="h-4 w-4" /> Schedule a Video Call
+              </Button>
+            )}
+
             {/* Post-completion actions */}
             {isBuyer && isCompleted && !hasReviewed && (
               <Button className="w-full gap-2" onClick={() => setReviewOpen(true)}>
@@ -715,6 +751,38 @@ const Order = () => {
                   ) : (
                     messages.map((msg) => {
                       const isMe = msg.sender_id === userId;
+                      const isMeetMsg = msg.content.startsWith("📹 Video Call:") || msg.content.includes("meet.google.com/");
+                      const meetUrl = isMeetMsg ? (msg.content.match(/https?:\/\/[^\s]+/)?.[0] ?? null) : null;
+
+                      if (isMeetMsg && meetUrl) {
+                        return (
+                          <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                            <div className="max-w-[75%] rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                              <div className="flex items-center gap-2 px-4 py-2 bg-chart-2/10 border-b border-border">
+                                <div className="h-7 w-7 rounded-full bg-chart-2/20 flex items-center justify-center">
+                                  <Video className="h-3.5 w-3.5 text-chart-2" />
+                                </div>
+                                <span className="text-sm font-semibold text-foreground">Video Call Scheduled</span>
+                              </div>
+                              <div className="px-4 py-3 space-y-3">
+                                <p className="text-xs text-muted-foreground truncate">{meetUrl.replace(/^https?:\/\//, "")}</p>
+                                <a
+                                  href={meetUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-2 w-full rounded-lg bg-chart-2 text-white text-sm font-medium px-4 py-2 hover:bg-chart-2/90 transition-colors"
+                                >
+                                  Join Call <ExternalLink className="h-3.5 w-3.5" />
+                                </a>
+                                <p className="text-[10px] text-muted-foreground text-right">
+                                  {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
                       return (
                         <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                           <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
@@ -834,6 +902,47 @@ const Order = () => {
         </div>
       </main>
       
+
+      {/* Video Call Dialog */}
+      <Dialog open={meetDialogOpen} onOpenChange={setMeetDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Video className="h-5 w-5 text-chart-2" /> Schedule a Video Call
+            </DialogTitle>
+            <DialogDescription>
+              Create a Google Meet and paste the link below. It will appear as a join button in the chat for both parties.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <a
+              href="https://meet.google.com/new"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full rounded-lg border border-border bg-chart-2/10 text-chart-2 font-medium px-4 py-3 hover:bg-chart-2/20 transition-colors text-sm"
+            >
+              <Video className="h-4 w-4" />
+              Open Google Meet to create a room
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+            <p className="text-xs text-center text-muted-foreground">
+              After opening Meet, copy the link from your browser and paste it below.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                value={meetLink}
+                onChange={(e) => setMeetLink(e.target.value)}
+                placeholder="https://meet.google.com/abc-defg-hij"
+                className="flex-1"
+                onKeyDown={(e) => { if (e.key === "Enter") handleSendMeetLink(); }}
+              />
+              <Button onClick={handleSendMeetLink} disabled={!meetLink.trim() || sendingMeet} className="gap-2">
+                {sendingMeet ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Confirm Delivery Dialog */}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
