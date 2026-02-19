@@ -533,6 +533,10 @@ const PostRequest = () => {
     const { error: quoteError } = await supabase.from("quotes").update({ status: "accepted" }).eq("id", quote.id);
     if (jobError || quoteError) { toast({ title: "Error accepting quote", variant: "destructive" }); return; }
     toast({ title: "Expert hired! 🎉", description: `${quote.expert_profile?.display_name || "Expert"} is on the job.` });
+
+    // Email seller: quote accepted (fire-and-forget)
+    supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
+
     navigate("/dashboard");
   };
 

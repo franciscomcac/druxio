@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEmail, buildWelcomeEmail } from "@/lib/send-email";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,8 @@ const Auth = () => {
         options: { emailRedirectTo: window.location.origin },
       });
       if (error) throw error;
+      // Send welcome email (fire-and-forget)
+      sendEmail(buildWelcomeEmail(email)).catch(console.error);
       toast({ title: "Account created!", description: "Check your email to verify your account." });
     } catch (error: any) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });

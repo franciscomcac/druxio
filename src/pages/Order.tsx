@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { sendEmail, buildOrderDeliveredEmail, buildPaymentReleasedEmail, buildOrderCancelledEmail, buildDisputeAdminEmail } from "@/lib/send-email";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { Button } from "@/components/ui/button";
@@ -295,6 +296,11 @@ const Order = () => {
     setSendingMeet(false);
   };
 
+  // Helper: fire-and-forget order email via edge function
+  const sendOrderEmail = (event: string, extra?: Record<string, unknown>) => {
+    supabase.functions.invoke("send-order-email", { body: { event, jobId, ...extra } }).catch(console.error);
+  };
+
   // Seller marks as delivered
   const handleSellerDeliver = async () => {
     if (!jobId) return;
@@ -320,6 +326,10 @@ const Order = () => {
         data: { job_id: jobId },
       });
     }
+
+    // Email buyer
+    sendOrderEmail("order_delivered");
+
     setDeliverConfirmOpen(false);
     setDeliveringOrder(false);
     toast({ title: "Marked as delivered! 📦", description: "The buyer has 3 days to confirm. Payment auto-releases if they don't act." });
@@ -365,6 +375,9 @@ const Order = () => {
         data: { job_id: jobId },
       });
 
+      // Email seller: payment released
+      sendOrderEmail("payment_released");
+
       toast({ title: "Delivery confirmed! 🎉", description: "Payment released to the seller." });
       setConfirmOpen(false);
       setJob((prev: any) => prev ? { ...prev, status: "completed", escrow_status: "completed" } : prev);
@@ -401,6 +414,10 @@ const Order = () => {
         message: disputeReason.trim(), data: { job_id: jobId, quote_id: quote?.id },
       });
       await supabase.from("jobs").update({ status: "disputed" }).eq("id", jobId);
+
+      // Email admins about dispute
+      sendOrderEmail("dispute_raised", { reason: disputeReason.trim() });
+
       toast({ title: "Dispute raised", description: "Our team will review your case shortly." });
       setDisputeOpen(false);
       setJob((prev: any) => prev ? { ...prev, status: "disputed" } : prev);
@@ -441,6 +458,9 @@ const Order = () => {
           })
         ));
       }
+
+      // Email buyer about cancellation
+      sendOrderEmail("order_cancelled", { reason: cancelReason.trim() });
 
       toast({ title: "Order cancelled", description: "The buyer and admin have been notified." });
       setCancelOpen(false);

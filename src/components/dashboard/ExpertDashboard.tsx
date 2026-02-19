@@ -234,6 +234,16 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
       setQuotedJobIds((prev) => new Set([...prev, quoteDialog.id]));
       toast({ title: "Quote sent! ✅", description: "View the leaderboard and chat with the buyer." });
+
+      // Email buyer: new quote received (fire-and-forget)
+      supabase.functions.invoke("send-order-email", {
+        body: {
+          event: "new_quote",
+          jobId: quoteDialog.id,
+          quote: { expert_id: session.user.id, price: parseFloat(quotePrice), estimated_minutes: estimatedMinutes },
+        },
+      }).catch(console.error);
+
       navigate(`/request/${quoteDialog.id}`);
     }
 
