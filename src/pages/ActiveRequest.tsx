@@ -1153,9 +1153,13 @@ const ActiveRequest = () => {
                   <span className="text-muted-foreground">Buyer fee (5%)</span>
                   <span className="font-medium text-foreground">€{(paypalDialog.price * 0.05).toFixed(2)}</span>
                 </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">PayPal fee (3.49% + €0.35)</span>
+                  <span className="font-medium text-foreground">€{(paypalDialog.price * 1.05 * 0.0349 + 0.35).toFixed(2)}</span>
+                </div>
                 <div className="flex justify-between text-sm border-t border-border pt-2">
                   <span className="font-semibold text-foreground">Total</span>
-                  <span className="font-bold text-primary">€{(paypalDialog.price * 1.05).toFixed(2)}</span>
+                  <span className="font-bold text-primary">€{(paypalDialog.price * 1.05 * 1.0349 + 0.35).toFixed(2)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
