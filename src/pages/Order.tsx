@@ -556,7 +556,7 @@ const Order = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-start">
           {/* Left: Order details + Actions */}
           <div className="lg:col-span-1 space-y-4">
             {/* Payment Status */}
@@ -755,8 +755,8 @@ const Order = () => {
           </div>
 
           {/* Right: Chat */}
-          <div className="lg:col-span-2">
-            <Card className="flex flex-col" style={{ height: "min(600px, 65vh)" }}>
+          <div className="lg:col-span-2 lg:sticky lg:top-4">
+            <Card className="flex flex-col" style={{ height: "calc(100vh - 140px)", minHeight: "520px" }}>
               <CardHeader className="pb-3 border-b border-border shrink-0">
                 <div className="flex items-center gap-3">
                   <MessageSquare className="h-5 w-5 text-primary" />
