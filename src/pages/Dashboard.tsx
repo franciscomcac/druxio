@@ -39,7 +39,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const fetchData = async (userId: string) => {
+  const fetchData = async (userId: string, retryCount = 0) => {
     try {
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
@@ -49,30 +49,41 @@ const Dashboard = () => {
       ]);
 
       let resolvedProfile = profileRes.data;
+      let userRoles = rolesRes.data || [];
 
-      if (!resolvedProfile) {
-        // Profile not created yet (trigger may be delayed) — upsert a basic one
-        const { data: { session } } = await supabase.auth.getSession();
-        const displayName =
-          session?.user?.user_metadata?.display_name ||
-          session?.user?.user_metadata?.full_name ||
-          session?.user?.email?.split("@")[0] ||
-          "User";
-        const { data: upserted, error: upsertErr } = await supabase
-          .from("profiles")
-          .upsert({ id: userId, display_name: displayName }, { onConflict: "id" })
-          .select()
-          .single();
-        if (upsertErr) {
-          console.error("Profile upsert error:", upsertErr);
-        } else {
-          resolvedProfile = upserted;
+      // If no profile/roles yet (trigger may be delayed for brand-new accounts), retry up to 3 times
+      if (!resolvedProfile || userRoles.length === 0) {
+        if (retryCount < 3) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          return fetchData(userId, retryCount + 1);
+        }
+        // After retries, upsert a fallback profile so the page can render
+        if (!resolvedProfile) {
+          const { data: { session } } = await supabase.auth.getSession();
+          const displayName =
+            session?.user?.user_metadata?.display_name ||
+            session?.user?.user_metadata?.full_name ||
+            session?.user?.email?.split("@")[0] ||
+            "User";
+          const { data: upserted, error: upsertErr } = await supabase
+            .from("profiles")
+            .upsert({ id: userId, display_name: displayName }, { onConflict: "id" })
+            .select()
+            .single();
+          if (upsertErr) {
+            console.error("Profile upsert error:", upsertErr);
+          } else {
+            resolvedProfile = upserted;
+          }
+        }
+        // Fallback role insert if still missing
+        if (userRoles.length === 0) {
+          await supabase.from("user_roles").upsert({ user_id: userId, role: "mentee" }, { onConflict: "user_id,role" });
+          userRoles = [{ role: "mentee" }];
         }
       }
 
       setProfile(resolvedProfile);
-
-      const userRoles = rolesRes.data || [];
       setRoles(userRoles);
       setSubscribedCategories(categoriesRes.data?.map((c: any) => c.category) || []);
       setMyJobs(myJobsRes.data || []);
@@ -83,11 +94,6 @@ const Dashboard = () => {
       // Show onboarding for new accounts that haven't completed it
       const hasCompleted = localStorage.getItem(`onboarding_completed_${userId}`);
       if (!hasCompleted && !isMentorAlready) {
-        const needsOnboarding =
-          !resolvedProfile?.skills?.length &&
-          !resolvedProfile?.bio &&
-          !resolvedProfile?.display_name?.includes("_");
-        // Always show for brand new users (no skills, no bio)
         if (!resolvedProfile?.skills?.length && !resolvedProfile?.bio) {
           setShowOnboarding(true);
         }
@@ -104,37 +110,30 @@ const Dashboard = () => {
     let isMounted = true;
     let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!isMounted) return;
-      if (event === 'SIGNED_OUT') {
-        navigate("/auth");
-        return;
-      }
-      if (session?.user) {
-        setTimeout(() => {
-          if (isMounted) fetchData(session.user.id);
-        }, 0);
-      }
-    });
-
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
       if (!session) {
         navigate("/auth");
-      } else {
-        fetchData(session.user.id);
-
-        // Realtime: update dashboard when jobs or quotes change
-        realtimeChannel = supabase
-          .channel("dashboard-realtime")
-          .on("postgres_changes", { event: "*", schema: "public", table: "jobs", filter: `buyer_id=eq.${session.user.id}` }, () => {
-            if (isMounted) fetchData(session.user.id);
-          })
-          .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
-            if (isMounted) fetchData(session.user.id);
-          })
-          .subscribe();
+        return;
       }
+      fetchData(session.user.id);
+
+      // Realtime: update dashboard when jobs or quotes change
+      realtimeChannel = supabase
+        .channel("dashboard-realtime")
+        .on("postgres_changes", { event: "*", schema: "public", table: "jobs", filter: `buyer_id=eq.${session.user.id}` }, () => {
+          if (isMounted) fetchData(session.user.id);
+        })
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
+          if (isMounted) fetchData(session.user.id);
+        })
+        .subscribe();
+    });
+
+    // Only listen for sign-out events (not initial load — that's handled above)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (!isMounted) return;
+      if (event === 'SIGNED_OUT') navigate("/auth");
     });
 
     return () => {
