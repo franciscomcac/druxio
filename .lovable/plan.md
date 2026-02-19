@@ -1,81 +1,160 @@
 
-## Add "Schedule a Call" Feature to Orders
+# Unified Messenger — `/inbox` Redesign
 
-### What We're Building
+## The Problem
 
-A polished way for sellers (and buyers) on the Order page to initiate a Google Meet video call directly from the order chat. The seller clicks a button, a Google Meet room link is generated instantly (no manual copy-paste needed), and it gets sent as a rich, clickable card in the chat so the buyer can join with one click.
+Currently, chats are fragmented across three different places:
+- `/inbox` — shows only **paid/accepted** sessions (cards you click to navigate away)
+- `/request/:jobId` — sellers have a split-pane view but it's **tied to one job URL**
+- `/order/:jobId` — buyers and sellers chat **after payment**, separately
 
-### How It Works
+There is no single place where a user can see all their conversations and reply without navigating between pages.
 
-```text
-Seller clicks "Schedule a Call"
-         |
-         v
-Dialog opens with:
-  - "Create a Google Meet" button (opens meet.google.com/new in a new tab)
-  - Input to paste the generated link back
-  - "Send to Chat" button
-         |
-         v
-Link is sent as a special rich message in the order chat
-         |
-         v
-Buyer sees a "Join Video Call" card with green video icon + Join button
-Both parties can click to join anytime
-```
+---
 
-### Why Google Meet (Not a Custom Solution)?
+## The Solution: Full-Screen Split-Pane Messenger at `/inbox`
 
-- **Zero backend cost** — Google Meet is free for all users
-- **No API key required** — `meet.google.com/new` instantly creates a room
-- **Familiar & trusted** — Screen sharing, recording, captions all built in
-- **Works on any device** — Mobile and desktop
-
-### Changes to Make
-
-**1. `src/pages/Order.tsx` — Add the Video Call button & UI**
-
-- Import `Video`, `ExternalLink` icons (already exist in the project)
-- Add state: `meetDialogOpen`, `meetLink`
-- Add a "Video Call" button in the left sidebar actions panel — visible to **both seller and buyer** when the order is active (not completed/cancelled)
-- The dialog contains:
-  - A prominent "Open Google Meet" button that opens `https://meet.google.com/new` in a new tab
-  - An input field to paste the generated link back
-  - A "Send Link to Chat" button
-- When sent, insert the message into the `messages` table with special content format: `📹 Video Call: <url>`
-
-**2. `src/pages/Order.tsx` — Render Meet links as rich cards in chat**
-
-- Update the message rendering loop to detect messages containing `meet.google.com` or the `📹 Video Call:` prefix
-- Instead of plain text, render a styled card with:
-  - Green video camera icon
-  - "Join Video Call" text
-  - Clickable button that opens the link
-
-**3. `src/pages/Session.tsx` — Align with the same improved UX**
-
-- The Session page already has a basic version of this (a dialog with a paste input), but it lacks the "Open Google Meet" shortcut button
-- Add the `href="https://meet.google.com/new"` quick-create link to the existing dialog so it matches the Order page experience
-
-### Visual Layout of the Meet Card in Chat
+Inspired by the El Dorado reference image — a persistent two-panel layout that never navigates away. Every conversation type lives in the left sidebar, every chat opens in the right panel.
 
 ```text
-┌─────────────────────────────────────────┐
-│  📹  Video Call Scheduled               │
-│                                         │
-│  meet.google.com/abc-defg-hij           │
-│                                         │
-│  [  Join Call  →  ]                     │
-└─────────────────────────────────────────┘
+┌──────────────────┬─────────────────────────────────────────────┐
+│  LEFT SIDEBAR    │  RIGHT PANEL — Active Chat                  │
+│  (320px fixed)   │                                             │
+│                  │  ┌─────────────────────────────────────────┐│
+│  🔍 Search       │  │  Header: Avatar + Name + Status badge   ││
+│                  │  │  Sub: "Order for Gaming: Valorant"      ││
+│  ─── ACTIVE ─── │  ├─────────────────────────────────────────┤│
+│  [Avatar] Alex   │  │                                         ││
+│  Order: Gaming   │  │  [Chat messages — ScrollArea]           ││
+│  hey thanks 5m   │  │                                         ││
+│  [•] 2 unread   │  │  📋 Order Details card (auto-msg)       ││
+│                  │  │  💼 Offer card (auto-msg)               ││
+│  [Avatar] Jay    │  │                                         ││
+│  Quote: CS2      │  │  [Regular bubbles]                      ││
+│  i can help...   │  │                                         ││
+│                  │  ├─────────────────────────────────────────┤│
+│  ─── OFFERS ─── │  │  [Input bar] [Send]                     ││
+│  [Avatar] Maria  │  └─────────────────────────────────────────┘│
+│  Live Request    │                                             │
+│  Pending reply   │                                             │
+└──────────────────┴─────────────────────────────────────────────┘
 ```
 
-### No Database Changes Needed
+---
 
-The Meet link is just sent as a regular chat message in the existing `messages` table — no new columns or tables required. The special rendering is purely frontend-side by detecting the URL pattern in message content.
+## Conversation Types to Aggregate
 
-### Technical Details
+The sidebar will pull **all** conversation types for the logged-in user:
 
-- The "Schedule a Call" button will appear in the left sidebar of the Order page, below the existing seller/buyer action buttons, visible to both parties as long as the order is active
-- `meet.google.com/new` always creates a fresh room instantly — no account required for guests to join
-- Detection regex: `/meet\.google\.com\//` or message starts with `📹 Video Call:`
-- The rich card replaces the plain text render for those matching messages only
+| Type | Source | Who sees it | Badge |
+|------|--------|-------------|-------|
+| Active Order (paid) | `jobs` with `status=accepted/completed` + linked `sessions` | Buyer & Seller | 🟢 Order |
+| Quote Chat (live request, not yet paid) | `quotes` with linked `sessions` | Seller only | 🟡 Quote |
+| Delivered, awaiting confirm | `jobs` where `delivered_at` is set | Buyer & Seller | 🟠 Delivered |
+
+For buyers, they see their **accepted order** chats.  
+For sellers, they see **both** accepted orders AND all live quote conversations.
+
+---
+
+## Technical Plan
+
+### 1. Replace `src/pages/Inbox.tsx` entirely
+
+Transform it from a card-list navigation page into a **full-height messenger app** component.
+
+**Key layout change:** Move `/inbox` out of the "with footer" route group in `App.tsx` and into the "no footer, full screen" group (same as `/dashboard`).
+
+**Sidebar data loading:**
+- Fetch all `sessions` where `mentor_id = userId OR mentee_id = userId`
+- For each session, look up the linked `job` (via `quotes` table: `expert_id + mentee_id` pair → `job_id`)
+- Enrich with: other party's `profile`, `last_message`, `unread_count`, `job.status`, `job.title`, `job.category`
+- Classify into: `order` (accepted) | `quote` (pending) | `delivered`
+- Sort by: unread first, then by `last_message.created_at` descending
+
+**Sidebar UI (`ConversationList` component):**
+- Search bar to filter by name or job title
+- Section headers: "Orders" | "Quotes & Offers"
+- Each row: Avatar (with online dot) | Name | Job title subtitle | Last message preview | Time | Unread badge
+- Active conversation highlighted with `bg-primary/10 border-l-2 border-primary`
+- Real-time updates via Supabase channel subscription on `messages` table
+
+**Chat Panel (`ChatPanel` component):**
+- Header: Avatar + name + status badge + link icon to navigate to the full order/request page
+- Messages in `ScrollArea`, auto-scroll to bottom on new message
+- Styled auto-message cards (📋 Order Details, 💼 Offer) identical to what already exists in `ActiveRequest.tsx`
+- Image support (preview + lightbox) inherited from `Order.tsx`
+- Textarea input (shift+enter for newline, enter to send) — already the standard
+- Real-time subscription per `session_id`, switches when conversation changes
+
+**Mobile:** On small screens, sidebar fills full width with a back button; selecting a conversation slides in the chat panel.
+
+### 2. Update `App.tsx`
+
+Move `/inbox` from the "with footer" layout group to the "no footer, full-screen" group:
+
+```tsx
+// Before (has footer):
+<Route path="/inbox" element={<Inbox />} />
+
+// After (no footer, full height):
+// In the showFooter={false} group:
+<Route path="/inbox" element={<Inbox />} />
+```
+
+### 3. Real-time Strategy
+
+One Supabase channel subscribed at the **page level**:
+```ts
+supabase.channel('inbox-global')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, handleNewMessage)
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'sessions' }, handleSessionUpdate)
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'jobs' }, handleJobUpdate)
+  .subscribe()
+```
+
+When a new message arrives:
+- If it belongs to the **active conversation** → append to chat view
+- Always update the sidebar preview (last message + unread count)
+
+### 4. Component Structure
+
+```text
+src/pages/Inbox.tsx (rewritten)
+  ├── <ConversationList>  (left sidebar)
+  │     ├── Search input
+  │     ├── Section: "Orders"
+  │     ├── Section: "Quotes"
+  │     └── <ConversationRow> × N
+  └── <ChatPanel>  (right panel)
+        ├── Chat header
+        ├── <ScrollArea> messages
+        │     └── renderMessageBubble() (reused logic)
+        └── Input bar
+```
+
+All in a single `Inbox.tsx` file to keep things simple and co-located.
+
+### 5. No Database Changes Needed
+
+All data already exists:
+- `sessions` → chat containers
+- `messages` → messages
+- `quotes` → links sellers to jobs/sessions
+- `jobs` → order context
+- `profiles` → avatars and names
+
+---
+
+## What Stays the Same
+
+- `/order/:jobId` remains for viewing full order details (delivery, dispute, review)
+- `/request/:jobId` remains for buyers to view the leaderboard of quotes
+- The chat panel in `/inbox` will show a **"View Full Order"** link button in the header to navigate there when relevant
+
+---
+
+## Files to Change
+
+1. **`src/pages/Inbox.tsx`** — full rewrite into split-pane messenger
+2. **`src/App.tsx`** — move `/inbox` to the no-footer route group
