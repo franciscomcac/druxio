@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,6 +30,7 @@ const PurchasedOrders = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { format } = useCurrency();
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -144,7 +146,7 @@ const PurchasedOrders = () => {
             <div className="flex flex-col items-end gap-2 shrink-0">
               {order.quote && (
                 <>
-                  <p className="text-lg font-bold text-primary">€{Number(order.quote.price).toFixed(2)}</p>
+                  <p className="text-lg font-bold text-primary">{format(Number(order.quote.price))}</p>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-7 w-7 border border-border">
                       <AvatarImage src={order.sellerProfile?.avatar_url} />

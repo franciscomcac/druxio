@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNotificationSound } from "@/hooks/use-notification-sound";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -123,6 +124,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { format } = useCurrency();
   const playNotificationSound = useNotificationSound();
 
   useEffect(() => {
@@ -249,7 +251,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const ratingPercent = ratingValue > 0 ? Math.round((ratingValue / 5) * 100) : 0;
 
   const statCards = [
-    { icon: <DollarSign className="h-5 w-5" />, value: `€${profile?.wallet_balance?.toFixed(2) || "0.00"}`, label: "Earnings" },
+    { icon: <DollarSign className="h-5 w-5" />, value: format(profile?.wallet_balance || 0), label: "Earnings" },
     { icon: <Target className="h-5 w-5" />, value: profile?.total_sessions || 0, label: "Completed" },
     { icon: <Star className="h-5 w-5" />, value: ratingValue > 0 ? ratingValue.toFixed(1) : "—", label: "Rating" },
     { icon: <Zap className="h-5 w-5" />, value: subscribedCategories.length, label: "Categories" },
@@ -279,7 +281,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         <div className="flex-1 min-w-0">
           <p className="font-medium text-foreground truncate text-sm">{order.job.title}</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {order.buyerProfile?.display_name || "Client"} · €{Number(order.quote.price).toFixed(2)}
+            {order.buyerProfile?.display_name || "Client"} · {format(Number(order.quote.price))}
           </p>
         </div>
         <Badge variant={config.variant} className="gap-1 shrink-0 text-[10px] px-1.5 py-0.5">
@@ -305,7 +307,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
           <DialogHeader>
             <DialogTitle className="text-base">Send Quote</DialogTitle>
             <DialogDescription className="text-xs">
-              {quoteDialog?.title} — Budget: up to €{quoteDialog?.budget_max}
+              {quoteDialog?.title} — Budget: up to {format(quoteDialog?.budget_max || 0)}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">

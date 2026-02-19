@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useBalance } from "@/hooks/use-balance";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,6 +43,7 @@ const typeLabels: Record<string, string> = {
 
 const Wallet = () => {
   const navigate = useNavigate();
+  const { format } = useCurrency();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [txLoading, setTxLoading] = useState(true);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
@@ -102,7 +104,7 @@ const Wallet = () => {
       </div>
       <div className="text-right">
         <p className={`font-semibold ${isIncome(tx.type) ? "text-chart-2" : "text-destructive"}`}>
-          {isIncome(tx.type) ? "+" : "-"}€{tx.amount.toFixed(2)}
+          {isIncome(tx.type) ? "+" : "-"}{format(tx.amount)}
         </p>
         <Badge variant={tx.status === "completed" ? "secondary" : tx.status === "pending" ? "outline" : "destructive"} className="text-[10px]">
           {tx.status}
@@ -142,7 +144,7 @@ const Wallet = () => {
         <Card className="border-primary/30 bg-primary/[0.04] mb-6">
           <CardContent className="p-6 sm:p-8 text-center">
             <p className="text-sm text-muted-foreground mb-1">Available Balance</p>
-            <p className="text-4xl sm:text-5xl font-bold text-foreground">€{balance.toFixed(2)}</p>
+            <p className="text-4xl sm:text-5xl font-bold text-foreground">{format(balance)}</p>
             <p className="text-xs text-muted-foreground mt-2">All earnings, refunds & top-ups minus payments</p>
             <Button className="mt-4 gap-2 w-full sm:w-auto" onClick={() => setWithdrawOpen(true)} disabled={balance <= 0}>
               <ArrowUpRight className="h-4 w-4" /> Withdraw
@@ -158,7 +160,7 @@ const Wallet = () => {
                 <TrendingUp className="h-4 w-4 text-chart-2" />
                 <p className="text-xs text-muted-foreground">Earned</p>
               </div>
-              <p className="text-xl font-bold text-foreground">€{totalEarned.toFixed(2)}</p>
+              <p className="text-xl font-bold text-foreground">{format(totalEarned)}</p>
             </CardContent>
           </Card>
           <Card>
@@ -167,7 +169,7 @@ const Wallet = () => {
                 <TrendingDown className="h-4 w-4 text-destructive" />
                 <p className="text-xs text-muted-foreground">Spent</p>
               </div>
-              <p className="text-xl font-bold text-foreground">€{totalSpent.toFixed(2)}</p>
+              <p className="text-xl font-bold text-foreground">{format(totalSpent)}</p>
             </CardContent>
           </Card>
           <Card>
@@ -176,7 +178,7 @@ const Wallet = () => {
                 <RefreshCw className="h-4 w-4 text-primary" />
                 <p className="text-xs text-muted-foreground">Refunded</p>
               </div>
-              <p className="text-xl font-bold text-foreground">€{totalRefunded.toFixed(2)}</p>
+              <p className="text-xl font-bold text-foreground">{format(totalRefunded)}</p>
             </CardContent>
           </Card>
           <Card>
@@ -185,7 +187,7 @@ const Wallet = () => {
                 <PiggyBank className="h-4 w-4 text-chart-2" />
                 <p className="text-xs text-muted-foreground">Deposited</p>
               </div>
-              <p className="text-xl font-bold text-foreground">€{totalDeposited.toFixed(2)}</p>
+              <p className="text-xl font-bold text-foreground">{format(totalDeposited)}</p>
             </CardContent>
           </Card>
         </div>

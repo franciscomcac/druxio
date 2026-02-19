@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import AvailabilityBadge from "@/components/experts/AvailabilityBadge";
 import { useFavorites } from "@/hooks/use-favorites";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ const Search = () => {
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const { format } = useCurrency();
   const [searchQuery, setSearchQuery] = useState("");
   const [issueDescription, setIssueDescription] = useState(searchParams.get("issue") || "");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
@@ -377,7 +379,7 @@ const Search = () => {
                       {/* Price and CTA */}
                       <div className="flex items-center justify-between border-t border-border pt-4">
                         <span className="text-lg font-bold text-foreground">
-                          ${(mentor.hourly_rate || 2.50).toFixed(2)}
+                          {format(mentor.hourly_rate || 2.50)}
                           <span className="text-xs font-normal text-muted-foreground">/10min</span>
                         </span>
                         <div className="flex gap-1">

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
   const [cryptoAddress, setCryptoAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { format } = useCurrency();
 
   const selectedTokenNetworks = CRYPTO_OPTIONS.find(c => c.token === cryptoToken)?.networks || [];
 
@@ -124,7 +126,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
             <Wallet className="h-5 w-5 text-primary" /> Withdraw Funds
           </DialogTitle>
           <DialogDescription>
-            Available balance: <span className="font-semibold text-foreground">€{balance.toFixed(2)}</span>
+            Available balance: <span className="font-semibold text-foreground">{format(balance)}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -180,25 +182,25 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
               <div className="rounded-lg bg-muted/40 border border-border/40 p-3 space-y-1.5 text-xs">
                 <div className="flex justify-between text-muted-foreground">
                   <span>Withdrawal amount</span>
-                  <span>€{numAmount.toFixed(2)}</span>
+                  <span>{format(numAmount)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Platform fee (5%)</span>
-                  <span className="text-destructive">−€{platformFee.toFixed(2)}</span>
+                  <span className="text-destructive">−{format(platformFee)}</span>
                 </div>
                 {method === "paypal" && paypalFee > 0 && (
                   <div className="flex justify-between text-muted-foreground">
                     <span>PayPal payout fee (2%, max €1.00)</span>
-                    <span className="text-destructive">−€{paypalFee.toFixed(2)}</span>
+                    <span className="text-destructive">−{format(paypalFee)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-muted-foreground border-t border-border/40 pt-1">
                   <span>Total fees</span>
-                  <span className="text-destructive">−€{totalFee.toFixed(2)}</span>
+                  <span className="text-destructive">−{format(totalFee)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-foreground border-t border-border/40 pt-1 mt-1">
                   <span>You receive</span>
-                  <span className="text-primary">€{receiveAmount.toFixed(2)}</span>
+                  <span className="text-primary">{format(receiveAmount)}</span>
                 </div>
               </div>
             )}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,7 @@ const Order = () => {
   const location = useLocation();
   const fromPath: string | undefined = (location.state as any)?.from;
   const { toast } = useToast();
+  const { format } = useCurrency();
   const { softCheckContent } = useModeration();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
@@ -630,24 +632,24 @@ const Order = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Service price</span>
-                        <span className="font-medium text-foreground">€{base.toFixed(2)}</span>
+                        <span className="font-medium text-foreground">{format(base)}</span>
                       </div>
                       {isBuyer && (
                         <>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Platform fee (5%)</span>
-                            <span className="font-medium text-foreground">+€{buyerPlatformFee.toFixed(2)}</span>
+                            <span className="font-medium text-foreground">+{format(buyerPlatformFee)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">PayPal processing (3.49% + €0.35)</span>
-                            <span className="font-medium text-foreground">+€{buyerPaypalFee.toFixed(2)}</span>
+                            <span className="font-medium text-foreground">+{format(buyerPaypalFee)}</span>
                           </div>
                         </>
                       )}
                       {isSeller && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Platform fee (5%)</span>
-                          <span className="font-medium text-foreground">−€{sellerPlatformFee.toFixed(2)}</span>
+                          <span className="font-medium text-foreground">−{format(sellerPlatformFee)}</span>
                         </div>
                       )}
                       <div className="border-t border-border pt-2 flex justify-between">
@@ -655,7 +657,7 @@ const Order = () => {
                           {isBuyer ? "Total paid" : "You'll earn"}
                         </span>
                         <span className="font-bold text-primary">
-                          €{isBuyer ? buyerTotal.toFixed(2) : sellerNet.toFixed(2)}
+                          {format(isBuyer ? buyerTotal : sellerNet)}
                         </span>
                       </div>
                     </div>
