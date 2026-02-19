@@ -13,11 +13,10 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Star, Check, Clock, Send, MessageSquare, XCircle, Users, ThumbsUp,
   ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck, RefreshCw, ChevronRight,
-  ImageIcon, X as XIcon, ShoppingBag,
+  ImageIcon, X as XIcon,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
-import { cn } from "@/lib/utils";
 
 interface QuoteWithProfile {
   id: string;
@@ -737,56 +736,52 @@ const ActiveRequest = () => {
                 <p className="text-xs">No active orders yet</p>
               </div>
             ) : (
-              <div>
+              <div className="p-2 space-y-1">
                 {sellerConvos.map((convo) => {
                   const isActive = activeConvoJobId === convo.jobId;
-                  const statusLabel = convo.jobStatus === "accepted" || convo.jobStatus === "in_progress" ? "Order" : convo.jobStatus;
                   return (
                     <button
                       key={convo.jobId}
                       onClick={() => handleSwitchConvo(convo)}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-4 py-3 text-left transition-all hover:bg-muted/50 border-l-2",
+                      className={`w-full text-left rounded-xl p-3 transition-all ${
                         isActive
-                          ? "bg-primary/8 border-l-primary"
-                          : "border-l-transparent"
-                      )}
+                          ? "bg-primary/10 border border-primary/20"
+                          : "hover:bg-muted/50 border border-transparent"
+                      }`}
                     >
-                      <div className="relative shrink-0">
-                        <Avatar className="h-10 w-10">
+                      <div className="flex items-start gap-2.5">
+                        <Avatar className="h-9 w-9 border border-border shrink-0">
                           <AvatarImage src={convo.buyerAvatar || undefined} />
-                          <AvatarFallback className="text-sm bg-muted">
-                            {convo.buyerName?.[0]?.toUpperCase() || "B"}
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                            {convo.buyerName?.[0] || "B"}
                           </AvatarFallback>
                         </Avatar>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1 mb-0.5">
-                          <span className={cn("text-sm font-semibold truncate", isActive ? "text-primary" : "text-foreground")}>
-                            {convo.buyerName || "Buyer"}
-                          </span>
-                          <div className="flex items-center gap-1 shrink-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                              {convo.buyerName || "Buyer"}
+                            </p>
                             {convo.unread > 0 && (
-                              <span className="h-5 min-w-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                              <span className="h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shrink-0">
                                 {convo.unread}
                               </span>
                             )}
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full border bg-green-500/15 text-green-500 border-green-500/30">
-                            <ShoppingBag className="h-3 w-3" />
-                            {statusLabel}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground truncate">{convo.jobTitle}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground truncate max-w-[140px]">
-                            {convo.lastMessage
-                              ? (convo.lastMessage.startsWith("📋") ? "📋 Auto message" : convo.lastMessage)
-                              : "No messages yet"}
-                          </span>
-                          <span className="text-[10px] text-primary font-semibold shrink-0">€{convo.myPrice.toFixed(2)}</span>
+                          <p className="text-[10px] text-muted-foreground truncate">{convo.jobTitle}</p>
+                          <div className="flex items-center justify-between mt-1">
+                            <p className="text-[10px] text-primary font-semibold">€{convo.myPrice.toFixed(2)}</p>
+                            <Badge
+                              variant={convo.jobStatus === "open" ? "outline" : "secondary"}
+                              className="text-[9px] h-3.5 px-1"
+                            >
+                              {convo.jobStatus}
+                            </Badge>
+                          </div>
+                          {convo.lastMessage && (
+                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                              {convo.lastMessage.startsWith("📋") ? "📋 Auto message" : convo.lastMessage}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </button>

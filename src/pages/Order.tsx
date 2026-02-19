@@ -183,12 +183,9 @@ const Order = () => {
     return () => { supabase.removeChannel(channel); };
   }, [sessionId]);
 
-  // Auto-scroll only the chat container to bottom when messages change
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    const scrollEl = chatScrollRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null;
-    if (scrollEl) {
-      scrollEl.scrollTop = scrollEl.scrollHeight;
-    }
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
