@@ -38,7 +38,7 @@ const Footer = () => {
             </p>
             <div className="flex gap-3">
               {[
-                { icon: <Twitter className="h-4 w-4" />, href: "https://twitter.com/Duxio", label: "Twitter" },
+                { icon: <Twitter className="h-4 w-4" />, href: "https://x.com/duxio_store", label: "Twitter" },
                 { icon: <Linkedin className="h-4 w-4" />, href: "https://linkedin.com/company/duxio", label: "LinkedIn" },
               ].map((s) => (
                 <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-all duration-300 hover:bg-primary/[0.08] hover:text-primary hover:border-primary/20" aria-label={s.label}>
