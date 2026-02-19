@@ -102,7 +102,7 @@ const TermsOfService = () => {
         </Section>
 
         <Section title="16. Contact">
-          <p>For questions about these Terms, contact us at <a href="mailto:legal@duxio.app" className="text-primary underline underline-offset-4">legal@duxio.app</a>.</p>
+          <p>For questions about these Terms, contact us at <a href="mailto:support@duxio.store" className="text-primary underline underline-offset-4">support@duxio.store</a>.</p>
         </Section>
       </div>
     </main>

@@ -147,7 +147,7 @@ const FAQ = () => {
           </h1>
           <p className="text-lg text-muted-foreground">
             Everything you need to know about Duxio. Can't find your answer?{" "}
-            <a href="mailto:support@duxio.app" className="text-primary underline underline-offset-4">
+            <a href="mailto:support@duxio.store" className="text-primary underline underline-offset-4">
               Contact support
             </a>
             .
@@ -186,7 +186,7 @@ const FAQ = () => {
             Our support team is available Monday–Friday, 9am–6pm CET.
           </p>
           <a
-            href="mailto:support@duxio.app"
+            href="mailto:support@duxio.store"
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
             Email Support
