@@ -620,7 +620,7 @@ const ActiveRequest = () => {
   // ── SELLER LAYOUT — multi-convo sidebar ────────────────────────────────────
   if (!isBuyer) {
     return (
-      <div className="h-screen bg-background flex overflow-hidden">
+      <div className="h-[calc(100vh-64px)] bg-background flex overflow-hidden">
 
         {/* ── Left sidebar: all conversations ──────────────────────────────── */}
         <div className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
