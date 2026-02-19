@@ -128,9 +128,9 @@ const OnboardingWizard = ({ userId, onComplete }: OnboardingWizardProps) => {
       case 1:
         return displayName.trim().length >= 2;
       case 2:
-        return selectedSkills.length > 0;
+        return true; // Skills are optional for clients
       case 3:
-        return selectedGoals.length > 0;
+        return true; // Goals are optional
       default:
         return false;
     }
@@ -152,8 +152,8 @@ const OnboardingWizard = ({ userId, onComplete }: OnboardingWizardProps) => {
           </CardTitle>
           <CardDescription>
             {step === 1 && "Tell us a bit about yourself"}
-            {step === 2 && "Select your areas of expertise or interests"}
-            {step === 3 && "What do you want to achieve?"}
+            {step === 2 && "Select your areas of interest (optional)"}
+            {step === 3 && "What do you want to achieve? (optional)"}
           </CardDescription>
         </CardHeader>
 

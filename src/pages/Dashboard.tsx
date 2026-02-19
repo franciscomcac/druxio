@@ -48,29 +48,53 @@ const Dashboard = () => {
         supabase.from("jobs").select("*").eq("buyer_id", userId).order("created_at", { ascending: false }).limit(20),
       ]);
 
-      if (!profileRes.data) {
+      let resolvedProfile = profileRes.data;
+
+      if (!resolvedProfile) {
+        // Profile not created yet (trigger may be delayed) — upsert a basic one
         const { data: { session } } = await supabase.auth.getSession();
-        const displayName = session?.user?.user_metadata?.display_name || session?.user?.email?.split("@")[0] || "User";
-        const { data: newProfile } = await supabase.from("profiles").upsert({ id: userId, display_name: displayName }, { onConflict: "id" }).select().single();
-        setProfile(newProfile);
-        const hasSeenOnboarding = localStorage.getItem(`onboarding_completed_${userId}`);
-        if (!hasSeenOnboarding) setShowOnboarding(true);
-      } else {
-        setProfile(profileRes.data);
-        const hasCompleted = localStorage.getItem(`onboarding_completed_${userId}`);
-        if (!hasCompleted && !profileRes.data.skills?.length && !profileRes.data.bio) {
-          const isMentorAlready = rolesRes.data?.some((r: any) => r.role === "mentor");
-          if (!isMentorAlready) setShowOnboarding(true);
+        const displayName =
+          session?.user?.user_metadata?.display_name ||
+          session?.user?.user_metadata?.full_name ||
+          session?.user?.email?.split("@")[0] ||
+          "User";
+        const { data: upserted, error: upsertErr } = await supabase
+          .from("profiles")
+          .upsert({ id: userId, display_name: displayName }, { onConflict: "id" })
+          .select()
+          .single();
+        if (upsertErr) {
+          console.error("Profile upsert error:", upsertErr);
+        } else {
+          resolvedProfile = upserted;
         }
       }
 
-      setRoles(rolesRes.data || []);
+      setProfile(resolvedProfile);
+
+      const userRoles = rolesRes.data || [];
+      setRoles(userRoles);
       setSubscribedCategories(categoriesRes.data?.map((c: any) => c.category) || []);
       setMyJobs(myJobsRes.data || []);
-      const isMentor = rolesRes.data?.some((r: any) => r.role === "mentor");
-      if (isMentor) setActiveView("expert");
+
+      const isMentorAlready = userRoles.some((r: any) => r.role === "mentor");
+      if (isMentorAlready) setActiveView("expert");
+
+      // Show onboarding for new accounts that haven't completed it
+      const hasCompleted = localStorage.getItem(`onboarding_completed_${userId}`);
+      if (!hasCompleted && !isMentorAlready) {
+        const needsOnboarding =
+          !resolvedProfile?.skills?.length &&
+          !resolvedProfile?.bio &&
+          !resolvedProfile?.display_name?.includes("_");
+        // Always show for brand new users (no skills, no bio)
+        if (!resolvedProfile?.skills?.length && !resolvedProfile?.bio) {
+          setShowOnboarding(true);
+        }
+      }
     } catch (error) {
       console.error("Dashboard fetchData error:", error);
+      toast({ title: "Error loading dashboard", description: "Please refresh the page.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -134,10 +158,13 @@ const Dashboard = () => {
 
   const handleOnboardingComplete = async () => {
     setShowOnboarding(false);
-    if (profile?.id) {
-      localStorage.setItem(`onboarding_completed_${profile.id}`, "true");
-      fetchData(profile.id);
+    const userId = profile?.id;
+    if (userId) {
+      localStorage.setItem(`onboarding_completed_${userId}`, "true");
+      await fetchData(userId);
     }
+    // Clear any stale redirect that might send them away from dashboard
+    localStorage.removeItem("post_request_pending");
   };
 
   const isMentor = roles.some((r: any) => r.role === "mentor");
