@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,6 +27,7 @@ const CategoryPage = () => {
   const navigate = useNavigate();
   const meta = CATEGORY_META[slug || ""];
 
+  const { format } = useCurrency();
   const [experts, setExperts] = useState<any[]>([]);
   const [liveRequestCount, setLiveRequestCount] = useState(0);
   const [recentCompletions, setRecentCompletions] = useState(0);
@@ -177,7 +179,7 @@ const CategoryPage = () => {
                           <Clock className="h-3 w-3" />
                           ~{expert.response_time_minutes || 5} min reply
                           <span className="mx-1">·</span>
-                          ${(expert.hourly_rate || 2.50).toFixed(2)}/10min
+                          {format(expert.hourly_rate || 2.50)}/10min
                         </p>
                       </div>
                     </CardContent>
@@ -255,7 +257,7 @@ const CategoryPage = () => {
                         </Badge>
                       )}
                       <div className="mt-3 pt-3 border-t border-border text-lg font-bold text-foreground">
-                        ${(expert.hourly_rate || 2.50).toFixed(2)}
+                        {format(expert.hourly_rate || 2.50)}
                         <span className="text-xs font-normal text-muted-foreground">/10min</span>
                       </div>
                     </CardContent>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
 import RankBadge from "@/components/RankBadge";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,7 @@ const ActiveRequest = () => {
   // PayPal checkout state
   const [paypalDialog, setPaypalDialog] = useState<QuoteWithProfile | null>(null);
   const [paypalLoading, setPaypalLoading] = useState(false);
+  const { format } = useCurrency();
 
   // Seller: new quote form state
   const [newQuotePrice, setNewQuotePrice] = useState("");
@@ -578,7 +580,7 @@ const ActiveRequest = () => {
                       </div>
 
                       <div className="shrink-0 text-right">
-                        <p className="text-base sm:text-lg font-bold text-foreground">€{quote.price.toFixed(2)}</p>
+                        <p className="text-base sm:text-lg font-bold text-foreground">{format(quote.price)}</p>
                         <p className="text-[10px] text-muted-foreground">{formatDeliveryTime(quote.estimated_minutes)}</p>
                       </div>
 
@@ -645,7 +647,7 @@ const ActiveRequest = () => {
                                 <span className="font-medium text-sm text-foreground truncate">{quote.profile?.display_name || "Expert"}</span>
                               </div>
                               <p className="text-xs text-muted-foreground truncate mt-0.5">
-                                {lastMsg ? lastMsg.content : `€${quote.price.toFixed(2)}`}
+                                {lastMsg ? lastMsg.content : format(quote.price)}
                               </p>
                             </div>
                           </button>
@@ -674,7 +676,7 @@ const ActiveRequest = () => {
                           {q.profile?.display_name?.split(" ").map(n => n[0]).join("") || "E"}
                         </AvatarFallback>
                       </Avatar>
-                      {q.profile?.display_name?.split(" ")[0] || "Expert"} · €{q.price}
+                      {q.profile?.display_name?.split(" ")[0] || "Expert"} · {format(q.price)}
                     </button>
                   ))}
                 </div>
@@ -704,13 +706,13 @@ const ActiveRequest = () => {
                           <span className="text-xs text-muted-foreground">
                             {formatDeliveryTime(selectedQuote.estimated_minutes)}
                           </span>
-                          <p className="text-lg font-bold text-primary">€{selectedQuote.price.toFixed(2)}</p>
+                           <p className="text-lg font-bold text-primary">{format(selectedQuote.price)}</p>
                         </div>
                       )}
                       {!isBuyer && myQuote && (
                         <div className="text-right">
                           <span className="text-xs text-muted-foreground">Your offer</span>
-                          <p className="text-lg font-bold text-primary">€{myQuote.price.toFixed(2)}</p>
+                          <p className="text-lg font-bold text-primary">{format(myQuote.price)}</p>
                         </div>
                       )}
                     </div>

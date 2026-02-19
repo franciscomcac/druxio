@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,6 +28,7 @@ const SoldOrders = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { format } = useCurrency();
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -139,11 +141,11 @@ const SoldOrders = () => {
             </div>
 
             <div className="flex flex-col items-end gap-2 shrink-0">
-              <p className="text-lg font-bold text-primary">€{Number(order.quote.price).toFixed(2)}</p>
+              <p className="text-lg font-bold text-primary">{format(Number(order.quote.price))}</p>
               {order.earning && (
-                <span className="text-xs text-green-500 flex items-center gap-1">
+                <span className="text-xs text-chart-2 flex items-center gap-1">
                   <DollarSign className="h-3 w-3" />
-                  Earned €{Number(order.earning.amount).toFixed(2)}
+                  Earned {format(Number(order.earning.amount))}
                 </span>
               )}
               <div className="flex items-center gap-2">
