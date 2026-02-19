@@ -11,6 +11,20 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Zap, Loader2, Eye, EyeOff, ArrowLeft } from "lucide-react";
 
+// Password strength helper
+const getPasswordStrength = (pwd: string): { level: number; label: string; color: string } => {
+  if (!pwd) return { level: 0, label: "", color: "" };
+  let score = 0;
+  if (pwd.length >= 8) score++;
+  if (pwd.length >= 12) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  if (score <= 1) return { level: 1, label: "Weak", color: "bg-destructive" };
+  if (score <= 3) return { level: 2, label: "Fair", color: "bg-yellow-500" };
+  return { level: 3, label: "Strong", color: "bg-green-500" };
+};
+
 interface QuickAuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -214,7 +228,16 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login", onSuccess }
                     <Input id="dialog-login-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dialog-login-password">Password</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="dialog-login-password">Password</Label>
+                      <button
+                        type="button"
+                        onClick={() => { setView("forgot"); setForgotEmail(email); }}
+                        className="text-xs font-medium text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
                     <div className="relative">
                       <Input
                         id="dialog-login-password"
@@ -234,15 +257,6 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login", onSuccess }
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <button
-                      type="button"
-                      onClick={() => { setView("forgot"); setForgotEmail(email); }}
-                      className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
-                    >
-                      Forgot password?
-                    </button>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign In
@@ -278,6 +292,19 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login", onSuccess }
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {password && (() => {
+                      const s = getPasswordStrength(password);
+                      return (
+                        <div className="space-y-1">
+                          <div className="flex gap-1">
+                            {[1, 2, 3].map((i) => (
+                              <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= s.level ? s.color : "bg-muted"}`} />
+                            ))}
+                          </div>
+                          <p className={`text-xs ${s.level === 1 ? "text-destructive" : s.level === 2 ? "text-yellow-500" : "text-green-500"}`}>{s.label}</p>
+                        </div>
+                      );
+                    })()}
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create Account

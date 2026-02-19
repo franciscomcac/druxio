@@ -12,6 +12,20 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Zap, Loader2, ArrowLeft, Eye, EyeOff } from "lucide-react";
 
+// Password strength helper
+const getPasswordStrength = (pwd: string): { level: number; label: string; color: string } => {
+  if (!pwd) return { level: 0, label: "", color: "" };
+  let score = 0;
+  if (pwd.length >= 8) score++;
+  if (pwd.length >= 12) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  if (score <= 1) return { level: 1, label: "Weak", color: "bg-destructive" };
+  if (score <= 3) return { level: 2, label: "Fair", color: "bg-yellow-500" };
+  return { level: 3, label: "Strong", color: "bg-green-500" };
+};
+
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -219,7 +233,16 @@ const Auth = () => {
                       <Input id="login-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="login-password">Password</Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="login-password">Password</Label>
+                        <button
+                          type="button"
+                          onClick={() => { setForgotOpen(true); setForgotEmail(email); }}
+                          className="text-xs font-medium text-primary hover:text-primary/80 underline underline-offset-2 transition-colors"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
                       <div className="relative">
                         <Input
                           id="login-password"
@@ -238,15 +261,6 @@ const Auth = () => {
                           aria-label={showPassword ? "Hide password" : "Show password"}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                      <div className="flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => { setForgotOpen(true); setForgotEmail(email); }}
-                          className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          Forgot password?
                         </button>
                       </div>
                     </div>
@@ -285,6 +299,19 @@ const Auth = () => {
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
+                      {password && (() => {
+                        const s = getPasswordStrength(password);
+                        return (
+                          <div className="space-y-1">
+                            <div className="flex gap-1">
+                              {[1, 2, 3].map((i) => (
+                                <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= s.level ? s.color : "bg-muted"}`} />
+                              ))}
+                            </div>
+                            <p className={`text-xs ${s.level === 1 ? "text-destructive" : s.level === 2 ? "text-yellow-500" : "text-green-500"}`}>{s.label}</p>
+                          </div>
+                        );
+                      })()}
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
                       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create Account
