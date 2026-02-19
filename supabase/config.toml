@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.paypal-capture-order]
 verify_jwt = false
+
+[functions.auto-release-funds]
+verify_jwt = false
