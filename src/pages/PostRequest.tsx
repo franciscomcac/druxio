@@ -415,9 +415,16 @@ const PostRequest = () => {
     if (loading || !title) return;
     setLoading(true);
 
-    // Moderation check
+    // Moderation check (with timeout so the button never hangs indefinitely)
     const textToCheck = `${title} ${description || ""}`.trim();
-    const flagged = await checkContent(textToCheck, "job request posting");
+    let flagged = false;
+    try {
+      const moderationPromise = checkContent(textToCheck, "job request posting");
+      const timeoutPromise = new Promise<boolean>(resolve => setTimeout(() => resolve(false), 5000));
+      flagged = await Promise.race([moderationPromise, timeoutPromise]);
+    } catch {
+      flagged = false; // fail open
+    }
     if (flagged) {
       setLoading(false);
       return;
@@ -434,6 +441,7 @@ const PostRequest = () => {
       const { data: { session: freshSession } } = await supabase.auth.getSession();
       const currentUserId = freshSession?.user?.id;
       if (!currentUserId) {
+        setLoading(false);
         pendingSubmitRef.current = true;
         setShowAuthDialog(true);
         return;
