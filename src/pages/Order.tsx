@@ -183,13 +183,20 @@ const Order = () => {
     return () => { supabase.removeChannel(channel); };
   }, [sessionId]);
 
-  // Auto-scroll to bottom within the chat ScrollArea (not the whole page)
+  // Scroll only the chat panel to the bottom — never the whole page
+  const scrollChatToBottom = () => {
+    const viewport = chatScrollRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) viewport.scrollTop = viewport.scrollHeight;
+  };
+
   useEffect(() => {
-    if (!chatScrollRef.current) return;
-    const viewport = chatScrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-    if (viewport) {
-      viewport.scrollTop = viewport.scrollHeight;
-    }
+    if (messages.length === 0) return;
+    // rAF ensures the DOM has painted before we measure scrollHeight
+    requestAnimationFrame(() => {
+      scrollChatToBottom();
+      // Secondary timeout covers slow renders / images loading
+      setTimeout(scrollChatToBottom, 80);
+    });
   }, [messages]);
 
   useEffect(() => {
