@@ -618,51 +618,10 @@ const Order = () => {
                 {job.description && (
                   <p className="text-sm text-muted-foreground">{job.description}</p>
                 )}
-                {(() => {
-                  const base = Number(quote.price);
-                  // Buyer fees: 5% platform + 3.49% + €0.35 PayPal processing
-                  const buyerPlatformFee = Math.round(base * 0.05 * 100) / 100;
-                  const buyerPaypalFee = Math.round((base * 0.0349 + 0.35) * 100) / 100;
-                  const buyerTotal = Math.round((base + buyerPlatformFee + buyerPaypalFee) * 100) / 100;
-                  // Seller payout: 5% platform fee deducted
-                  const sellerPlatformFee = Math.round(base * 0.05 * 100) / 100;
-                  const sellerNet = Math.round((base - sellerPlatformFee) * 100) / 100;
-
-                  return (
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Service price</span>
-                        <span className="font-medium text-foreground">{format(base)}</span>
-                      </div>
-                      {isBuyer && (
-                        <>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Platform fee (5%)</span>
-                            <span className="font-medium text-foreground">+{format(buyerPlatformFee)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">PayPal processing (3.49% + €0.35)</span>
-                            <span className="font-medium text-foreground">+{format(buyerPaypalFee)}</span>
-                          </div>
-                        </>
-                      )}
-                      {isSeller && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Platform fee (5%)</span>
-                          <span className="font-medium text-foreground">−{format(sellerPlatformFee)}</span>
-                        </div>
-                      )}
-                      <div className="border-t border-border pt-2 flex justify-between">
-                        <span className="font-semibold text-foreground">
-                          {isBuyer ? "Total paid" : "You'll earn"}
-                        </span>
-                        <span className="font-bold text-primary">
-                          {format(isBuyer ? buyerTotal : sellerNet)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
+                <div className="flex justify-between text-sm mt-2">
+                  <span className="text-muted-foreground">Service price</span>
+                  <span className="font-semibold text-foreground">{format(Number(quote.price))}</span>
+                </div>
               </CardContent>
             </Card>
 
