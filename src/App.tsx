@@ -15,7 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import PostRequest from "./pages/PostRequest";
 import ActiveRequest from "./pages/ActiveRequest";
-import Search from "./pages/Search";
+
 import Session from "./pages/Session";
 import Wallet from "./pages/Wallet";
 import MentorProfile from "./pages/MentorProfile";
@@ -76,7 +76,7 @@ const App = () => (
               <Route path="/how-it-works" element={<HowItWorksPage />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
-              <Route path="/search" element={<Search />} />
+              
               <Route path="/wallet" element={<Wallet />} />
               <Route path="/mentor/:mentorId" element={<MentorProfile />} />
               <Route path="/settings" element={<Settings />} />
