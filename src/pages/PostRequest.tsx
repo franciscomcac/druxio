@@ -807,7 +807,7 @@ const PostRequest = () => {
                   </div>
 
                    <div className="space-y-3">
-                    <label className="text-sm font-medium text-foreground">Max Delivery Time</label>
+                    <label className="text-sm font-medium text-foreground">Suggested Delivery Time</label>
                     <div className="flex rounded-lg border border-border overflow-hidden bg-background/60 w-fit">
                       {(["minutes", "hours", "days"] as const).map((unit) => (
                         <button
