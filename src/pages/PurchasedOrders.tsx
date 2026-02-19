@@ -102,10 +102,10 @@ const PurchasedOrders = () => {
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
-  const activeOrders = orders.filter(o => o.job.status === "accepted");
+  const activeOrders = orders.filter(o => o.job.status === "accepted" || o.job.status === "open");
   const completedOrders = orders.filter(o => o.job.status === "completed");
   const disputedOrders = orders.filter(o => o.job.status === "disputed");
-  const otherOrders = orders.filter(o => !["accepted", "completed", "disputed"].includes(o.job.status));
+  const otherOrders = orders.filter(o => !["accepted", "open", "completed", "disputed"].includes(o.job.status));
 
   const renderOrder = (order: OrderData) => {
     const config = statusConfig[order.job.status] || statusConfig.open;
@@ -194,7 +194,7 @@ const PurchasedOrders = () => {
           <Tabs defaultValue="active" className="space-y-4">
             <TabsList className="bg-background/60 border border-border">
               <TabsTrigger value="active" className="gap-1.5">
-                <Clock className="h-3.5 w-3.5" /> Active ({activeOrders.length})
+                <Clock className="h-3.5 w-3.5" /> Active & Open ({activeOrders.length})
               </TabsTrigger>
               <TabsTrigger value="completed" className="gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Completed ({completedOrders.length})
