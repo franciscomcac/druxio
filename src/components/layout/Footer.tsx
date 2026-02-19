@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { Zap, Github, Twitter, Linkedin } from "lucide-react";
-
+import { Zap, Twitter, Linkedin } from "lucide-react";
 
 const footerLinks = {
   Product: [
@@ -10,18 +9,18 @@ const footerLinks = {
     { label: "Categories", href: "/#categories" },
   ],
   Company: [
-    { label: "About Us", href: "/about" },
     { label: "Blog", href: "/blog" },
-    { label: "Contact", href: "/contact" },
+    { label: "How It Works", href: "/how-it-works" },
+    { label: "Contact", href: "mailto:hello@duxio.app" },
   ],
   Support: [
-    { label: "Help Center", href: "/help" },
     { label: "FAQ", href: "/faq" },
-    { label: "Discord", href: "https://discord.gg" },
+    { label: "Email Support", href: "mailto:support@duxio.app" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Service", href: "/terms" },
+    { label: "Cookie Policy", href: "/cookie-policy" },
   ],
 };
 
@@ -39,9 +38,8 @@ const Footer = () => {
             </p>
             <div className="flex gap-3">
               {[
-                { icon: <Twitter className="h-4 w-4" />, href: "https://twitter.com", label: "Twitter" },
-                { icon: <Github className="h-4 w-4" />, href: "https://github.com", label: "GitHub" },
-                { icon: <Linkedin className="h-4 w-4" />, href: "https://linkedin.com", label: "LinkedIn" },
+                { icon: <Twitter className="h-4 w-4" />, href: "https://twitter.com/Duxio", label: "Twitter" },
+                { icon: <Linkedin className="h-4 w-4" />, href: "https://linkedin.com/company/duxio", label: "LinkedIn" },
               ].map((s) => (
                 <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-all duration-300 hover:bg-primary/[0.08] hover:text-primary hover:border-primary/20" aria-label={s.label}>
                   {s.icon}
@@ -56,7 +54,11 @@ const Footer = () => {
               <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link.href}>
-                    <Link to={link.href} className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</Link>
+                    {link.href.startsWith("mailto:") || link.href.startsWith("http") ? (
+                      <a href={link.href} className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</a>
+                    ) : (
+                      <Link to={link.href} className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</Link>
+                    )}
                   </li>
                 ))}
               </ul>

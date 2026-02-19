@@ -28,6 +28,10 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Notifications from "./pages/Notifications";
 import CategoryPage from "./pages/CategoryPage";
+import FAQ from "./pages/FAQ";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
 import SupportWidget from "./components/support/SupportWidget";
 import FeedbackWidget from "./components/feedback/FeedbackWidget";
 import { usePresence } from "./hooks/use-presence";
@@ -79,6 +83,10 @@ const App = () => (
               <Route path="/orders/sold" element={<SoldOrders />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/notifications" element={<Notifications />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

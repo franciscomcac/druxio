@@ -1,14 +1,13 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /inbox
+Disallow: /settings
+Disallow: /wallet
+Disallow: /admin
+Disallow: /order/
+Disallow: /request/
+Disallow: /session/
+Disallow: /orders/
+
+Sitemap: https://duxio.lovable.app/sitemap.xml
