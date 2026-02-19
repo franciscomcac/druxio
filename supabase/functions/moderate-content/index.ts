@@ -63,8 +63,12 @@ Do NOT flag:
 
 Context: ${context || "general marketplace content"}`;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8s hard timeout
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
@@ -73,59 +77,26 @@ Context: ${context || "general marketplace content"}`;
         model: "google/gemini-2.5-flash-lite",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Analyze this content and respond with ONLY a JSON object. No other text.\n\nContent to analyze: "${text}"\n\nRespond with: {"flagged": true/false, "reason": "brief reason if flagged or null"}` },
-        ],
-        tools: [
           {
-            type: "function",
-            function: {
-              name: "moderation_result",
-              description: "Return the moderation result",
-              parameters: {
-                type: "object",
-                properties: {
-                  flagged: { type: "boolean", description: "Whether the content is inappropriate" },
-                  reason: { type: "string", description: "Brief reason if flagged, null otherwise" },
-                },
-                required: ["flagged"],
-                additionalProperties: false,
-              },
-            },
+            role: "user",
+            content: `Analyze this content. Respond ONLY with valid JSON, nothing else.\n\nContent: "${text}"\n\nRespond with exactly: {"flagged": true or false, "reason": "reason if flagged or null"}`,
           },
         ],
-        tool_choice: { type: "function", function: { name: "moderation_result" } },
+        max_tokens: 100,
       }),
     });
+    clearTimeout(timeout);
 
     if (!response.ok) {
       console.error("AI gateway error:", response.status);
-      // Fail open
-      return new Response(
-        JSON.stringify({ flagged: false }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ flagged: false }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const data = await response.json();
-    
-    // Extract tool call result
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (toolCall?.function?.arguments) {
-      try {
-        const result = JSON.parse(toolCall.function.arguments);
-        return new Response(
-          JSON.stringify({ flagged: !!result.flagged, reason: result.reason || null }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      } catch {
-        // Parse error, fail open
-      }
-    }
-
-    // Fallback: try parsing content directly
     const content = data.choices?.[0]?.message?.content || "";
+
     try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const jsonMatch = content.match(/\{[\s\S]*?\}/);
       if (jsonMatch) {
         const result = JSON.parse(jsonMatch[0]);
         return new Response(
@@ -135,10 +106,7 @@ Context: ${context || "general marketplace content"}`;
       }
     } catch {}
 
-    return new Response(
-      JSON.stringify({ flagged: false }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ flagged: false }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error: any) {
     console.error("Moderation error:", error);
     return new Response(
