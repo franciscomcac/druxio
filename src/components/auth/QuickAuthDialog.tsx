@@ -59,6 +59,18 @@ const QuickAuthDialog = ({ open, onOpenChange, defaultTab = "login", onSuccess }
     }
   }, [open, defaultTab]);
 
+  // Close dialog when user signs in (e.g. via Google OAuth redirect)
+  useEffect(() => {
+    if (!open) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session) {
+        onOpenChange(false);
+        if (onSuccess) onSuccess();
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [open, onOpenChange, onSuccess]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
