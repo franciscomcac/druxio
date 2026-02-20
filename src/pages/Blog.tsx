@@ -64,6 +64,14 @@ const Blog = () => {
         {/* Featured post */}
         <Link to={`/blog/${featured.slug}`} className="group block mb-10">
           <Card className="overflow-hidden border-border hover:border-primary/30 transition-colors">
+            {featured.coverImage && (
+              <img
+                src={featured.coverImage}
+                alt={featured.title}
+                className="w-full h-56 md:h-72 object-cover"
+                loading="eager"
+              />
+            )}
             <CardContent className="p-7 md:p-10">
               <div className="flex items-center gap-3 mb-4">
                 <Badge className={`text-xs border ${categoryColor[featured.category] ?? "bg-muted text-muted-foreground"}`}>
@@ -98,6 +106,14 @@ const Blog = () => {
           {rest.map((post) => (
             <Link key={post.slug} to={`/blog/${post.slug}`} className="group block">
               <Card className="h-full overflow-hidden border-border hover:border-primary/30 transition-colors">
+                {post.coverImage && (
+                  <img
+                    src={post.coverImage}
+                    alt={post.title}
+                    className="w-full h-40 object-cover"
+                    loading="lazy"
+                  />
+                )}
                 <CardContent className="p-6 flex flex-col h-full">
                   <div className="flex items-center gap-2 mb-3">
                     <Badge className={`text-xs border ${categoryColor[post.category] ?? "bg-muted text-muted-foreground"}`}>

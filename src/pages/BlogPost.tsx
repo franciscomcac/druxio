@@ -174,6 +174,18 @@ const BlogPost = () => {
         </div>
       </div>
 
+      {/* Cover Image */}
+      {post.coverImage && (
+        <div className="w-full max-w-4xl mx-auto">
+          <img
+            src={post.coverImage}
+            alt={post.title}
+            className="w-full h-auto max-h-[420px] object-cover"
+            loading="eager"
+          />
+        </div>
+      )}
+
       {/* Article */}
       <article className="container mx-auto px-4 py-12 max-w-3xl">
         <header className="mb-10">

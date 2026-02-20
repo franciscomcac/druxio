@@ -1,3 +1,7 @@
+import heroBetaLaunch from "@/assets/blog/hero-beta-launch.jpg";
+import heroHowItWorks from "@/assets/blog/hero-how-it-works.jpg";
+import heroExpertiseBorders from "@/assets/blog/hero-expertise-borders.jpg";
+
 export interface BlogPost {
   slug: string;
   title: string;
@@ -7,6 +11,7 @@ export interface BlogPost {
   author: string;
   authorRole: string;
   category: string;
+  coverImage?: string;
   content: string;
 }
 
@@ -21,6 +26,7 @@ export const blogPosts: BlogPost[] = [
     author: "The Duxio Team",
     authorRole: "Founders",
     category: "Announcement",
+    coverImage: heroBetaLaunch,
     content: `
 We're thrilled to announce that **Duxio.store is now live in public beta**.
 
@@ -38,42 +44,42 @@ That's the gap Duxio fills. Whether you're a freelancer trying to unblock a tech
 
 This beta launch comes packed with a full set of core features:
 
-### 🔍 Smart Search & Expert Discovery
+### Smart Search and Expert Discovery
 Browse and filter verified experts by category, rating, hourly rate, and availability. Each expert profile shows their skills, session history, response time, and community reviews — so you can make an informed decision in seconds.
 
-### 📋 Request Posting & Quote System
+### Request Posting and Quote System
 Post a task request describing what you need. Experts in the relevant category are notified in real time and submit competitive quotes. You review, compare, and accept — keeping full control of the process.
 
-### 💬 Session Workspace
+### Session Workspace
 Once you accept a quote, a dedicated session workspace opens. You and your expert collaborate directly through real-time chat, with the ability to share images and files. Every session is tracked with a built-in timer.
 
-### 🔒 Escrow-Protected Payments
+### Escrow-Protected Payments
 Your payment is held in escrow from the moment you accept a quote. The expert only receives funds once the work is marked complete — protecting both sides of every transaction.
 
-### 💳 Wallet & Withdrawals
+### Wallet and Withdrawals
 Experts accumulate earnings directly in their Duxio wallet. Withdrawals can be initiated via PayPal or crypto, with admin review ensuring everything processes cleanly.
 
-### 🤖 AI-Assisted Tools
+### AI-Assisted Tools
 We've built AI into several parts of the platform — from helping clients refine their request descriptions before posting, to surfacing the best-matched experts for a given need, to generating session summaries after a session ends.
 
-### ⭐ Reviews & Trust System
+### Reviews and Trust System
 After every completed session, both parties can leave a review. Expert ratings are aggregated and displayed prominently — creating a transparent trust layer that rewards quality.
 
-### 🔔 Real-Time Notifications
+### Real-Time Notifications
 You'll never miss an update. Duxio pushes instant notifications for new quotes, accepted requests, session updates, and messages — across the platform.
 
-### 🛡️ Dispute Resolution
+### Dispute Resolution
 We know things don't always go perfectly. Duxio includes a built-in dispute process with admin oversight to mediate when a session doesn't go as expected.
 
 ## Who Is Duxio For?
 
 This is important to us. Duxio is built for **real human needs across a wide range of domains**:
 
-- **Professionals & freelancers** who hit roadblocks and need fast, expert input
-- **Entrepreneurs & small business owners** navigating decisions in finance, law, marketing, or operations
-- **Students & lifelong learners** who want tutoring, concept explanations, or feedback
+- **Professionals and freelancers** who hit roadblocks and need fast, expert input
+- **Entrepreneurs and small business owners** navigating decisions in finance, law, marketing, or operations
+- **Students and lifelong learners** who want tutoring, concept explanations, or feedback
 - **Individuals** seeking guidance in health decisions, personal finance, or career planning
-- **Creators & makers** who need a second pair of eyes on their work
+- **Creators and makers** who need a second pair of eyes on their work
 
 The platform is deliberately category-agnostic. If there's a skill, there's an expert for it on Duxio.
 
@@ -109,6 +115,7 @@ We believe the future of expert access is fast, fair, and borderless. Today is j
     author: "The Duxio Team",
     authorRole: "Founders",
     category: "Platform",
+    coverImage: heroHowItWorks,
     content: `
 There's a problem almost everyone faces at some point: **you need expert help, but you don't need a long-term engagement**.
 
@@ -187,6 +194,7 @@ Every one of them is on Duxio because they want to share their expertise efficie
     author: "The Duxio Team",
     authorRole: "Founders",
     category: "Insights",
+    coverImage: heroExpertiseBorders,
     content: `
 Where you were born used to determine what kind of expertise you could access.
 
@@ -232,14 +240,14 @@ We believe this is how professional expertise should work: fairly compensated, e
 
 On Duxio today, you'll find experts in:
 
-- **Finance & investment** — from personal budgeting to startup funding strategy
+- **Finance and investment** — from personal budgeting to startup funding strategy
 - **Legal guidance** — contract review, rights questions, regulatory navigation
-- **Health & wellness** — from certified coaches to clinical professionals
+- **Health and wellness** — from certified coaches to clinical professionals
 - **Technology** — software help, system design, cybersecurity, automation
-- **Business & strategy** — market entry, pricing, competitor analysis, pitching
-- **Education & tutoring** — across every subject and level
-- **Creative & design** — feedback, critique, direction, and execution
-- **Career & HR** — interview prep, CV review, salary negotiation
+- **Business and strategy** — market entry, pricing, competitor analysis, pitching
+- **Education and tutoring** — across every subject and level
+- **Creative and design** — feedback, critique, direction, and execution
+- **Career and HR** — interview prep, CV review, salary negotiation
 
 And this list grows every week as more experts join the platform.
 
