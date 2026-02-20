@@ -102,11 +102,11 @@ const Header = () => {
                   <Plus className="h-4 w-4" /> Post Request
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm" className="gap-1.5 hover:bg-primary/[0.06] text-sm font-medium" onClick={() => navigate("/wallet")}>
+              <Button id="tour-wallet-link" variant="ghost" size="sm" className="gap-1.5 hover:bg-primary/[0.06] text-sm font-medium" onClick={() => navigate("/wallet")}>
                 <Wallet className="h-4 w-4 text-primary" />
                 <span className="text-foreground">{format(balance ?? 0)}</span>
               </Button>
-              <Link to="/inbox">
+              <Link to="/inbox" id="tour-inbox-link">
                 <Button variant="ghost" size="icon" className={`relative hover:bg-primary/[0.06] ${isActive("/inbox") ? "bg-primary/[0.06]" : ""}`}>
                   <MessageSquare className="h-5 w-5" />
                 </Button>
