@@ -5,6 +5,7 @@ import CategoryTemplateFields from "@/components/post-request/CategoryTemplateFi
 import { supabase } from "@/integrations/supabase/client";
 import { useModeration } from "@/hooks/use-moderation";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
+import { startClientTutorial } from "@/components/onboarding/ClientTutorial";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -350,6 +351,37 @@ const PostRequest = () => {
       setWizardStep("details");
     }
   }, []);
+
+  // Client tutorial: trigger on first visit to post-request
+  const tutorialTriggered = useRef(false);
+  useEffect(() => {
+    if (tutorialTriggered.current) return;
+    // Don't trigger if resuming a job
+    if (searchParams.get("jobId")) return;
+
+    const checkAndTrigger = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const uid = session?.user?.id;
+      const storageKey = uid ? `client_tutorial_completed_${uid}` : "client_tutorial_completed_anon";
+      
+      if (localStorage.getItem(storageKey) === "true") return;
+      
+      // If logged in, check if they've posted before
+      if (uid) {
+        const { count } = await supabase.from("jobs").select("*", { count: "exact", head: true }).eq("buyer_id", uid);
+        if (count && count > 0) {
+          // Already posted before, mark as completed
+          localStorage.setItem(storageKey, "true");
+          return;
+        }
+      }
+
+      tutorialTriggered.current = true;
+      // Small delay to let the page render
+      setTimeout(() => startClientTutorial(), 500);
+    };
+    checkAndTrigger();
+  }, [searchParams]);
 
   const handleSelectBroad = (id: string) => {
     setBroadCategory(id);
