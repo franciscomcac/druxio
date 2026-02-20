@@ -18,6 +18,7 @@ import {
   User, Bell, Shield, Loader2, Save, Camera, Clock, Tag, X,
   ChevronDown, ChevronUp, Wifi, WifiOff, Image,
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
+  Eye, EyeOff, Mail, Lock,
 } from "lucide-react";
 
 const CATEGORY_TREE = [
@@ -220,6 +221,138 @@ const CategoryAccordion = ({
           </div>
         );
       })}
+    </div>
+  );
+};
+
+const SecurityTab = ({ email, setEmail }: { email: string; setEmail: (v: string) => void }) => {
+  const { toast } = useToast();
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
+
+  const [newEmail, setNewEmail] = useState(email);
+  const [changingEmail, setChangingEmail] = useState(false);
+
+  const passwordStrength = (pw: string) => {
+    if (!pw) return null;
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    if (score <= 1) return { label: "Weak", color: "text-destructive" };
+    if (score <= 2) return { label: "Fair", color: "text-yellow-500" };
+    return { label: "Strong", color: "text-chart-2" };
+  };
+
+  const strength = passwordStrength(newPassword);
+
+  const handleChangePassword = async () => {
+    if (!oldPassword) { toast({ title: "Enter your current password", variant: "destructive" }); return; }
+    if (newPassword.length < 6) { toast({ title: "New password must be at least 6 characters", variant: "destructive" }); return; }
+    if (newPassword !== confirmPassword) { toast({ title: "Passwords don't match", variant: "destructive" }); return; }
+
+    setChangingPw(true);
+    try {
+      // Verify old password by re-signing in
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: oldPassword });
+      if (signInError) { toast({ title: "Current password is incorrect", variant: "destructive" }); return; }
+
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+
+      toast({ title: "Password updated", description: "Your password has been changed successfully." });
+      setOldPassword(""); setNewPassword(""); setConfirmPassword("");
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally { setChangingPw(false); }
+  };
+
+  const handleChangeEmail = async () => {
+    if (!newEmail || newEmail === email) { toast({ title: "Enter a different email", variant: "destructive" }); return; }
+    setChangingEmail(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      if (error) throw error;
+      toast({ title: "Confirmation sent", description: "Check both your old and new email to confirm the change." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally { setChangingEmail(false); }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader><CardTitle>Change Password</CardTitle><CardDescription>Enter your current password and choose a new one</CardDescription></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Current Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input type={showOld ? "text" : "password"} value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} className="pl-10 pr-10" placeholder="Enter current password" />
+              <button type="button" onClick={() => setShowOld(!showOld)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showOld ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>New Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input type={showNew ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="pl-10 pr-10" placeholder="Enter new password" />
+              <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {strength && <p className={`text-xs font-medium ${strength.color}`}>Strength: {strength.label}</p>}
+          </div>
+          <div className="space-y-2">
+            <Label>Confirm New Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input type={showConfirm ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pl-10 pr-10" placeholder="Confirm new password" />
+              <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <Button onClick={handleChangePassword} disabled={changingPw} className="gap-2">
+            {changingPw ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />} Update Password
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Change Email</CardTitle><CardDescription>A confirmation will be sent to both your current and new email</CardDescription></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Current Email</Label>
+            <Input value={email} disabled className="opacity-60" />
+          </div>
+          <div className="space-y-2">
+            <Label>New Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="pl-10" placeholder="Enter new email" />
+            </div>
+          </div>
+          <Button onClick={handleChangeEmail} disabled={changingEmail} className="gap-2">
+            {changingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />} Update Email
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/50">
+        <CardHeader><CardTitle className="text-destructive">Danger Zone</CardTitle><CardDescription>Once deleted, there's no going back</CardDescription></CardHeader>
+        <CardContent>
+          <Button variant="destructive">Delete Account</Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -433,21 +566,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="security">
-            <Card>
-              <CardHeader><CardTitle>Security Settings</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-accent/30">
-                  <h3 className="font-medium text-foreground mb-2">Change Password</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Keep your account secure</p>
-                  <Button variant="outline">Change Password</Button>
-                </div>
-                <div className="p-4 rounded-lg border border-destructive/50">
-                  <h3 className="font-medium text-destructive mb-2">Danger Zone</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Once deleted, there's no going back</p>
-                  <Button variant="destructive">Delete Account</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <SecurityTab email={email} setEmail={setEmail} />
           </TabsContent>
         </Tabs>
       </main>
