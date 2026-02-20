@@ -496,7 +496,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       </Dialog>
 
       {/* ── Stats — 2 cols mobile, 4 desktop ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div id="tour-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {statCards.map((stat, i) => (
           <Card key={i} className="border-border bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-0.5 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 60}ms` }}>
             <CardContent className="p-4 sm:pt-6">
@@ -524,7 +524,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         <div className="lg:col-span-2">
           <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:200ms] rounded-sm">
             <CardContent className="pt-4 px-2 sm:px-6">
-              <Tabs defaultValue="live" className="space-y-3">
+              <Tabs defaultValue="live" className="space-y-3" id="tour-tabs">
                 {/* Tabs — icon + short label on mobile, full on desktop */}
                 <TabsList className="bg-background/60 border border-border w-full grid grid-cols-4 h-10">
                   <TabsTrigger value="live" className="gap-1 text-xs px-1">
@@ -728,7 +728,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
         {/* ── Sidebar — stacks below on mobile ── */}
         <div className="space-y-4">
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms] rounded-sm">
+          <Card id="tour-categories" className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms] rounded-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2 px-4">
               <CardTitle className="text-base">Your Categories</CardTitle>
               <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={() => navigate("/settings")}>
@@ -755,7 +755,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             </CardContent>
           </Card>
 
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
+          <Card id="tour-quick-actions" className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
             <CardHeader className="pb-2 px-4"><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
             <CardContent className="space-y-2.5 px-4 pb-4">
               <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20 h-10 text-sm" onClick={() => navigate("/settings")}>

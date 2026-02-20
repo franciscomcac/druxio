@@ -233,7 +233,7 @@ const Dashboard = () => {
           {/* Bottom row: view toggle + become expert — full width on mobile */}
           <div className="flex items-center gap-2 flex-wrap">
             {isMentor && (
-              <div className="flex rounded-xl border border-border/30 overflow-hidden bg-card/40 backdrop-blur-sm">
+              <div id="tour-view-toggle" className="flex rounded-xl border border-border/30 overflow-hidden bg-card/40 backdrop-blur-sm">
                 <Button
                   variant={activeView === "client" ? "default" : "ghost"}
                   size="sm"
