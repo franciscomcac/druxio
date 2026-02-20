@@ -306,7 +306,7 @@ const Admin = () => {
         const [buyerProfile, sellerProfile, disputeNotif] = await Promise.all([
           supabase.from("profiles").select("display_name").eq("id", job.buyer_id).single(),
           quote ? supabase.from("profiles").select("display_name").eq("id", quote.expert_id).single() : Promise.resolve({ data: null }),
-          supabase.from("notifications").select("id, message, created_at").eq("type", "dispute").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+          supabase.from("notifications").select("id, message, created_at").eq("type", "dispute").eq("user_id", job.buyer_id).contains("data", { job_id: job.id }).order("created_at", { ascending: false }).limit(1).maybeSingle(),
         ]);
 
         return {
