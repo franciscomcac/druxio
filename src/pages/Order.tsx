@@ -427,10 +427,22 @@ const Order = () => {
     if (!disputeReason.trim() || !jobId) return;
     setDisputeLoading(true);
     try {
+      // Store dispute notification for the buyer (record)
       await supabase.from("notifications").insert({
         user_id: userId!, type: "dispute", title: "Dispute raised",
         message: disputeReason.trim(), data: { job_id: jobId, quote_id: quote?.id },
       });
+
+      // Notify the seller about the dispute
+      if (quote?.expert_id) {
+        await supabase.from("notifications").insert({
+          user_id: quote.expert_id, type: "dispute_raised",
+          title: "A dispute has been raised on your order",
+          message: `The buyer has raised a dispute: "${disputeReason.trim()}"`,
+          data: { job_id: jobId, quote_id: quote?.id },
+        });
+      }
+
       await supabase.from("jobs").update({ status: "disputed" }).eq("id", jobId);
 
       // Email admins about dispute

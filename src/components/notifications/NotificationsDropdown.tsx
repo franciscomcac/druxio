@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, MessageSquare, UserPlus, CheckCircle, Clock, Loader2, Wallet, ArrowRight } from "lucide-react";
+import { Bell, MessageSquare, UserPlus, CheckCircle, Clock, Loader2, Wallet, ArrowRight, AlertTriangle, RefreshCw, Package, DollarSign } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -126,7 +126,7 @@ const NotificationsDropdown = () => {
 
     if (notification.type === "withdrawal_completed" || notification.type === "withdrawal_rejected") {
       navigate("/wallet");
-    } else if (notification.data?.job_id && ["dispute_raised", "dispute_resolved", "refund_issued", "order_completed", "order_cancelled"].includes(notification.type)) {
+    } else if (notification.data?.job_id && ["dispute", "dispute_raised", "dispute_resolved", "refund_issued", "order_completed", "order_cancelled"].includes(notification.type)) {
       navigate(`/order/${notification.data.job_id}`);
     } else if (notification.type === "new_request" && notification.data?.job_id) {
       navigate(`/request/${notification.data.job_id}`);
@@ -157,6 +157,17 @@ const NotificationsDropdown = () => {
         return <Wallet className="h-4 w-4 text-green-500" />;
       case "withdrawal_rejected":
         return <Wallet className="h-4 w-4 text-destructive" />;
+      case "dispute":
+      case "dispute_raised":
+        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+      case "dispute_resolved":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "refund_issued":
+        return <RefreshCw className="h-4 w-4 text-primary" />;
+      case "order_completed":
+        return <DollarSign className="h-4 w-4 text-green-500" />;
+      case "order_cancelled":
+        return <Package className="h-4 w-4 text-destructive" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground" />;
     }
