@@ -9,5 +9,6 @@ Disallow: /order/
 Disallow: /request/
 Disallow: /session/
 Disallow: /orders/
+Disallow: /notifications
 
 Sitemap: https://duxio.lovable.app/sitemap.xml

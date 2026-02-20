@@ -8,6 +8,43 @@ import { cn } from "@/lib/utils";
 
 // ─── Simple markdown-to-JSX renderer ────────────────────────────
 
+interface ProseLikeProps {
+  children?: React.ReactNode;
+  className?: string;
+}
+
+const ProseLike = ({ children, className }: ProseLikeProps) => {
+  return (
+    <div className={cn("text-muted-foreground leading-relaxed", className)}>
+      {children}
+    </div>
+  );
+};
+
+const ProseH1 = ({ children }: { children: React.ReactNode }) => {
+  return <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">{children}</h1>;
+};
+
+const ProseH2 = ({ children }: { children: React.ReactNode }) => {
+  return <h2 className="mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">{children}</h2>;
+};
+
+const ProseH3 = ({ children }: { children: React.ReactNode }) => {
+  return <h3 className="mt-8 scroll-m-20 text-2xl font-semibold tracking-tight">{children}</h3>;
+};
+
+const ProseH4 = ({ children }: { children: React.ReactNode }) => {
+  return <h4 className="mt-8 scroll-m-20 text-xl font-semibold tracking-tight">{children}</h4>;
+};
+
+const ProseP = ({ children }: { children: React.ReactNode }) => {
+  return <p className="leading-7 [&:not(:first-child)]:mt-6">{children}</p>;
+};
+
+const ProseA = ({ children, href }: { children: React.ReactNode; href: string }) => {
+  return <Link to={href} className="font-semibold text-foreground underline underline-offset-4">{children}</Link>;
+};
+
 function renderContent(raw: string) {
   const lines = raw.trim().split("\n");
   const elements: React.ReactNode[] = [];
@@ -15,8 +52,7 @@ function renderContent(raw: string) {
   let i = 0;
 
   const inlineFormat = (text: string): React.ReactNode => {
-    // Bold (**text**)
-    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    const parts = text.split(/(\*\*[^**]+\*\*)/g);
     return parts.map((part, pi) => {
       if (part.startsWith("**") && part.endsWith("**")) {
         return <strong key={pi} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>;
@@ -28,34 +64,18 @@ function renderContent(raw: string) {
   while (i < lines.length) {
     const line = lines[i];
 
-    if (!line.trim()) {
-      i++;
-      continue;
-    }
+    if (!line.trim()) { i++; continue; }
 
-    // H2
     if (line.startsWith("## ")) {
-      elements.push(
-        <h2 key={key++} className="text-2xl font-bold text-foreground mt-10 mb-4 leading-snug">
-          {line.slice(3)}
-        </h2>
-      );
-      i++;
-      continue;
+      elements.push(<h2 key={key++} className="text-2xl font-bold text-foreground mt-10 mb-4 leading-snug">{line.slice(3)}</h2>);
+      i++; continue;
     }
 
-    // H3
     if (line.startsWith("### ")) {
-      elements.push(
-        <h3 key={key++} className="text-lg font-semibold text-foreground mt-7 mb-2">
-          {line.slice(4)}
-        </h3>
-      );
-      i++;
-      continue;
+      elements.push(<h3 key={key++} className="text-lg font-semibold text-foreground mt-7 mb-2">{line.slice(4)}</h3>);
+      i++; continue;
     }
 
-    // Bullet list
     if (line.startsWith("- ")) {
       const items: string[] = [];
       while (i < lines.length && lines[i].startsWith("- ")) {
@@ -75,12 +95,7 @@ function renderContent(raw: string) {
       continue;
     }
 
-    // Paragraph
-    elements.push(
-      <p key={key++} className="text-muted-foreground leading-[1.85] my-4">
-        {inlineFormat(line)}
-      </p>
-    );
+    elements.push(<p key={key++} className="text-muted-foreground leading-[1.85] my-4">{inlineFormat(line)}</p>);
     i++;
   }
 
@@ -100,11 +115,36 @@ const BlogPost = () => {
   const navigate = useNavigate();
   const post = getBlogPost(slug || "");
 
+  // Parse date string like "February 18, 2026" to ISO
+  const publishedIso = post ? (() => {
+    try {
+      return new Date(post.date).toISOString();
+    } catch { return undefined; }
+  })() : undefined;
+
   useSEO({
     title: post ? post.title : "Post Not Found",
     description: post ? post.excerpt : undefined,
     canonical: post ? `/blog/${post.slug}` : undefined,
     ogType: "article",
+    articlePublishedTime: publishedIso,
+    jsonLd: post ? {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": post.title,
+      "description": post.excerpt,
+      "datePublished": publishedIso,
+      "author": {
+        "@type": "Organization",
+        "name": post.author
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Duxio",
+        "url": "https://duxio.lovable.app"
+      },
+      "mainEntityOfPage": `https://duxio.lovable.app/blog/${post.slug}`
+    } : undefined,
   });
 
   if (!post) {
@@ -136,7 +176,6 @@ const BlogPost = () => {
 
       {/* Article */}
       <article className="container mx-auto px-4 py-12 max-w-3xl">
-        {/* Header */}
         <header className="mb-10">
           <div className="flex items-center gap-3 mb-5 flex-wrap">
             <Badge className={cn("text-xs border", categoryColor[post.category] ?? "bg-muted text-muted-foreground")}>
@@ -156,7 +195,6 @@ const BlogPost = () => {
             {post.excerpt}
           </p>
 
-          {/* Author */}
           <div className="flex items-center gap-3 py-4 border-y border-border">
             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
               <Zap className="h-4 w-4 text-primary fill-primary" />
@@ -168,12 +206,10 @@ const BlogPost = () => {
           </div>
         </header>
 
-        {/* Body */}
         <div className="prose-like">
           {renderContent(post.content)}
         </div>
 
-        {/* CTA block */}
         <div className="mt-14 rounded-xl border border-primary/20 bg-primary/5 p-7 text-center">
           <div className="inline-flex items-center gap-1.5 text-primary font-semibold text-lg mb-2">
             Ready to get expert help? <Zap className="h-4 w-4 fill-primary" />
@@ -191,7 +227,6 @@ const BlogPost = () => {
           </div>
         </div>
 
-        {/* Prev / Next navigation */}
         {(prev || next) && (
           <div className="mt-12 flex items-center justify-between gap-4 border-t border-border pt-8">
             {prev ? (
