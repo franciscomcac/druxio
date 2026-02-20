@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { startSellerTutorial } from "@/components/onboarding/SellerTutorial";
 import { useNotificationSound } from "@/hooks/use-notification-sound";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useNavigate } from "react-router-dom";
@@ -509,6 +510,13 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Replay tutorial */}
+      <div className="flex justify-end">
+        <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground hover:text-foreground" onClick={startSellerTutorial}>
+          <Target className="h-3.5 w-3.5" /> Seller Basics Tutorial
+        </Button>
       </div>
 
       {/* ── Main area — full width tabs + stacked sidebar ── */}
