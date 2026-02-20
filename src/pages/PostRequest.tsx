@@ -358,7 +358,7 @@ const PostRequest = () => {
   const clientTourActive = useRef(false);
   const clientTourChecked = useRef(false);
 
-  // Check if tour should run on mount
+  // Auto-prompt tutorial only on first visit to post-request
   useEffect(() => {
     if (clientTourChecked.current) return;
     if (searchParams.get("jobId")) return;
@@ -367,16 +367,11 @@ const PostRequest = () => {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const uid = session?.user?.id;
-      const key = uid ? `client_tutorial_completed_${uid}` : "client_tutorial_completed_anon";
+      const key = uid ? `client_tutorial_prompted_${uid}` : "client_tutorial_prompted_anon";
       if (localStorage.getItem(key) === "true") return;
 
-      if (uid) {
-        const { count } = await supabase.from("jobs").select("*", { count: "exact", head: true }).eq("buyer_id", uid);
-        if (count && count > 0) {
-          localStorage.setItem(key, "true");
-          return;
-        }
-      }
+      // Mark as prompted so it only auto-starts once
+      localStorage.setItem(key, "true");
       clientTourActive.current = true;
     };
     check();
@@ -768,42 +763,39 @@ const PostRequest = () => {
 
         {/* Step 1: Broad category */}
         {wizardStep === "category" && (
-          <div className="mx-auto max-w-3xl animate-fade-in">
-            <div className="mb-8 flex items-start justify-between gap-4">
-              <div>
-                <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 1</p>
-                <h1 className="mb-2 text-3xl font-bold text-foreground">What do you need help with?</h1>
-                <p className="text-muted-foreground">Choose a category to find the right experts.</p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="shrink-0 gap-2 border-primary/30 text-primary hover:bg-primary/10 mt-6"
-                onClick={() => {
-                  clientTourActive.current = true;
-                  // Destroy any existing driver and restart
-                  clientTourDriverRef.current?.destroy();
-                  clientTourDriverRef.current = null;
-                  const d = driver({
-                    popoverClass: "seller-tour-popover",
-                    showButtons: ["close"],
-                    steps: [{
-                      element: "#tour-category-grid",
-                      popover: {
-                        title: "Pick a Category 👆",
-                        description: "Choose what you need help with. <strong>Click any category</strong> to continue!",
-                        side: "top" as const,
-                        align: "center" as const,
-                      },
-                    }],
-                  });
-                  d.drive();
-                  clientTourDriverRef.current = d;
-                }}
-              >
-                <GraduationCap className="h-4 w-4" />
-                Basic Tutorial
-              </Button>
+          <div className="mx-auto max-w-3xl animate-fade-in relative">
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute right-0 top-0 gap-2 border-primary/30 text-primary hover:bg-primary/10 z-10"
+              onClick={() => {
+                clientTourActive.current = true;
+                clientTourDriverRef.current?.destroy();
+                clientTourDriverRef.current = null;
+                const d = driver({
+                  popoverClass: "seller-tour-popover",
+                  showButtons: ["close"],
+                  steps: [{
+                    element: "#tour-category-grid",
+                    popover: {
+                      title: "Pick a Category 👆",
+                      description: "Choose what you need help with. <strong>Click any category</strong> to continue!",
+                      side: "top" as const,
+                      align: "center" as const,
+                    },
+                  }],
+                });
+                d.drive();
+                clientTourDriverRef.current = d;
+              }}
+            >
+              <GraduationCap className="h-4 w-4" />
+              Basic Tutorial
+            </Button>
+            <div className="mb-8">
+              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 1</p>
+              <h1 className="mb-2 text-3xl font-bold text-foreground">What do you need help with?</h1>
+              <p className="text-muted-foreground">Choose a category to find the right experts.</p>
             </div>
 
             <div id="tour-category-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
