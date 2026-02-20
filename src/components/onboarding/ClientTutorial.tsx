@@ -6,54 +6,47 @@ import "driver.js/dist/driver.css";
 
 /* ─────────────────── Constants ─────────────────── */
 
-const STORAGE_KEY = "client_tutorial_completed";
-const ACTIVE_KEY = "client_tutorial_active";
-const STEP_KEY = "client_tutorial_step";
+const ACTIVE_KEY = "client_tour_crosspage";
+const STEP_KEY = "client_tour_crosspage_step";
+const COMPLETED_KEY = "client_tutorial_completed";
 
-/* ─────────────────── Tour phases ─────────────────── */
+/* ─────────────────── Tour phases (cross-page, after request posted) ─────────────────── */
 
 interface TourPhase {
-  route: string;
+  route: string;        // exact match or prefix
+  routePrefix?: boolean; // if true, match by startsWith
   steps: DriveStep[];
 }
 
 const TOUR_PHASES: TourPhase[] = [
-  // Phase 0 — Post Request page
+  // Phase 0 — Active Request page
   {
-    route: "/post-request",
+    route: "/request/",
+    routePrefix: true,
     steps: [
       {
         popover: {
-          title: "Welcome to Duxio! 🎉",
+          title: "Your Live Request 📡",
           description:
-            "Let's walk you through how to get expert help. We'll tour the real interface — click <strong>Next</strong> to follow along!",
+            "This is where the magic happens! Experts see your request and send you <strong>quotes in real-time</strong>. Watch the leaderboard fill up as offers arrive.",
           side: "bottom",
           align: "center",
         },
       },
       {
         popover: {
-          title: "Step 1: Pick a Category",
+          title: "Reviewing Quotes",
           description:
-            "Choose what you need help with — Gaming, Tech, Business, Creative, and more. You can also use <strong>Custom Request</strong> to let AI pick the best category for you.",
+            "Each quote shows the expert's <strong>price</strong>, <strong>delivery time</strong>, <strong>rating</strong>, and a personal message. You can chat with any expert before hiring.",
           side: "bottom",
           align: "center",
         },
       },
       {
         popover: {
-          title: "Step 2: Describe Your Request",
+          title: "Hiring an Expert",
           description:
-            "After picking a category and subcategory, you'll fill in a <strong>title</strong>, <strong>delivery time</strong>, and <strong>description</strong>. Be specific — better descriptions attract better quotes!",
-          side: "bottom",
-          align: "center",
-        },
-      },
-      {
-        popover: {
-          title: "Step 3: Submit & Wait",
-          description:
-            "Once you submit, experts in that category are <strong>notified instantly</strong>. You'll start receiving quotes in under 90 seconds on average!",
+            'Click <strong>"Hire"</strong> on any quote to accept it. The expert will start working immediately and your payment is held safely in <strong>escrow</strong>.',
           side: "bottom",
           align: "center",
         },
@@ -68,16 +61,7 @@ const TOUR_PHASES: TourPhase[] = [
         popover: {
           title: "Your Dashboard 📊",
           description:
-            "This is your command center. See your wallet balance, active requests, completed orders, and totals at a glance.",
-          side: "bottom",
-          align: "center",
-        },
-      },
-      {
-        popover: {
-          title: "Your Requests",
-          description:
-            "All your posted requests appear here with their status: <strong>Open</strong> (waiting for quotes), <strong>Accepted</strong> (expert hired), or <strong>Completed</strong> (job done). Click any request to view details.",
+            "Track all your requests here — see which are <strong>open</strong> (waiting for quotes), <strong>accepted</strong> (expert hired), or <strong>completed</strong>. Click any request to view details.",
           side: "bottom",
           align: "center",
         },
@@ -92,7 +76,16 @@ const TOUR_PHASES: TourPhase[] = [
         popover: {
           title: "Your Inbox 💬",
           description:
-            "Once an expert sends you a quote, a chat session opens here. Discuss details, ask questions, and negotiate before accepting an offer.",
+            "Chat directly with your expert here. Discuss details, share files and screenshots, and track progress — all in one place.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        popover: {
+          title: "Pro Tip: Stay in Touch",
+          description:
+            "Respond quickly to your expert's questions. Clear communication leads to better results and faster delivery!",
           side: "bottom",
           align: "center",
         },
@@ -105,18 +98,18 @@ const TOUR_PHASES: TourPhase[] = [
     steps: [
       {
         popover: {
-          title: "Your Purchased Orders 📦",
+          title: "Your Orders 📦",
           description:
-            "After you hire an expert, the order appears here. Track progress, communicate with the expert, and confirm delivery when the job is done.",
+            "All hired orders appear here. Track each order's status from <strong>Active</strong> → <strong>Delivered</strong> → <strong>Completed</strong>.",
           side: "bottom",
           align: "center",
         },
       },
       {
         popover: {
-          title: "Order Lifecycle",
+          title: "Delivery & Payment",
           description:
-            "1️⃣ <strong>Active</strong> — expert is working<br/>2️⃣ <strong>Delivered</strong> — expert marked it done<br/>3️⃣ <strong>Completed</strong> — you confirmed or auto-released after 3 days<br/><br/>You can raise a dispute within 3 days if something's wrong.",
+            "When the expert delivers, you have <strong>3 days</strong> to review and confirm. If you don't respond, funds auto-release.<br/><br/>You can raise a <strong>dispute</strong> if something's wrong — your payment is always protected by escrow!",
           side: "bottom",
           align: "center",
         },
@@ -131,22 +124,22 @@ const TOUR_PHASES: TourPhase[] = [
         popover: {
           title: "Your Wallet 💰",
           description:
-            "Manage your funds here. Payments are held in <strong>escrow</strong> until you confirm delivery — your money is always protected.",
+            "See your balance, transaction history, and top up funds here. All payments go through <strong>escrow</strong> so your money is safe until you confirm delivery.",
           side: "bottom",
           align: "center",
         },
       },
     ],
   },
-  // Phase 5 — Back to post-request, final
+  // Phase 5 — Final, back to dashboard
   {
-    route: "/post-request",
+    route: "/dashboard",
     steps: [
       {
         popover: {
-          title: "You're Ready! 🚀",
+          title: "You're All Set! 🚀",
           description:
-            "You now know how Duxio works:<br/><br/>✅ Post a request in any category<br/>✅ Receive quotes from verified experts<br/>✅ Chat, negotiate & hire<br/>✅ Pay safely with escrow protection<br/><br/>Go ahead and post your first request!",
+            "You now know how to use Duxio as a client:<br/><br/>✅ Post requests in any category<br/>✅ Receive & compare quotes from experts<br/>✅ Chat, hire & track orders<br/>✅ Confirm delivery & rate your expert<br/><br/>Go ahead and post your first request — or wait for quotes on the one you just posted!",
           side: "bottom",
           align: "center",
         },
@@ -157,13 +150,12 @@ const TOUR_PHASES: TourPhase[] = [
 
 /* ─────────────────── Component ─────────────────── */
 
-const POPOVER_CLASS = "seller-tour-popover"; // reuse same styling
+const POPOVER_CLASS = "seller-tour-popover";
 
 const ClientTutorial = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
-  const phaseRef = useRef(0);
   const [userId, setUserId] = useState("");
 
   useEffect(() => {
@@ -176,8 +168,13 @@ const ClientTutorial = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const matchesRoute = useCallback((phase: TourPhase) => {
+    if (phase.routePrefix) return location.pathname.startsWith(phase.route);
+    return location.pathname === phase.route;
+  }, [location.pathname]);
+
   const completeAll = useCallback(() => {
-    if (userId) localStorage.setItem(`${STORAGE_KEY}_${userId}`, "true");
+    if (userId) localStorage.setItem(`${COMPLETED_KEY}_${userId}`, "true");
     localStorage.removeItem(ACTIVE_KEY);
     localStorage.removeItem(STEP_KEY);
     driverRef.current?.destroy();
@@ -207,6 +204,7 @@ const ClientTutorial = () => {
         onDestroyStarted: () => {
           if (!d.hasNextStep() || d.isLastStep()) {
             d.destroy();
+            driverRef.current = null;
             const next = phaseIndex + 1;
             if (next < TOUR_PHASES.length) {
               startPhase(next);
@@ -215,6 +213,7 @@ const ClientTutorial = () => {
             }
           } else {
             d.destroy();
+            driverRef.current = null;
             completeAll();
           }
         },
@@ -234,18 +233,21 @@ const ClientTutorial = () => {
       }
 
       const phase = TOUR_PHASES[phaseIndex];
-      phaseRef.current = phaseIndex;
       localStorage.setItem(ACTIVE_KEY, "true");
       localStorage.setItem(STEP_KEY, String(phaseIndex));
 
-      if (location.pathname !== phase.route) {
-        navigate(phase.route);
+      const targetRoute = phase.routePrefix
+        ? (location.pathname.startsWith(phase.route) ? location.pathname : phase.route)
+        : phase.route;
+
+      if (location.pathname !== targetRoute && !matchesRoute(phase)) {
+        navigate(targetRoute);
         setTimeout(() => initDriver(phaseIndex), 600);
       } else {
         setTimeout(() => initDriver(phaseIndex), 300);
       }
     },
-    [location.pathname, navigate, completeAll, initDriver]
+    [location.pathname, navigate, completeAll, initDriver, matchesRoute]
   );
 
   // Resume across navigation
@@ -255,27 +257,15 @@ const ClientTutorial = () => {
     if (active === "true" && step) {
       const phaseIndex = parseInt(step, 10);
       const phase = TOUR_PHASES[phaseIndex];
-      if (phase && location.pathname === phase.route && !driverRef.current) {
-        setTimeout(() => initDriver(phaseIndex), 400);
+      if (phase && matchesRoute(phase) && !driverRef.current) {
+        setTimeout(() => initDriver(phaseIndex), 500);
       }
     }
-  }, [location.pathname, initDriver]);
-
-  // Listen for start event
-  useEffect(() => {
-    const handler = () => {
-      if (userId) localStorage.removeItem(`${STORAGE_KEY}_${userId}`);
-      startPhase(0);
-    };
-    window.addEventListener("start-client-tutorial", handler);
-    return () => window.removeEventListener("start-client-tutorial", handler);
-  }, [startPhase, userId]);
+  }, [location.pathname, initDriver, matchesRoute]);
 
   // Cleanup
   useEffect(() => {
-    return () => {
-      driverRef.current?.destroy();
-    };
+    return () => { driverRef.current?.destroy(); };
   }, []);
 
   return null;
@@ -283,6 +273,9 @@ const ClientTutorial = () => {
 
 export default ClientTutorial;
 
+// Helper to start the cross-page tour from outside
 export const startClientTutorial = () => {
-  window.dispatchEvent(new Event("start-client-tutorial"));
+  localStorage.setItem("client_tour_crosspage", "true");
+  localStorage.setItem("client_tour_crosspage_step", "0");
+  window.dispatchEvent(new Event("client-tour-navigate"));
 };

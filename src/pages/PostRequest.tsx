@@ -5,7 +5,8 @@ import CategoryTemplateFields from "@/components/post-request/CategoryTemplateFi
 import { supabase } from "@/integrations/supabase/client";
 import { useModeration } from "@/hooks/use-moderation";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
-import { startClientTutorial } from "@/components/onboarding/ClientTutorial";
+import { driver, type DriveStep, type Config } from "driver.js";
+import "driver.js/dist/driver.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -352,36 +353,182 @@ const PostRequest = () => {
     }
   }, []);
 
-  // Client tutorial: trigger on first visit to post-request
-  const tutorialTriggered = useRef(false);
-  useEffect(() => {
-    if (tutorialTriggered.current) return;
-    // Don't trigger if resuming a job
-    if (searchParams.get("jobId")) return;
+  // ─── Interactive client tutorial (driver.js) ───
+  const clientTourDriverRef = useRef<ReturnType<typeof driver> | null>(null);
+  const clientTourActive = useRef(false);
+  const clientTourChecked = useRef(false);
 
-    const checkAndTrigger = async () => {
+  // Check if tour should run on mount
+  useEffect(() => {
+    if (clientTourChecked.current) return;
+    if (searchParams.get("jobId")) return;
+    clientTourChecked.current = true;
+
+    const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const uid = session?.user?.id;
-      const storageKey = uid ? `client_tutorial_completed_${uid}` : "client_tutorial_completed_anon";
-      
-      if (localStorage.getItem(storageKey) === "true") return;
-      
-      // If logged in, check if they've posted before
+      const key = uid ? `client_tutorial_completed_${uid}` : "client_tutorial_completed_anon";
+      if (localStorage.getItem(key) === "true") return;
+
       if (uid) {
         const { count } = await supabase.from("jobs").select("*", { count: "exact", head: true }).eq("buyer_id", uid);
         if (count && count > 0) {
-          // Already posted before, mark as completed
-          localStorage.setItem(storageKey, "true");
+          localStorage.setItem(key, "true");
           return;
         }
       }
-
-      tutorialTriggered.current = true;
-      // Small delay to let the page render
-      setTimeout(() => startClientTutorial(), 500);
+      clientTourActive.current = true;
     };
-    checkAndTrigger();
+    check();
   }, [searchParams]);
+
+  // Show contextual tooltip when wizard step changes
+  useEffect(() => {
+    if (!clientTourActive.current) return;
+
+    // Destroy previous
+    clientTourDriverRef.current?.destroy();
+    clientTourDriverRef.current = null;
+
+    const showStep = () => {
+      let steps: DriveStep[] = [];
+
+      switch (wizardStep) {
+        case "category":
+          steps = [{
+            element: "#tour-category-grid",
+            popover: {
+              title: "Pick a Category 👆",
+              description: "Choose what you need help with. <strong>Click any category</strong> to continue!",
+              side: "top" as const,
+              align: "center" as const,
+            },
+          }];
+          break;
+        case "subcategory":
+          steps = [{
+            element: "#tour-subcategory-grid",
+            popover: {
+              title: "Choose a Specialty 🎯",
+              description: "Pick the specific service you need — this helps us match you with the right experts. <strong>Click one</strong> to continue!",
+              side: "top" as const,
+              align: "center" as const,
+            },
+          }];
+          break;
+        case "ai-refine":
+          steps = [{
+            popover: {
+              title: "Describe Your Idea ✨",
+              description: "Type what you need and AI will find the best category and refine your request. Try it!",
+              side: "bottom" as const,
+              align: "center" as const,
+            },
+          }];
+          break;
+        case "details":
+          steps = [
+            {
+              element: "#tour-title-input",
+              popover: {
+                title: "Write a Clear Title ✍️",
+                description: "Be specific about what you need — better titles attract better quotes from experts!",
+                side: "bottom" as const,
+                align: "start" as const,
+              },
+            },
+            {
+              element: "#tour-deadline",
+              popover: {
+                title: "Set Delivery Time ⏱️",
+                description: "Suggest how long the job should take. You can choose between minutes, hours, or days. Experts will propose their own timelines too.",
+                side: "bottom" as const,
+                align: "start" as const,
+              },
+            },
+            {
+              element: "#tour-description",
+              popover: {
+                title: "Add Details 📝",
+                description: "The more context you provide, the more accurate quotes you'll receive. Include any requirements, links, or references.",
+                side: "top" as const,
+                align: "start" as const,
+              },
+            },
+            {
+              element: "#tour-submit-btn",
+              popover: {
+                title: "Submit Your Request! 🚀",
+                description: "Click to post. Experts will be <strong>notified instantly</strong> and you'll start receiving quotes in seconds! It's <strong>free to post</strong>.",
+                side: "top" as const,
+                align: "center" as const,
+              },
+            },
+          ];
+          break;
+        case "matching":
+          steps = [{
+            element: "#tour-go-live",
+            popover: {
+              title: "Request Posted! 🎉",
+              description: "Experts are being notified right now. <strong>Click here</strong> to watch your live request and see quotes come in real-time!",
+              side: "top" as const,
+              align: "center" as const,
+            },
+          }];
+          break;
+      }
+
+      if (steps.length === 0) return;
+
+      const d = driver({
+        showProgress: steps.length > 1,
+        animate: true,
+        allowClose: true,
+        overlayColor: "hsl(0 0% 0% / 0.5)",
+        stagePadding: 10,
+        stageRadius: 12,
+        popoverClass: "seller-tour-popover",
+        nextBtnText: "Next →",
+        prevBtnText: "← Back",
+        doneBtnText: "Got it 👍",
+        progressText: `{{current}} / {{total}}`,
+        steps,
+        onDestroyStarted: () => {
+          d.destroy();
+          clientTourDriverRef.current = null;
+        },
+      } as Config);
+
+      clientTourDriverRef.current = d;
+      d.drive();
+    };
+
+    const timer = setTimeout(showStep, 450);
+    return () => {
+      clearTimeout(timer);
+      clientTourDriverRef.current?.destroy();
+      clientTourDriverRef.current = null;
+    };
+  }, [wizardStep]);
+
+  // Mark tour complete + trigger cross-page tour when navigating to live request
+  const handleGoToLiveRequest = () => {
+    clientTourDriverRef.current?.destroy();
+    clientTourActive.current = false;
+
+    // Mark request-flow portion done, trigger cross-page
+    if (jobId) {
+      localStorage.setItem("client_tour_crosspage", "true");
+      localStorage.setItem("client_tour_crosspage_step", "0");
+      navigate(`/request/${jobId}`);
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => { clientTourDriverRef.current?.destroy(); };
+  }, []);
 
   const handleSelectBroad = (id: string) => {
     setBroadCategory(id);
@@ -628,7 +775,7 @@ const PostRequest = () => {
               <p className="text-muted-foreground">Choose a category to find the right experts.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div id="tour-category-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {BROAD_CATEGORIES.map((cat, i) => {
                 const Icon = cat.icon;
                 return (
@@ -683,7 +830,7 @@ const PostRequest = () => {
               <p className="text-muted-foreground">Pick a specialty so we can match you with the best experts.</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div id="tour-subcategory-grid" className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {(SUBCATEGORIES[broadCategory] || []).map((sub, i) => {
                 const Icon = sub.icon;
                 return (
@@ -843,12 +990,12 @@ const PostRequest = () => {
             <form id="post-request-form" onSubmit={handleSubmit} className="space-y-6">
               <Card className="border-border bg-card/60 backdrop-blur-xl">
                 <CardContent className="space-y-5 pt-6">
-                  <div className="space-y-2">
+                  <div id="tour-title-input" className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Title</label>
                     <Input placeholder={TITLE_PLACEHOLDERS[category] || BROAD_PLACEHOLDERS[broadCategory] || 'e.g. "Describe what you need"'} value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={100} className="bg-background/60 border-border focus:border-primary/40" />
                   </div>
 
-                   <div className="space-y-3">
+                   <div id="tour-deadline" className="space-y-3">
                     <label className="text-sm font-medium text-foreground">Suggested Delivery Time</label>
                     <div className="flex rounded-lg border border-border overflow-hidden bg-background/60 w-fit">
                       {(["minutes", "hours", "days"] as const).map((unit) => (
@@ -885,7 +1032,7 @@ const PostRequest = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div id="tour-description" className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Description</label>
                     <Textarea placeholder="Describe your issue in detail..." value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-24 bg-background/60 border-border focus:border-primary/40" maxLength={1000} />
                   </div>
@@ -899,7 +1046,7 @@ const PostRequest = () => {
                 </CardContent>
               </Card>
 
-              <Button type="submit" size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
+              <Button id="tour-submit-btn" type="submit" size="lg" className="w-full gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500" disabled={loading || !title}>
                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
                 Post Request & Notify Experts
               </Button>
@@ -972,9 +1119,10 @@ const PostRequest = () => {
             </div>
 
             <Button
+              id="tour-go-live"
               size="lg"
               className="gap-2 shadow-glow w-full animate-fade-in [animation-delay:500ms]"
-              onClick={() => navigate(`/request/${jobId}`)}
+              onClick={handleGoToLiveRequest}
             >
               Go to Live Request <Zap className="h-4 w-4" />
             </Button>
