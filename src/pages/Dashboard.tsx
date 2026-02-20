@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import SellerConsentDialog from "@/components/onboarding/SellerConsentDialog";
+import { startSellerTutorial } from "@/components/onboarding/SellerTutorial";
 import ClientDashboard from "@/components/dashboard/ClientDashboard";
 import ExpertDashboard from "@/components/dashboard/ExpertDashboard";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +37,7 @@ const Dashboard = () => {
   const [activeView, setActiveView] = useState<"client" | "expert">("client");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSellerConsent, setShowSellerConsent] = useState(false);
+  
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -153,6 +155,7 @@ const Dashboard = () => {
     if (error) throw error;
     setRoles([...roles, { role: "mentor" }]);
     setActiveView("expert");
+    setTimeout(() => startSellerTutorial(), 500);
     toast({ title: "Welcome, Expert! 🎉", description: "Subscribe to categories and start receiving requests." });
   };
 
@@ -188,6 +191,8 @@ const Dashboard = () => {
         <OnboardingWizard userId={profile.id} onComplete={handleOnboardingComplete} />
       )}
       <SellerConsentDialog open={showSellerConsent} onOpenChange={setShowSellerConsent} onAccept={handleSellerConsentAccept} />
+
+
 
 
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-7xl">
