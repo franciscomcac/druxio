@@ -769,10 +769,41 @@ const PostRequest = () => {
         {/* Step 1: Broad category */}
         {wizardStep === "category" && (
           <div className="mx-auto max-w-3xl animate-fade-in">
-            <div className="mb-8">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 1</p>
-              <h1 className="mb-2 text-3xl font-bold text-foreground">What do you need help with?</h1>
-              <p className="text-muted-foreground">Choose a category to find the right experts.</p>
+            <div className="mb-8 flex items-start justify-between gap-4">
+              <div>
+                <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 1</p>
+                <h1 className="mb-2 text-3xl font-bold text-foreground">What do you need help with?</h1>
+                <p className="text-muted-foreground">Choose a category to find the right experts.</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-2 border-primary/30 text-primary hover:bg-primary/10 mt-6"
+                onClick={() => {
+                  clientTourActive.current = true;
+                  // Destroy any existing driver and restart
+                  clientTourDriverRef.current?.destroy();
+                  clientTourDriverRef.current = null;
+                  const d = driver({
+                    popoverClass: "seller-tour-popover",
+                    showButtons: ["close"],
+                    steps: [{
+                      element: "#tour-category-grid",
+                      popover: {
+                        title: "Pick a Category 👆",
+                        description: "Choose what you need help with. <strong>Click any category</strong> to continue!",
+                        side: "top" as const,
+                        align: "center" as const,
+                      },
+                    }],
+                  });
+                  d.drive();
+                  clientTourDriverRef.current = d;
+                }}
+              >
+                <GraduationCap className="h-4 w-4" />
+                Basic Tutorial
+              </Button>
             </div>
 
             <div id="tour-category-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
