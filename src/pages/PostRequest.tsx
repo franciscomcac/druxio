@@ -254,7 +254,10 @@ const PostRequest = () => {
   const { toast } = useToast();
   const { checkContent } = useModeration();
 
-  const [wizardStep, setWizardStep] = useState<"category" | "subcategory" | "ai-refine" | "details" | "waiting" | "matching">("category");
+  const [wizardStep, setWizardStep] = useState<"auto-match" | "category" | "subcategory" | "ai-refine" | "details" | "waiting" | "matching">("category");
+  const [autoMatchLoading, setAutoMatchLoading] = useState(false);
+  const [autoMatchResult, setAutoMatchResult] = useState<{ title: string; description: string; category: string; broad_category: string; clarifying_note: string } | null>(null);
+  const autoMatchTriggered = useRef(false);
   const [matchingData, setMatchingData] = useState<{ onlineSellers: number; avgResponseMin: number } | null>(null);
   const [broadCategory, setBroadCategory] = useState("");
   const [category, setCategory] = useState(searchParams.get("category") || "");
@@ -350,6 +353,11 @@ const PostRequest = () => {
       setBroadCategory(broad);
       setCategory(cat);
       setWizardStep("details");
+    } else if (searchParams.get("title") && !autoMatchTriggered.current) {
+      // Auto-match: user typed a title from the hero input
+      autoMatchTriggered.current = true;
+      setWizardStep("auto-match");
+      triggerAutoMatch(searchParams.get("title")!.trim());
     }
   }, []);
 
@@ -542,7 +550,8 @@ const PostRequest = () => {
   };
 
   const handleBack = () => {
-    if (wizardStep === "subcategory") setWizardStep("category");
+    if (wizardStep === "auto-match") { setAutoMatchResult(null); setWizardStep("category"); }
+    else if (wizardStep === "subcategory") setWizardStep("category");
     else if (wizardStep === "ai-refine") {
       setAiResult(null);
       setWizardStep("category");
@@ -550,11 +559,50 @@ const PostRequest = () => {
     else if (wizardStep === "details") {
       if (aiResult) {
         setWizardStep("ai-refine");
+      } else if (autoMatchResult) {
+        setWizardStep("auto-match");
       } else {
         setWizardStep("subcategory");
       }
     }
     else navigate("/");
+  };
+
+  const triggerAutoMatch = async (inputTitle: string) => {
+    setAutoMatchLoading(true);
+    setAutoMatchResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("ai-refine-request", {
+        body: { userIdea: inputTitle },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setAutoMatchResult(data);
+    } catch (err: any) {
+      console.error("Auto-match error:", err);
+      toast({
+        title: "AI couldn't auto-detect a category",
+        description: "No worries — pick one manually.",
+        variant: "destructive",
+      });
+      setWizardStep("category");
+    } finally {
+      setAutoMatchLoading(false);
+    }
+  };
+
+  const handleAcceptAutoMatch = () => {
+    if (!autoMatchResult) return;
+    setTitle(autoMatchResult.title);
+    setDescription(autoMatchResult.description);
+    setCategory(autoMatchResult.category);
+    setBroadCategory(autoMatchResult.broad_category);
+    setWizardStep("details");
+  };
+
+  const handleRejectAutoMatch = () => {
+    setAutoMatchResult(null);
+    setWizardStep("category");
   };
 
   const handleAiRefine = async () => {
@@ -733,15 +781,15 @@ const PostRequest = () => {
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const progressPercent = ((180 - timeLeft) / 180) * 100;
 
-  const stepNumber = wizardStep === "category" ? 1 : wizardStep === "subcategory" ? 2 : wizardStep === "ai-refine" ? 2 : wizardStep === "details" ? 3 : 3;
-  const totalSteps = wizardStep === "ai-refine" || aiResult ? 3 : 3;
+  const stepNumber = wizardStep === "auto-match" ? 1 : wizardStep === "category" ? 1 : wizardStep === "subcategory" ? 2 : wizardStep === "ai-refine" ? 2 : wizardStep === "details" ? 3 : 3;
+  const totalSteps = 3;
 
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-4xl">
 
         {/* Step indicator for wizard steps */}
-        {wizardStep !== "waiting" && (
+        {wizardStep !== "waiting" && wizardStep !== "auto-match" && (
           <div className="mx-auto max-w-3xl mb-8 animate-fade-in">
             <Button variant="ghost" className="mb-4 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]" onClick={handleBack}>
               <ArrowLeft className="h-4 w-4" /> Back
@@ -761,13 +809,100 @@ const PostRequest = () => {
                 </div>
               ))}
               <span className="ml-3 text-sm text-muted-foreground">
-                {wizardStep === "category" ? "Choose a category" : wizardStep === "subcategory" ? "Pick a specialty" : wizardStep === "ai-refine" ? "Describe your idea" : "Describe your request"}
+                {wizardStep === "category" ? "Choose a category" : wizardStep === "subcategory" ? "Pick a specialty" : wizardStep === "ai-refine" ? "Describe your idea" : wizardStep === "details" ? "Describe your request" : "Matching..."}
               </span>
             </div>
           </div>
         )}
 
-        {/* Step 1: Broad category */}
+        {/* Auto-match: AI detecting category from title */}
+        {wizardStep === "auto-match" && (
+          <div className="mx-auto max-w-2xl animate-fade-in">
+            <div className="mb-8 text-center">
+              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 mb-6">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-primary uppercase tracking-wider">AI Powered</span>
+              </div>
+              <h1 className="mb-3 text-3xl font-bold text-foreground">Finding the right category...</h1>
+              <p className="text-muted-foreground">
+                Based on: <span className="text-foreground font-medium">"{title}"</span>
+              </p>
+            </div>
+
+            {autoMatchLoading && (
+              <Card className="border-primary/20 bg-card/60 backdrop-blur-xl">
+                <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
+                  <div className="relative">
+                    <div className="h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                    <Wand2 className="absolute inset-0 m-auto h-6 w-6 text-primary" />
+                  </div>
+                  <p className="text-muted-foreground text-sm">AI is analyzing your request...</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {autoMatchResult && !autoMatchLoading && (
+              <div className="space-y-4 animate-fade-in">
+                <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] p-4">
+                  <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">AI matched your request</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{autoMatchResult.clarifying_note}</p>
+                  </div>
+                </div>
+
+                <Card className="border-primary/20 bg-card/60 backdrop-blur-xl">
+                  <CardContent className="pt-6 space-y-5">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Detected Category</label>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+                          <Zap className="h-3.5 w-3.5" />
+                          {autoMatchResult.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Refined Title</label>
+                      <p className="text-foreground font-semibold text-lg">{autoMatchResult.title}</p>
+                    </div>
+
+                    {autoMatchResult.description && (
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Suggested Description</label>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{autoMatchResult.description}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <p className="text-center text-sm text-muted-foreground">Does this match what you need?</p>
+
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleAcceptAutoMatch}
+                    className="flex-1 gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500"
+                  >
+                    <Check className="h-4 w-4" />
+                    Yes, continue
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleRejectAutoMatch}
+                    className="flex-1 gap-2"
+                  >
+                    No, pick manually
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+
         {wizardStep === "category" && (
           <div className="mx-auto max-w-3xl animate-fade-in relative">
             <Button
