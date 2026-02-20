@@ -358,7 +358,7 @@ const PostRequest = () => {
   const clientTourActive = useRef(false);
   const clientTourChecked = useRef(false);
 
-  // Auto-prompt tutorial only on first visit to post-request
+  // Auto-prompt tutorial for non-signed-in users, or first visit for signed-in users
   useEffect(() => {
     if (clientTourChecked.current) return;
     if (searchParams.get("jobId")) return;
@@ -367,10 +367,16 @@ const PostRequest = () => {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       const uid = session?.user?.id;
-      const key = uid ? `client_tutorial_prompted_${uid}` : "client_tutorial_prompted_anon";
-      if (localStorage.getItem(key) === "true") return;
 
-      // Mark as prompted so it only auto-starts once
+      if (!uid) {
+        // Always show tutorial for non-signed-in users
+        clientTourActive.current = true;
+        return;
+      }
+
+      // For signed-in users, only show once
+      const key = `client_tutorial_prompted_${uid}`;
+      if (localStorage.getItem(key) === "true") return;
       localStorage.setItem(key, "true");
       clientTourActive.current = true;
     };
