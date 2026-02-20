@@ -533,24 +533,30 @@ const Admin = () => {
         toast({ title: "Dispute resolved — Payment released", description: "Funds released to the seller." });
       }
 
-      if (disputeNote.trim()) {
-        await Promise.all([
-          supabase.from("notifications").insert({
-            user_id: selectedDispute.buyer_id,
-            type: "dispute_resolved",
-            title: `Dispute resolved: ${action === "refund" ? "Refund issued" : "Payment released"}`,
-            message: disputeNote.trim(),
-            data: { job_id: selectedDispute.job_id },
-          }),
-          supabase.from("notifications").insert({
-            user_id: selectedDispute.seller_id,
-            type: "dispute_resolved",
-            title: `Dispute resolved: ${action === "refund" ? "Refund issued" : "Payment released"}`,
-            message: disputeNote.trim(),
-            data: { job_id: selectedDispute.job_id },
-          }),
-        ]);
-      }
+      // Always notify both parties about dispute resolution
+      const resolveTitle = action === "refund" ? "Refund issued" : "Payment released";
+      const resolveMessage = disputeNote.trim()
+        ? disputeNote.trim()
+        : action === "refund"
+          ? `Your dispute for "${selectedDispute.job_title}" has been resolved. A refund of €${(selectedDispute.quote_price * 1.05).toFixed(2)} has been issued to the buyer.`
+          : `Your dispute for "${selectedDispute.job_title}" has been resolved. Payment has been released to the seller.`;
+
+      await Promise.all([
+        supabase.from("notifications").insert({
+          user_id: selectedDispute.buyer_id,
+          type: action === "refund" ? "refund_issued" : "dispute_resolved",
+          title: `Dispute resolved: ${resolveTitle}`,
+          message: resolveMessage,
+          data: { job_id: selectedDispute.job_id },
+        }),
+        supabase.from("notifications").insert({
+          user_id: selectedDispute.seller_id,
+          type: action === "refund" ? "refund_issued" : "dispute_resolved",
+          title: `Dispute resolved: ${resolveTitle}`,
+          message: resolveMessage,
+          data: { job_id: selectedDispute.job_id },
+        }),
+      ]);
 
       setSelectedDispute(null);
       setDisputeNote("");
