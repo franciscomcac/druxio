@@ -17,7 +17,7 @@ import PortfolioSection from "@/components/experts/PortfolioSection";
 import {
   User, Bell, Shield, Loader2, Save, Camera, Clock, Tag, X,
   ChevronDown, ChevronUp, Wifi, WifiOff, Image,
-  Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
+  Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video, MessageSquarePlus,
   Eye, EyeOff, Mail, Lock,
 } from "lucide-react";
 
@@ -140,6 +140,13 @@ const CATEGORY_TREE = [
       { id: "Podcasting", services: ["Setup & Equipment", "Editing", "Distribution", "Growth"] },
       { id: "Blogging & SEO Writing", services: ["Blog Strategy", "SEO Articles", "Content Calendar", "Ghostwriting"] },
       { id: "Community Management", services: ["Discord Moderation", "Engagement Strategy", "Community Building"] },
+    ],
+  },
+  {
+    id: "Custom", label: "Custom", icon: MessageSquarePlus,
+    subs: [
+      { id: "General Request", services: ["Any Task", "Custom Work", "Consultation"] },
+      { id: "Other / Unlisted", services: ["Anything Else", "Unique Request", "Special Service"] },
     ],
   },
 ];

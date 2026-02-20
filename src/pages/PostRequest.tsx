@@ -38,6 +38,7 @@ const BROAD_CATEGORIES = [
   { id: "Fitness", label: "Fitness", icon: Dumbbell, description: "Training & nutrition" },
   { id: "Languages", label: "Languages", icon: Globe, description: "Tutoring & translation" },
   { id: "Content", label: "Content", icon: Video, description: "Streaming, YouTube & TikTok" },
+  { id: "Custom", label: "Custom", icon: MessageSquarePlus, description: "Anything else you need" },
 ];
 
 const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> = {
@@ -136,6 +137,10 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Content: Podcasting", label: "Podcasting", icon: Podcast },
     { id: "Content: Blogging", label: "Blogging & SEO Writing", icon: FileText },
     { id: "Content: Community", label: "Community Management", icon: Users },
+  ],
+  Custom: [
+    { id: "Custom: General", label: "General Request", icon: MessageSquarePlus },
+    { id: "Custom: Other", label: "Other / Unlisted", icon: Wand2 },
   ],
 };
 
