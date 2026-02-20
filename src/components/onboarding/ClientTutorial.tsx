@@ -13,13 +13,13 @@ const COMPLETED_KEY = "client_tutorial_completed";
 /* ─────────────────── Tour phases (cross-page, after request posted) ─────────────────── */
 
 interface TourPhase {
-  route: string;        // exact match or prefix
-  routePrefix?: boolean; // if true, match by startsWith
+  route: string;
+  routePrefix?: boolean;
   steps: DriveStep[];
 }
 
 const TOUR_PHASES: TourPhase[] = [
-  // Phase 0 — Active Request page
+  // Phase 0 — Active Request page (final destination)
   {
     route: "/request/",
     routePrefix: true,
@@ -28,118 +28,43 @@ const TOUR_PHASES: TourPhase[] = [
         popover: {
           title: "Your Live Request 📡",
           description:
-            "This is where the magic happens! Experts see your request and send you <strong>quotes in real-time</strong>. Watch the leaderboard fill up as offers arrive.",
+            "This is where the magic happens! Experts see your request and send you <strong>quotes in real-time</strong>. Watch as offers start rolling in.",
           side: "bottom",
           align: "center",
         },
       },
       {
         popover: {
-          title: "Reviewing Quotes",
+          title: "Reviewing Quotes 💰",
           description:
-            "Each quote shows the expert's <strong>price</strong>, <strong>delivery time</strong>, <strong>rating</strong>, and a personal message. You can chat with any expert before hiring.",
+            "Each quote shows the expert's <strong>price</strong>, <strong>delivery time</strong>, <strong>rating</strong>, and a personal message. Compare them to find the best fit.",
           side: "bottom",
           align: "center",
         },
       },
       {
         popover: {
-          title: "Hiring an Expert",
+          title: "Chat with Experts 💬",
           description:
-            'Click <strong>"Hire"</strong> on any quote to accept it. The expert will start working immediately and your payment is held safely in <strong>escrow</strong>.',
-          side: "bottom",
-          align: "center",
-        },
-      },
-    ],
-  },
-  // Phase 1 — Dashboard
-  {
-    route: "/dashboard",
-    steps: [
-      {
-        popover: {
-          title: "Your Dashboard 📊",
-          description:
-            "Track all your requests here — see which are <strong>open</strong> (waiting for quotes), <strong>accepted</strong> (expert hired), or <strong>completed</strong>. Click any request to view details.",
-          side: "bottom",
-          align: "center",
-        },
-      },
-    ],
-  },
-  // Phase 2 — Inbox
-  {
-    route: "/inbox",
-    steps: [
-      {
-        popover: {
-          title: "Your Inbox 💬",
-          description:
-            "Chat directly with your expert here. Discuss details, share files and screenshots, and track progress — all in one place.",
+            "You can <strong>chat directly</strong> with any expert who sends a quote. Ask questions, negotiate details, or request samples before deciding.",
           side: "bottom",
           align: "center",
         },
       },
       {
         popover: {
-          title: "Pro Tip: Stay in Touch",
+          title: "Accept & Pay Securely 🔒",
           description:
-            "Respond quickly to your expert's questions. Clear communication leads to better results and faster delivery!",
+            'Click <strong>"Accept & Pay"</strong> on the quote you like best. Your payment is held safely in <strong>escrow</strong> — it only releases when you confirm the work is delivered.',
           side: "bottom",
           align: "center",
         },
       },
-    ],
-  },
-  // Phase 3 — Purchased Orders
-  {
-    route: "/orders/purchased",
-    steps: [
-      {
-        popover: {
-          title: "Your Orders 📦",
-          description:
-            "All hired orders appear here. Track each order's status from <strong>Active</strong> → <strong>Delivered</strong> → <strong>Completed</strong>.",
-          side: "bottom",
-          align: "center",
-        },
-      },
-      {
-        popover: {
-          title: "Delivery & Payment",
-          description:
-            "When the expert delivers, you have <strong>3 days</strong> to review and confirm. If you don't respond, funds auto-release.<br/><br/>You can raise a <strong>dispute</strong> if something's wrong — your payment is always protected by escrow!",
-          side: "bottom",
-          align: "center",
-        },
-      },
-    ],
-  },
-  // Phase 4 — Wallet
-  {
-    route: "/wallet",
-    steps: [
-      {
-        popover: {
-          title: "Your Wallet 💰",
-          description:
-            "See your balance, transaction history, and top up funds here. All payments go through <strong>escrow</strong> so your money is safe until you confirm delivery.",
-          side: "bottom",
-          align: "center",
-        },
-      },
-    ],
-  },
-  // Phase 5 — Final, back to dashboard
-  {
-    route: "/dashboard",
-    steps: [
       {
         popover: {
           title: "You're All Set! 🚀",
           description:
-            "You now know how to use Duxio as a client:<br/><br/>✅ Post requests in any category<br/>✅ Receive & compare quotes from experts<br/>✅ Chat, hire & track orders<br/>✅ Confirm delivery & rate your expert<br/><br/>Go ahead and post your first request — or wait for quotes on the one you just posted!",
+            "That's the basics!<br/><br/>✅ Post requests in any category<br/>✅ Receive & compare live quotes<br/>✅ Chat with experts before hiring<br/>✅ Pay securely with escrow protection<br/><br/>Now sit back and wait for expert offers!",
           side: "bottom",
           align: "center",
         },
@@ -186,7 +111,6 @@ const ClientTutorial = () => {
       if (driverRef.current) driverRef.current.destroy();
 
       const phase = TOUR_PHASES[phaseIndex];
-      const isLastPhase = phaseIndex === TOUR_PHASES.length - 1;
 
       const d = driver({
         showProgress: true,
@@ -198,24 +122,13 @@ const ClientTutorial = () => {
         popoverClass: POPOVER_CLASS,
         nextBtnText: "Next →",
         prevBtnText: "← Back",
-        doneBtnText: isLastPhase ? "Let's Go! 🎉" : "Continue →",
+        doneBtnText: "Got it! 🎉",
         progressText: `Step {{current}} of {{total}}`,
         steps: phase.steps,
         onDestroyStarted: () => {
-          if (!d.hasNextStep() || d.isLastStep()) {
-            d.destroy();
-            driverRef.current = null;
-            const next = phaseIndex + 1;
-            if (next < TOUR_PHASES.length) {
-              startPhase(next);
-            } else {
-              completeAll();
-            }
-          } else {
-            d.destroy();
-            driverRef.current = null;
-            completeAll();
-          }
+          d.destroy();
+          driverRef.current = null;
+          completeAll();
         },
       } as Config);
 
