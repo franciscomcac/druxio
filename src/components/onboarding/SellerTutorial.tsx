@@ -109,8 +109,9 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeElement: "#tour-profile-menu",
     bridgeTitle: "Next: Sold Orders 📦",
-    bridgeDescription: "Now navigate to <strong>Sold Orders</strong> — you can find it in the menu (your profile dropdown) or Quick Actions on the dashboard.",
+    bridgeDescription: "Click your <strong>profile avatar</strong> to open the menu, then click <strong>Sold Orders</strong> to continue the tour!",
   },
   // Phase 2 — Sold Orders
   {
@@ -158,8 +159,9 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeElement: "#tour-profile-menu",
     bridgeTitle: "Next: Settings ⚙️",
-    bridgeDescription: "Now navigate to <strong>Settings</strong> — you can find it in your profile dropdown menu in the top-right corner.",
+    bridgeDescription: "Click your <strong>profile avatar</strong> to open the menu, then click <strong>Settings</strong> to continue the tour!",
   },
   // Phase 4 — Settings
   {
@@ -182,8 +184,9 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeElement: "#tour-dashboard-link",
     bridgeTitle: "Final Step: Back to Dashboard 🏠",
-    bridgeDescription: "Click <strong>Dashboard</strong> in the navigation or your profile menu to finish the tour!",
+    bridgeDescription: "Click <strong>Dashboard</strong> in the navigation bar to finish the tour!",
   },
   // Phase 5 — Back to dashboard, final
   {

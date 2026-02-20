@@ -83,7 +83,7 @@ const Header = () => {
           </Link>
           {user && (
             <>
-              <Link to="/dashboard">
+              <Link to="/dashboard" id="tour-dashboard-link">
                 <Button variant="ghost" size="sm" className={`text-sm font-medium ${isActive("/dashboard") ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
                   Dashboard
                 </Button>
@@ -114,7 +114,7 @@ const Header = () => {
               <NotificationsDropdown />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                  <Button id="tour-profile-menu" variant="ghost" className="relative h-9 w-9 rounded-full">
                     <Avatar className="h-9 w-9 border border-border/40">
                       <AvatarImage src={profile?.avatar_url} />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
