@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 const BASE_URL = "https://duxio.lovable.app";
 const SITE_NAME = "Duxio";
-const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`;
+const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/G0936umxfkP8XUxHjCHkuY6oOfS2/social-images/social-1771596374263-Screenshot_2026-02-20_140526.webp";
 
 interface SeoOptions {
   title: string;
@@ -11,6 +11,8 @@ interface SeoOptions {
   ogImage?: string;
   ogType?: string;
   noIndex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  articlePublishedTime?: string;
 }
 
 function setMeta(name: string, content: string, attribute = "name") {
@@ -33,7 +35,7 @@ function setLink(rel: string, href: string) {
   el.setAttribute("href", href);
 }
 
-export function useSEO({ title, description, canonical, ogImage, ogType = "website", noIndex }: SeoOptions) {
+export function useSEO({ title, description, canonical, ogImage, ogType = "website", noIndex, jsonLd, articlePublishedTime }: SeoOptions) {
   useEffect(() => {
     const fullTitle = title.includes(SITE_NAME) ? title : `${title} — ${SITE_NAME}`;
     const prevTitle = document.title;
@@ -59,14 +61,35 @@ export function useSEO({ title, description, canonical, ogImage, ogType = "websi
     setMeta("og:site_name", SITE_NAME, "property");
     setMeta("twitter:card", "summary_large_image");
 
+    if (articlePublishedTime) {
+      setMeta("article:published_time", articlePublishedTime, "property");
+    }
+
     if (noIndex) {
       setMeta("robots", "noindex, nofollow");
     } else {
       setMeta("robots", "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1");
     }
 
+    // JSON-LD injection
+    const jsonLdId = "seo-page-jsonld";
+    let scriptEl = document.getElementById(jsonLdId) as HTMLScriptElement | null;
+    if (jsonLd) {
+      if (!scriptEl) {
+        scriptEl = document.createElement("script");
+        scriptEl.id = jsonLdId;
+        scriptEl.type = "application/ld+json";
+        document.head.appendChild(scriptEl);
+      }
+      scriptEl.textContent = JSON.stringify(jsonLd);
+    } else if (scriptEl) {
+      scriptEl.remove();
+    }
+
     return () => {
       document.title = prevTitle;
+      const el = document.getElementById(jsonLdId);
+      if (el) el.remove();
     };
-  }, [title, description, canonical, ogImage, ogType, noIndex]);
+  }, [title, description, canonical, ogImage, ogType, noIndex, jsonLd, articlePublishedTime]);
 }

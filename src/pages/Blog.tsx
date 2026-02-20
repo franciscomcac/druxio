@@ -16,6 +16,27 @@ const Blog = () => {
     title: "Blog",
     description: "Tips, guides, and insights on getting work done faster with Duxio. Platform updates, expert advice, and freelancing best practices.",
     canonical: "/blog",
+    jsonLd: {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Duxio Blog",
+      "description": "Tips, guides, and insights on getting work done faster with Duxio.",
+      "url": "https://duxio.lovable.app/blog",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Duxio",
+        "url": "https://duxio.lovable.app"
+      },
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": blogPosts.map((post, i) => ({
+          "@type": "ListItem",
+          "position": i + 1,
+          "url": `https://duxio.lovable.app/blog/${post.slug}`,
+          "name": post.title
+        }))
+      }
+    },
   });
 
   const [featured, ...rest] = blogPosts;
