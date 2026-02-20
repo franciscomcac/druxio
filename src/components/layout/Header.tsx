@@ -9,7 +9,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
-import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck } from "lucide-react";
+import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import { useCurrency, Currency } from "@/contexts/CurrencyContext";
 
@@ -20,6 +21,8 @@ const Header = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
+  const [isMentorUser, setIsMentorUser] = useState(false);
+  const [appearOffline, setAppearOffline] = useState(() => localStorage.getItem("appear_offline_override") === "true");
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "signup">("login");
   const { balance } = useBalance();
@@ -38,6 +41,7 @@ const Header = () => {
           setProfile(data);
           const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
           setIsAdminUser(roles?.some(r => r.role === "admin") || false);
+          setIsMentorUser(roles?.some(r => r.role === "mentor") || false);
         }, 0);
       } else if (event === 'SIGNED_OUT') {
         setProfile(null);
@@ -57,6 +61,16 @@ const Header = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  const handleToggleAppearOffline = async (offline: boolean) => {
+    setAppearOffline(offline);
+    localStorage.setItem("appear_offline_override", offline ? "true" : "false");
+    if (user) {
+      await supabase.from("profiles").update({ is_online: !offline }).eq("id", user.id);
+    }
+    // Notify presence hook
+    window.dispatchEvent(new CustomEvent("presence-override-changed", { detail: { offline } }));
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -140,6 +154,24 @@ const Header = () => {
                     <>
                       <DropdownMenuSeparator className="bg-border/30" />
                       <DropdownMenuItem onClick={() => navigate("/admin")} className="hover:bg-primary/[0.06]"><ShieldCheck className="mr-2 h-4 w-4" /> Admin</DropdownMenuItem>
+                    </>
+                  )}
+                  {isMentorUser && (
+                    <>
+                      <DropdownMenuSeparator className="bg-border/30" />
+                      <div className="px-2 py-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {appearOffline ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-chart-2" />}
+                            <span className="text-sm">{appearOffline ? "Appear Offline" : "Online"}</span>
+                          </div>
+                          <Switch
+                            checked={!appearOffline}
+                            onCheckedChange={(checked) => handleToggleAppearOffline(!checked)}
+                            className="scale-90"
+                          />
+                        </div>
+                      </div>
                     </>
                   )}
                   <DropdownMenuSeparator className="bg-border/30" />

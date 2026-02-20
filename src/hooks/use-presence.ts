@@ -1,14 +1,19 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+
+const APPEAR_OFFLINE_KEY = "appear_offline_override";
 
 /**
  * Automatically marks an expert as online while they have the site open
- * (including background tabs) and offline when they close/navigate away.
+ * and offline when they close/navigate away.
+ * Supports a manual "appear offline" override.
  * Only activates for users who have the "mentor" role.
  */
 export function usePresence() {
   const userIdRef = useRef<string | null>(null);
   const isMentorRef = useRef(false);
+  const [appearOffline, setAppearOfflineState] = useState(false);
+  const [isMentor, setIsMentor] = useState(false);
 
   const setOnline = async (userId: string) => {
     await supabase.from("profiles").update({ is_online: true }).eq("id", userId);
@@ -18,8 +23,26 @@ export function usePresence() {
     await supabase.from("profiles").update({ is_online: false }).eq("id", userId);
   };
 
+  const setAppearOffline = useCallback(async (offline: boolean) => {
+    setAppearOfflineState(offline);
+    localStorage.setItem(APPEAR_OFFLINE_KEY, offline ? "true" : "false");
+
+    if (!userIdRef.current || !isMentorRef.current) return;
+
+    if (offline) {
+      await setOffline(userIdRef.current);
+    } else {
+      await setOnline(userIdRef.current);
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
+
+    // Load override from localStorage
+    const saved = localStorage.getItem(APPEAR_OFFLINE_KEY);
+    const isOverrideOffline = saved === "true";
+    setAppearOfflineState(isOverrideOffline);
 
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -27,29 +50,33 @@ export function usePresence() {
 
       const userId = session.user.id;
 
-      // Check if user is a mentor
       const { data: roles } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", userId);
 
-      const isMentor = roles?.some((r) => r.role === "mentor") ?? false;
+      const mentor = roles?.some((r) => r.role === "mentor") ?? false;
 
-      if (!isMentor || !mounted) return;
+      if (!mounted) return;
 
-      userIdRef.current = userId;
-      isMentorRef.current = true;
+      if (mentor) {
+        setIsMentor(true);
+        isMentorRef.current = true;
+        userIdRef.current = userId;
 
-      // Mark online immediately
-      await setOnline(userId);
+        // Only set online if not manually overridden to offline
+        if (!isOverrideOffline) {
+          await setOnline(userId);
+        } else {
+          await setOffline(userId);
+        }
+      }
     };
 
     init();
 
-    // Mark offline on tab/window close
     const handleBeforeUnload = () => {
       if (userIdRef.current && isMentorRef.current) {
-        // Use sendBeacon for reliability on page unload
         const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${userIdRef.current}`;
         const body = JSON.stringify({ is_online: false });
         navigator.sendBeacon(
@@ -59,12 +86,11 @@ export function usePresence() {
       }
     };
 
-    // Also handle visibility changes (tab switching, minimizing)
-    // We keep them online even in background — only go offline on unload
     const handleVisibilityChange = () => {
       if (!userIdRef.current || !isMentorRef.current) return;
-      if (document.visibilityState === "visible") {
-        // Re-confirm online when tab comes back to focus
+      // Check current override state from localStorage (most up to date)
+      const currentOverride = localStorage.getItem(APPEAR_OFFLINE_KEY) === "true";
+      if (document.visibilityState === "visible" && !currentOverride) {
         setOnline(userIdRef.current);
       }
     };
@@ -72,15 +98,21 @@ export function usePresence() {
     window.addEventListener("beforeunload", handleBeforeUnload);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Listen for auth changes (sign out → go offline)
+    // Listen for override changes from the Header toggle
+    const handleOverrideChanged = (e: Event) => {
+      const { offline } = (e as CustomEvent).detail;
+      setAppearOfflineState(offline);
+    };
+    window.addEventListener("presence-override-changed", handleOverrideChanged);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === "SIGNED_OUT" && userIdRef.current && isMentorRef.current) {
         await setOffline(userIdRef.current);
         userIdRef.current = null;
         isMentorRef.current = false;
+        setIsMentor(false);
       }
       if (event === "SIGNED_IN") {
-        // Re-init after sign in
         init();
       }
     });
@@ -89,12 +121,14 @@ export function usePresence() {
       mounted = false;
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("presence-override-changed", handleOverrideChanged);
       subscription.unsubscribe();
 
-      // Go offline on component unmount (shouldn't happen in App but safety net)
       if (userIdRef.current && isMentorRef.current) {
         setOffline(userIdRef.current);
       }
     };
   }, []);
+
+  return { appearOffline, setAppearOffline, isMentor };
 }
