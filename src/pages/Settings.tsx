@@ -489,24 +489,7 @@ const Settings = () => {
 
                 <div className="space-y-2"><Label>Bio</Label><Textarea placeholder="Tell others about yourself..." className="min-h-32" value={profile?.bio || ""} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} /></div>
 
-                {isMentor && (
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-accent/30">
-                    <div className="flex items-center gap-3">
-                      {profile?.is_online ? <Wifi className="h-5 w-5 text-chart-2" /> : <WifiOff className="h-5 w-5 text-muted-foreground" />}
-                      <div>
-                        <p className="font-medium text-foreground">Online Status</p>
-                        <p className="text-sm text-muted-foreground">{profile?.is_online ? "You appear online to buyers" : "You appear offline"}</p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={profile?.is_online || false}
-                      onCheckedChange={async (checked) => {
-                        setProfile({ ...profile, is_online: checked });
-                        await supabase.from("profiles").update({ is_online: checked }).eq("id", profile.id);
-                      }}
-                    />
-                  </div>
-                )}
+                {/* Online status toggle moved to profile dropdown menu */}
 
                 <Button onClick={handleSaveProfile} disabled={saving} className="gap-2">
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes
