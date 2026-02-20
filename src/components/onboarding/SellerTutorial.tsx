@@ -12,12 +12,17 @@ const STEP_KEY = "seller_tutorial_step";
 
 /* ─────────────────── Tour phases ─────────────────── 
    Each phase runs on a specific route.
-   When a phase ends, we navigate to the next route and start the next phase.
+   When a phase ends, a bridge step tells the user to click the nav link themselves.
 */
 
 interface TourPhase {
   route: string;
   steps: DriveStep[];
+  /** Element selector for the nav link the user should click to proceed */
+  bridgeElement?: string;
+  /** Text for the bridge step telling the user where to navigate */
+  bridgeTitle?: string;
+  bridgeDescription?: string;
 }
 
 const TOUR_PHASES: TourPhase[] = [
@@ -79,6 +84,9 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeElement: "#tour-inbox-link",
+    bridgeTitle: "Next: Your Inbox 💬",
+    bridgeDescription: "Click the <strong>Inbox icon</strong> in the navigation bar to continue the tour!",
   },
   // Phase 1 — Inbox
   {
@@ -101,6 +109,8 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeTitle: "Next: Sold Orders 📦",
+    bridgeDescription: "Now navigate to <strong>Sold Orders</strong> — you can find it in the menu (your profile dropdown) or Quick Actions on the dashboard.",
   },
   // Phase 2 — Sold Orders
   {
@@ -123,6 +133,9 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeElement: "#tour-wallet-link",
+    bridgeTitle: "Next: Your Wallet 💰",
+    bridgeDescription: "Click the <strong>Balance / Wallet button</strong> in the navigation bar to continue!",
   },
   // Phase 3 — Wallet
   {
@@ -145,6 +158,8 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeTitle: "Next: Settings ⚙️",
+    bridgeDescription: "Now navigate to <strong>Settings</strong> — you can find it in your profile dropdown menu in the top-right corner.",
   },
   // Phase 4 — Settings
   {
@@ -167,6 +182,8 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeTitle: "Final Step: Back to Dashboard 🏠",
+    bridgeDescription: "Click <strong>Dashboard</strong> in the navigation or your profile menu to finish the tour!",
   },
   // Phase 5 — Back to dashboard, final
   {
@@ -221,28 +238,6 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     onComplete?.();
   }, [userId, onComplete]);
 
-  const startPhase = useCallback((phaseIndex: number) => {
-    if (phaseIndex >= TOUR_PHASES.length) {
-      completeAll();
-      return;
-    }
-
-    const phase = TOUR_PHASES[phaseIndex];
-    phaseRef.current = phaseIndex;
-    localStorage.setItem(ACTIVE_KEY, "true");
-    localStorage.setItem(STEP_KEY, String(phaseIndex));
-
-    // Navigate first if needed
-    if (location.pathname !== phase.route) {
-      navigate(phase.route);
-      // Wait for the new page to render before starting driver
-      setTimeout(() => initDriver(phaseIndex), 600);
-    } else {
-      // Small delay to let DOM settle
-      setTimeout(() => initDriver(phaseIndex), 300);
-    }
-  }, [location.pathname, navigate, completeAll]);
-
   const initDriver = useCallback((phaseIndex: number) => {
     // Clean up previous
     if (driverRef.current) {
@@ -251,6 +246,23 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
 
     const phase = TOUR_PHASES[phaseIndex];
     const isLastPhase = phaseIndex === TOUR_PHASES.length - 1;
+    const hasBridge = !isLastPhase && (phase.bridgeTitle || phase.bridgeDescription);
+
+    // Build steps: phase steps + optional bridge step
+    const allSteps = [...phase.steps];
+
+    if (hasBridge) {
+      const bridgeStep: DriveStep = {
+        ...(phase.bridgeElement ? { element: phase.bridgeElement } : {}),
+        popover: {
+          title: phase.bridgeTitle || "Continue the tour",
+          description: phase.bridgeDescription || "Navigate to the next page to continue.",
+          side: "bottom" as const,
+          align: "center" as const,
+        },
+      };
+      allSteps.push(bridgeStep);
+    }
 
     const d = driver({
       showProgress: true,
@@ -262,22 +274,20 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       popoverClass: POPOVER_CLASS,
       nextBtnText: "Next →",
       prevBtnText: "← Back",
-      doneBtnText: isLastPhase ? "Finish 🎉" : "Continue →",
+      doneBtnText: isLastPhase ? "Finish 🎉" : "Got it! 👍",
       progressText: `Step {{current}} of {{total}}`,
-      steps: phase.steps,
+      steps: allSteps,
       onDestroyStarted: () => {
-        if (!d.hasNextStep() || d.isLastStep()) {
-          d.destroy();
-          // Move to next phase
-          const next = phaseIndex + 1;
-          if (next < TOUR_PHASES.length) {
-            startPhase(next);
-          } else {
-            completeAll();
-          }
+        d.destroy();
+        driverRef.current = null;
+
+        // Move to next phase — but DON'T navigate, wait for user to click
+        const next = phaseIndex + 1;
+        if (next < TOUR_PHASES.length) {
+          localStorage.setItem(ACTIVE_KEY, "true");
+          localStorage.setItem(STEP_KEY, String(next));
+          // Don't navigate — user clicks the link themselves
         } else {
-          // User clicked X to close
-          d.destroy();
           completeAll();
         }
       },
@@ -285,17 +295,28 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
 
     driverRef.current = d;
     d.drive();
-  }, [completeAll, startPhase]);
+  }, [completeAll]);
 
-  // Auto-start on first seller login
-  useEffect(() => {
-    if (autoStart && userId) {
-      const completed = localStorage.getItem(`${STORAGE_KEY}_${userId}`);
-      if (!completed) {
-        startPhase(0);
-      }
+  const startPhase = useCallback((phaseIndex: number) => {
+    if (phaseIndex >= TOUR_PHASES.length) {
+      completeAll();
+      return;
     }
-  }, [autoStart, userId]);
+
+    const phase = TOUR_PHASES[phaseIndex];
+    phaseRef.current = phaseIndex;
+    localStorage.setItem(ACTIVE_KEY, "true");
+    localStorage.setItem(STEP_KEY, String(phaseIndex));
+
+    // For the first phase (phase 0), navigate if not already there
+    if (phaseIndex === 0 && location.pathname !== phase.route) {
+      navigate(phase.route);
+      setTimeout(() => initDriver(phaseIndex), 600);
+    } else if (location.pathname === phase.route) {
+      setTimeout(() => initDriver(phaseIndex), 300);
+    }
+    // Otherwise don't navigate — the resume logic will handle it when user arrives
+  }, [location.pathname, navigate, completeAll, initDriver]);
 
   // Resume across navigation
   useEffect(() => {
@@ -309,12 +330,21 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
         setTimeout(() => initDriver(phaseIndex), 400);
       }
     }
-  }, [location.pathname]);
+  }, [location.pathname, initDriver]);
+
+  // Auto-start on first seller login
+  useEffect(() => {
+    if (autoStart && userId) {
+      const completed = localStorage.getItem(`${STORAGE_KEY}_${userId}`);
+      if (!completed) {
+        startPhase(0);
+      }
+    }
+  }, [autoStart, userId]);
 
   // Start tutorial via event
   useEffect(() => {
     const handler = () => {
-      // Clear completion so it runs again
       if (userId) localStorage.removeItem(`${STORAGE_KEY}_${userId}`);
       startPhase(0);
     };
@@ -329,7 +359,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     };
   }, []);
 
-  return null; // Driver.js manages its own DOM
+  return null;
 };
 
 export default SellerTutorial;
