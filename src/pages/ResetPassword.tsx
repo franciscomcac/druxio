@@ -72,7 +72,7 @@ const ResetPassword = () => {
         <CardHeader className="text-center">
           <Link to="/" className="inline-flex items-center justify-center mb-4">
             <span className="text-2xl font-bold text-foreground">
-              Dux<Zap className="inline h-5 w-5 text-primary fill-primary -mx-0.5" />o
+              Dux<Zap className="inline h-5 w-5 -mx-0.5" style={{ color: 'hsl(188 100% 48%)', fill: 'hsl(188 100% 48%)' }} />o
             </span>
           </Link>
           <CardTitle className="text-2xl">Set new password</CardTitle>

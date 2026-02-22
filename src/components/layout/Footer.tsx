@@ -31,7 +31,7 @@ const Footer = () => {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
             <Link to="/" className="mb-5 flex items-center">
-              <span className="text-xl font-bold text-foreground">Dux<Zap className="inline h-4 w-4 text-primary fill-primary -mx-0.5" />o</span>
+              <span className="text-xl font-bold text-foreground">Dux<Zap className="inline h-4 w-4 -mx-0.5" style={{ color: 'hsl(188 100% 48%)', fill: 'hsl(188 100% 48%)' }} />o</span>
             </Link>
             <p className="mb-6 max-w-xs text-sm text-muted-foreground leading-relaxed">
               Real-time micro-tasks platform. Post what you need, get expert quotes in seconds.
