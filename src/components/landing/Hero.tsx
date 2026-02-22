@@ -145,7 +145,7 @@ const Hero = () => {
           >
             <div className="rounded-sm border border-border bg-card/90 backdrop-blur-sm p-3.5 shadow-md">
               <div className="flex items-center justify-between mb-2">
-                <Badge variant="outline" className="text-[9px] border-primary/20 text-primary/70 rounded-sm px-1.5 py-0">{task.category}</Badge>
+                <Badge variant="outline" className="text-[9px] rounded-sm px-1.5 py-0" style={{ borderColor: 'hsl(230 60% 60% / 0.4)', color: 'hsl(230 60% 70%)' }}>{task.category}</Badge>
                 <span className="text-xs font-bold text-foreground">{task.budget}</span>
               </div>
               <p className="text-xs font-medium text-foreground/80 mb-2 leading-snug">{task.title}</p>
@@ -176,8 +176,8 @@ const Hero = () => {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 opacity-75" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
             </span>
-            <span className="text-primary font-bold">{stats.expertsOnline} experts</span>
-            <span className="text-muted-foreground">online right now</span>
+            <span className="font-bold" style={{ color: 'hsl(188 100% 48%)' }}>{stats.expertsOnline} experts</span>
+            <span className="text-foreground/70">online right now</span>
           </div>
 
           <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl leading-[1.05] animate-fade-in [animation-delay:100ms]">
@@ -187,7 +187,7 @@ const Hero = () => {
             </span>
           </h1>
 
-          <p className="mb-10 text-lg md:text-xl text-muted-foreground max-w-xl mx-auto leading-relaxed animate-fade-in [animation-delay:200ms]">
+          <p className="mb-10 text-lg md:text-xl text-foreground/60 max-w-xl mx-auto leading-relaxed animate-fade-in [animation-delay:200ms]">
             Describe what you need. Verified experts compete with fixed-price quotes in under 2 minutes.
           </p>
 
