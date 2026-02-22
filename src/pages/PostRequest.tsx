@@ -259,7 +259,7 @@ const PostRequest = () => {
   const { toast } = useToast();
   const { checkContent } = useModeration();
 
-  const [wizardStep, setWizardStep] = useState<"auto-match" | "category" | "subcategory" | "ai-refine" | "details" | "waiting" | "matching">("category");
+  const [wizardStep, setWizardStep] = useState<"choose-method" | "auto-match" | "category" | "subcategory" | "ai-refine" | "details" | "waiting" | "matching">("choose-method");
   const [autoMatchLoading, setAutoMatchLoading] = useState(false);
   const [autoMatchResult, setAutoMatchResult] = useState<{ title: string; description: string; category: string; broad_category: string; clarifying_note: string } | null>(null);
   const autoMatchTriggered = useRef(false);
@@ -363,6 +363,9 @@ const PostRequest = () => {
       autoMatchTriggered.current = true;
       setWizardStep("auto-match");
       triggerAutoMatch(searchParams.get("title")!.trim());
+    } else {
+      // No params — show the choose-method screen
+      setWizardStep("choose-method");
     }
   }, []);
 
@@ -555,7 +558,9 @@ const PostRequest = () => {
   };
 
   const handleBack = () => {
-    if (wizardStep === "auto-match") { setAutoMatchResult(null); setWizardStep("category"); }
+    if (wizardStep === "choose-method") navigate("/");
+    else if (wizardStep === "auto-match") { setAutoMatchResult(null); setUserIdea(""); setWizardStep("choose-method"); }
+    else if (wizardStep === "category") setWizardStep("choose-method");
     else if (wizardStep === "subcategory") setWizardStep("category");
     else if (wizardStep === "ai-refine") {
       setAiResult(null);
@@ -786,7 +791,7 @@ const PostRequest = () => {
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
   const progressPercent = ((180 - timeLeft) / 180) * 100;
 
-  const stepNumber = wizardStep === "auto-match" ? 1 : wizardStep === "category" ? 1 : wizardStep === "subcategory" ? 2 : wizardStep === "ai-refine" ? 2 : wizardStep === "details" ? 3 : 3;
+  const stepNumber = wizardStep === "choose-method" ? 0 : wizardStep === "auto-match" ? 1 : wizardStep === "category" ? 1 : wizardStep === "subcategory" ? 2 : wizardStep === "ai-refine" ? 2 : wizardStep === "details" ? 3 : 3;
   const totalSteps = 3;
 
   return (
@@ -794,7 +799,7 @@ const PostRequest = () => {
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-4xl">
 
         {/* Step indicator for wizard steps */}
-        {wizardStep !== "waiting" && wizardStep !== "auto-match" && (
+        {wizardStep !== "waiting" && wizardStep !== "auto-match" && wizardStep !== "choose-method" && (
           <div className="mx-auto max-w-3xl mb-8 animate-fade-in">
             <Button variant="ghost" className="mb-4 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]" onClick={handleBack}>
               <ArrowLeft className="h-4 w-4" /> Back
@@ -819,20 +824,117 @@ const PostRequest = () => {
             </div>
           </div>
         )}
+        {/* Choose method: AI or Manual */}
+        {wizardStep === "choose-method" && (
+          <div className="mx-auto max-w-2xl animate-fade-in">
+            <Button variant="ghost" className="mb-6 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]" onClick={() => navigate("/")}>
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
 
+            <div className="mb-10 text-center">
+              <h1 className="mb-3 text-3xl font-bold text-foreground">How would you like to start?</h1>
+              <p className="text-muted-foreground text-lg">Choose your preferred way to post a task.</p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* AI Auto-Match Option */}
+              <button
+                onClick={() => {
+                  setWizardStep("auto-match");
+                }}
+                className="group relative flex flex-col items-start gap-4 rounded-xl border border-primary/30 bg-primary/[0.04] p-6 text-left transition-all duration-300 hover:border-primary/60 hover:bg-primary/[0.08] hover:-translate-y-1"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform duration-300 group-hover:scale-110">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground mb-1">AI Auto-Match</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Describe what you need in your own words and AI will find the best category, refine your title, and write a description for you.
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1">
+                  <Sparkles className="h-3 w-3 text-primary" />
+                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Recommended</span>
+                </div>
+              </button>
+
+              {/* Manual Pick Option */}
+              <button
+                onClick={() => setWizardStep("category")}
+                className="group relative flex flex-col items-start gap-4 rounded-xl border border-border bg-card p-6 text-left transition-all duration-300 hover:border-primary/40 hover:bg-card/80 hover:-translate-y-1"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-muted-foreground transition-transform duration-300 group-hover:scale-110 group-hover:text-foreground">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-foreground mb-1">Pick Category Manually</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Browse through categories yourself and choose the exact specialty you need help with.
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        
         {/* Auto-match: AI detecting category from title */}
         {wizardStep === "auto-match" && (
           <div className="mx-auto max-w-2xl animate-fade-in">
+            <Button variant="ghost" className="mb-6 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]" onClick={handleBack}>
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
+
             <div className="mb-8 text-center">
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 mb-6">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <span className="text-sm font-semibold text-primary uppercase tracking-wider">AI Powered</span>
               </div>
-              <h1 className="mb-3 text-3xl font-bold text-foreground">Finding the right category...</h1>
-              <p className="text-muted-foreground">
-                Based on: <span className="text-foreground font-medium">"{title}"</span>
-              </p>
+              <h1 className="mb-3 text-3xl font-bold text-foreground">
+                {autoMatchLoading ? "Finding the right category..." : autoMatchResult ? "Here's what AI found" : "What do you need help with?"}
+              </h1>
+              {!autoMatchLoading && !autoMatchResult && (
+                <p className="text-muted-foreground">Describe your task and AI will handle the rest.</p>
+              )}
+              {(autoMatchLoading || autoMatchResult) && title && (
+                <p className="text-muted-foreground">
+                  Based on: <span className="text-foreground font-medium">"{title}"</span>
+                </p>
+              )}
             </div>
+
+            {/* Input form — shown when no auto-match is running or completed */}
+            {!autoMatchLoading && !autoMatchResult && (
+              <div className="space-y-4 animate-fade-in">
+                <Textarea
+                  value={userIdea}
+                  onChange={(e) => setUserIdea(e.target.value)}
+                  placeholder='e.g. "I need someone to fix my Minecraft server lag" or "Design a logo for my startup"'
+                  className="min-h-[120px] text-base resize-none"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && userIdea.trim()) {
+                      e.preventDefault();
+                      setTitle(userIdea.trim());
+                      triggerAutoMatch(userIdea.trim());
+                    }
+                  }}
+                />
+                <Button
+                  onClick={() => {
+                    if (userIdea.trim()) {
+                      setTitle(userIdea.trim());
+                      triggerAutoMatch(userIdea.trim());
+                    }
+                  }}
+                  disabled={!userIdea.trim()}
+                  className="w-full gap-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Let AI find the best match
+                </Button>
+              </div>
+            )}
 
             {autoMatchLoading && (
               <Card className="border-primary/20 bg-card/60 backdrop-blur-xl">
