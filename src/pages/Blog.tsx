@@ -46,14 +46,14 @@ const Blog = () => {
       {/* Hero */}
       <div className="border-b border-border bg-card/50">
         <div className="container mx-auto px-4 py-14 max-w-4xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-4 animate-fade-in">
             <Zap className="h-3 w-3 fill-primary" />
             Duxio Blog
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight animate-fade-in" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
             Stories, updates, and insights
           </h1>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto animate-fade-in" style={{ animationDelay: "200ms", animationFillMode: "both" }}>
             Thoughts on the future of on-demand expertise, platform updates, and how people are using Duxio to get unstuck.
           </p>
         </div>
@@ -62,8 +62,8 @@ const Blog = () => {
       <main className="container mx-auto px-4 py-12 max-w-4xl">
 
         {/* Featured post */}
-        <Link to={`/blog/${featured.slug}`} className="group block mb-10">
-          <Card className="overflow-hidden border-border hover:border-primary/30 transition-colors">
+        <Link to={`/blog/${featured.slug}`} className="group block mb-10 animate-fade-in" style={{ animationDelay: "300ms", animationFillMode: "both" }}>
+          <Card className="overflow-hidden border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
             {featured.coverImage && (
               <img
                 src={featured.coverImage}
@@ -103,9 +103,9 @@ const Blog = () => {
 
         {/* Remaining posts */}
         <div className="grid md:grid-cols-2 gap-5">
-          {rest.map((post) => (
-            <Link key={post.slug} to={`/blog/${post.slug}`} className="group block">
-              <Card className="h-full overflow-hidden border-border hover:border-primary/30 transition-colors">
+          {rest.map((post, i) => (
+            <Link key={post.slug} to={`/blog/${post.slug}`} className="group block animate-fade-in" style={{ animationDelay: `${400 + i * 100}ms`, animationFillMode: "both" }}>
+              <Card className="h-full overflow-hidden border-border hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                 {post.coverImage && (
                   <img
                     src={post.coverImage}
