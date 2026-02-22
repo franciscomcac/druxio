@@ -138,7 +138,7 @@ const HowItWorks = () => {
                   }`}>
                     {/* Step number + icon row */}
                     <div className="flex items-center gap-4 mb-5">
-                      <span className="text-4xl font-bold text-primary/50 select-none font-mono">
+                      <span className="text-4xl font-bold text-foreground select-none font-mono">
                         0{index + 1}
                       </span>
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/[0.08] text-primary transition-transform duration-500 group-hover:scale-110 group-hover:bg-primary/[0.12]">
