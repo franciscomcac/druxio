@@ -173,8 +173,8 @@ const Hero = () => {
           {/* Live badge */}
           <div className="mb-8 inline-flex items-center gap-2 border border-border bg-card/40 px-4 py-2 rounded-sm text-sm animate-fade-in">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" style={{ backgroundColor: 'hsl(188 100% 48% / 0.6)' }} />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full" style={{ backgroundColor: 'hsl(188 100% 48%)' }} />
             </span>
             <span className="font-bold" style={{ color: 'hsl(188 100% 48%)' }}>{stats.expertsOnline} experts</span>
             <span className="text-foreground/70">online right now</span>
