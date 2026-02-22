@@ -910,7 +910,7 @@ const PostRequest = () => {
                 <Textarea
                   value={userIdea}
                   onChange={(e) => setUserIdea(e.target.value)}
-                  placeholder='e.g. "I need someone to fix my Minecraft server lag" or "Design a logo for my startup"'
+                  placeholder='e.g. "Fix a React login bug that redirects to a blank page" or "Boost my Minecraft account from Silver to Diamond rank"'
                   className="min-h-[120px] text-base resize-none"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey && userIdea.trim()) {
