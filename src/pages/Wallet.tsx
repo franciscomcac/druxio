@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBalance } from "@/hooks/use-balance";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -239,24 +240,38 @@ const Wallet = () => {
                 <TabsTrigger value="withdrawals" className="text-xs">Withdrawals ({filterByType(["withdrawal"]).length})</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="all" className="space-y-2">
-                {transactions.length === 0 ? renderEmptyState("No transactions yet") : transactions.map((tx, i) => renderTransaction(tx, i))}
-              </TabsContent>
-              <TabsContent value="earnings" className="space-y-2">
-                {filterByType(["session_earning"]).length === 0 ? renderEmptyState("No earnings yet") : filterByType(["session_earning"]).map((tx, i) => renderTransaction(tx, i))}
-              </TabsContent>
-              <TabsContent value="payments" className="space-y-2">
-                {filterByType(["session_payment"]).length === 0 ? renderEmptyState("No payments yet") : filterByType(["session_payment"]).map((tx, i) => renderTransaction(tx, i))}
-              </TabsContent>
-              <TabsContent value="refunds" className="space-y-2">
-                {filterByType(["refund"]).length === 0 ? renderEmptyState("No refunds yet") : filterByType(["refund"]).map((tx, i) => renderTransaction(tx, i))}
-              </TabsContent>
-              <TabsContent value="deposits" className="space-y-2">
-                {filterByType(["deposit"]).length === 0 ? renderEmptyState("No top-ups yet") : filterByType(["deposit"]).map((tx, i) => renderTransaction(tx, i))}
-              </TabsContent>
-              <TabsContent value="withdrawals" className="space-y-2">
-                {filterByType(["withdrawal"]).length === 0 ? renderEmptyState("No withdrawals yet") : filterByType(["withdrawal"]).map((tx, i) => renderTransaction(tx, i))}
-              </TabsContent>
+              {["all", "earnings", "payments", "refunds", "deposits", "withdrawals"].map((tab) => {
+                const typeMap: Record<string, string[]> = {
+                  all: [],
+                  earnings: ["session_earning"],
+                  payments: ["session_payment"],
+                  refunds: ["refund"],
+                  deposits: ["deposit"],
+                  withdrawals: ["withdrawal"],
+                };
+                const emptyMap: Record<string, string> = {
+                  all: "No transactions yet",
+                  earnings: "No earnings yet",
+                  payments: "No payments yet",
+                  refunds: "No refunds yet",
+                  deposits: "No top-ups yet",
+                  withdrawals: "No withdrawals yet",
+                };
+                const items = tab === "all" ? transactions : filterByType(typeMap[tab]);
+                return (
+                  <TabsContent key={tab} value={tab}>
+                    {items.length === 0 ? (
+                      renderEmptyState(emptyMap[tab])
+                    ) : (
+                      <ScrollArea className="h-[400px] pr-3">
+                        <div className="space-y-2">
+                          {items.map((tx, i) => renderTransaction(tx, i))}
+                        </div>
+                      </ScrollArea>
+                    )}
+                  </TabsContent>
+                );
+              })}
             </Tabs>
           </CardContent>
         </Card>
