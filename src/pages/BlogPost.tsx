@@ -176,7 +176,7 @@ const BlogPost = () => {
 
       {/* Cover Image */}
       {post.coverImage && (
-        <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full max-w-4xl mx-auto animate-fade-in">
           <img
             src={post.coverImage}
             alt={post.title}
@@ -189,7 +189,7 @@ const BlogPost = () => {
       {/* Article */}
       <article className="container mx-auto px-4 py-12 max-w-3xl">
         <header className="mb-10">
-          <div className="flex items-center gap-3 mb-5 flex-wrap">
+          <div className="flex items-center gap-3 mb-5 flex-wrap animate-fade-in" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
             <Badge className={cn("text-xs border", categoryColor[post.category] ?? "bg-muted text-muted-foreground")}>
               {post.category}
             </Badge>
@@ -199,15 +199,15 @@ const BlogPost = () => {
             <span className="text-xs text-muted-foreground">{post.date}</span>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-5">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight mb-5 animate-fade-in" style={{ animationDelay: "200ms", animationFillMode: "both" }}>
             {post.title}
           </h1>
 
-          <p className="text-lg text-muted-foreground leading-relaxed mb-7 border-l-2 border-primary/30 pl-4">
+          <p className="text-lg text-muted-foreground leading-relaxed mb-7 border-l-2 border-primary/30 pl-4 animate-fade-in" style={{ animationDelay: "300ms", animationFillMode: "both" }}>
             {post.excerpt}
           </p>
 
-          <div className="flex items-center gap-3 py-4 border-y border-border">
+          <div className="flex items-center gap-3 py-4 border-y border-border animate-fade-in" style={{ animationDelay: "400ms", animationFillMode: "both" }}>
             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
               <Zap className="h-4 w-4 text-primary fill-primary" />
             </div>
@@ -218,11 +218,11 @@ const BlogPost = () => {
           </div>
         </header>
 
-        <div className="prose-like">
+        <div className="prose-like animate-fade-in" style={{ animationDelay: "500ms", animationFillMode: "both" }}>
           {renderContent(post.content)}
         </div>
 
-        <div className="mt-14 rounded-xl border border-primary/20 bg-primary/5 p-7 text-center">
+        <div className="mt-14 rounded-xl border border-primary/20 bg-primary/5 p-7 text-center animate-fade-in" style={{ animationDelay: "600ms", animationFillMode: "both" }}>
           <div className="inline-flex items-center gap-1.5 text-primary font-semibold text-lg mb-2">
             Ready to get expert help? <Zap className="h-4 w-4 fill-primary" />
           </div>
