@@ -130,7 +130,7 @@ const Auth = () => {
       <Card className="w-full max-w-md relative z-10">
         <CardHeader className="text-center">
           <Link to="/" className="inline-flex items-center justify-center mb-4">
-            <span className="text-2xl font-bold text-foreground">Dux<Zap className="inline h-5 w-5 text-primary fill-primary -mx-0.5" />o</span>
+            <span className="text-2xl font-bold text-foreground">Dux<Zap className="inline h-5 w-5 -mx-0.5" style={{ color: 'hsl(188 100% 48%)', fill: 'hsl(188 100% 48%)' }} />o</span>
           </Link>
 
           {forgotOpen ? (
