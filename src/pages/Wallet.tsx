@@ -19,7 +19,6 @@ import {
   TrendingUp,
   TrendingDown,
   RefreshCw,
-  DollarSign,
   PiggyBank,
 } from "lucide-react";
 import WithdrawalDialog from "@/components/wallet/WithdrawalDialog";
@@ -92,23 +91,27 @@ const Wallet = () => {
   const filterByType = (types: string[]) =>
     transactions.filter(t => types.includes(t.type));
 
-  const renderTransaction = (tx: Transaction) => (
-    <div key={tx.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card">
+  const renderTransaction = (tx: Transaction, index: number) => (
+    <div
+      key={tx.id}
+      className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-200 animate-fade-in"
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
       <div className="flex items-center gap-4">
-        <div className="p-2 rounded-full bg-accent">{getTransactionIcon(tx.type)}</div>
+        <div className="p-2.5 rounded-lg bg-accent/60">{getTransactionIcon(tx.type)}</div>
         <div>
           <p className="font-medium text-foreground text-sm">{tx.description}</p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0">{typeLabels[tx.type] || tx.type}</Badge>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border/40">{typeLabels[tx.type] || tx.type}</Badge>
             <span className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</span>
           </div>
         </div>
       </div>
       <div className="text-right">
-        <p className={`font-semibold ${isIncome(tx.type) ? "text-chart-2" : "text-destructive"}`}>
-          {isIncome(tx.type) ? "+" : "-"}{format(tx.amount)}
+        <p className={`font-semibold text-sm ${isIncome(tx.type) ? "text-chart-2" : "text-destructive"}`}>
+          {isIncome(tx.type) ? "+" : "−"}{format(tx.amount)}
         </p>
-        <Badge variant={tx.status === "completed" ? "secondary" : tx.status === "pending" ? "outline" : "destructive"} className="text-[10px]">
+        <Badge variant={tx.status === "completed" ? "secondary" : tx.status === "pending" ? "outline" : "destructive"} className="text-[10px] mt-0.5">
           {tx.status}
         </Badge>
       </div>
@@ -116,8 +119,10 @@ const Wallet = () => {
   );
 
   const renderEmptyState = (message: string) => (
-    <div className="text-center py-12 text-muted-foreground">
-      <WalletIcon className="h-10 w-10 mx-auto mb-3 opacity-40" />
+    <div className="text-center py-16 text-muted-foreground animate-fade-in">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent/40 flex items-center justify-center">
+        <WalletIcon className="h-7 w-7 opacity-40" />
+      </div>
       <p className="text-sm">{message}</p>
     </div>
   );
@@ -130,110 +135,102 @@ const Wallet = () => {
     );
   }
 
+  const statCards = [
+    { label: "Earned", value: totalEarned, icon: TrendingUp, color: "text-chart-2" },
+    { label: "Spent", value: totalSpent, icon: TrendingDown, color: "text-destructive" },
+    { label: "Refunded", value: totalRefunded, icon: RefreshCw, color: "text-primary" },
+    { label: "Deposited", value: totalDeposited, icon: PiggyBank, color: "text-chart-2" },
+  ];
+
+  const infoCards = [
+    { icon: CreditCard, title: "Pay When You Confirm", desc: "Charged only after accepting a quote." },
+    { icon: ShieldCheck, title: "Escrow Protection", desc: "Funds held until delivery is confirmed." },
+    { icon: Receipt, title: "Transparent Fees", desc: "Buyers: 5% + processing. Sellers: 5% payout. PayPal: +2% (max €1)." },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
-      
-      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-4xl">
-        {/* Balance Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 flex items-center gap-2">
-            <DollarSign className="h-7 w-7 text-primary" /> Balance
-          </h1>
-          <p className="text-muted-foreground text-sm">All your earnings, payments, and refunds in one place.</p>
-        </div>
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-4xl">
 
-        {/* Main Balance Card */}
-        <Card className="border-primary/30 bg-primary/[0.04] mb-6">
-          <CardContent className="p-6 sm:p-8 text-center">
-            <p className="text-sm text-muted-foreground mb-1">Available Balance</p>
-            <p className="text-4xl sm:text-5xl font-bold text-foreground">{format(balance)}</p>
-            <p className="text-xs text-muted-foreground mt-2">All earnings, refunds & top-ups minus payments</p>
-            <Button className="mt-4 gap-2 w-full sm:w-auto" onClick={() => setWithdrawOpen(true)} disabled={balance <= 0}>
-              <ArrowUpRight className="h-4 w-4" /> Withdraw
+        {/* ── Hero balance section ── */}
+        <div className="relative mb-10 animate-fade-in">
+          {/* Decorative glow */}
+          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full bg-primary/[0.06] blur-[100px] pointer-events-none" />
+
+          <div className="relative text-center py-10 sm:py-14">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-6">
+              <WalletIcon className="h-4 w-4 text-primary" />
+              <span className="text-xs font-medium text-primary">Your Wallet</span>
+            </div>
+
+            <p className="text-sm text-muted-foreground mb-2">Available Balance</p>
+            <p className="text-5xl sm:text-6xl font-extrabold text-foreground tracking-tight mb-2">
+              {format(balance)}
+            </p>
+            <p className="text-xs text-muted-foreground mb-6">Earnings + refunds + top-ups − payments − withdrawals</p>
+
+            <Button
+              size="lg"
+              className="gap-2 px-8 rounded-lg font-bold"
+              onClick={() => setWithdrawOpen(true)}
+              disabled={balance <= 0}
+            >
+              <ArrowUpRight className="h-4 w-4" /> Withdraw Funds
             </Button>
-          </CardContent>
-        </Card>
-
-        {/* Stats Grid */}
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-4 mb-8">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="h-4 w-4 text-chart-2" />
-                <p className="text-xs text-muted-foreground">Earned</p>
-              </div>
-              <p className="text-xl font-bold text-foreground">{format(totalEarned)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingDown className="h-4 w-4 text-destructive" />
-                <p className="text-xs text-muted-foreground">Spent</p>
-              </div>
-              <p className="text-xl font-bold text-foreground">{format(totalSpent)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <RefreshCw className="h-4 w-4 text-primary" />
-                <p className="text-xs text-muted-foreground">Refunded</p>
-              </div>
-              <p className="text-xl font-bold text-foreground">{format(totalRefunded)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <PiggyBank className="h-4 w-4 text-chart-2" />
-                <p className="text-xs text-muted-foreground">Deposited</p>
-              </div>
-              <p className="text-xl font-bold text-foreground">{format(totalDeposited)}</p>
-            </CardContent>
-          </Card>
+          </div>
         </div>
 
-        {/* How it works */}
-        <div className="grid gap-4 md:grid-cols-3 mb-8">
-          <Card className="border-border">
-            <CardContent className="p-4 flex items-start gap-3">
-              <CreditCard className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-foreground text-sm">Pay When You Confirm</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Charged only after accepting a quote.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4 flex items-start gap-3">
-              <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-foreground text-sm">Escrow Protection</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Funds held until delivery is confirmed.</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-4 flex items-start gap-3">
-              <Receipt className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-foreground text-sm">Transparent Fees</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Buyers: 5% platform + PayPal processing. Sellers: 5% payout fee. PayPal withdrawal: +2% (max €1).</p>
-              </div>
-            </CardContent>
-          </Card>
+        {/* ── Stats grid ── */}
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mb-10">
+          {statCards.map((stat, i) => (
+            <Card
+              key={stat.label}
+              className="border-border/50 bg-card/60 backdrop-blur-sm animate-fade-in"
+              style={{ animationDelay: `${100 + i * 80}ms` }}
+            >
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 rounded-md bg-accent/60">
+                    <stat.icon className={`h-3.5 w-3.5 ${stat.color}`} />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
+                </div>
+                <p className="text-xl sm:text-2xl font-bold text-foreground">{format(stat.value)}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Transaction History with Tabs */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Transaction History</CardTitle>
+        {/* ── Info cards ── */}
+        <div className="grid gap-3 md:grid-cols-3 mb-10">
+          {infoCards.map((card, i) => (
+            <Card
+              key={card.title}
+              className="border-border/40 bg-card/40 backdrop-blur-sm animate-fade-in"
+              style={{ animationDelay: `${400 + i * 80}ms` }}
+            >
+              <CardContent className="p-4 flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-primary/10 shrink-0">
+                  <card.icon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-foreground text-sm">{card.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{card.desc}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* ── Transaction History ── */}
+        <Card className="border-border/50 bg-card/60 backdrop-blur-sm animate-fade-in" style={{ animationDelay: "650ms" }}>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg">Transaction History</CardTitle>
             <CardDescription>All your financial activity</CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all" className="space-y-4">
-              <TabsList className="bg-background/60 border border-border flex-wrap h-auto gap-1 p-1">
+              <TabsList className="bg-accent/40 border border-border/40 flex-wrap h-auto gap-1 p-1">
                 <TabsTrigger value="all" className="text-xs">All ({transactions.length})</TabsTrigger>
                 <TabsTrigger value="earnings" className="text-xs">Earnings ({filterByType(["session_earning"]).length})</TabsTrigger>
                 <TabsTrigger value="payments" className="text-xs">Payments ({filterByType(["session_payment"]).length})</TabsTrigger>
@@ -242,23 +239,23 @@ const Wallet = () => {
                 <TabsTrigger value="withdrawals" className="text-xs">Withdrawals ({filterByType(["withdrawal"]).length})</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="all" className="space-y-3">
-                {transactions.length === 0 ? renderEmptyState("No transactions yet") : transactions.map(renderTransaction)}
+              <TabsContent value="all" className="space-y-2">
+                {transactions.length === 0 ? renderEmptyState("No transactions yet") : transactions.map((tx, i) => renderTransaction(tx, i))}
               </TabsContent>
-              <TabsContent value="earnings" className="space-y-3">
-                {filterByType(["session_earning"]).length === 0 ? renderEmptyState("No earnings yet") : filterByType(["session_earning"]).map(renderTransaction)}
+              <TabsContent value="earnings" className="space-y-2">
+                {filterByType(["session_earning"]).length === 0 ? renderEmptyState("No earnings yet") : filterByType(["session_earning"]).map((tx, i) => renderTransaction(tx, i))}
               </TabsContent>
-              <TabsContent value="payments" className="space-y-3">
-                {filterByType(["session_payment"]).length === 0 ? renderEmptyState("No payments yet") : filterByType(["session_payment"]).map(renderTransaction)}
+              <TabsContent value="payments" className="space-y-2">
+                {filterByType(["session_payment"]).length === 0 ? renderEmptyState("No payments yet") : filterByType(["session_payment"]).map((tx, i) => renderTransaction(tx, i))}
               </TabsContent>
-              <TabsContent value="refunds" className="space-y-3">
-                {filterByType(["refund"]).length === 0 ? renderEmptyState("No refunds yet") : filterByType(["refund"]).map(renderTransaction)}
+              <TabsContent value="refunds" className="space-y-2">
+                {filterByType(["refund"]).length === 0 ? renderEmptyState("No refunds yet") : filterByType(["refund"]).map((tx, i) => renderTransaction(tx, i))}
               </TabsContent>
-              <TabsContent value="deposits" className="space-y-3">
-                {filterByType(["deposit"]).length === 0 ? renderEmptyState("No top-ups yet") : filterByType(["deposit"]).map(renderTransaction)}
+              <TabsContent value="deposits" className="space-y-2">
+                {filterByType(["deposit"]).length === 0 ? renderEmptyState("No top-ups yet") : filterByType(["deposit"]).map((tx, i) => renderTransaction(tx, i))}
               </TabsContent>
-              <TabsContent value="withdrawals" className="space-y-3">
-                {filterByType(["withdrawal"]).length === 0 ? renderEmptyState("No withdrawals yet") : filterByType(["withdrawal"]).map(renderTransaction)}
+              <TabsContent value="withdrawals" className="space-y-2">
+                {filterByType(["withdrawal"]).length === 0 ? renderEmptyState("No withdrawals yet") : filterByType(["withdrawal"]).map((tx, i) => renderTransaction(tx, i))}
               </TabsContent>
             </Tabs>
           </CardContent>
@@ -271,7 +268,6 @@ const Wallet = () => {
           onSuccess={() => { refetchBalance(); loadTransactions(); }}
         />
       </main>
-      
     </div>
   );
 };
