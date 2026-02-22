@@ -51,15 +51,15 @@ The flow is straightforward:
 - **AI analyses your input** and returns the best-matching category, a refined professional title, and a suggested description
 - **Review and confirm** — accept the suggestion to proceed directly to the details step, or reject it and pick a category yourself
 
-The entire process takes about ten seconds. Behind the scenes, we use a large language model fine-tuned to understand Duxio's full category tree, including niche subcategories like "Escape from Tarkov quest help" or "Discord bot development" or "Podcast editing and distribution."
+The entire process takes about ten seconds. Behind the scenes, we use a large language model fine-tuned to understand Duxio's full category tree, including niche subcategories like "SEO audit and keyword strategy" or "Podcast editing and distribution" or "UI/UX design review."
 
 ## What the AI Actually Does
 
-When you type something like "I need someone to fix my Minecraft server lag", the AI:
+When you type something like "I need someone to review my pitch deck before a meeting tomorrow", the AI:
 
-- **Identifies the broad category** — Gaming
-- **Selects the specific subcategory** — Gaming: Minecraft
-- **Rewrites the title** to be clear and professional — "Fix Minecraft Server TPS/Lag Issues"
+- **Identifies the broad category** — Business
+- **Selects the specific subcategory** — Business: Startup
+- **Rewrites the title** to be clear and professional — "Pitch Deck Review and Feedback Before Investor Meeting"
 - **Generates a description** that gives experts enough context to quote accurately
 - **Adds a clarifying note** explaining why it chose that category
 
