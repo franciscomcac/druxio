@@ -85,7 +85,7 @@ function renderContent(raw: string) {
       elements.push(
         <ul key={key++} className="my-4 space-y-2">
           {items.map((item, li) => (
-            <li key={li} className="flex items-start gap-2 text-muted-foreground leading-relaxed">
+            <li key={li} className="flex items-start gap-2 text-foreground/80 leading-relaxed">
               <span className="mt-2 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
               <span>{inlineFormat(item)}</span>
             </li>
@@ -95,7 +95,7 @@ function renderContent(raw: string) {
       continue;
     }
 
-    elements.push(<p key={key++} className="text-muted-foreground leading-[1.85] my-4">{inlineFormat(line)}</p>);
+    elements.push(<p key={key++} className="text-foreground/80 leading-[1.85] my-4">{inlineFormat(line)}</p>);
     i++;
   }
 
