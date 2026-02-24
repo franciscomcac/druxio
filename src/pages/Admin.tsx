@@ -1301,7 +1301,7 @@ const Admin = () => {
           <TabsContent value="support">
             <div className="flex flex-col md:flex-row gap-3 sm:gap-4 h-[calc(100vh-280px)] sm:h-[600px]">
               {/* Ticket List */}
-              <div className="w-full md:w-72 shrink-0 flex flex-col gap-3">
+              <div className="w-full md:w-72 shrink-0 flex flex-col gap-2 sm:gap-3 max-h-[200px] md:max-h-none">
                 <div className="flex items-center gap-2">
                   <Select value={supportFilter} onValueChange={setSupportFilter}>
                     <SelectTrigger className="flex-1">
