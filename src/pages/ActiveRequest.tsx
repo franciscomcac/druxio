@@ -987,7 +987,11 @@ const ActiveRequest = () => {
                 </div>
               </ScrollArea>
 
-              {/* Chat input */}
+              {activeConvo && isDemo(activeConvo) ? (
+                <div className="border-t border-border p-3 shrink-0 bg-muted/20">
+                  <p className="text-xs text-center text-muted-foreground">💡 This is a demo — chat is disabled</p>
+                </div>
+              ) : (
               <div className="border-t border-border p-3 shrink-0 bg-card/20">
                 <input type="file" accept="image/*" multiple ref={sellerFileInputRef} className="hidden" onChange={handleSellerImageSelect} />
                 {sellerImagePreviews.length > 0 && (
