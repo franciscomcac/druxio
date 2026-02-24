@@ -1629,7 +1629,7 @@ const ActiveRequest = () => {
               ))}
             </div>
           )}
-          <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex flex-col" style={{ height: "560px" }}>
+          <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex flex-col" style={{ height: isMobile ? "calc(100vh - 420px)" : "560px", minHeight: "300px" }}>
             {selectedQuote && (
               <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-card/60 shrink-0">
                 <Avatar className="h-7 w-7 border border-border">
