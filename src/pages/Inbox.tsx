@@ -38,13 +38,13 @@ interface ConversationItem {
   jobId: string | null;
   jobTitle: string;
   jobCategory: string;
-  jobStatus: string; // open | accepted | completed | delivered
+  jobStatus: string; // open | accepted | completed | delivered | cancelled
   otherUserId: string;
   otherUserName: string;
   otherUserAvatar: string | null;
   otherUserOnline: boolean;
   iAmSeller: boolean;
-  convType: "order" | "quote" | "delivered";
+  convType: "order" | "delivered" | "cancelled";
   lastMessage: string | null;
   lastMessageAt: string | null;
   unreadCount: number;
