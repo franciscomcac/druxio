@@ -74,6 +74,7 @@ const CATEGORY_TREE = [
       { id: "Sales & Outreach", services: ["Cold Outreach", "Lead Generation", "CRM Setup", "Sales Strategy"] },
       { id: "Investing & Crypto", services: ["Portfolio Review", "Crypto Strategy", "DeFi Setup", "Market Analysis"] },
       { id: "HR & Hiring", services: ["Job Posting", "Resume Screening", "Interview Prep", "Onboarding"] },
+      { id: "Custom Request", services: ["Any Business Task", "Unique Request"] },
     ],
   },
   {
