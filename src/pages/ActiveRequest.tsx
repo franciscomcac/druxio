@@ -1013,7 +1013,7 @@ const ActiveRequest = () => {
   const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
   const realQuoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
   const showTutorialDemoConvo = isTutorialActive && !jobId;
-  const quoteConvos = showTutorialDemoConvo ? [...realQuoteConvos, DEMO_CONVO] : realQuoteConvos;
+  const quoteConvos = showTutorialDemoConvo ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
