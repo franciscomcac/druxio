@@ -830,7 +830,7 @@ const PostRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-4xl">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-10 max-w-4xl">
 
         {/* Step indicator for wizard steps */}
         {wizardStep !== "waiting" && wizardStep !== "auto-match" && wizardStep !== "choose-method" && (
