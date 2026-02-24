@@ -163,7 +163,7 @@ This is important to us. Druxio is built for **real human needs across a wide ra
 - **Individuals** seeking guidance in health decisions, personal finance, or career planning
 - **Creators and makers** who need a second pair of eyes on their work
 
-The platform is deliberately category-agnostic. If there's a skill, there's an expert for it on Duxio.
+The platform is deliberately category-agnostic. If there's a skill, there's an expert for it on Druxio.
 
 ## Why Beta?
 
