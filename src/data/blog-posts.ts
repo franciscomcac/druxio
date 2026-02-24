@@ -320,7 +320,7 @@ We believe this is how professional expertise should work: fairly compensated, e
 
 ## What This Looks Like in Practice
 
-On Duxio today, you'll find experts in:
+On Druxio today, you'll find experts in:
 
 - **Finance and investment** — from personal budgeting to startup funding strategy
 - **Legal guidance** — contract review, rights questions, regulatory navigation
