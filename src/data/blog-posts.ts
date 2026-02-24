@@ -304,7 +304,7 @@ Even people with access to experts face another barrier: **time**.
 
 Traditional consulting is structured around the consultant's calendar, not yours. Discovery calls, scoping sessions, proposal reviews, kick-offs — all before any actual work begins.
 
-Duxio is structured around your urgency. Post now. Get quotes now. Start a session now.
+Druxio is structured around your urgency. Post now. Get quotes now. Start a session now.
 
 This isn't just a convenience feature. For the freelancer who needs to unblock a technical issue before a client deadline, the entrepreneur who needs a financial answer before a board call, or the individual who needs clarity on a medical situation — speed is the product.
 
