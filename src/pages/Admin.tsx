@@ -1299,7 +1299,7 @@ const Admin = () => {
 
           {/* ═══ SUPPORT TAB ═══ */}
           <TabsContent value="support">
-            <div className="flex flex-col md:flex-row gap-4 h-[600px]">
+            <div className="flex flex-col md:flex-row gap-3 sm:gap-4 h-[calc(100vh-280px)] sm:h-[600px]">
               {/* Ticket List */}
               <div className="w-full md:w-72 shrink-0 flex flex-col gap-3">
                 <div className="flex items-center gap-2">
