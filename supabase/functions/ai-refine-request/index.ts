@@ -10,14 +10,14 @@ const BROAD_CATEGORIES = [
 ];
 
 const SUBCATEGORIES: Record<string, string[]> = {
-  Gaming: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends", "Roblox", "GTA V / Online", "Overwatch 2", "Rocket League", "Dota 2", "EA FC / FIFA", "Call of Duty", "Rust", "Escape from Tarkov", "World of Warcraft", "Destiny 2", "Dead by Daylight"],
-  Tech: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress", "AI & Automation", "Cybersecurity", "Database & SQL", "Networking & WiFi", "Cloud & DevOps"],
-  Business: ["Marketing", "Startup Advice", "E-commerce", "Accounting", "Analytics & Data", "Sales & Outreach", "Investing & Crypto", "HR & Hiring"],
-  Creative: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails", "Photography", "UI/UX Design", "Illustration", "Copywriting"],
-  Music: ["Production", "Mixing & Mastering", "Guitar Lessons", "Piano Lessons", "Vocal Coaching", "Beat Making", "Songwriting"],
-  Fitness: ["Personal Training", "Nutrition Plans", "Yoga & Mobility", "Weight Loss", "Sports Coaching", "Injury Rehab"],
-  Languages: ["English", "Spanish", "French", "German", "Portuguese", "Arabic", "Chinese", "Japanese", "Korean", "Italian", "Russian", "Hindi", "Dutch", "Turkish", "Translation"],
-  Content: ["Streaming", "YouTube", "TikTok", "Instagram", "Podcasting", "Blogging & SEO Writing", "Community Management"],
+  Gaming: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends", "Roblox", "GTA V / Online", "Overwatch 2", "Rocket League", "Dota 2", "EA FC / FIFA", "Call of Duty", "Rust", "Escape from Tarkov", "World of Warcraft", "Destiny 2", "Dead by Daylight", "Custom Request"],
+  Tech: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress", "AI & Automation", "Cybersecurity", "Database & SQL", "Networking & WiFi", "Cloud & DevOps", "Custom Request"],
+  Business: ["Marketing", "Startup Advice", "E-commerce", "Accounting", "Analytics & Data", "Sales & Outreach", "Investing & Crypto", "HR & Hiring", "Custom Request"],
+  Creative: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails", "Photography", "UI/UX Design", "Illustration", "Copywriting", "Custom Request"],
+  Music: ["Production", "Mixing & Mastering", "Guitar Lessons", "Piano Lessons", "Vocal Coaching", "Beat Making", "Songwriting", "Custom Request"],
+  Fitness: ["Personal Training", "Nutrition Plans", "Yoga & Mobility", "Weight Loss", "Sports Coaching", "Injury Rehab", "Custom Request"],
+  Languages: ["English", "Spanish", "French", "German", "Portuguese", "Arabic", "Chinese", "Japanese", "Korean", "Italian", "Russian", "Hindi", "Dutch", "Turkish", "Translation", "Custom Request"],
+  Content: ["Streaming", "YouTube", "TikTok", "Instagram", "Podcasting", "Blogging & SEO Writing", "Community Management", "Custom Request"],
 };
 
 serve(async (req) => {
