@@ -1098,9 +1098,9 @@ const ActiveRequest = () => {
       <div className="h-[calc(100vh-64px)] bg-background flex overflow-hidden">
 
         {/* ── Left sidebar: quotes list ──────────────────────────────────── */}
-        <div className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
+        <div id="tour-quotes-sidebar" className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <div id="tour-quotes-header" className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/dashboard")}>
                 <ArrowLeft className="h-3.5 w-3.5" />
