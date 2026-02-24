@@ -66,6 +66,7 @@ const MentorProfile = () => {
   const [loading, setLoading] = useState(true);
   const [completedOrders, setCompletedOrders] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useSEO({
     title: mentor ? mentor.display_name : "Expert Profile",
