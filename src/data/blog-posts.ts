@@ -273,7 +273,7 @@ Every one of them is on Druxio because they want to share their expertise effici
       "Geography used to determine who you could get help from. The internet changed communication — but it never truly democratised access to expertise. Until now.",
     date: "February 18, 2026",
     readTime: "4 min read",
-    author: "The Duxio Team",
+    author: "The Druxio Team",
     authorRole: "Founders",
     category: "Insights",
     coverImage: heroExpertiseBorders,
