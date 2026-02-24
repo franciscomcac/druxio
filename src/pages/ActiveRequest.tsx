@@ -781,8 +781,36 @@ const ActiveRequest = () => {
   const chatPartnerName = isBuyer ? selectedQuote?.profile?.display_name || "Expert" : buyerProfile?.display_name || "Buyer";
   const selectedMessages = selectedChatPartnerId ? (chatMessages[selectedChatPartnerId] || []) : [];
 
-  // Filter to pending quotes only
-  const quoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
+  // Demo/tutorial quote — always present, cannot be withdrawn
+  const DEMO_CONVO: SellerConvo = {
+    jobId: "demo-tutorial-quote",
+    jobTitle: "📘 Tutorial: How Quoting Works",
+    jobCategory: "Getting Started",
+    jobStatus: "open",
+    quoteStatus: "pending",
+    buyerId: "demo-buyer",
+    buyerName: "Duxio Team",
+    buyerAvatar: null,
+    buyerRating: 5,
+    buyerTotalSpent: 0,
+    myPrice: 15,
+    myDelivery: 60,
+    myQuoteId: "demo-quote-id",
+    sessionId: null,
+    lastMessage: "Welcome! This is a demo quote to show you how the Quotes Terminal works.",
+    lastMessageAt: new Date().toISOString(),
+    unread: 1,
+    budgetMin: 10,
+    budgetMax: 25,
+    quoteCreatedAt: new Date().toISOString(),
+    deadlineMinutes: 1440,
+  };
+
+  const isDemo = (convo: SellerConvo) => convo.jobId === "demo-tutorial-quote";
+
+  // Filter to pending quotes only + always include demo
+  const realQuoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
+  const quoteConvos = [...realQuoteConvos, DEMO_CONVO];
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
