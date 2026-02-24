@@ -937,14 +937,24 @@ const PostRequest = () => {
                     onChange={(e) => setUserIdea(e.target.value)}
                     className="min-h-[120px] text-base resize-none"
                     placeholder=" "
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey && userIdea.trim()) {
-                      e.preventDefault();
-                      setTitle(userIdea.trim());
-                      triggerAutoMatch(userIdea.trim());
-                    }
-                  }}
-                />
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey && userIdea.trim()) {
+                        e.preventDefault();
+                        setTitle(userIdea.trim());
+                        triggerAutoMatch(userIdea.trim());
+                      }
+                    }}
+                  />
+                  {!userIdea && (
+                    <span
+                      key={placeholderIndex}
+                      className="pointer-events-none absolute left-3 top-[9px] text-base text-muted-foreground/60 animate-fade-in"
+                      style={{ animationDuration: "500ms" }}
+                    >
+                      {ROTATING_PLACEHOLDERS[placeholderIndex]}
+                    </span>
+                  )}
+                </div>
                 <Button
                   onClick={() => {
                     if (userIdea.trim()) {
