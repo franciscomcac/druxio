@@ -114,6 +114,7 @@ const Header = () => {
                     Active Quotes
                   </Button>
                 </Link>
+              )}
             </>
           )}
           {user ? (
