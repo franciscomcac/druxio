@@ -129,7 +129,14 @@ const MentorProfile = () => {
         })));
       }
 
-      setCategories(categoriesRes.data?.map(c => c.category) || []);
+      // Extract unique main categories (second segment, e.g. "Valorant" from "Gaming: Valorant: Boosting")
+      const rawCats = categoriesRes.data?.map(c => c.category) || [];
+      const mainCats = [...new Set(rawCats.map(c => {
+        const parts = c.split(":").map(p => p.trim());
+        // Use second segment if exists (e.g. "Valorant"), otherwise first
+        return parts.length >= 2 ? parts[1] : parts[0];
+      }))];
+      setCategories(mainCats);
       setCompletedOrders(ordersRes.data?.length || 0);
     } catch (error: any) {
       toast({ title: "Error loading profile", description: error.message, variant: "destructive" });
