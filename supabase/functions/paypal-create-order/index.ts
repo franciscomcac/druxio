@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
         purchase_units: [
           {
             reference_id: jobId,
-            description: `Duxio service payment`,
+            description: `Druxio service payment`,
             amount: {
               currency_code: "EUR",
               value: total.toFixed(2),

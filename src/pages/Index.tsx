@@ -8,18 +8,18 @@ import { useSEO } from "@/hooks/use-seo";
 
 const Index = () => {
   useSEO({
-    title: "Duxio — Hire Expert Freelancers with Low Fees",
+    title: "Druxio — Hire Expert Freelancers with Low Fees",
     description: "Post any task, get real-time quotes from verified experts in under 2 minutes. Only 5% marketplace fee — lower than Fiverr or Upwork. Escrow-protected payments.",
     canonical: "/",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "Service",
-      "name": "Duxio Expert Marketplace",
+      "name": "Druxio Expert Marketplace",
       "description": "On-demand freelance marketplace with industry-low 5% fees. Post tasks in tech, business, design, and more — receive real-time quotes from verified experts. Escrow-protected payments and AI-assisted matching.",
       "provider": {
         "@type": "Organization",
-        "name": "Duxio",
-        "url": "https://duxio.lovable.app"
+        "name": "Druxio",
+        "url": "https://druxio.lovable.app"
       },
       "serviceType": "Freelance Expert Marketplace",
       "areaServed": "Worldwide",

@@ -8,15 +8,15 @@ const faqSections = [
     category: "Getting Started",
     items: [
       {
-        q: "What is Duxio?",
-        a: "Duxio is a real-time micro-task marketplace where clients post tasks and verified experts submit quotes within minutes. Unlike traditional freelance platforms, you don't search for an expert — they come to you. Once a quote is accepted, an escrow is created so both sides are protected.",
+        q: "What is Druxio?",
+        a: "Druxio is a real-time micro-task marketplace where clients post tasks and verified experts submit quotes within minutes. Unlike traditional freelance platforms, you don't search for an expert — they come to you. Once a quote is accepted, an escrow is created so both sides are protected.",
       },
       {
-        q: "Who can use Duxio?",
+        q: "Who can use Druxio?",
         a: "Anyone can sign up as a client (buyer) to post tasks. Experts (sellers) go through a short onboarding to set their profile, skills, and hourly rate. Both roles can coexist — you can post tasks and accept tasks with the same account.",
       },
       {
-        q: "Is Duxio free to join?",
+        q: "Is Druxio free to join?",
         a: "Yes. Creating an account and browsing the platform is completely free. Clients only pay when they accept a quote. Experts pay a platform fee (deducted automatically) on completed earnings.",
       },
       {
@@ -58,12 +58,12 @@ const faqSections = [
         a: "We accept major credit/debit cards (Visa, Mastercard, Amex) via Stripe, as well as PayPal. Wallet top-ups can also be used for faster checkout.",
       },
       {
-        q: "What currencies does Duxio support?",
-        a: "Duxio supports EUR, USD, GBP, CAD, AUD, CHF, and more. Your display currency can be changed in Settings → Currency. All transactions are processed securely via Stripe.",
+        q: "What currencies does Druxio support?",
+        a: "Druxio supports EUR, USD, GBP, CAD, AUD, CHF, and more. Your display currency can be changed in Settings → Currency. All transactions are processed securely via Stripe.",
       },
       {
         q: "What is the platform fee?",
-        a: "Duxio charges a service fee on completed transactions. For clients, this is included in the quoted price. For experts, a percentage is deducted from each earned payment. Exact fee rates are shown before you confirm any transaction.",
+        a: "Druxio charges a service fee on completed transactions. For clients, this is included in the quoted price. For experts, a percentage is deducted from each earned payment. Exact fee rates are shown before you confirm any transaction.",
       },
       {
         q: "How do I withdraw my earnings?",
@@ -75,7 +75,7 @@ const faqSections = [
     category: "For Experts",
     items: [
       {
-        q: "How do I become an expert on Duxio?",
+        q: "How do I become an expert on Druxio?",
         a: "Sign up, then complete the Expert Onboarding (accessible from your dashboard). You'll set your skills, hourly rate, availability, and add portfolio items. Once complete, you'll start receiving relevant task notifications.",
       },
       {
@@ -88,7 +88,7 @@ const faqSections = [
       },
       {
         q: "Can I set my availability?",
-        a: "Yes. In Settings → Availability, you can set which days and hours you're available to take on work. This helps clients know when to expect a response and helps Duxio match you with suitable requests.",
+        a: "Yes. In Settings → Availability, you can set which days and hours you're available to take on work. This helps clients know when to expect a response and helps Druxio match you with suitable requests.",
       },
     ],
   },
@@ -105,7 +105,7 @@ const faqSections = [
       },
       {
         q: "Is my payment information secure?",
-        a: "Yes. Duxio never stores your card details. All payment processing is handled by Stripe, a PCI-DSS Level 1 certified payment processor. Your data is encrypted in transit and at rest.",
+        a: "Yes. Druxio never stores your card details. All payment processing is handled by Stripe, a PCI-DSS Level 1 certified payment processor. Your data is encrypted in transit and at rest.",
       },
       {
         q: "How do I report a user or inappropriate content?",
@@ -135,7 +135,7 @@ const faqSections = [
 const FAQ = () => {
   useSEO({
     title: "Frequently Asked Questions",
-    description: "Find answers to common questions about Duxio — how to post tasks, hire experts, manage payments, and more.",
+    description: "Find answers to common questions about Druxio — how to post tasks, hire experts, manage payments, and more.",
     canonical: "/faq",
   });
 
@@ -153,8 +153,8 @@ const FAQ = () => {
             Frequently Asked Questions
           </h1>
           <p className="text-lg text-muted-foreground">
-            Everything you need to know about Duxio. Can't find your answer?{" "}
-            <a href="mailto:support@duxio.store" className="text-primary underline underline-offset-4">
+            Everything you need to know about Druxio. Can't find your answer?{" "}
+            <a href="mailto:support@druxio.store" className="text-primary underline underline-offset-4">
               Contact support
             </a>
             .
@@ -193,7 +193,7 @@ const FAQ = () => {
             Our support team is available Monday–Friday, 9am–6pm CET.
           </p>
           <a
-            href="mailto:support@duxio.store"
+            href="mailto:support@druxio.store"
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
             Email Support

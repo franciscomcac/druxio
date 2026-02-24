@@ -12,7 +12,7 @@ function emailTemplate(content: string) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Duxio</title>
+  <title>Druxio</title>
 </head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px;">
@@ -22,7 +22,7 @@ function emailTemplate(content: string) {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:28px 32px;text-align:center;">
-              <span style="font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Dux⚡o</span>
+              <span style="font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Drux⚡o</span>
             </td>
           </tr>
           <!-- Body -->
@@ -35,8 +35,8 @@ function emailTemplate(content: string) {
           <tr>
             <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;">
               <p style="margin:0;font-size:12px;color:#9ca3af;">
-                You're receiving this because you have an account on Duxio.<br/>
-                <a href="https://duxio.lovable.app" style="color:#7c3aed;text-decoration:none;">Visit Duxio</a>
+                You're receiving this because you have an account on Druxio.<br/>
+                <a href="https://druxio.lovable.app" style="color:#7c3aed;text-decoration:none;">Visit Druxio</a>
               </p>
             </td>
           </tr>
@@ -79,12 +79,12 @@ function infoTable(rows: string) {
 export function buildWelcomeEmail(userEmail: string) {
   return {
     to: userEmail,
-    subject: "Welcome to Duxio! 🎉",
+    subject: "Welcome to Druxio! 🎉",
     html: emailTemplate(`
       ${heading("Welcome aboard! 🎉")}
-      ${paragraph("You've just joined Duxio — the fastest way to get expert help on demand.")}
+      ${paragraph("You've just joined Druxio — the fastest way to get expert help on demand.")}
       ${paragraph("Post a request, receive quotes from vetted experts in minutes, and get your work done — all within a safe, escrow-protected environment.")}
-      ${ctaButton("Go to Dashboard", "https://duxio.lovable.app/dashboard")}
+      ${ctaButton("Go to Dashboard", "https://druxio.lovable.app/dashboard")}
     `),
   };
 }
@@ -117,7 +117,7 @@ export function buildNewQuoteEmail(opts: {
         ${infoRow("Delivery time", delivery)}
       `)}
       ${paragraph("Review the quote and chat with the expert before accepting.")}
-      ${ctaButton("View Quotes", `https://duxio.lovable.app/active-request/${opts.jobId}`)}
+      ${ctaButton("View Quotes", `https://druxio.lovable.app/active-request/${opts.jobId}`)}
     `),
   };
 }
@@ -143,7 +143,7 @@ export function buildQuoteAcceptedEmail(opts: {
         ${infoRow("Your earning", `€${(opts.price * 0.95).toFixed(2)}`)}
       `)}
       ${paragraph("Head to the order page to start working and communicate with the buyer.")}
-      ${ctaButton("Go to Order", `https://duxio.lovable.app/order/${opts.jobId}`)}
+      ${ctaButton("Go to Order", `https://druxio.lovable.app/order/${opts.jobId}`)}
     `),
   };
 }
@@ -168,7 +168,7 @@ export function buildOrderDeliveredEmail(opts: {
         ${infoRow("Auto-release in", "3 days (if no action taken)")}
       `)}
       ${paragraph("Please review the delivered work and either confirm delivery to release payment, or raise a dispute if there is an issue.")}
-      ${ctaButton("Review Delivery", `https://duxio.lovable.app/order/${opts.jobId}`)}
+      ${ctaButton("Review Delivery", `https://druxio.lovable.app/order/${opts.jobId}`)}
     `),
   };
 }
@@ -191,7 +191,7 @@ export function buildPaymentReleasedEmail(opts: {
         ${infoRow("Amount credited", `€${opts.earning.toFixed(2)}`)}
       `)}
       ${paragraph("The funds are now in your wallet and available for withdrawal.")}
-      ${ctaButton("View Wallet", "https://duxio.lovable.app/wallet")}
+      ${ctaButton("View Wallet", "https://druxio.lovable.app/wallet")}
     `),
   };
 }
@@ -218,7 +218,7 @@ export function buildDisputeAdminEmail(opts: {
         ${infoRow("Seller ID", opts.sellerId)}
         ${infoRow("Reason", opts.reason)}
       `)}
-      ${ctaButton("View in Admin", "https://duxio.lovable.app/admin")}
+      ${ctaButton("View in Admin", "https://druxio.lovable.app/admin")}
     `),
   };
 }
@@ -242,7 +242,7 @@ export function buildOrderCancelledEmail(opts: {
         ${infoRow("Reason", opts.reason)}
       `)}
       ${paragraph("A refund will be processed to your original payment method. If you have any questions, please contact our support team.")}
-      ${ctaButton("Contact Support", "https://duxio.lovable.app/dashboard")}
+      ${ctaButton("Contact Support", "https://druxio.lovable.app/dashboard")}
     `),
   };
 }

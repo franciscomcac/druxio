@@ -69,7 +69,6 @@ const Header = () => {
     if (user) {
       await supabase.from("profiles").update({ is_online: !offline }).eq("id", user.id);
     }
-    // Notify presence hook
     window.dispatchEvent(new CustomEvent("presence-override-changed", { detail: { offline } }));
   };
 
@@ -80,7 +79,7 @@ const Header = () => {
       <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link to="/" className="flex items-center shrink-0">
-          <span className="text-lg font-bold text-foreground">Dux<Zap className="inline h-4 w-4 -mx-0.5" style={{ color: 'hsl(188 100% 48%)', fill: 'hsl(188 100% 48%)' }} />o</span>
+          <span className="text-lg font-bold text-foreground">Drux<Zap className="inline h-4 w-4 -mx-0.5" style={{ color: 'hsl(188 100% 48%)', fill: 'hsl(188 100% 48%)' }} />o</span>
         </Link>
 
         {/* Desktop right actions */}
@@ -226,15 +225,12 @@ const Header = () => {
         <div className="flex items-center gap-1 md:hidden">
           {user ? (
             <>
-              {/* Post Request — primary CTA always visible */}
               <Link to="/post-request">
                 <Button size="sm" className="h-8 w-8 p-0 shadow-glow">
                   <Plus className="h-4 w-4" />
                 </Button>
               </Link>
-              {/* Notifications */}
               <NotificationsDropdown />
-              {/* Inbox */}
               <Link to="/inbox">
                 <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-primary/[0.06]">
                   <MessageSquare className="h-5 w-5" />
@@ -243,7 +239,6 @@ const Header = () => {
             </>
           ) : null}
 
-          {/* Hamburger */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-9 w-9"><Menu className="h-5 w-5" /></Button>
@@ -252,7 +247,6 @@ const Header = () => {
               <div className="flex flex-col gap-1 pt-6">
                 {user ? (
                   <>
-                    {/* User info */}
                     <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-lg bg-primary/[0.04] border border-border/30">
                       <Avatar className="h-10 w-10 border border-border/40 shrink-0">
                         <AvatarImage src={profile?.avatar_url} />
@@ -303,7 +297,6 @@ const Header = () => {
                       </Link>
                     )}
                     <hr className="border-border/30 my-2" />
-                    {/* Currency selector in mobile sheet */}
                     <div className="px-1 pb-1">
                       <p className="text-xs text-muted-foreground mb-1.5 px-2">Currency</p>
                       <div className="flex items-center rounded-full border border-border/50 bg-muted/30 overflow-hidden text-xs font-medium">
@@ -323,7 +316,14 @@ const Header = () => {
                       </div>
                     </div>
                     <hr className="border-border/30 my-2" />
-                    <Button variant="ghost" className="w-full justify-start gap-2 h-11 text-destructive hover:bg-destructive/10" onClick={() => { setIsOpen(false); handleSignOut(); }}>
+                    <Link to="/how-it-works" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11">How It Works</Button>
+                    </Link>
+                    <Link to="/blog" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-11">Blog</Button>
+                    </Link>
+                    <hr className="border-border/30 my-2" />
+                    <Button variant="ghost" className="w-full justify-start gap-2 h-11 text-destructive" onClick={() => { setIsOpen(false); handleSignOut(); }}>
                       <LogOut className="h-4 w-4" /> Sign Out
                     </Button>
                   </>
@@ -336,10 +336,10 @@ const Header = () => {
                       <Button variant="ghost" className="w-full justify-start gap-2 h-11">Blog</Button>
                     </Link>
                     <hr className="border-border/30 my-2" />
-                    <Button variant="outline" className="w-full gap-2 h-11" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}>
+                    <Button variant="ghost" className="w-full justify-start gap-2 h-11" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}>
                       <User className="h-4 w-4" /> Sign In
                     </Button>
-                    <Button className="w-full gap-2 h-11" onClick={() => { setIsOpen(false); setAuthTab("signup"); setAuthOpen(true); }}>
+                    <Button className="w-full gap-2 shadow-glow" onClick={() => { setIsOpen(false); setAuthTab("signup"); setAuthOpen(true); }}>
                       <Zap className="h-4 w-4" /> Get Started
                     </Button>
                   </>
@@ -349,6 +349,7 @@ const Header = () => {
           </Sheet>
         </div>
       </div>
+
       <QuickAuthDialog open={authOpen} onOpenChange={setAuthOpen} defaultTab={authTab} />
     </header>
   );
