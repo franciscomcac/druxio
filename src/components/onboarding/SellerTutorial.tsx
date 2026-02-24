@@ -99,6 +99,7 @@ const TOUR_PHASES: TourPhase[] = [
   // Phase 1 — Active Quotes (Quotes Terminal)
   {
     route: "/quotes",
+    altRoutes: ["/request/"],
     steps: [
       {
         popover: {
