@@ -878,13 +878,13 @@ const PostRequest = () => {
                 }}
                 className="group relative flex flex-col items-start gap-4 rounded-xl border border-primary/30 bg-primary/[0.04] p-6 text-left transition-all duration-300 hover:border-primary/60 hover:bg-primary/[0.08] hover:-translate-y-1"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform duration-300 group-hover:scale-110">
-                  <Sparkles className="h-6 w-6" />
+                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform duration-300 group-hover:scale-110">
+                  <Sparkles className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-foreground mb-1">AI Auto-Match</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Describe what you need in your own words and AI will find the best category, refine your title, and write a description for you.
+                  <p className="text-base md:text-lg font-semibold text-foreground mb-1">AI Auto-Match</p>
+                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                    Describe what you need and AI will find the best category and refine your request.
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1">
