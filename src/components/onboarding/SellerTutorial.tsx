@@ -9,6 +9,7 @@ import "driver.js/dist/driver.css";
 const STORAGE_KEY = "seller_tutorial_completed";
 const ACTIVE_KEY = "seller_tutorial_active";
 const STEP_KEY = "seller_tutorial_step";
+const SUBSTEP_KEY = "seller_tutorial_substep";
 
 /* ─────────────────── Tour phases ─────────────────── 
    Each phase runs on a specific route.
