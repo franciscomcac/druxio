@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const FROM = "Duxio <noreply@duxio.lovable.app>";
+const FROM = "Druxio <noreply@druxio.lovable.app>";
 
 function emailTemplate(content: string) {
   return `<!DOCTYPE html>
@@ -19,12 +19,12 @@ function emailTemplate(content: string) {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
         <tr><td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:28px 32px;text-align:center;">
-          <span style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Dux&#x26A1;o</span>
+          <span style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Drux&#x26A1;o</span>
         </td></tr>
         <tr><td style="padding:32px 32px 24px;">${content}</td></tr>
         <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;">
-          <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you have an account on Duxio.<br/>
-          <a href="https://duxio.lovable.app" style="color:#7c3aed;text-decoration:none;">Visit Duxio</a></p>
+          <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you have an account on Druxio.<br/>
+          <a href="https://druxio.lovable.app" style="color:#7c3aed;text-decoration:none;">Visit Druxio</a></p>
         </td></tr>
       </table>
     </td></tr>
@@ -127,7 +127,7 @@ serve(async (req) => {
             ${row("Auto-release in", "3 days (if no action taken)")}
           `)}
           ${p("Please review the delivered work and confirm or raise a dispute.")}
-          ${cta("Review Delivery", `https://duxio.lovable.app/order/${jobId}`)}
+          ${cta("Review Delivery", `https://druxio.lovable.app/order/${jobId}`)}
         `);
         await sendResend(buyerEmail, `Your order has been delivered — "${job.title}"`, html, resendKey);
       }
@@ -146,7 +146,7 @@ serve(async (req) => {
             ${row("Amount credited", `€${earning.toFixed(2)}`)}
           `)}
           ${p("The funds are now in your wallet and available for withdrawal.")}
-          ${cta("View Wallet", "https://duxio.lovable.app/wallet")}
+          ${cta("View Wallet", "https://druxio.lovable.app/wallet")}
         `);
         await sendResend(sellerEmail, `Payment released! €${earning.toFixed(2)} added to your wallet 💰`, html, resendKey);
       }
@@ -165,7 +165,7 @@ serve(async (req) => {
             ${row("Reason", reason)}
           `)}
           ${p("A refund will be processed. If you have questions, contact our support team.")}
-          ${cta("Contact Support", "https://duxio.lovable.app/dashboard")}
+          ${cta("Contact Support", "https://druxio.lovable.app/dashboard")}
         `);
         await sendResend(buyerEmail, `Order cancelled — "${job.title}"`, html, resendKey);
       }
@@ -190,7 +190,7 @@ serve(async (req) => {
               ${row("Seller ID", sellerId)}
               ${row("Reason", reason)}
             `)}
-            ${cta("View Admin Panel", "https://duxio.lovable.app/admin")}
+            ${cta("View Admin Panel", "https://druxio.lovable.app/admin")}
           `);
           await sendResend(adminEmail, `⚠️ Dispute raised — "${job.title}"`, html, resendKey);
         }));
@@ -216,7 +216,7 @@ serve(async (req) => {
               ${row("Delivery time", delivery)}
             `)}
             ${p("Review the quote and chat with the expert before accepting.")}
-            ${cta("View Quotes", `https://duxio.lovable.app/active-request/${jobId}`)}
+            ${cta("View Quotes", `https://druxio.lovable.app/active-request/${jobId}`)}
           `);
           await sendResend(buyerEmail, `New quote received for "${job.title}"`, html, resendKey);
         }
@@ -238,7 +238,7 @@ serve(async (req) => {
             ${row("Your earning", `€${(Number(quote.price) * 0.95).toFixed(2)}`)}
           `)}
           ${p("Head to the order page to start working and communicate with the buyer.")}
-          ${cta("Go to Order", `https://duxio.lovable.app/order/${jobId}`)}
+          ${cta("Go to Order", `https://druxio.lovable.app/order/${jobId}`)}
         `);
         await sendResend(sellerEmail, `Your quote was accepted! 🎉`, html, resendKey);
       }

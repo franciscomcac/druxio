@@ -35,7 +35,7 @@ serve(async (req) => {
       subs.map(s => `${broad}: ${s}`)
     );
 
-    const systemPrompt = `You are an assistant for Duxio, a marketplace where people post requests and experts respond with quotes.
+    const systemPrompt = `You are an assistant for Druxio, a marketplace where people post requests and experts respond with quotes.
 
 Your job: Take the user's raw idea/need and refine it into a clear request. You should:
 1. Understand their need deeply

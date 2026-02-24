@@ -21,21 +21,21 @@ export const blogPosts: BlogPost[] = [
     slug: "ai-auto-match-category-detection",
     title: "New Feature: AI Auto-Match Now Picks the Right Category for You",
     excerpt:
-      "Posting a task on Duxio just got faster. Our new AI Auto-Match feature analyses what you need in plain language and automatically selects the best category, refines your title, and writes a description — so you can go from idea to live request in seconds.",
+      "Posting a task on Druxio just got faster. Our new AI Auto-Match feature analyses what you need in plain language and automatically selects the best category, refines your title, and writes a description — so you can go from idea to live request in seconds.",
     date: "February 22, 2026",
     readTime: "4 min read",
-    author: "The Duxio Team",
+    author: "The Druxio Team",
     authorRole: "Product",
     category: "Announcement",
     coverImage: heroAiAutoMatch,
     content: `
 We've just shipped one of the most requested features since launch: **AI-powered category detection** when posting a task.
 
-Starting today, when you click "Post Task" on Duxio, you'll be greeted with a choice: let AI handle the setup, or pick a category manually. If you choose AI Auto-Match, you simply describe what you need in your own words — and our system does the rest.
+Starting today, when you click "Post Task" on Druxio, you'll be greeted with a choice: let AI handle the setup, or pick a category manually. If you choose AI Auto-Match, you simply describe what you need in your own words — and our system does the rest.
 
 ## The Problem We Solved
 
-Duxio supports dozens of categories and hundreds of subcategories across gaming, tech, business, creative services, music, fitness, languages, and content creation. That breadth is one of our strengths — but it also meant that new users sometimes spent too long browsing through options before they could post their first request.
+Druxio supports dozens of categories and hundreds of subcategories across gaming, tech, business, creative services, music, fitness, languages, and content creation. That breadth is one of our strengths — but it also meant that new users sometimes spent too long browsing through options before they could post their first request.
 
 We heard the feedback: "I know what I need, I just don't know which category it falls under."
 
@@ -51,7 +51,7 @@ The flow is straightforward:
 - **AI analyses your input** and returns the best-matching category, a refined professional title, and a suggested description
 - **Review and confirm** — accept the suggestion to proceed directly to the details step, or reject it and pick a category yourself
 
-The entire process takes about ten seconds. Behind the scenes, we use a large language model fine-tuned to understand Duxio's full category tree, including niche subcategories like "SEO audit and keyword strategy" or "Podcast editing and distribution" or "UI/UX design review."
+The entire process takes about ten seconds. Behind the scenes, we use a large language model fine-tuned to understand Druxio's full category tree, including niche subcategories like "SEO audit and keyword strategy" or "Podcast editing and distribution" or "UI/UX design review."
 
 ## What the AI Actually Does
 
@@ -67,7 +67,7 @@ If the match doesn't feel right, you can reject it with one click and browse cat
 
 ## Why This Matters
 
-Speed is central to the Duxio experience. The faster you can post a request, the faster experts get notified, and the faster you receive quotes. Every second of friction we remove from the posting flow directly improves the quality of the experience for both clients and experts.
+Speed is central to the Druxio experience. The faster you can post a request, the faster experts get notified, and the faster you receive quotes. Every second of friction we remove from the posting flow directly improves the quality of the experience for both clients and experts.
 
 With AI Auto-Match, first-time users no longer need to learn our category structure. They just describe their problem and start receiving expert quotes.
 
@@ -75,11 +75,11 @@ With AI Auto-Match, first-time users no longer need to learn our category struct
 
 We haven't removed anything. If you prefer to browse categories yourself — because you already know exactly what you need, or you enjoy exploring what's available — the full category grid is one click away.
 
-In fact, we've also expanded the category selection with a dedicated **Custom** category for requests that don't fit neatly into existing options. Between AI Auto-Match and Custom requests, there's now no task that Duxio can't handle.
+In fact, we've also expanded the category selection with a dedicated **Custom** category for requests that don't fit neatly into existing options. Between AI Auto-Match and Custom requests, there's now no task that Druxio can't handle.
 
 ## What's Next
 
-This is the first step in a broader push to make Duxio smarter about understanding what you need. In the coming weeks, we're working on:
+This is the first step in a broader push to make Druxio smarter about understanding what you need. In the coming weeks, we're working on:
 
 - **Smarter expert matching** — using AI to recommend the best-fit experts based on your request content, not just category tags
 - **Dynamic pricing suggestions** — helping clients set realistic budgets based on task complexity
@@ -95,32 +95,32 @@ As always, we'd love your feedback. Use the Feedback button at the bottom of any
 
 **Happy posting.**
 
-— The Duxio Team
+— The Druxio Team
     `,
   },
   {
-    slug: "beta-launch-duxio-store",
-    title: "Duxio Is Live: Introducing the Platform That Connects You to Expert Help — Fast",
+    slug: "beta-launch-druxio-store",
+    title: "Druxio Is Live: Introducing the Platform That Connects You to Expert Help — Fast",
     excerpt:
-      "After months of building, refining, and stress-testing every corner of the platform, Duxio is officially open to the public in beta. Here's what we've built, why we built it, and what comes next.",
+      "After months of building, refining, and stress-testing every corner of the platform, Druxio is officially open to the public in beta. Here's what we've built, why we built it, and what comes next.",
     date: "February 18, 2026",
     readTime: "6 min read",
-    author: "The Duxio Team",
+    author: "The Druxio Team",
     authorRole: "Founders",
     category: "Announcement",
     coverImage: heroBetaLaunch,
     content: `
-We're thrilled to announce that **Duxio.store is now live in public beta**.
+We're thrilled to announce that **Druxio.store is now live in public beta**.
 
 This is a milestone we've been working toward for a long time — and we couldn't be more excited to finally put it in your hands.
 
-## What Is Duxio?
+## What Is Druxio?
 
-Duxio is an on-demand marketplace that connects people who need fast, focused expert help with verified professionals who can deliver it — often within minutes.
+Druxio is an on-demand marketplace that connects people who need fast, focused expert help with verified professionals who can deliver it — often within minutes.
 
 Think of it like this: you don't always need to hire a full-time consultant, book a three-hour coaching call, or post on a forum and wait days for an answer. Sometimes you just need **the right person for 20 minutes**, right now.
 
-That's the gap Duxio fills. Whether you're a freelancer trying to unblock a technical issue, a small business owner making a critical decision, a student who needs a concept explained properly, or an individual navigating a complex situation — Duxio gives you access to experts on your terms.
+That's the gap Druxio fills. Whether you're a freelancer trying to unblock a technical issue, a small business owner making a critical decision, a student who needs a concept explained properly, or an individual navigating a complex situation — Druxio gives you access to experts on your terms.
 
 ## What We've Built
 
@@ -139,7 +139,7 @@ Once you accept a quote, a dedicated session workspace opens. You and your exper
 Your payment is held in escrow from the moment you accept a quote. The expert only receives funds once the work is marked complete — protecting both sides of every transaction.
 
 ### Wallet and Withdrawals
-Experts accumulate earnings directly in their Duxio wallet. Withdrawals can be initiated via PayPal or crypto, with admin review ensuring everything processes cleanly.
+Experts accumulate earnings directly in their Druxio wallet. Withdrawals can be initiated via PayPal or crypto, with admin review ensuring everything processes cleanly.
 
 ### AI-Assisted Tools
 We've built AI into several parts of the platform — from helping clients refine their request descriptions before posting, to surfacing the best-matched experts for a given need, to generating session summaries after a session ends.
@@ -148,14 +148,14 @@ We've built AI into several parts of the platform — from helping clients refin
 After every completed session, both parties can leave a review. Expert ratings are aggregated and displayed prominently — creating a transparent trust layer that rewards quality.
 
 ### Real-Time Notifications
-You'll never miss an update. Duxio pushes instant notifications for new quotes, accepted requests, session updates, and messages — across the platform.
+You'll never miss an update. Druxio pushes instant notifications for new quotes, accepted requests, session updates, and messages — across the platform.
 
 ### Dispute Resolution
-We know things don't always go perfectly. Duxio includes a built-in dispute process with admin oversight to mediate when a session doesn't go as expected.
+We know things don't always go perfectly. Druxio includes a built-in dispute process with admin oversight to mediate when a session doesn't go as expected.
 
-## Who Is Duxio For?
+## Who Is Druxio For?
 
-This is important to us. Duxio is built for **real human needs across a wide range of domains**:
+This is important to us. Druxio is built for **real human needs across a wide range of domains**:
 
 - **Professionals and freelancers** who hit roadblocks and need fast, expert input
 - **Entrepreneurs and small business owners** navigating decisions in finance, law, marketing, or operations
@@ -163,7 +163,7 @@ This is important to us. Duxio is built for **real human needs across a wide ran
 - **Individuals** seeking guidance in health decisions, personal finance, or career planning
 - **Creators and makers** who need a second pair of eyes on their work
 
-The platform is deliberately category-agnostic. If there's a skill, there's an expert for it on Duxio.
+The platform is deliberately category-agnostic. If there's a skill, there's an expert for it on Druxio.
 
 ## Why Beta?
 
@@ -178,23 +178,23 @@ Your feedback directly shapes what we build next. We've already built a feedback
 
 ## Thank You
 
-To everyone who signed up early, tested the platform, reported bugs, and sent us encouragement — thank you. Duxio exists because of you.
+To everyone who signed up early, tested the platform, reported bugs, and sent us encouragement — thank you. Druxio exists because of you.
 
 We believe the future of expert access is fast, fair, and borderless. Today is just the beginning.
 
-**Welcome to Duxio.**
+**Welcome to Druxio.**
 
-— The Duxio Team
+— The Druxio Team
     `,
   },
   {
-    slug: "how-duxio-works-for-clients",
-    title: "From Problem to Solved: How Duxio Handles Short-Term Expert Needs Better Than Traditional Hiring",
+    slug: "how-druxio-works-for-clients",
+    title: "From Problem to Solved: How Druxio Handles Short-Term Expert Needs Better Than Traditional Hiring",
     excerpt:
-      "Traditional consulting is slow, expensive, and built for enterprise. Duxio is built for the rest of us — the freelancers, founders, and individuals who need expert help today, not next Tuesday.",
+      "Traditional consulting is slow, expensive, and built for enterprise. Druxio is built for the rest of us — the freelancers, founders, and individuals who need expert help today, not next Tuesday.",
     date: "February 18, 2026",
     readTime: "5 min read",
-    author: "The Duxio Team",
+    author: "The Druxio Team",
     authorRole: "Founders",
     category: "Platform",
     coverImage: heroHowItWorks,
@@ -203,7 +203,7 @@ There's a problem almost everyone faces at some point: **you need expert help, b
 
 You've hit a wall on a financial decision. You need a second opinion on a contract clause. You want a professional to review your pitch deck before tomorrow's meeting. You're trying to understand a medical report. You need someone to walk you through a complex software issue.
 
-The traditional options are slow, expensive, or inaccessible. Duxio exists to change that.
+The traditional options are slow, expensive, or inaccessible. Druxio exists to change that.
 
 ## The Old Way: Broken for Short-Term Needs
 
@@ -216,9 +216,9 @@ Hiring a consultant traditionally means:
 
 For a one-hour problem, that process is completely disproportionate. And yet millions of people every day either suffer through problems they could have solved with one focused session — or pay far too much for help they only needed briefly.
 
-## The Duxio Way: Expert Access in Minutes
+## The Druxio Way: Expert Access in Minutes
 
-Here's what happens when you post a request on Duxio:
+Here's what happens when you post a request on Druxio:
 
 **1. You describe your need.** Our AI-assisted request builder helps you write a clear, complete brief — so experts understand exactly what you're looking for before they quote.
 
@@ -232,9 +232,9 @@ Here's what happens when you post a request on Duxio:
 
 That's it. Start to finish, you can go from "I have a problem" to "problem solved" in under an hour.
 
-## Real Situations Where Duxio Shines
+## Real Situations Where Druxio Shines
 
-We see clients using Duxio for an enormous variety of short-term needs:
+We see clients using Druxio for an enormous variety of short-term needs:
 
 - **Legal questions** — "Can someone explain what this clause actually means?"
 - **Financial decisions** — "I need a second opinion on whether this investment makes sense."
@@ -244,11 +244,11 @@ We see clients using Duxio for an enormous variety of short-term needs:
 - **Career guidance** — "I have an interview tomorrow — can someone help me prepare?"
 - **Creative review** — "Does this logo work? What would a professional designer change?"
 
-These aren't niche use cases. These are the everyday friction points that slow people down — and Duxio is designed to remove them.
+These aren't niche use cases. These are the everyday friction points that slow people down — and Druxio is designed to remove them.
 
 ## Built on Trust
 
-We understand that trusting a stranger with your problem requires confidence. That's why every layer of Duxio is designed around trust:
+We understand that trusting a stranger with your problem requires confidence. That's why every layer of Druxio is designed around trust:
 
 - **Expert verification** — profiles show real skills, real sessions, and real reviews
 - **Escrow payments** — your money is protected until you're satisfied
@@ -257,13 +257,13 @@ We understand that trusting a stranger with your problem requires confidence. Th
 
 ## The Short-Term Expert Economy Is Here
 
-The way people access professional expertise is changing. Just as platforms changed how we access accommodation, transport, and food — Duxio is changing how we access knowledge and skill.
+The way people access professional expertise is changing. Just as platforms changed how we access accommodation, transport, and food — Druxio is changing how we access knowledge and skill.
 
-The professional sitting across from you on Duxio might be a former McKinsey analyst who consults part-time, a certified accountant who helps three clients a day between school runs, or a senior developer who loves helping people in their spare hours.
+The professional sitting across from you on Druxio might be a former McKinsey analyst who consults part-time, a certified accountant who helps three clients a day between school runs, or a senior developer who loves helping people in their spare hours.
 
-Every one of them is on Duxio because they want to share their expertise efficiently — and every client is there because they need real help, not a six-month contract.
+Every one of them is on Druxio because they want to share their expertise efficiently — and every client is there because they need real help, not a six-month contract.
 
-**That's the Duxio promise: the right expert, at the right time, for exactly as long as you need.**
+**That's the Druxio promise: the right expert, at the right time, for exactly as long as you need.**
     `,
   },
   {
@@ -273,7 +273,7 @@ Every one of them is on Duxio because they want to share their expertise efficie
       "Geography used to determine who you could get help from. The internet changed communication — but it never truly democratised access to expertise. Until now.",
     date: "February 18, 2026",
     readTime: "4 min read",
-    author: "The Duxio Team",
+    author: "The Druxio Team",
     authorRole: "Founders",
     category: "Insights",
     coverImage: heroExpertiseBorders,
@@ -284,7 +284,7 @@ If you grew up in a major city, you had lawyers, accountants, consultants, and c
 
 The internet closed some of that gap. Email made it possible to contact experts anywhere. Video calls made it feel like a face-to-face conversation. But access still wasn't truly equal. The best consultants had long waiting lists. High hourly rates meant only well-funded companies or wealthy individuals could afford real expertise on demand.
 
-**Duxio changes the equation.**
+**Druxio changes the equation.**
 
 ## The Geography Problem
 
@@ -294,7 +294,7 @@ One lives in London. She can walk into a business advisory firm, pay a premium r
 
 The other lives in a mid-sized town. She's a first-generation entrepreneur with a strong business but limited access to high-quality professional guidance. Her local accountant is great for tax returns, but doesn't specialise in market strategy. She can Google her question, but Google doesn't know the specifics of her situation.
 
-On Duxio, both of these women post their request. Both receive quotes from specialists who understand their question. Both pay a fair, competitive rate. Both finish with a clear answer.
+On Druxio, both of these women post their request. Both receive quotes from specialists who understand their question. Both pay a fair, competitive rate. Both finish with a clear answer.
 
 Geography becomes irrelevant.
 
@@ -304,23 +304,23 @@ Even people with access to experts face another barrier: **time**.
 
 Traditional consulting is structured around the consultant's calendar, not yours. Discovery calls, scoping sessions, proposal reviews, kick-offs — all before any actual work begins.
 
-Duxio is structured around your urgency. Post now. Get quotes now. Start a session now.
+Druxio is structured around your urgency. Post now. Get quotes now. Start a session now.
 
 This isn't just a convenience feature. For the freelancer who needs to unblock a technical issue before a client deadline, the entrepreneur who needs a financial answer before a board call, or the individual who needs clarity on a medical situation — speed is the product.
 
 ## The Fair Exchange
 
-One thing we thought about deeply when building Duxio is **what's fair for experts**.
+One thing we thought about deeply when building Druxio is **what's fair for experts**.
 
 The traditional model extracts value from experts in two ways: either they're employed and their employer takes the margin, or they freelance and spend enormous time on unpaid business development, client acquisition, and admin.
 
-Duxio removes the overhead. Experts are found by clients, not the other way around. Sessions are structured, timed, and paid. Reviews build reputation. An expert can focus entirely on what they're good at — helping people — and the platform handles the rest.
+Druxio removes the overhead. Experts are found by clients, not the other way around. Sessions are structured, timed, and paid. Reviews build reputation. An expert can focus entirely on what they're good at — helping people — and the platform handles the rest.
 
 We believe this is how professional expertise should work: fairly compensated, efficiently delivered, and accessible to anyone who needs it.
 
 ## What This Looks Like in Practice
 
-On Duxio today, you'll find experts in:
+On Druxio today, you'll find experts in:
 
 - **Finance and investment** — from personal budgeting to startup funding strategy
 - **Legal guidance** — contract review, rights questions, regulatory navigation
@@ -335,11 +335,11 @@ And this list grows every week as more experts join the platform.
 
 ## The Bigger Picture
 
-We're building Duxio because we believe **expertise should be a resource, not a privilege**.
+We're building Druxio because we believe **expertise should be a resource, not a privilege**.
 
 A brilliant question shouldn't go unanswered because you can't afford a retainer. A critical decision shouldn't be made in the dark because you don't know the right person. A skill gap shouldn't hold back a capable person who just needs twenty minutes with the right expert.
 
-That's the world Duxio is building toward. One session at a time.
+That's the world Druxio is building toward. One session at a time.
     `,
   },
 ];

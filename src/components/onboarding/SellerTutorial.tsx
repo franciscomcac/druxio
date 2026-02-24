@@ -41,7 +41,7 @@ const TOUR_PHASES: TourPhase[] = [
     steps: [
       {
         popover: {
-          title: "Welcome to Selling on Duxio! 🎉",
+          title: "Welcome to Selling on Druxio! 🎉",
           description: "Let's take a quick tour of everything you need to know as a seller. We'll walk through the real interface — no simulations!",
           side: "bottom",
           align: "center",
@@ -294,7 +294,7 @@ const TOUR_PHASES: TourPhase[] = [
       {
         popover: {
           title: "You're All Set! 🚀",
-          description: "You now know the basics of selling on Duxio.<br/><br/>✅ Subscribe to categories<br/>✅ Send competitive quotes<br/>✅ Chat with buyers & update offers<br/>✅ Use the <strong>Quotes Terminal</strong> to manage everything<br/>✅ Respond fast & deliver quality work<br/>✅ Earn money and build your reputation<br/><br/>You can replay this tutorial anytime from your Expert Dashboard. Good luck!",
+          description: "You now know the basics of selling on Druxio.<br/><br/>✅ Subscribe to categories<br/>✅ Send competitive quotes<br/>✅ Chat with buyers & update offers<br/>✅ Use the <strong>Quotes Terminal</strong> to manage everything<br/>✅ Respond fast & deliver quality work<br/>✅ Earn money and build your reputation<br/><br/>You can replay this tutorial anytime from your Expert Dashboard. Good luck!",
           side: "bottom",
           align: "center",
         },

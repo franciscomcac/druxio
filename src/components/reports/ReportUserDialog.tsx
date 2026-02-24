@@ -136,7 +136,7 @@ const ReportUserDialog = ({
 
       toast({
         title: "Report submitted",
-        description: "Thank you for helping keep Duxio safe. Our team will review this report.",
+        description: "Thank you for helping keep Druxio safe. Our team will review this report.",
       });
 
       setReason("");

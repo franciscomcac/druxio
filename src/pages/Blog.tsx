@@ -14,18 +14,18 @@ const categoryColor: Record<string, string> = {
 const Blog = () => {
   useSEO({
     title: "Blog",
-    description: "Tips, guides, and insights on getting work done faster with Duxio. Platform updates, expert advice, and freelancing best practices.",
+    description: "Tips, guides, and insights on getting work done faster with Druxio. Platform updates, expert advice, and freelancing best practices.",
     canonical: "/blog",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      "name": "Duxio Blog",
-      "description": "Tips, guides, and insights on getting work done faster with Duxio.",
-      "url": "https://duxio.lovable.app/blog",
+      "name": "Druxio Blog",
+      "description": "Tips, guides, and insights on getting work done faster with Druxio.",
+      "url": "https://druxio.lovable.app/blog",
       "publisher": {
         "@type": "Organization",
-        "name": "Duxio",
-        "url": "https://duxio.lovable.app"
+        "name": "Druxio",
+        "url": "https://druxio.lovable.app"
       },
       "mainEntity": {
         "@type": "ItemList",
