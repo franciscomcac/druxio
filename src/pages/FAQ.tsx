@@ -12,7 +12,7 @@ const faqSections = [
         a: "Druxio is a real-time micro-task marketplace where clients post tasks and verified experts submit quotes within minutes. Unlike traditional freelance platforms, you don't search for an expert — they come to you. Once a quote is accepted, an escrow is created so both sides are protected.",
       },
       {
-        q: "Who can use Duxio?",
+        q: "Who can use Druxio?",
         a: "Anyone can sign up as a client (buyer) to post tasks. Experts (sellers) go through a short onboarding to set their profile, skills, and hourly rate. Both roles can coexist — you can post tasks and accept tasks with the same account.",
       },
       {
