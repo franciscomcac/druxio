@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Star, Check, Clock, Send, MessageSquare, XCircle, Users, ThumbsUp,
   ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck, RefreshCw, ChevronRight,
-  ImageIcon, X as XIcon, Ban, Package, Timer, DollarSign, Search,
+  ImageIcon, X as XIcon, Ban, Package, Timer, DollarSign, Search, ChevronDown, ChevronUp,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow, differenceInDays, differenceInHours, addDays } from "date-fns";
@@ -84,6 +85,7 @@ interface SellerConvo {
 
 const ActiveRequest = () => {
   useSEO({ title: "Active Request", noIndex: true });
+  const isMobile = useIsMobile();
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -134,6 +136,9 @@ const ActiveRequest = () => {
   // Withdraw quote
   const [withdrawDialog, setWithdrawDialog] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
+  // Mobile view state for seller quotes terminal
+  const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const [mobileOfferOpen, setMobileOfferOpen] = useState(false);
 
   // Demo scripted conversation
   const [demoScriptIndex, setDemoScriptIndex] = useState(0);
@@ -832,6 +837,8 @@ const ActiveRequest = () => {
     setActiveConvo(convo);
     setSellerChatMessages([]);
     setSellerChatInput("");
+    setMobileOfferOpen(false);
+    if (isMobile) setMobileView("chat");
     // If no session yet, create one and auto-send offer
     if (!convo.sessionId && userId) {
       const { data: existing } = await supabase.from("sessions").select("id").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).order("created_at", { ascending: false }).limit(1).maybeSingle();
@@ -1070,10 +1077,10 @@ const ActiveRequest = () => {
           id={isDemo(convo) ? "tour-quotes-demo-item" : undefined}
           onClick={() => {
             if (isDemo(convo)) {
-              // Demo quote — show demo content in main area
               setActiveConvoJobId(convo.jobId);
               setActiveConvo(convo);
               setSellerChatMessages([]);
+              if (isMobile) setMobileView("chat");
               return;
             }
             handleSwitchConvo(convo);
@@ -1085,7 +1092,6 @@ const ActiveRequest = () => {
           } ${isDemo(convo) ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background" : ""}`}
         >
           <div className="flex items-start gap-2.5">
-            {/* Urgency dot */}
             <div className="flex flex-col items-center gap-1 pt-1">
               <span className={`h-2 w-2 rounded-full shrink-0 ${expiry.color}`} />
             </div>
@@ -1119,17 +1125,119 @@ const ActiveRequest = () => {
                 <span className={`text-[9px] font-medium ${expiry.textColor}`}>{expiry.label}</span>
               </div>
             </div>
+            {isMobile && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />}
           </div>
         </button>
+      );
+    };
+
+    // ── Mobile: inline offer controls (collapsible) ──
+    const renderMobileOfferControls = () => {
+      if (!activeConvo) return null;
+      const expiry = getExpiryInfo(activeConvo.quoteCreatedAt);
+      return (
+        <div className="border-b border-border bg-card/40">
+          <button
+            onClick={() => setMobileOfferOpen(!mobileOfferOpen)}
+            className="w-full flex items-center justify-between px-3 py-2"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <DollarSign className="h-3.5 w-3.5 text-primary" />
+                <span className="text-sm font-bold text-primary">{format(activeConvo.myPrice)}</span>
+              </div>
+              <span className="text-[10px] text-muted-foreground">·</span>
+              <span className="text-xs text-muted-foreground">{formatDeliveryTime(activeConvo.myDelivery)}</span>
+              <span className={`text-[10px] font-medium ${expiry.textColor}`}>{expiry.label}</span>
+            </div>
+            {mobileOfferOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+          </button>
+
+          {mobileOfferOpen && (
+            <div className="px-3 pb-3 space-y-3">
+              <div className="rounded-lg bg-muted/30 p-2.5 space-y-1.5">
+                <p className="text-xs font-semibold text-foreground truncate">{activeConvo.jobTitle}</p>
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
+                  <Badge variant="outline" className="text-[9px] h-4">{activeConvo.jobCategory}</Badge>
+                  <span>Budget: {format(activeConvo.budgetMin)}–{format(activeConvo.budgetMax)}</span>
+                </div>
+                {activeConvo.buyerRating && activeConvo.buyerRating > 0 && (
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Star className="h-2.5 w-2.5 fill-primary text-primary" />
+                    <span>Buyer rated {activeConvo.buyerRating.toFixed(1)}</span>
+                    {activeConvo.buyerTotalSpent !== null && activeConvo.buyerTotalSpent > 0 && (
+                      <span className="ml-1">· {format(activeConvo.buyerTotalSpent)} spent</span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Update Offer</p>
+                <div className="flex gap-1.5">
+                  <Input
+                    type="number"
+                    placeholder="Price (€)"
+                    value={newQuotePrice}
+                    onChange={(e) => setNewQuotePrice(e.target.value)}
+                    className="text-sm h-9 bg-background/60 flex-1"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Time"
+                    value={newQuoteMinutes}
+                    onChange={(e) => setNewQuoteMinutes(e.target.value)}
+                    className="text-sm h-9 bg-background/60 w-20"
+                  />
+                  <div className="flex border border-border rounded-md overflow-hidden h-9 text-xs shrink-0">
+                    {(["minutes", "hours", "days"] as const).map((u) => (
+                      <button
+                        key={u}
+                        type="button"
+                        onClick={() => setNewQuoteUnit(u)}
+                        className={`px-1.5 transition-colors ${newQuoteUnit === u ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground"}`}
+                      >
+                        {u === "minutes" ? "m" : u === "hours" ? "h" : "d"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-1.5">
+                  <Button
+                    size="sm"
+                    className="flex-1 h-8 text-xs"
+                    onClick={activeConvo && isDemo(activeConvo) ? handleDemoUpdateOffer : handleSubmitNewQuote}
+                    disabled={submittingQuote || !newQuotePrice}
+                  >
+                    {submittingQuote ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+                    Update Offer
+                  </Button>
+                  {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && !isDemo(activeConvo) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => setWithdrawDialog(true)}
+                    >
+                      <Ban className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       );
     };
 
     return (
       <div className="h-[calc(100vh-64px)] bg-background flex overflow-hidden">
 
-        {/* ── Left sidebar: quotes list ──────────────────────────────────── */}
-        <div id="tour-quotes-sidebar" className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
-          {/* Header */}
+        {/* ── Left sidebar: quotes list ── */}
+        <div
+          id="tour-quotes-sidebar"
+          className={`${isMobile ? (mobileView === "list" ? "flex w-full" : "hidden") : "w-72 flex"} border-r border-border bg-card/40 flex-col shrink-0`}
+        >
           <div id="tour-quotes-header" className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/dashboard")}>
@@ -1142,7 +1250,6 @@ const ActiveRequest = () => {
             </div>
           </div>
 
-          {/* Quotes list */}
           <ScrollArea className="flex-1 min-h-0">
             {quoteConvos.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground px-6">
@@ -1162,40 +1269,47 @@ const ActiveRequest = () => {
           </ScrollArea>
         </div>
 
-        {/* ── Main area ─────────────────────────────────────────────────────── */}
+        {/* ── Main area ── */}
         {activeConvo ? (
-          <div className="flex flex-1 min-w-0">
-            {/* Chat */}
+          <div className={`${isMobile ? (mobileView === "chat" ? "flex w-full" : "hidden") : "flex"} flex-1 min-w-0`}>
             <div id="tour-quotes-chat-panel" className="flex flex-col flex-1 min-h-0 min-w-0">
               {/* Chat top bar */}
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/20 shrink-0">
-                <Avatar className="h-9 w-9 border border-border shrink-0">
+              <div className="flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-3 border-b border-border bg-card/20 shrink-0">
+                {isMobile && (
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setMobileView("list")}>
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <Avatar className="h-8 w-8 md:h-9 md:w-9 border border-border shrink-0">
                   <AvatarImage src={activeConvo.buyerAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs md:text-sm">
                     {activeConvo.buyerName?.[0] || "B"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-foreground">{activeConvo.buyerName || "Buyer"}</p>
-                  <p className="text-xs text-muted-foreground truncate">{activeConvo.jobTitle}</p>
+                  <p className="font-semibold text-xs md:text-sm text-foreground truncate">{activeConvo.buyerName || "Buyer"}</p>
+                  <p className="text-[10px] md:text-xs text-muted-foreground truncate">{activeConvo.jobTitle}</p>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="text-[10px] text-muted-foreground">Your offer</p>
-                  <p className="text-base font-bold text-primary">{format(activeConvo.myPrice)}</p>
-                </div>
+                {!isMobile && (
+                  <div className="text-right shrink-0">
+                    <p className="text-[10px] text-muted-foreground">Your offer</p>
+                    <p className="text-base font-bold text-primary">{format(activeConvo.myPrice)}</p>
+                  </div>
+                )}
               </div>
+
+              {/* Mobile: inline offer controls */}
+              {isMobile && renderMobileOfferControls()}
 
               {/* Messages */}
               <ScrollArea className="flex-1 min-h-0">
-                <div className="p-4 space-y-3">
+                <div className="p-3 md:p-4 space-y-3">
                   {activeConvo && isDemo(activeConvo) ? (
-                    <>
-                      {demoChatMessages.map((msg) => renderMessageBubble(msg, msg.sender_id !== "demo-buyer"))}
-                    </>
+                    demoChatMessages.map((msg) => renderMessageBubble(msg, msg.sender_id !== "demo-buyer"))
                   ) : sellerChatMessages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
-                      <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
-                        <MessageSquare className="h-7 w-7 text-primary/50" />
+                    <div className="flex flex-col items-center justify-center py-12 md:py-20 text-center text-muted-foreground">
+                      <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-3 md:mb-4">
+                        <MessageSquare className="h-6 w-6 md:h-7 md:w-7 text-primary/50" />
                       </div>
                       <p className="text-sm font-medium">No messages yet</p>
                       <p className="text-xs mt-1 opacity-60">Your offer was sent automatically</p>
@@ -1208,19 +1322,19 @@ const ActiveRequest = () => {
               </ScrollArea>
 
               {activeConvo && isDemo(activeConvo) ? (
-                <div className="border-t border-border p-3 shrink-0 bg-card/20">
+                <div className="border-t border-border p-2.5 md:p-3 shrink-0 bg-card/20">
                   <div className="flex items-center gap-1.5 mb-2">
                     <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary">DEMO</Badge>
                     <span className="text-[10px] text-muted-foreground">
-                      {nextSellerMessage ? "Click Send to reply to the buyer" : demoOfferUpdated ? "Great job! You've completed the demo conversation ✅" : "Now try updating your offer in the right panel →"}
+                      {nextSellerMessage ? "Click Send to reply" : demoOfferUpdated ? "Demo complete ✅" : isMobile ? "Tap your offer bar above ↑" : "Update your offer in the right panel →"}
                     </span>
                   </div>
                   <form onSubmit={(e) => { e.preventDefault(); handleSendDemoChat(); }} className="flex gap-2">
                     <div className="flex-1 rounded-md border border-border/40 bg-background/60 px-3 py-2 text-sm text-foreground min-h-[36px] flex items-center">
                       {nextSellerMessage ? (
-                        <span className="text-muted-foreground italic">{nextSellerMessage}</span>
+                        <span className="text-muted-foreground italic text-xs md:text-sm truncate">{nextSellerMessage}</span>
                       ) : (
-                        <span className="text-muted-foreground/50">Conversation complete</span>
+                        <span className="text-muted-foreground/50 text-xs md:text-sm">Conversation complete</span>
                       )}
                     </div>
                     <Button id="tour-quotes-demo-send" type="submit" size="icon" disabled={!nextSellerMessage} className="shrink-0">
@@ -1229,13 +1343,13 @@ const ActiveRequest = () => {
                   </form>
                 </div>
               ) : (
-              <div className="border-t border-border p-3 shrink-0 bg-card/20">
+              <div className="border-t border-border p-2.5 md:p-3 shrink-0 bg-card/20">
                 <input type="file" accept="image/*" multiple ref={sellerFileInputRef} className="hidden" onChange={handleSellerImageSelect} />
                 {sellerImagePreviews.length > 0 && (
                   <div className="flex gap-2 mb-2 flex-wrap">
                     {sellerImagePreviews.map((src, i) => (
                       <div key={i} className="relative">
-                        <img src={src} alt="preview" className="h-14 w-14 object-cover rounded-lg border border-border" />
+                        <img src={src} alt="preview" className="h-12 w-12 md:h-14 md:w-14 object-cover rounded-lg border border-border" />
                         <button
                           type="button"
                           onClick={() => { setSellerImageFiles(p => p.filter((_, idx) => idx !== i)); setSellerImagePreviews(p => p.filter((_, idx) => idx !== i)); }}
@@ -1263,18 +1377,14 @@ const ActiveRequest = () => {
                 </form>
               </div>
               )}
-
             </div>
 
-            {/* ── Right panel: Quote Action Center ──────────────────────────── */}
+            {/* ── Right panel: desktop only ── */}
             <div id="tour-quotes-right-panel" className="hidden lg:flex flex-col w-72 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
-              {/* Expiry countdown */}
               {(() => {
                 const expiry = getExpiryInfo(activeConvo.quoteCreatedAt);
                 return (
-                  <div className={`px-4 py-2.5 border-b border-border flex items-center gap-2 ${
-                    expiry.urgent ? "bg-destructive/10" : "bg-muted/30"
-                  }`}>
+                  <div className={`px-4 py-2.5 border-b border-border flex items-center gap-2 ${expiry.urgent ? "bg-destructive/10" : "bg-muted/30"}`}>
                     <Timer className={`h-3.5 w-3.5 ${expiry.textColor}`} />
                     <span className={`text-xs font-medium ${expiry.textColor}`}>{expiry.label}</span>
                     <span className="text-[10px] text-muted-foreground">until auto-expiry</span>
@@ -1282,7 +1392,6 @@ const ActiveRequest = () => {
                 );
               })()}
 
-              {/* Request summary */}
               <div className="p-4 border-b border-border space-y-2.5">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Request Details</p>
                 <p className="text-sm font-semibold text-foreground leading-snug">{activeConvo.jobTitle}</p>
@@ -1299,7 +1408,6 @@ const ActiveRequest = () => {
                 </div>
               </div>
 
-              {/* Buyer info */}
               <div className="p-4 border-b border-border">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Buyer</p>
                 <div className="flex items-center gap-2.5">
@@ -1311,10 +1419,7 @@ const ActiveRequest = () => {
                     <p className="text-xs font-semibold text-foreground truncate">{activeConvo.buyerName || "Buyer"}</p>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                       {activeConvo.buyerRating && activeConvo.buyerRating > 0 && (
-                        <span className="flex items-center gap-0.5">
-                          <Star className="h-2.5 w-2.5 fill-primary text-primary" />
-                          {activeConvo.buyerRating.toFixed(1)}
-                        </span>
+                        <span className="flex items-center gap-0.5"><Star className="h-2.5 w-2.5 fill-primary text-primary" />{activeConvo.buyerRating.toFixed(1)}</span>
                       )}
                       {activeConvo.buyerTotalSpent !== null && activeConvo.buyerTotalSpent > 0 && (
                         <span>{format(activeConvo.buyerTotalSpent)} spent</span>
@@ -1324,7 +1429,6 @@ const ActiveRequest = () => {
                 </div>
               </div>
 
-              {/* Your current offer */}
               <div className="p-4 border-b border-border space-y-2">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Your Offer</p>
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
@@ -1339,105 +1443,61 @@ const ActiveRequest = () => {
                 </div>
               </div>
 
-              {/* Update offer */}
-              {(
               <div className="p-4 space-y-2">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Update Offer</p>
-                <Input
-                  type="number"
-                  placeholder="New price (€)"
-                  value={newQuotePrice}
-                  onChange={(e) => setNewQuotePrice(e.target.value)}
-                  className="text-sm h-8 bg-background/60"
-                />
+                <Input type="number" placeholder="New price (€)" value={newQuotePrice} onChange={(e) => setNewQuotePrice(e.target.value)} className="text-sm h-8 bg-background/60" />
                 <div className="flex gap-1.5">
-                  <Input
-                    type="number"
-                    placeholder="Time"
-                    value={newQuoteMinutes}
-                    onChange={(e) => setNewQuoteMinutes(e.target.value)}
-                    className="text-sm h-8 bg-background/60 flex-1"
-                  />
+                  <Input type="number" placeholder="Time" value={newQuoteMinutes} onChange={(e) => setNewQuoteMinutes(e.target.value)} className="text-sm h-8 bg-background/60 flex-1" />
                   <div className="flex border border-border rounded-md overflow-hidden h-8 text-xs shrink-0">
                     {(["minutes", "hours", "days"] as const).map((u) => (
-                      <button
-                        key={u}
-                        type="button"
-                        onClick={() => setNewQuoteUnit(u)}
-                        className={`px-2 transition-colors ${newQuoteUnit === u ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}
-                      >
+                      <button key={u} type="button" onClick={() => setNewQuoteUnit(u)} className={`px-2 transition-colors ${newQuoteUnit === u ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}>
                         {u === "minutes" ? "min" : u === "hours" ? "hr" : "day"}
                       </button>
                     ))}
                   </div>
                 </div>
-                <Button
-                  id="tour-quotes-update-offer-button"
-                  size="sm"
-                  className="w-full h-8 text-xs"
-                  onClick={activeConvo && isDemo(activeConvo) ? handleDemoUpdateOffer : handleSubmitNewQuote}
-                  disabled={submittingQuote || !newQuotePrice}
-                >
+                <Button id="tour-quotes-update-offer-button" size="sm" className="w-full h-8 text-xs" onClick={activeConvo && isDemo(activeConvo) ? handleDemoUpdateOffer : handleSubmitNewQuote} disabled={submittingQuote || !newQuotePrice}>
                   {submittingQuote ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
                   Send Updated Offer
                 </Button>
               </div>
-              )}
 
-              {/* Withdraw quote — only for pending quotes */}
               {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && !isDemo(activeConvo) && (
                 <div className="p-4 border-t border-border">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => setWithdrawDialog(true)}
-                  >
-                    <Ban className="h-3 w-3 mr-1" />
-                    Withdraw Quote
+                  <Button variant="ghost" size="sm" className="w-full h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setWithdrawDialog(true)}>
+                    <Ban className="h-3 w-3 mr-1" />Withdraw Quote
                   </Button>
                 </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <div className="text-center">
+          <div className={`flex-1 flex items-center justify-center text-muted-foreground ${isMobile && mobileView === "list" ? "hidden" : ""}`}>
+            <div className="text-center px-6">
               <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mx-auto mb-4">
                 <Zap className="h-7 w-7 text-primary/50" />
               </div>
-              <p className="text-sm font-medium text-foreground mb-1">
-                {quoteConvos.length > 0 ? "Select a quote" : "No pending quotes"}
-              </p>
-              <p className="text-xs text-muted-foreground mb-4">
-                {quoteConvos.length > 0 ? "Pick a conversation from the sidebar" : "Browse open requests to start quoting"}
-              </p>
+              <p className="text-sm font-medium text-foreground mb-1">{quoteConvos.length > 0 ? "Select a quote" : "No pending quotes"}</p>
+              <p className="text-xs text-muted-foreground mb-4">{quoteConvos.length > 0 ? "Pick a conversation from the list" : "Browse open requests to start quoting"}</p>
               {quoteConvos.length === 0 && (
                 <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
-                  <Search className="h-3 w-3 mr-1" />
-                  Browse Requests
+                  <Search className="h-3 w-3 mr-1" />Browse Requests
                 </Button>
               )}
             </div>
           </div>
         )}
 
-        {/* Withdraw Quote Dialog */}
         <Dialog open={withdrawDialog} onOpenChange={setWithdrawDialog}>
           <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-sm">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Ban className="h-5 w-5 text-destructive" />Withdraw Quote
-              </DialogTitle>
-              <DialogDescription>
-                This will remove your offer on &quot;{activeConvo?.jobTitle}&quot;. The buyer will be notified. This action cannot be undone.
-              </DialogDescription>
+              <DialogTitle className="flex items-center gap-2"><Ban className="h-5 w-5 text-destructive" />Withdraw Quote</DialogTitle>
+              <DialogDescription>This will remove your offer on &quot;{activeConvo?.jobTitle}&quot;. The buyer will be notified.</DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="ghost" onClick={() => setWithdrawDialog(false)} disabled={withdrawing}>Cancel</Button>
               <Button variant="destructive" onClick={handleWithdrawQuote} disabled={withdrawing} className="gap-1.5">
-                {withdrawing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
-                Withdraw
+                {withdrawing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}Withdraw
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -1449,7 +1509,7 @@ const ActiveRequest = () => {
   // ── BUYER LAYOUT ───────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
+      <div className="max-w-6xl mx-auto px-3 py-4 sm:px-6 sm:py-6">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-start gap-3">
@@ -1569,7 +1629,7 @@ const ActiveRequest = () => {
               ))}
             </div>
           )}
-          <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex flex-col" style={{ height: "560px" }}>
+          <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex flex-col" style={{ height: isMobile ? "calc(100vh - 420px)" : "560px", minHeight: "300px" }}>
             {selectedQuote && (
               <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-card/60 shrink-0">
                 <Avatar className="h-7 w-7 border border-border">
