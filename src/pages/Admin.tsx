@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -27,6 +28,7 @@ import {
   CheckCircle2, XCircle, Eye, Ban, RefreshCw, DollarSign,
   MessageSquare, Clock, ArrowRight, BarChart3, Wallet, ArrowDownToLine,
   Headphones, Send, Bot, User, MessageSquarePlus, Star, Trash2,
+  Flag, ShieldAlert,
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -120,6 +122,19 @@ interface FeedbackRow {
   created_at: string;
 }
 
+interface ReportRow {
+  id: string;
+  reporter_id: string;
+  reporter_name: string;
+  reported_user_id: string;
+  reported_user_name: string;
+  reason: string;
+  description: string | null;
+  status: string;
+  admin_notes: string | null;
+  created_at: string;
+}
+
 // ─── Component ───────────────────────────────────────────────────
 
 const Admin = () => {
@@ -178,8 +193,16 @@ const Admin = () => {
   const [feedbackRatingFilter, setFeedbackRatingFilter] = useState("all");
   const [feedbackCategoryFilter, setFeedbackCategoryFilter] = useState("all");
 
+  // Reports
+  const [reports, setReports] = useState<ReportRow[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsFilter, setReportsFilter] = useState("pending");
+  const [selectedReport, setSelectedReport] = useState<ReportRow | null>(null);
+  const [reportAdminNote, setReportAdminNote] = useState("");
+  const [reportActionLoading, setReportActionLoading] = useState(false);
+
   // Stats
-  const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0 });
+  const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0, pendingReports: 0 });
 
   // ─── Auth check ─────────────────────────────────────────────────
 
@@ -215,6 +238,7 @@ const Admin = () => {
     if (activeTab === "withdrawals") loadWithdrawals();
     if (activeTab === "support") loadSupportTickets();
     if (activeTab === "feedback") loadFeedback();
+    if (activeTab === "reports") loadReports();
     loadStats();
   }, [isAdmin, activeTab]);
 
@@ -263,15 +287,21 @@ const Admin = () => {
     if (isAdmin && activeTab === "support") loadSupportTickets();
   }, [supportFilter]);
 
+  // Reload reports when filter changes
+  useEffect(() => {
+    if (isAdmin && activeTab === "reports") loadReports();
+  }, [reportsFilter]);
+
   // ─── Data loaders ───────────────────────────────────────────────
 
   const loadStats = async () => {
-    const [jobsCount, disputeCount, usersCount, transactionsData, pendingWdCount] = await Promise.all([
+    const [jobsCount, disputeCount, usersCount, transactionsData, pendingWdCount, pendingReportsCount] = await Promise.all([
       supabase.from("jobs").select("id", { count: "exact", head: true }),
       supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "disputed"),
       supabase.from("profiles").select("id", { count: "exact", head: true }),
       supabase.from("transactions").select("amount").eq("type", "session_payment").eq("status", "completed"),
       supabase.from("withdrawals").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("user_reports" as any).select("id", { count: "exact", head: true }).eq("status", "pending"),
     ]);
     const revenue = transactionsData.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
     setStats({
@@ -281,6 +311,7 @@ const Admin = () => {
       revenue,
       pendingWithdrawals: pendingWdCount.count || 0,
       openSupport: 0,
+      pendingReports: (pendingReportsCount as any).count || 0,
     });
   };
 
@@ -466,6 +497,51 @@ const Admin = () => {
     await supabase.from("feedback").delete().eq("id", id);
     setFeedbackItems(prev => prev.filter(f => f.id !== id));
     toast({ title: "Feedback deleted" });
+  };
+
+  const loadReports = async () => {
+    setReportsLoading(true);
+    let query = supabase.from("user_reports" as any).select("*").order("created_at", { ascending: false });
+    if (reportsFilter !== "all") query = query.eq("status", reportsFilter);
+
+    const { data: rawReports } = await query;
+    if (!rawReports) { setReportsLoading(false); return; }
+
+    const enriched: ReportRow[] = await Promise.all(
+      (rawReports as any[]).map(async (r) => {
+        const [reporterProfile, reportedProfile] = await Promise.all([
+          supabase.from("profiles").select("display_name").eq("id", r.reporter_id).single(),
+          supabase.from("profiles").select("display_name").eq("id", r.reported_user_id).single(),
+        ]);
+        return {
+          ...r,
+          reporter_name: reporterProfile.data?.display_name || "Unknown",
+          reported_user_name: reportedProfile.data?.display_name || "Unknown",
+        };
+      })
+    );
+
+    setReports(enriched);
+    setReportsLoading(false);
+  };
+
+  const handleReportAction = async (reportId: string, action: "reviewed" | "dismissed" | "action_taken") => {
+    setReportActionLoading(true);
+    try {
+      await supabase.from("user_reports" as any).update({
+        status: action,
+        admin_notes: reportAdminNote.trim() || null,
+      } as any).eq("id", reportId);
+
+      toast({ title: `Report ${action === "action_taken" ? "actioned" : action}` });
+      setSelectedReport(null);
+      setReportAdminNote("");
+      loadReports();
+      loadStats();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setReportActionLoading(false);
   };
 
   const openSupportTicket = async (ticket: SupportTicket) => {
@@ -816,6 +892,11 @@ const Admin = () => {
             <TabsTrigger value="feedback" className="gap-2">
               <MessageSquarePlus className="h-4 w-4" />
               Feedback
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="gap-2">
+              <ShieldAlert className="h-4 w-4" />
+              Reports
+              {stats.pendingReports > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingReports}</Badge>}
             </TabsTrigger>
           </TabsList>
 
@@ -1422,7 +1503,162 @@ const Admin = () => {
               </div>
             )}
           </TabsContent>
+
+          {/* ═══ REPORTS TAB ═══ */}
+          <TabsContent value="reports">
+            <div className="flex items-center gap-3 mb-4">
+              <Select value={reportsFilter} onValueChange={setReportsFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="reviewed">Reviewed</SelectItem>
+                  <SelectItem value="action_taken">Action Taken</SelectItem>
+                  <SelectItem value="dismissed">Dismissed</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={loadReports}>
+                <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+              </Button>
+            </div>
+
+            {reportsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+              </div>
+            ) : reports.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <ShieldCheck className="h-12 w-12 mx-auto mb-3 text-primary/40" />
+                  <p className="font-semibold text-foreground">No reports</p>
+                  <p className="text-sm">No user reports matching this filter.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {reports.map((r) => (
+                  <Card key={r.id} className="hover:border-primary/30 transition-colors cursor-pointer" onClick={() => { setSelectedReport(r); setReportAdminNote(r.admin_notes || ""); }}>
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Flag className="h-4 w-4 text-destructive" />
+                            <span className="font-medium text-foreground">{r.reported_user_name}</span>
+                            <Badge variant={r.status === "pending" ? "destructive" : r.status === "action_taken" ? "default" : "secondary"}>
+                              {r.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Reported by <span className="font-medium">{r.reporter_name}</span> — {r.reason.replace("_", " ")}
+                          </p>
+                          {r.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">{r.description}</p>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
         </Tabs>
+
+        {/* ═══ REPORT DETAIL DIALOG ═══ */}
+        <Dialog open={!!selectedReport} onOpenChange={(open) => { if (!open) setSelectedReport(null); }}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-destructive" />
+                Report Details
+              </DialogTitle>
+            </DialogHeader>
+            {selectedReport && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Reported User</p>
+                    <p className="font-medium text-foreground">{selectedReport.reported_user_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Reporter</p>
+                    <p className="font-medium text-foreground">{selectedReport.reporter_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Reason</p>
+                    <p className="font-medium text-foreground capitalize">{selectedReport.reason.replace("_", " ")}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Status</p>
+                    <Badge variant={selectedReport.status === "pending" ? "destructive" : "secondary"}>{selectedReport.status}</Badge>
+                  </div>
+                </div>
+
+                {selectedReport.description && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Description</p>
+                    <p className="text-sm text-foreground bg-muted/50 p-3 rounded-md">{selectedReport.description}</p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="report-admin-note">Admin Notes</Label>
+                  <Textarea
+                    id="report-admin-note"
+                    value={reportAdminNote}
+                    onChange={(e) => setReportAdminNote(e.target.value)}
+                    placeholder="Add notes about the action taken..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    disabled={reportActionLoading}
+                    onClick={() => handleReportAction(selectedReport.id, "action_taken")}
+                  >
+                    {reportActionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Ban className="h-4 w-4 mr-1" />}
+                    Take Action
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={reportActionLoading}
+                    onClick={() => handleReportAction(selectedReport.id, "reviewed")}
+                  >
+                    <Eye className="h-4 w-4 mr-1" /> Mark Reviewed
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={reportActionLoading}
+                    onClick={() => handleReportAction(selectedReport.id, "dismissed")}
+                  >
+                    <XCircle className="h-4 w-4 mr-1" /> Dismiss
+                  </Button>
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t border-border">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => window.open(`/mentor/${selectedReport.reported_user_id}`, "_blank")}
+                  >
+                    <Eye className="h-4 w-4 mr-1" /> View Profile
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
       
 

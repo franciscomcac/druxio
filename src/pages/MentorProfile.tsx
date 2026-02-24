@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SimilarExperts from "@/components/experts/SimilarExperts";
 import PortfolioSection from "@/components/experts/PortfolioSection";
 import AvailabilityBadge from "@/components/experts/AvailabilityBadge";
+import ReportUserDialog from "@/components/reports/ReportUserDialog";
 import { useFavorites } from "@/hooks/use-favorites";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +66,7 @@ const MentorProfile = () => {
   const [loading, setLoading] = useState(true);
   const [completedOrders, setCompletedOrders] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
+  const [reportOpen, setReportOpen] = useState(false);
 
   useSEO({
     title: mentor ? mentor.display_name : "Expert Profile",
@@ -194,7 +196,7 @@ const MentorProfile = () => {
             >
               <Heart className={`h-4 w-4 ${mentorId && isFavorite(mentorId) ? "fill-current" : ""}`} />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground"><Flag className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" onClick={() => setReportOpen(true)} title="Report this user"><Flag className="h-4 w-4" /></Button>
           </div>
         </div>
 
@@ -437,7 +439,14 @@ const MentorProfile = () => {
         
       </main>
 
-      
+      {mentor && mentorId && (
+        <ReportUserDialog
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          reportedUserId={mentorId}
+          reportedUserName={mentor.display_name || "Unknown"}
+        />
+      )}
     </div>
   );
 };
