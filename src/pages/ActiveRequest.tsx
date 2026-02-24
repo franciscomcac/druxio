@@ -925,9 +925,10 @@ const ActiveRequest = () => {
 
   const isDemo = (convo: SellerConvo) => convo.jobId === "demo-tutorial-quote";
 
-  // Filter to pending quotes only + always include demo
+  // Filter to pending quotes only + include demo only during tutorial
+  const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
   const realQuoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
-  const quoteConvos = [...realQuoteConvos, DEMO_CONVO];
+  const quoteConvos = isTutorialActive ? [...realQuoteConvos, DEMO_CONVO] : realQuoteConvos;
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
