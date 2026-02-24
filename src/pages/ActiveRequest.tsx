@@ -1237,7 +1237,7 @@ const ActiveRequest = () => {
             </div>
 
             {/* ── Right panel: Quote Action Center ──────────────────────────── */}
-            <div className="hidden lg:flex flex-col w-72 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
+            <div id="tour-quotes-right-panel" className="hidden lg:flex flex-col w-72 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
               {/* Expiry countdown */}
               {(() => {
                 const expiry = getExpiryInfo(activeConvo.quoteCreatedAt);
