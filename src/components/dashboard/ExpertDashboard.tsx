@@ -596,8 +596,9 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingJobs ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : (() => {
-                    const visibleJobs = [...openJobs.filter(j => !discardedJobIds.has(j.id)), DEMO_JOB];
-                    if (visibleJobs.length === 0) return (
+                    const realJobs = openJobs.filter(j => !discardedJobIds.has(j.id));
+                    const visibleJobs = realJobs;
+                    if (visibleJobs.length === 0 && !DEMO_JOB) return (
                       <div className="text-center py-10 text-muted-foreground">
                         <div className="mx-auto mb-3 h-12 w-12 rounded-sm bg-primary/[0.06] flex items-center justify-center">
                           <Bell className="h-6 w-6 text-primary/40" />
@@ -606,6 +607,33 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                         <p className="text-xs">New requests will appear here in real-time</p>
                       </div>
                     );
+                    return (
+                      <div className="space-y-1.5">
+                        {/* Demo job — always pinned at top */}
+                        <div
+                          id="tour-demo-job"
+                          className="flex items-center gap-2 rounded-sm border border-primary/30 bg-primary/[0.04] p-3 transition-all duration-200 hover:border-primary/40 hover:bg-primary/[0.06] mb-2"
+                        >
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setPreviewJob(DEMO_JOB)}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="default" className="text-[9px] px-1.5 py-0 h-4">DEMO</Badge>
+                              <p className="font-medium text-foreground text-sm leading-snug line-clamp-1">{DEMO_JOB.title}</p>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="font-bold text-foreground">€{DEMO_JOB.budget_max}</span>
+                              <span className="flex items-center gap-0.5"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(DEMO_JOB.deadline_minutes)}</span>
+                              <span className="text-primary text-[10px]">Practice quoting!</span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="h-8 px-2.5 gap-1 rounded-sm text-xs"
+                            onClick={() => { setQuoteDialog(DEMO_JOB); setQuotePrice(String(Math.round(DEMO_JOB.budget_max * 0.8))); }}
+                          >
+                            <Send className="h-3 w-3" />
+                            <span className="hidden sm:inline">Quote</span>
+                          </Button>
+                        </div>
                     const grouped = groupByCategory(visibleJobs.slice(0, 10), j => j.category, subscribedCategories);
                     if (grouped.length === 0) return (
                       <div className="text-center py-10 text-muted-foreground">
