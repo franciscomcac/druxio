@@ -120,7 +120,7 @@ Druxio is an on-demand marketplace that connects people who need fast, focused e
 
 Think of it like this: you don't always need to hire a full-time consultant, book a three-hour coaching call, or post on a forum and wait days for an answer. Sometimes you just need **the right person for 20 minutes**, right now.
 
-That's the gap Duxio fills. Whether you're a freelancer trying to unblock a technical issue, a small business owner making a critical decision, a student who needs a concept explained properly, or an individual navigating a complex situation — Duxio gives you access to experts on your terms.
+That's the gap Druxio fills. Whether you're a freelancer trying to unblock a technical issue, a small business owner making a critical decision, a student who needs a concept explained properly, or an individual navigating a complex situation — Druxio gives you access to experts on your terms.
 
 ## What We've Built
 
