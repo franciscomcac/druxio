@@ -162,7 +162,7 @@ const CategoryPage = () => {
             {/* CTA */}
             <div className="mt-8 flex flex-wrap gap-3">
               <Button size="lg" className="gap-2 shadow-glow" onClick={() => navigate(`/post-request?category=${meta.label}`)}>
-                <Plus className="h-4 w-4" /> Post a Request
+                <Plus className="h-4 w-4" /> Post a Task
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate(`/search?categories=${meta.label}`)}>
                 Browse All Experts <ArrowRight className="ml-2 h-4 w-4" />

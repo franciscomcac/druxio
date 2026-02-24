@@ -32,23 +32,30 @@ const Newsletter = () => {
             {submitted ? (
               <div className="flex items-center gap-3 rounded-lg bg-primary/10 p-4 text-primary border border-primary/20">
                 <CheckCircle className="h-5 w-5" />
-                <span className="font-medium text-sm">Thanks! You're on the list.</span>
+                <span className="font-medium text-sm">Thanks — a confirmation email has been sent.</span>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="flex gap-2">
-                <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  maxLength={255}
-                  className="flex-1 h-11 rounded-lg bg-background border-border"
-                />
-                <Button type="submit" className="gap-2 h-11 rounded-lg px-5">
-                  Subscribe <ArrowRight className="h-4 w-4" />
-                </Button>
-              </form>
+              <div className="space-y-2">
+                <label htmlFor="newsletter-email" className="text-sm font-medium text-foreground">
+                  Your email
+                </label>
+                <form onSubmit={handleSubmit} className="flex gap-2">
+                  <Input
+                    id="newsletter-email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    maxLength={255}
+                    className="flex-1 h-11 rounded-lg bg-background border-border"
+                  />
+                  <Button type="submit" className="gap-2 h-11 rounded-lg px-5">
+                    Subscribe <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </form>
+                <p className="text-xs text-muted-foreground">No spam. Unsubscribe anytime.</p>
+              </div>
             )}
           </div>
 

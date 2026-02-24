@@ -183,7 +183,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
             <CardHeader className="pb-2"><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
             <CardContent className="space-y-2.5">
               <Button className="w-full justify-between shadow-glow hover:shadow-glow-lg transition-shadow h-10" onClick={() => navigate("/post-request")}>
-                Post a Request <ArrowRight className="h-4 w-4" />
+                Post a Task <ArrowRight className="h-4 w-4" />
               </Button>
               <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20 h-10" onClick={() => navigate("/wallet")}>
                 Top Up Wallet <DollarSign className="h-4 w-4" />

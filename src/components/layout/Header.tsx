@@ -261,7 +261,7 @@ const Header = () => {
                     </div>
 
                     <Link to="/post-request" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full gap-2 mb-2 shadow-glow"><Plus className="h-4 w-4" /> Post Request</Button>
+                      <Button className="w-full gap-2 mb-2 shadow-glow"><Plus className="h-4 w-4" /> Post a Task</Button>
                     </Link>
                     <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start gap-2 h-11"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>

@@ -21,13 +21,14 @@ const LiveStats = () => {
               key={i}
               className={`text-center reveal delay-${i * 100 + 100}`}
             >
-              <p className="text-2xl font-bold text-primary tabular-nums">
+              <p className="text-3xl font-extrabold text-primary tabular-nums">
                 {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
               </p>
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">{stat.label}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
+        <p className="text-center text-[10px] text-muted-foreground/50 mt-3">Updated just now</p>
       </div>
     </section>
   );

@@ -30,7 +30,7 @@ const MentorSpotlight = () => {
           <div className="reveal reveal-right delay-200">
             <Link to="/post-request">
               <Button className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500">
-                Post Your Request <ArrowRight className="h-4 w-4" />
+                Post a Task <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
