@@ -153,7 +153,7 @@ You'll never miss an update. Druxio pushes instant notifications for new quotes,
 ### Dispute Resolution
 We know things don't always go perfectly. Druxio includes a built-in dispute process with admin oversight to mediate when a session doesn't go as expected.
 
-## Who Is Duxio For?
+## Who Is Druxio For?
 
 This is important to us. Duxio is built for **real human needs across a wide range of domains**:
 
