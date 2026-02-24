@@ -133,6 +133,8 @@ interface ReportRow {
   status: string;
   admin_notes: string | null;
   created_at: string;
+  image_urls: string[] | null;
+  is_banned: boolean;
 }
 
 // ─── Component ───────────────────────────────────────────────────
@@ -200,6 +202,7 @@ const Admin = () => {
   const [selectedReport, setSelectedReport] = useState<ReportRow | null>(null);
   const [reportAdminNote, setReportAdminNote] = useState("");
   const [reportActionLoading, setReportActionLoading] = useState(false);
+  const [reportSignedUrls, setReportSignedUrls] = useState<string[]>([]);
 
   // Stats
   const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0, pendingReports: 0 });
@@ -286,6 +289,12 @@ const Admin = () => {
   useEffect(() => {
     if (isAdmin && activeTab === "support") loadSupportTickets();
   }, [supportFilter]);
+
+  // Load signed URLs for report images
+  useEffect(() => {
+    if (!selectedReport?.image_urls?.length) { setReportSignedUrls([]); return; }
+    Promise.all(selectedReport.image_urls.map(p => getSignedImageUrl(p))).then(setReportSignedUrls);
+  }, [selectedReport]);
 
   // Reload reports when filter changes
   useEffect(() => {
@@ -511,12 +520,13 @@ const Admin = () => {
       (rawReports as any[]).map(async (r) => {
         const [reporterProfile, reportedProfile] = await Promise.all([
           supabase.from("profiles").select("display_name").eq("id", r.reporter_id).single(),
-          supabase.from("profiles").select("display_name").eq("id", r.reported_user_id).single(),
+          supabase.from("profiles").select("display_name, is_banned").eq("id", r.reported_user_id).single(),
         ]);
         return {
           ...r,
           reporter_name: reporterProfile.data?.display_name || "Unknown",
           reported_user_name: reportedProfile.data?.display_name || "Unknown",
+          is_banned: reportedProfile.data?.is_banned || false,
         };
       })
     );
@@ -542,6 +552,48 @@ const Admin = () => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
     setReportActionLoading(false);
+  };
+
+  const handleBanUser = async (userId: string, userName: string, ban: boolean) => {
+    setReportActionLoading(true);
+    try {
+      await supabase.from("profiles").update({
+        is_banned: ban,
+        ban_reason: ban ? (reportAdminNote.trim() || "Banned by admin") : null,
+        banned_at: ban ? new Date().toISOString() : null,
+      }).eq("id", userId);
+
+      if (selectedReport) {
+        await supabase.from("user_reports" as any).update({
+          status: "action_taken",
+          admin_notes: reportAdminNote.trim() || `User ${ban ? "banned" : "unbanned"} by admin`,
+        } as any).eq("id", selectedReport.id);
+      }
+
+      // Notify the user
+      await supabase.from("notifications").insert({
+        user_id: userId,
+        type: ban ? "account_banned" : "account_unbanned",
+        title: ban ? "Account Suspended" : "Account Reinstated",
+        message: ban
+          ? "Your account has been suspended due to violations of our community guidelines. Contact support if you believe this is an error."
+          : "Your account has been reinstated. Please adhere to our community guidelines.",
+      });
+
+      toast({ title: ban ? `${userName} has been banned` : `${userName} has been unbanned` });
+      setSelectedReport(null);
+      setReportAdminNote("");
+      loadReports();
+      loadStats();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setReportActionLoading(false);
+  };
+
+  const getSignedImageUrl = async (path: string): Promise<string> => {
+    const { data } = await supabase.storage.from("report-images").createSignedUrl(path, 3600);
+    return data?.signedUrl || "";
   };
 
   const openSupportTicket = async (ticket: SupportTicket) => {
@@ -1580,11 +1632,16 @@ const Admin = () => {
               </DialogTitle>
             </DialogHeader>
             {selectedReport && (
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Reported User</p>
-                    <p className="font-medium text-foreground">{selectedReport.reported_user_name}</p>
+                    <p className="font-medium text-foreground">
+                      {selectedReport.reported_user_name}
+                      {selectedReport.is_banned && (
+                        <Badge variant="destructive" className="ml-2 text-[10px]">BANNED</Badge>
+                      )}
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Reporter</p>
@@ -1607,6 +1664,20 @@ const Admin = () => {
                   </div>
                 )}
 
+                {/* Evidence images */}
+                {reportSignedUrls.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Evidence ({reportSignedUrls.length} image{reportSignedUrls.length > 1 ? "s" : ""})</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {reportSignedUrls.map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-md overflow-hidden border border-border hover:border-primary transition-colors">
+                          <img src={url} alt={`Evidence ${i + 1}`} className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="report-admin-note">Admin Notes</Label>
                   <Textarea
@@ -1618,7 +1689,7 @@ const Admin = () => {
                   />
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
                     variant="destructive"
@@ -1646,7 +1717,27 @@ const Admin = () => {
                   </Button>
                 </div>
 
+                {/* Ban / Unban section */}
                 <div className="flex gap-2 pt-2 border-t border-border">
+                  {selectedReport.is_banned ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={reportActionLoading}
+                      onClick={() => handleBanUser(selectedReport.reported_user_id, selectedReport.reported_user_name, false)}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1" /> Unban User
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={reportActionLoading}
+                      onClick={() => handleBanUser(selectedReport.reported_user_id, selectedReport.reported_user_name, true)}
+                    >
+                      <Ban className="h-4 w-4 mr-1" /> Ban User
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
