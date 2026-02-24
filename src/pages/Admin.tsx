@@ -513,12 +513,13 @@ const Admin = () => {
       (rawReports as any[]).map(async (r) => {
         const [reporterProfile, reportedProfile] = await Promise.all([
           supabase.from("profiles").select("display_name").eq("id", r.reporter_id).single(),
-          supabase.from("profiles").select("display_name").eq("id", r.reported_user_id).single(),
+          supabase.from("profiles").select("display_name, is_banned").eq("id", r.reported_user_id).single(),
         ]);
         return {
           ...r,
           reporter_name: reporterProfile.data?.display_name || "Unknown",
           reported_user_name: reportedProfile.data?.display_name || "Unknown",
+          is_banned: reportedProfile.data?.is_banned || false,
         };
       })
     );
