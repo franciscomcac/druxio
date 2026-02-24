@@ -230,11 +230,17 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         message: quoteMessage || null,
       }));
       
-      toast({ title: "Demo quote sent! ✅", description: "Let's see it in the Quotes Terminal." });
+      toast({ title: "Demo quote sent! ✅", description: "Great job! The tour will continue." });
       setQuoteDialog(null);
       setQuotePrice("");
       setQuoteMessage("");
-      navigate("/quotes");
+
+      // If tutorial is active, resume tour instead of navigating
+      if (isTutorialActive) {
+        window.dispatchEvent(new Event("seller-tutorial-quote-sent"));
+      } else {
+        navigate("/quotes");
+      }
       return;
     }
 

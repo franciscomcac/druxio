@@ -433,6 +433,21 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     }
   }, [location.pathname, initDriver]);
 
+  // Resume after demo quote is sent
+  useEffect(() => {
+    const handler = () => {
+      const substep = localStorage.getItem(SUBSTEP_KEY);
+      if (substep) {
+        localStorage.removeItem(SUBSTEP_KEY);
+        const stepIdx = parseInt(substep, 10);
+        // Resume phase 0 from the step after the demo
+        setTimeout(() => initDriver(0, stepIdx), 600);
+      }
+    };
+    window.addEventListener("seller-tutorial-quote-sent", handler);
+    return () => window.removeEventListener("seller-tutorial-quote-sent", handler);
+  }, [initDriver]);
+
   // Auto-start on first seller login
   useEffect(() => {
     if (autoStart && userId) {
