@@ -146,7 +146,7 @@ serve(async (req) => {
             ${row("Amount credited", `€${earning.toFixed(2)}`)}
           `)}
           ${p("The funds are now in your wallet and available for withdrawal.")}
-          ${cta("View Wallet", "https://duxio.lovable.app/wallet")}
+          ${cta("View Wallet", "https://druxio.lovable.app/wallet")}
         `);
         await sendResend(sellerEmail, `Payment released! €${earning.toFixed(2)} added to your wallet 💰`, html, resendKey);
       }
