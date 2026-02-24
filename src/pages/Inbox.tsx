@@ -106,7 +106,7 @@ const Inbox = () => {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [showChat, setShowChat] = useState(false); // mobile: show chat panel
-  const [activeFilter, setActiveFilter] = useState<"all" | "order" | "quote" | "delivered">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "order" | "delivered" | "cancelled">("all");
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
