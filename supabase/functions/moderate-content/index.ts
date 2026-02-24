@@ -38,7 +38,7 @@ serve(async (req) => {
       );
     }
 
-    const systemPrompt = `You are a content moderation system for a freelance marketplace called Duxio.
+    const systemPrompt = `You are a content moderation system for a freelance marketplace called Druxio.
 
 Your ONLY job is to block content that is clearly harmful or violates these specific rules:
 

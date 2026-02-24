@@ -11,7 +11,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 const PrivacyPolicy = () => {
   useSEO({
     title: "Privacy Policy",
-    description: "How Duxio collects, uses, and protects your personal data. Read our full privacy policy.",
+    description: "How Druxio collects, uses, and protects your personal data. Read our full privacy policy.",
     canonical: "/privacy",
   });
 
@@ -29,19 +29,19 @@ const PrivacyPolicy = () => {
         </div>
 
         <p className="mb-10 text-base leading-relaxed text-muted-foreground">
-          Duxio ("we", "our", "us") is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights regarding that data. By using Duxio you agree to the practices described here.
+          Druxio ("we", "our", "us") is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights regarding that data. By using Druxio you agree to the practices described here.
         </p>
 
         <Section title="1. Information We Collect">
           <p><strong className="text-foreground">Account data:</strong> When you register, we collect your email address, display name, and password (hashed). If you choose, you can also add a profile photo, bio, location, and skills.</p>
           <p><strong className="text-foreground">Transaction data:</strong> We record details of requests, quotes, orders, payments, and withdrawals to operate the escrow system and resolve disputes. We do not store your full card number — payments are processed by Stripe and PayPal.</p>
-          <p><strong className="text-foreground">Communications:</strong> Messages sent through Duxio's in-app chat are stored to enable the service and support dispute resolution.</p>
+          <p><strong className="text-foreground">Communications:</strong> Messages sent through Druxio's in-app chat are stored to enable the service and support dispute resolution.</p>
           <p><strong className="text-foreground">Usage data:</strong> We collect standard web logs including IP address, browser type, pages visited, and timestamps. We use this data to improve the platform and detect fraud.</p>
           <p><strong className="text-foreground">Cookies:</strong> We use essential session cookies and optional analytics cookies. See our Cookie Policy for details.</p>
         </Section>
 
         <Section title="2. How We Use Your Information">
-          <p>• To provide, operate, and improve the Duxio platform.</p>
+          <p>• To provide, operate, and improve the Druxio platform.</p>
           <p>• To process payments, manage escrow, and handle withdrawals.</p>
           <p>• To communicate service updates, security alerts, and support messages.</p>
           <p>• To detect, investigate, and prevent fraudulent or illegal activity.</p>
@@ -51,9 +51,9 @@ const PrivacyPolicy = () => {
 
         <Section title="3. Sharing Your Information">
           <p>We do not sell your personal data. We share data only in the following circumstances:</p>
-          <p><strong className="text-foreground">With other users:</strong> Your public profile (display name, rating, skills, response time) is visible to other Duxio users. Messages within an order are visible to both parties in that order.</p>
+          <p><strong className="text-foreground">With other users:</strong> Your public profile (display name, rating, skills, response time) is visible to other Druxio users. Messages within an order are visible to both parties in that order.</p>
           <p><strong className="text-foreground">With service providers:</strong> We use Stripe (payments), Supabase (database), and Resend (email) as processors. They access only what's necessary to deliver their service.</p>
-          <p><strong className="text-foreground">Legal requirements:</strong> We may disclose data when required by law, court order, or to protect Duxio's legal rights.</p>
+          <p><strong className="text-foreground">Legal requirements:</strong> We may disclose data when required by law, court order, or to protect Druxio's legal rights.</p>
         </Section>
 
         <Section title="4. Data Retention">
@@ -61,11 +61,11 @@ const PrivacyPolicy = () => {
         </Section>
 
         <Section title="5. International Transfers">
-          <p>Duxio operates globally. Your data may be processed in countries outside the EEA (including the United States). Where transfers occur, we rely on Standard Contractual Clauses or other approved mechanisms to ensure adequate protection.</p>
+          <p>Druxio operates globally. Your data may be processed in countries outside the EEA (including the United States). Where transfers occur, we rely on Standard Contractual Clauses or other approved mechanisms to ensure adequate protection.</p>
         </Section>
 
         <Section title="6. Your Rights">
-          <p>Depending on your jurisdiction you may have the right to: access your personal data, correct inaccurate data, request deletion ("right to be forgotten"), restrict or object to processing, and data portability. To exercise these rights, email <a href="mailto:support@duxio.store" className="text-primary underline underline-offset-4">support@duxio.store</a>. We will respond within 30 days.</p>
+          <p>Depending on your jurisdiction you may have the right to: access your personal data, correct inaccurate data, request deletion ("right to be forgotten"), restrict or object to processing, and data portability. To exercise these rights, email <a href="mailto:support@druxio.store" className="text-primary underline underline-offset-4">support@druxio.store</a>. We will respond within 30 days.</p>
         </Section>
 
         <Section title="7. Security">
@@ -73,15 +73,15 @@ const PrivacyPolicy = () => {
         </Section>
 
         <Section title="8. Children">
-          <p>Duxio is not intended for users under 18 years of age. We do not knowingly collect personal data from children. If you believe a child has registered, please contact us and we will delete the account promptly.</p>
+          <p>Druxio is not intended for users under 18 years of age. We do not knowingly collect personal data from children. If you believe a child has registered, please contact us and we will delete the account promptly.</p>
         </Section>
 
         <Section title="9. Changes to This Policy">
-          <p>We may update this policy from time to time. We will notify you of significant changes by email or by posting a notice on the platform. Continued use of Duxio after changes constitutes acceptance.</p>
+          <p>We may update this policy from time to time. We will notify you of significant changes by email or by posting a notice on the platform. Continued use of Druxio after changes constitutes acceptance.</p>
         </Section>
 
         <Section title="10. Contact">
-          <p>For privacy-related questions or requests, contact our Data Protection team at <a href="mailto:support@duxio.store" className="text-primary underline underline-offset-4">support@duxio.store</a>.</p>
+          <p>For privacy-related questions or requests, contact our Data Protection team at <a href="mailto:support@druxio.store" className="text-primary underline underline-offset-4">support@druxio.store</a>.</p>
         </Section>
       </div>
     </main>

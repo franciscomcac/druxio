@@ -80,7 +80,7 @@ const MentorProfile = () => {
       "description": mentor.bio || "Verified expert on Druxio",
       "image": mentor.avatar_url || undefined,
       "jobTitle": categories.length > 0 ? `${categories[0]} Expert` : "Freelance Expert",
-      "url": `https://duxio.lovable.app/mentor/${mentorId}`,
+      "url": `https://druxio.lovable.app/mentor/${mentorId}`,
       ...(reviews.length > 0 && mentor.rating_avg ? {
         "aggregateRating": {
           "@type": "AggregateRating",

@@ -19,7 +19,7 @@ const tableRows = [
 const CookiePolicy = () => {
   useSEO({
     title: "Cookie Policy",
-    description: "How Duxio uses cookies and similar technologies. Manage your cookie preferences.",
+    description: "How Druxio uses cookies and similar technologies. Manage your cookie preferences.",
     canonical: "/cookie-policy",
   });
 
@@ -37,7 +37,7 @@ const CookiePolicy = () => {
         </div>
 
         <p className="mb-10 text-base leading-relaxed text-muted-foreground">
-          Duxio uses cookies and similar technologies to provide, secure, and improve the Platform. This Cookie Policy explains what cookies are, which ones we use, and how you can control them.
+          Druxio uses cookies and similar technologies to provide, secure, and improve the Platform. This Cookie Policy explains what cookies are, which ones we use, and how you can control them.
         </p>
 
         <Section title="1. What Are Cookies?">
@@ -48,7 +48,7 @@ const CookiePolicy = () => {
           <p>We use the following categories of cookies:</p>
           <p><strong className="text-foreground">Essential cookies</strong> — required for the Platform to function. You cannot opt out of these.</p>
           <p><strong className="text-foreground">Functional cookies</strong> — remember your preferences (e.g. theme, currency). Disabling these may affect your experience.</p>
-          <p><strong className="text-foreground">Analytics cookies</strong> — help us understand how users interact with Duxio. These are optional and can be declined.</p>
+          <p><strong className="text-foreground">Analytics cookies</strong> — help us understand how users interact with Druxio. These are optional and can be declined.</p>
 
           <div className="mt-4 overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
@@ -75,7 +75,7 @@ const CookiePolicy = () => {
         </Section>
 
         <Section title="3. Third-Party Cookies">
-          <p>Duxio integrates with the following third-party services that may set their own cookies:</p>
+          <p>Druxio integrates with the following third-party services that may set their own cookies:</p>
           <p><strong className="text-foreground">Stripe</strong> — payment processing. See <a href="https://stripe.com/cookies-policy/legal" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">Stripe's Cookie Policy</a>.</p>
           <p><strong className="text-foreground">PayPal</strong> — payment processing. See <a href="https://www.paypal.com/uk/webapps/mpp/ua/cookie-full" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">PayPal's Cookie Policy</a>.</p>
           <p>We do not control these third-party cookies. Please review their policies for details.</p>
@@ -87,7 +87,7 @@ const CookiePolicy = () => {
           <p>• <a href="https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">Mozilla Firefox</a></p>
           <p>• <a href="https://support.apple.com/en-gb/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">Safari</a></p>
           <p>• <a href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">Microsoft Edge</a></p>
-          <p>Note: disabling essential cookies will prevent Duxio from functioning correctly.</p>
+          <p>Note: disabling essential cookies will prevent Druxio from functioning correctly.</p>
         </Section>
 
         <Section title="5. Changes to This Policy">
@@ -95,7 +95,7 @@ const CookiePolicy = () => {
         </Section>
 
         <Section title="6. Contact">
-          <p>For questions about our use of cookies, email <a href="mailto:support@duxio.store" className="text-primary underline underline-offset-4">support@duxio.store</a>.</p>
+          <p>For questions about our use of cookies, email <a href="mailto:support@druxio.store" className="text-primary underline underline-offset-4">support@druxio.store</a>.</p>
         </Section>
       </div>
     </main>
