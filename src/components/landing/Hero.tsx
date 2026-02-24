@@ -7,14 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Shield, Clock, Users, Star, ChevronDown } from "lucide-react";
 
 const taskPool = [
-  { title: "Fix Minecraft server TPS drops", category: "Gaming", budget: "€12", expert: "JM", rating: "4.9" },
   { title: "Discord bot with slash commands", category: "Tech", budget: "€15", expert: "SK", rating: "5.0" },
   { title: "Logo redesign for startup", category: "Creative", budget: "€25", expert: "ER", rating: "4.8" },
   { title: "SEO audit + keyword report", category: "Business", budget: "€30", expert: "DL", rating: "4.7" },
   { title: "Valorant coaching Silver→Gold", category: "Gaming", budget: "€20", expert: "AT", rating: "5.0" },
   { title: "Mix & master 2 tracks", category: "Music", budget: "€40", expert: "LT", rating: "4.9" },
   { title: "WordPress site speed optimization", category: "Tech", budget: "€18", expert: "MR", rating: "4.8" },
-  { title: "Fortnite map design & testing", category: "Gaming", budget: "€22", expert: "KL", rating: "4.7" },
+  { title: "Shopify store setup & theme", category: "Business", budget: "€35", expert: "KL", rating: "4.9" },
   { title: "Instagram growth strategy", category: "Business", budget: "€28", expert: "NP", rating: "4.9" },
   { title: "Podcast intro jingle creation", category: "Music", budget: "€35", expert: "AV", rating: "5.0" },
   { title: "Twitch overlay + alerts package", category: "Creative", budget: "€30", expert: "TS", rating: "4.8" },
@@ -23,6 +22,7 @@ const taskPool = [
   { title: "Brand identity kit for café", category: "Creative", budget: "€45", expert: "JW", rating: "5.0" },
   { title: "TikTok ad campaign setup", category: "Business", budget: "€25", expert: "CM", rating: "4.7" },
   { title: "Beat production (trap/drill)", category: "Music", budget: "€50", expert: "ZD", rating: "4.9" },
+  { title: "Resume & LinkedIn profile rewrite", category: "Business", budget: "€22", expert: "PH", rating: "4.8" },
 ];
 
 const placeholderExamples = [
