@@ -67,15 +67,15 @@ const TYPE_CONFIG = {
     badgeClass: "bg-green-500/15 text-green-500 border-green-500/30",
     icon: <ShoppingBag className="h-3 w-3" />,
   },
-  quote: {
-    label: "Quote",
-    badgeClass: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
-    icon: <MessageSquare className="h-3 w-3" />,
-  },
   delivered: {
     label: "Delivered",
     badgeClass: "bg-orange-500/15 text-orange-500 border-orange-500/30",
     icon: <Package className="h-3 w-3" />,
+  },
+  cancelled: {
+    label: "Cancelled",
+    badgeClass: "bg-red-500/15 text-red-500 border-red-500/30",
+    icon: <AlertTriangle className="h-3 w-3" />,
   },
 };
 
