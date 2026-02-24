@@ -51,7 +51,7 @@ The flow is straightforward:
 - **AI analyses your input** and returns the best-matching category, a refined professional title, and a suggested description
 - **Review and confirm** — accept the suggestion to proceed directly to the details step, or reject it and pick a category yourself
 
-The entire process takes about ten seconds. Behind the scenes, we use a large language model fine-tuned to understand Duxio's full category tree, including niche subcategories like "SEO audit and keyword strategy" or "Podcast editing and distribution" or "UI/UX design review."
+The entire process takes about ten seconds. Behind the scenes, we use a large language model fine-tuned to understand Druxio's full category tree, including niche subcategories like "SEO audit and keyword strategy" or "Podcast editing and distribution" or "UI/UX design review."
 
 ## What the AI Actually Does
 
