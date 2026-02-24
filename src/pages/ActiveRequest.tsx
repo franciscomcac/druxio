@@ -954,7 +954,25 @@ const ActiveRequest = () => {
               {/* Messages */}
               <ScrollArea className="flex-1 min-h-0">
                 <div className="p-4 space-y-3">
-                  {sellerChatMessages.length === 0 ? (
+                  {activeConvo && isDemo(activeConvo) ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center px-6 max-w-md mx-auto">
+                      <div className="h-16 w-16 rounded-2xl bg-primary/[0.1] flex items-center justify-center mb-5">
+                        <span className="text-3xl">📘</span>
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground mb-2">Welcome to the Quotes Terminal!</h3>
+                      <div className="space-y-3 text-sm text-muted-foreground text-left">
+                        <p>This is your <strong className="text-foreground">command center</strong> for managing all your pending quotes. Here's how it works:</p>
+                        <div className="rounded-lg bg-muted/40 p-3 space-y-2">
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">1.</span> <span>The <strong className="text-foreground">left sidebar</strong> shows all your active quotes — sorted by urgency and unread messages.</span></p>
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">2.</span> <span>Click any quote to open the <strong className="text-foreground">chat</strong> with the buyer in this area.</span></p>
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">3.</span> <span>The <strong className="text-foreground">right panel</strong> (on desktop) shows request details, buyer info, and lets you update your offer.</span></p>
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">4.</span> <span>Each quote has a <strong className="text-foreground">5-day expiry timer</strong> — the colored dots (🟢🟡🔴) show urgency.</span></p>
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">5.</span> <span>Fast replies and competitive pricing <strong className="text-foreground">dramatically increase</strong> your chances of winning jobs!</span></p>
+                        </div>
+                        <p className="text-xs text-muted-foreground/70 pt-2">💡 This demo quote can't be deleted — it's always here for reference.</p>
+                      </div>
+                    </div>
+                  ) : sellerChatMessages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
                       <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
                         <MessageSquare className="h-7 w-7 text-primary/50" />
