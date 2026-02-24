@@ -107,6 +107,20 @@ function getSubGroups<T>(items: T[], getCat: (item: T) => string): { sub: string
   return Array.from(map.entries()).map(([sub, items]) => ({ sub, items }));
 }
 
+const DEMO_JOB: Job = {
+  id: "demo-tutorial-job",
+  title: "🎓 Tutorial: Practice Sending a Quote",
+  description: "This is a demo request! Practice sending a quote here — it won't affect your real data. Try setting a price, delivery time, and message. After quoting, you'll be taken to the Quotes Terminal where you can chat with the simulated buyer.",
+  category: "Getting Started",
+  subcategory: null,
+  budget_max: 25,
+  deadline_minutes: 1440,
+  status: "open",
+  created_at: new Date().toISOString(),
+  expires_at: null,
+  buyer_id: "demo-buyer",
+};
+
 const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps) => {
   const [openJobs, setOpenJobs] = useState<Job[]>([]);
   const [quotedJobIds, setQuotedJobIds] = useState<Set<string>>(new Set());
