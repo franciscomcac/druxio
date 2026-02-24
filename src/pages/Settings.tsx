@@ -147,6 +147,7 @@ const CATEGORY_TREE = [
       { id: "Podcasting", services: ["Setup & Equipment", "Editing", "Distribution", "Growth"] },
       { id: "Blogging & SEO Writing", services: ["Blog Strategy", "SEO Articles", "Content Calendar", "Ghostwriting"] },
       { id: "Community Management", services: ["Discord Moderation", "Engagement Strategy", "Community Building"] },
+      { id: "Custom Request", services: ["Any Content Task", "Unique Request"] },
     ],
   },
   {
