@@ -9,6 +9,7 @@ import "driver.js/dist/driver.css";
 const STORAGE_KEY = "seller_tutorial_completed";
 const ACTIVE_KEY = "seller_tutorial_active";
 const STEP_KEY = "seller_tutorial_step";
+const SUBSTEP_KEY = "seller_tutorial_substep";
 
 /* ─────────────────── Tour phases ─────────────────── 
    Each phase runs on a specific route.
@@ -76,8 +77,8 @@ const TOUR_PHASES: TourPhase[] = [
       {
         element: "#tour-demo-job",
         popover: {
-          title: "🎓 Try It: Send a Demo Quote!",
-          description: "Here's a <strong>practice request</strong>! Click the <strong>Quote</strong> button to open the quote form. Set your price, delivery time, and an optional message — then send it. This won't affect your real data!",
+          title: "🎓 Click Quote to Try It!",
+          description: "Click the <strong>Quote</strong> button on this demo request. Set your price, delivery time, and message — then send it! The tour will resume automatically after.",
           side: "bottom",
           align: "center",
         },
@@ -303,12 +304,13 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     if (userId) localStorage.setItem(`${STORAGE_KEY}_${userId}`, "true");
     localStorage.removeItem(ACTIVE_KEY);
     localStorage.removeItem(STEP_KEY);
+    localStorage.removeItem(SUBSTEP_KEY);
     driverRef.current?.destroy();
     driverRef.current = null;
     onComplete?.();
   }, [userId, onComplete]);
 
-  const initDriver = useCallback((phaseIndex: number) => {
+  const initDriver = useCallback((phaseIndex: number, startStep?: number) => {
     // Clean up previous
     if (driverRef.current) {
       driverRef.current.destroy();
@@ -332,6 +334,35 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
         },
       };
       allSteps.push(bridgeStep);
+    }
+
+    // For phase 0, modify the demo job step to allow interaction
+    if (phaseIndex === 0) {
+      const demoIdx = allSteps.findIndex(s => s.element === "#tour-demo-job");
+      if (demoIdx >= 0 && (!startStep || startStep <= demoIdx)) {
+        const origPopover = allSteps[demoIdx].popover!;
+        allSteps[demoIdx] = {
+          element: "#tour-demo-job",
+          popover: {
+            ...origPopover,
+            onNextClick: () => {
+              // Pause tour — user should click Quote instead. "Skip" fallback.
+              driverRef.current?.destroy();
+              driverRef.current = null;
+              localStorage.setItem(SUBSTEP_KEY, String(demoIdx + 1));
+            },
+            onPopoverRender: (popover: any) => {
+              // Change next button to "Skip" so user knows to click Quote
+              if (popover.nextButton) {
+                popover.nextButton.textContent = "Skip →";
+              }
+              // Allow clicking the highlighted element
+              const activeEl = document.querySelector(".driver-active-element");
+              if (activeEl) (activeEl as HTMLElement).style.pointerEvents = "auto";
+            },
+          },
+        };
+      }
     }
 
     const d = driver({
@@ -365,7 +396,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     } as Config);
 
     driverRef.current = d;
-    d.drive();
+    d.drive(startStep || 0);
   }, [completeAll]);
 
   const startPhase = useCallback((phaseIndex: number) => {
@@ -402,6 +433,21 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       }
     }
   }, [location.pathname, initDriver]);
+
+  // Resume after demo quote is sent
+  useEffect(() => {
+    const handler = () => {
+      const substep = localStorage.getItem(SUBSTEP_KEY);
+      if (substep) {
+        localStorage.removeItem(SUBSTEP_KEY);
+        const stepIdx = parseInt(substep, 10);
+        // Resume phase 0 from the step after the demo
+        setTimeout(() => initDriver(0, stepIdx), 600);
+      }
+    };
+    window.addEventListener("seller-tutorial-quote-sent", handler);
+    return () => window.removeEventListener("seller-tutorial-quote-sent", handler);
+  }, [initDriver]);
 
   // Auto-start on first seller login
   useEffect(() => {
