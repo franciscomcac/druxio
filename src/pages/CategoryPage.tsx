@@ -29,9 +29,23 @@ const CategoryPage = () => {
   const meta = CATEGORY_META[slug || ""];
 
   useSEO({
-    title: meta ? `${meta.label} Experts` : "Category",
-    description: meta ? `Find top ${meta.label} experts on Duxio. ${meta.description}. Get instant quotes and escrow-protected payments.` : undefined,
+    title: meta ? `${meta.label} Freelancers & Experts — Low Fees` : "Category",
+    description: meta ? meta.seoDescription : undefined,
     canonical: slug ? `/category/${slug}` : undefined,
+    jsonLd: meta ? {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": `${meta.label} Experts on Duxio`,
+      "description": meta.seoDescription,
+      "url": `https://duxio.lovable.app/category/${slug}`,
+      "numberOfItems": meta.subcategories.length,
+      "itemListElement": meta.subcategories.map((sub, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "name": sub,
+        "url": `https://duxio.lovable.app/post-request?category=${meta.label}: ${sub}`,
+      })),
+    } : undefined,
   });
 
   const { format } = useCurrency();

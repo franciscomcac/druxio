@@ -8,26 +8,26 @@ import { useSEO } from "@/hooks/use-seo";
 
 const Index = () => {
   useSEO({
-    title: "Duxio — Get Expert Help in Seconds",
-    description: "Post any task, receive real-time quotes from verified experts in under 2 minutes. Escrow-protected payments. No browsing, no waiting.",
+    title: "Duxio — Hire Expert Freelancers with Low Fees",
+    description: "Post any task, get real-time quotes from verified experts in under 2 minutes. Only 5% marketplace fee — lower than Fiverr or Upwork. Escrow-protected payments.",
     canonical: "/",
     jsonLd: {
       "@context": "https://schema.org",
       "@type": "Service",
       "name": "Duxio Expert Marketplace",
-      "description": "On-demand marketplace where clients post tasks and receive real-time quotes from verified experts. Escrow-protected payments, AI-assisted matching, and built-in dispute resolution.",
+      "description": "On-demand freelance marketplace with industry-low 5% fees. Post tasks in tech, business, design, and more — receive real-time quotes from verified experts. Escrow-protected payments and AI-assisted matching.",
       "provider": {
         "@type": "Organization",
         "name": "Duxio",
         "url": "https://duxio.lovable.app"
       },
-      "serviceType": "Expert Consultation & Micro-Task Marketplace",
+      "serviceType": "Freelance Expert Marketplace",
       "areaServed": "Worldwide",
       "offers": {
-        "@type": "Offer",
-        "price": "0",
+        "@type": "AggregateOffer",
         "priceCurrency": "USD",
-        "description": "Free to post tasks. Pay only when you accept an expert quote."
+        "lowPrice": "0",
+        "description": "Free to post tasks. Only 5% marketplace fee — drastically lower than traditional freelance platforms."
       }
     },
   });
