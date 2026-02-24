@@ -1458,7 +1458,7 @@ const Admin = () => {
                 {feedbackItems.length > 0 && (() => {
                   const avg = feedbackItems.reduce((s, f) => s + f.rating, 0) / feedbackItems.length;
                   return (
-                    <div className="flex flex-wrap items-center gap-4 p-4 rounded-lg bg-muted/50 border border-border">
+                    <div className="flex flex-wrap items-center gap-4 p-3 sm:p-4 rounded-lg bg-muted/50 border border-border">
                       <div className="flex items-center gap-2">
                         <Star className="h-4 w-4 text-primary fill-primary" />
                         <span className="text-sm font-semibold text-foreground">{avg.toFixed(1)} avg rating</span>
