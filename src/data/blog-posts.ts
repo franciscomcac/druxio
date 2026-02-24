@@ -248,7 +248,7 @@ These aren't niche use cases. These are the everyday friction points that slow p
 
 ## Built on Trust
 
-We understand that trusting a stranger with your problem requires confidence. That's why every layer of Duxio is designed around trust:
+We understand that trusting a stranger with your problem requires confidence. That's why every layer of Druxio is designed around trust:
 
 - **Expert verification** — profiles show real skills, real sessions, and real reviews
 - **Escrow payments** — your money is protected until you're satisfied
