@@ -134,6 +134,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Languages: Dutch", label: "Dutch", icon: Languages },
     { id: "Languages: Turkish", label: "Turkish", icon: Languages },
     { id: "Languages: Translation", label: "Translation", icon: GraduationCap },
+    { id: "Languages: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Content: [
     { id: "Content: Streaming", label: "Streaming", icon: Tv },
