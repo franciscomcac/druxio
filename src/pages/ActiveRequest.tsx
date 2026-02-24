@@ -356,7 +356,49 @@ const ActiveRequest = () => {
         .eq("expert_id", userId)
         .order("created_at", { ascending: false });
 
-      if (!myQuotes || myQuotes.length === 0) return;
+      const tutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
+      const shouldOpenDemo = tutorialActive && !jobId;
+
+      if (!myQuotes || myQuotes.length === 0) {
+        setSellerConvos([]);
+
+        if (shouldOpenDemo) {
+          const latestDemoMessage = demoChatMessages.length > 0
+            ? demoChatMessages[demoChatMessages.length - 1].content
+            : "Welcome!";
+
+          setActiveConvoJobId("demo-tutorial-quote");
+          setActiveConvo({
+            jobId: "demo-tutorial-quote",
+            jobTitle: "🎓 Tutorial: Practice Quoting",
+            jobCategory: "Getting Started",
+            jobStatus: "open",
+            quoteStatus: "pending",
+            buyerId: "demo-buyer",
+            buyerName: "Duxio Team",
+            buyerAvatar: null,
+            buyerRating: 5,
+            buyerTotalSpent: 0,
+            myPrice: demoPrice,
+            myDelivery: demoDelivery,
+            myQuoteId: "demo-quote-id",
+            sessionId: null,
+            lastMessage: latestDemoMessage,
+            lastMessageAt: new Date().toISOString(),
+            unread: demoChatMessages.some((m) => m.sender_id === "demo-buyer") ? 1 : 0,
+            budgetMin: 10,
+            budgetMax: 25,
+            quoteCreatedAt: new Date().toISOString(),
+            deadlineMinutes: 1440,
+          });
+          setSellerChatMessages([]);
+        } else {
+          setActiveConvoJobId(null);
+          setActiveConvo(null);
+          setSellerChatMessages([]);
+        }
+        return;
+      }
 
       const convos: SellerConvo[] = [];
 
@@ -439,16 +481,58 @@ const ActiveRequest = () => {
 
       setSellerConvos(convos);
 
-      // Set active convo to current job
+      if (shouldOpenDemo) {
+        const latestDemoMessage = demoChatMessages.length > 0
+          ? demoChatMessages[demoChatMessages.length - 1].content
+          : "Welcome!";
+
+        setActiveConvoJobId("demo-tutorial-quote");
+        setActiveConvo({
+          jobId: "demo-tutorial-quote",
+          jobTitle: "🎓 Tutorial: Practice Quoting",
+          jobCategory: "Getting Started",
+          jobStatus: "open",
+          quoteStatus: "pending",
+          buyerId: "demo-buyer",
+          buyerName: "Duxio Team",
+          buyerAvatar: null,
+          buyerRating: 5,
+          buyerTotalSpent: 0,
+          myPrice: demoPrice,
+          myDelivery: demoDelivery,
+          myQuoteId: "demo-quote-id",
+          sessionId: null,
+          lastMessage: latestDemoMessage,
+          lastMessageAt: new Date().toISOString(),
+          unread: demoChatMessages.some((m) => m.sender_id === "demo-buyer") ? 1 : 0,
+          budgetMin: 10,
+          budgetMax: 25,
+          quoteCreatedAt: new Date().toISOString(),
+          deadlineMinutes: 1440,
+        });
+        setSellerChatMessages([]);
+        return;
+      }
+
+      // Set active convo to current job; otherwise auto-open latest pending quote
       const currentConvo = convos.find(c => c.jobId === jobId);
       if (currentConvo) {
         setActiveConvoJobId(currentConvo.jobId);
         setActiveConvo(currentConvo);
+      } else {
+        const latestPendingConvo = convos
+          .filter(c => c.jobStatus === "open" && c.quoteStatus === "pending")
+          .sort((a, b) => new Date(b.quoteCreatedAt).getTime() - new Date(a.quoteCreatedAt).getTime())[0];
+
+        if (latestPendingConvo) {
+          setActiveConvoJobId(latestPendingConvo.jobId);
+          setActiveConvo(latestPendingConvo);
+        }
       }
     };
 
     loadSellerConvos();
-  }, [userId, isBuyer, jobId]);
+  }, [userId, isBuyer, jobId, demoPrice, demoDelivery, demoChatMessages]);
 
   // ── Load messages for active seller convo ─────────────────────────────────
   useEffect(() => {
