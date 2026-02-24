@@ -498,7 +498,52 @@ const Admin = () => {
     toast({ title: "Feedback deleted" });
   };
 
-  const openSupportTicket = async (ticket: SupportTicket) => {
+  const loadReports = async () => {
+    setReportsLoading(true);
+    let query = supabase.from("user_reports" as any).select("*").order("created_at", { ascending: false });
+    if (reportsFilter !== "all") query = query.eq("status", reportsFilter);
+
+    const { data: rawReports } = await query;
+    if (!rawReports) { setReportsLoading(false); return; }
+
+    const enriched: ReportRow[] = await Promise.all(
+      (rawReports as any[]).map(async (r) => {
+        const [reporterProfile, reportedProfile] = await Promise.all([
+          supabase.from("profiles").select("display_name").eq("id", r.reporter_id).single(),
+          supabase.from("profiles").select("display_name").eq("id", r.reported_user_id).single(),
+        ]);
+        return {
+          ...r,
+          reporter_name: reporterProfile.data?.display_name || "Unknown",
+          reported_user_name: reportedProfile.data?.display_name || "Unknown",
+        };
+      })
+    );
+
+    setReports(enriched);
+    setReportsLoading(false);
+  };
+
+  const handleReportAction = async (reportId: string, action: "reviewed" | "dismissed" | "action_taken") => {
+    setReportActionLoading(true);
+    try {
+      await supabase.from("user_reports" as any).update({
+        status: action,
+        admin_notes: reportAdminNote.trim() || null,
+      } as any).eq("id", reportId);
+
+      toast({ title: `Report ${action === "action_taken" ? "actioned" : action}` });
+      setSelectedReport(null);
+      setReportAdminNote("");
+      loadReports();
+      loadStats();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setReportActionLoading(false);
+  };
+
+
     setSelectedTicket(ticket);
     const { data: msgs } = await supabase
       .from("support_messages")
