@@ -196,7 +196,7 @@ const MentorProfile = () => {
             >
               <Heart className={`h-4 w-4 ${mentorId && isFavorite(mentorId) ? "fill-current" : ""}`} />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground"><Flag className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" onClick={() => setReportOpen(true)} title="Report this user"><Flag className="h-4 w-4" /></Button>
           </div>
         </div>
 
