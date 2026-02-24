@@ -38,13 +38,13 @@ interface ConversationItem {
   jobId: string | null;
   jobTitle: string;
   jobCategory: string;
-  jobStatus: string; // open | accepted | completed | delivered
+  jobStatus: string; // open | accepted | completed | delivered | cancelled
   otherUserId: string;
   otherUserName: string;
   otherUserAvatar: string | null;
   otherUserOnline: boolean;
   iAmSeller: boolean;
-  convType: "order" | "quote" | "delivered";
+  convType: "order" | "delivered" | "cancelled";
   lastMessage: string | null;
   lastMessageAt: string | null;
   unreadCount: number;
@@ -67,15 +67,15 @@ const TYPE_CONFIG = {
     badgeClass: "bg-green-500/15 text-green-500 border-green-500/30",
     icon: <ShoppingBag className="h-3 w-3" />,
   },
-  quote: {
-    label: "Quote",
-    badgeClass: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
-    icon: <MessageSquare className="h-3 w-3" />,
-  },
   delivered: {
     label: "Delivered",
     badgeClass: "bg-orange-500/15 text-orange-500 border-orange-500/30",
     icon: <Package className="h-3 w-3" />,
+  },
+  cancelled: {
+    label: "Cancelled",
+    badgeClass: "bg-red-500/15 text-red-500 border-red-500/30",
+    icon: <AlertTriangle className="h-3 w-3" />,
   },
 };
 
@@ -106,7 +106,7 @@ const Inbox = () => {
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [showChat, setShowChat] = useState(false); // mobile: show chat panel
-  const [activeFilter, setActiveFilter] = useState<"all" | "order" | "quote" | "delivered">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "order" | "delivered" | "cancelled">("all");
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
@@ -204,12 +204,15 @@ const Inbox = () => {
         }
       }
 
-      // Determine conversation type
-      let convType: ConversationItem["convType"] = "quote";
+      // Determine conversation type — skip pure quotes (no accepted order)
+      let convType: ConversationItem["convType"] = "order";
       if (linkedJob) {
-        if (linkedJob.delivered_at) convType = "delivered";
-        else if (["accepted", "in_progress", "completed"].includes(linkedJob.status)) convType = "order";
-        else convType = "quote";
+        if (["cancelled", "disputed"].includes(linkedJob.status)) convType = "cancelled";
+        else if (linkedJob.delivered_at || linkedJob.status === "completed") convType = "delivered";
+        else if (["accepted", "in_progress"].includes(linkedJob.status)) convType = "order";
+        else continue; // skip open/quote-only conversations — they belong in the Quotes Terminal
+      } else {
+        continue; // no linked job = skip
       }
 
       // Last message + unread
@@ -630,14 +633,14 @@ const Inbox = () => {
 
   const orders = filtered.filter(c => c.convType === "order");
   const delivered = filtered.filter(c => c.convType === "delivered");
-  const quotes = filtered.filter(c => c.convType === "quote");
+  const cancelled = filtered.filter(c => c.convType === "cancelled");
 
   // Counts for filter tabs (from search-filtered, ignoring active filter)
   const tabCounts = {
     all: searchFiltered.length,
     order: searchFiltered.filter(c => c.convType === "order").length,
-    quote: searchFiltered.filter(c => c.convType === "quote").length,
     delivered: searchFiltered.filter(c => c.convType === "delivered").length,
+    cancelled: searchFiltered.filter(c => c.convType === "cancelled").length,
   };
 
   // ── Sidebar row ────────────────────────────────────────────────────────────
@@ -765,8 +768,8 @@ const Inbox = () => {
             {([
               { key: "all", label: "All", icon: <LayoutList className="h-3 w-3" /> },
               { key: "order", label: "Active", icon: <ShoppingBag className="h-3 w-3" /> },
-              { key: "quote", label: "Quotes", icon: <MessageSquare className="h-3 w-3" /> },
               { key: "delivered", label: "Completed", icon: <CheckCircle2 className="h-3 w-3" /> },
+              { key: "cancelled", label: "Cancelled", icon: <AlertTriangle className="h-3 w-3" /> },
             ] as const).map(tab => (
               <button
                 key={tab.key}
@@ -832,10 +835,10 @@ const Inbox = () => {
                       {delivered.map(c => <ConvRow key={c.sessionId} conv={c} />)}
                     </>
                   )}
-                  {quotes.length > 0 && (
+                  {cancelled.length > 0 && (
                     <>
-                      <SectionHeader label="Quotes & Offers" count={quotes.length} />
-                      {quotes.map(c => <ConvRow key={c.sessionId} conv={c} />)}
+                      <SectionHeader label="Cancelled / Refunded" count={cancelled.length} />
+                      {cancelled.map(c => <ConvRow key={c.sessionId} conv={c} />)}
                     </>
                   )}
                 </>
