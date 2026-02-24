@@ -1342,6 +1342,7 @@ const ActiveRequest = () => {
                   </div>
                 </div>
                 <Button
+                  id="tour-quotes-update-offer-button"
                   size="sm"
                   className="w-full h-8 text-xs"
                   onClick={activeConvo && isDemo(activeConvo) ? handleDemoUpdateOffer : handleSubmitNewQuote}
