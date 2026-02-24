@@ -633,14 +633,14 @@ const Inbox = () => {
 
   const orders = filtered.filter(c => c.convType === "order");
   const delivered = filtered.filter(c => c.convType === "delivered");
-  const quotes = filtered.filter(c => c.convType === "quote");
+  const cancelled = filtered.filter(c => c.convType === "cancelled");
 
   // Counts for filter tabs (from search-filtered, ignoring active filter)
   const tabCounts = {
     all: searchFiltered.length,
     order: searchFiltered.filter(c => c.convType === "order").length,
-    quote: searchFiltered.filter(c => c.convType === "quote").length,
     delivered: searchFiltered.filter(c => c.convType === "delivered").length,
+    cancelled: searchFiltered.filter(c => c.convType === "cancelled").length,
   };
 
   // ── Sidebar row ────────────────────────────────────────────────────────────
