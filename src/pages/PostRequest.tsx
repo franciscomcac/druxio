@@ -830,7 +830,7 @@ const PostRequest = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-10 max-w-4xl">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-10 max-w-4xl">
 
         {/* Step indicator for wizard steps */}
         {wizardStep !== "waiting" && wizardStep !== "auto-match" && wizardStep !== "choose-method" && (
@@ -861,13 +861,13 @@ const PostRequest = () => {
         {/* Choose method: AI or Manual */}
         {wizardStep === "choose-method" && (
           <div className="mx-auto max-w-2xl animate-fade-in">
-            <Button variant="ghost" className="mb-6 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]" onClick={() => navigate("/")}>
+            <Button variant="ghost" className="mb-4 md:mb-6 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06] text-sm" onClick={() => navigate("/")}>
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
 
-            <div className="mb-10 text-center">
-              <h1 className="mb-3 text-3xl font-bold text-foreground">How would you like to start?</h1>
-              <p className="text-muted-foreground text-lg">Choose your preferred way to post a task.</p>
+            <div className="mb-6 md:mb-10 text-center">
+              <h1 className="mb-2 md:mb-3 text-2xl md:text-3xl font-bold text-foreground">How would you like to start?</h1>
+              <p className="text-sm md:text-lg text-muted-foreground">Choose your preferred way to post a task.</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -878,13 +878,13 @@ const PostRequest = () => {
                 }}
                 className="group relative flex flex-col items-start gap-4 rounded-xl border border-primary/30 bg-primary/[0.04] p-6 text-left transition-all duration-300 hover:border-primary/60 hover:bg-primary/[0.08] hover:-translate-y-1"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform duration-300 group-hover:scale-110">
-                  <Sparkles className="h-6 w-6" />
+                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-primary/15 text-primary transition-transform duration-300 group-hover:scale-110">
+                  <Sparkles className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-foreground mb-1">AI Auto-Match</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Describe what you need in your own words and AI will find the best category, refine your title, and write a description for you.
+                  <p className="text-base md:text-lg font-semibold text-foreground mb-1">AI Auto-Match</p>
+                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                    Describe what you need and AI will find the best category and refine your request.
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1">
@@ -896,15 +896,15 @@ const PostRequest = () => {
               {/* Manual Pick Option */}
               <button
                 onClick={() => setWizardStep("category")}
-                className="group relative flex flex-col items-start gap-4 rounded-xl border border-border bg-card p-6 text-left transition-all duration-300 hover:border-primary/40 hover:bg-card/80 hover:-translate-y-1"
+                className="group relative flex flex-col items-start gap-3 md:gap-4 rounded-xl border border-border bg-card p-4 md:p-6 text-left transition-all duration-300 hover:border-primary/40 hover:bg-card/80 hover:-translate-y-1"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-muted-foreground transition-transform duration-300 group-hover:scale-110 group-hover:text-foreground">
-                  <Users className="h-6 w-6" />
+                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-secondary text-muted-foreground transition-transform duration-300 group-hover:scale-110 group-hover:text-foreground">
+                  <Users className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-foreground mb-1">Pick Category Manually</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Browse through categories yourself and choose the exact specialty you need help with.
+                  <p className="text-base md:text-lg font-semibold text-foreground mb-1">Pick Category Manually</p>
+                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                    Browse categories and choose the exact specialty you need.
                   </p>
                 </div>
               </button>
@@ -1085,30 +1085,30 @@ const PostRequest = () => {
               <GraduationCap className="h-4 w-4" />
               Basic Tutorial
             </Button>
-            <div className="mb-8">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 1</p>
-              <h1 className="mb-2 text-3xl font-bold text-foreground">What do you need help with?</h1>
-              <p className="text-muted-foreground">Choose a category to find the right experts.</p>
+            <div className="mb-5 md:mb-8">
+              <p className="mb-1 md:mb-2 text-xs md:text-sm font-semibold uppercase tracking-widest text-primary">Step 1</p>
+              <h1 className="mb-1 md:mb-2 text-xl md:text-3xl font-bold text-foreground">What do you need help with?</h1>
+              <p className="text-xs md:text-base text-muted-foreground">Choose a category to find the right experts.</p>
             </div>
 
-            <div id="tour-category-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div id="tour-category-grid" className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               {BROAD_CATEGORIES.map((cat, i) => {
                 const Icon = cat.icon;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => handleSelectBroad(cat.id)}
-                    className="group relative flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                    className="group relative flex flex-col items-center gap-2 md:gap-3 rounded-xl md:rounded-2xl border border-border bg-card p-3 md:p-6 transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
-                      <Icon className="h-7 w-7" />
+                    <div className="flex h-10 w-10 md:h-14 md:w-14 items-center justify-center rounded-xl md:rounded-2xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
+                      <Icon className="h-5 w-5 md:h-7 md:w-7" />
                     </div>
                     <div className="text-center">
-                      <p className="font-semibold text-foreground">{cat.label}</p>
-                      <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{cat.description}</p>
+                      <p className="text-xs md:text-base font-semibold text-foreground">{cat.label}</p>
+                      <p className="mt-0.5 md:mt-1 text-[10px] md:text-xs text-muted-foreground leading-relaxed hidden sm:block">{cat.description}</p>
                     </div>
-                    <ChevronRight className="absolute right-3 top-3 h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
+                    <ChevronRight className="absolute right-2 top-2 md:right-3 md:top-3 h-3 w-3 md:h-4 md:w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
                   </button>
                 );
               })}
@@ -1116,19 +1116,19 @@ const PostRequest = () => {
               {/* Custom Request - AI powered */}
               <button
                 onClick={() => setWizardStep("ai-refine")}
-                className="group relative flex flex-col items-center gap-3 rounded-2xl border border-dashed border-primary/40 bg-primary/[0.04] p-6 transition-all duration-300 hover:border-primary/60 hover:shadow-glow hover:-translate-y-1 animate-slide-up col-span-2 md:col-span-4"
+                className="group relative flex flex-col items-center gap-2 md:gap-3 rounded-xl md:rounded-2xl border border-dashed border-primary/40 bg-primary/[0.04] p-3 md:p-6 transition-all duration-300 hover:border-primary/60 hover:shadow-glow hover:-translate-y-1 animate-slide-up col-span-2 lg:col-span-4"
                 style={{ animationDelay: `${BROAD_CATEGORIES.length * 60}ms` }}
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
-                  <Wand2 className="h-7 w-7" />
+                <div className="flex h-10 w-10 md:h-14 md:w-14 items-center justify-center rounded-xl md:rounded-2xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
+                  <Wand2 className="h-5 w-5 md:h-7 md:w-7" />
                 </div>
                 <div className="text-center">
-                  <p className="font-semibold text-foreground">Custom Request</p>
-                  <p className="mt-1 text-xs text-muted-foreground leading-relaxed">Describe your idea & let AI find the best category</p>
+                  <p className="text-xs md:text-base font-semibold text-foreground">Custom Request</p>
+                  <p className="mt-0.5 md:mt-1 text-[10px] md:text-xs text-muted-foreground leading-relaxed">AI finds the best category</p>
                 </div>
-                <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1">
-                  <Sparkles className="h-3 w-3 text-primary" />
-                  <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">AI Powered</span>
+                <div className="absolute right-2 top-2 md:right-4 md:top-4 flex items-center gap-1 md:gap-1.5 rounded-full bg-primary/10 px-2 md:px-2.5 py-0.5 md:py-1">
+                  <Sparkles className="h-2.5 w-2.5 md:h-3 md:w-3 text-primary" />
+                  <span className="text-[8px] md:text-[10px] font-semibold text-primary uppercase tracking-wider">AI</span>
                 </div>
               </button>
             </div>
@@ -1138,46 +1138,46 @@ const PostRequest = () => {
         {/* Step 2: Subcategory */}
         {wizardStep === "subcategory" && (
           <div className="mx-auto max-w-3xl animate-fade-in">
-            <div className="mb-8">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 2</p>
-              <h1 className="mb-2 text-3xl font-bold text-foreground">
+            <div className="mb-5 md:mb-8">
+              <p className="mb-1 md:mb-2 text-xs md:text-sm font-semibold uppercase tracking-widest text-primary">Step 2</p>
+              <h1 className="mb-1 md:mb-2 text-xl md:text-3xl font-bold text-foreground">
                 What kind of <span className="text-primary">{broadCategory}</span>?
               </h1>
-              <p className="text-muted-foreground">Pick a specialty so we can match you with the best experts.</p>
+              <p className="text-xs md:text-base text-muted-foreground">Pick a specialty so we can match you with the best experts.</p>
             </div>
 
-            <div id="tour-subcategory-grid" className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div id="tour-subcategory-grid" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
               {(SUBCATEGORIES[broadCategory] || []).map((sub, i) => {
                 const Icon = sub.icon;
                 return (
                   <button
                     key={sub.id}
                     onClick={() => handleSelectSub(sub.id)}
-                    className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
-                    style={{ animationDelay: `${i * 60}ms` }}
+                    className="group flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl border border-border bg-card p-3 md:p-5 transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                    style={{ animationDelay: `${i * 40}ms` }}
                   >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
-                      <Icon className="h-6 w-6" />
+                    <div className="flex h-9 w-9 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-lg md:rounded-xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
+                      <Icon className="h-4 w-4 md:h-6 md:w-6" />
                     </div>
-                    <span className="font-semibold text-foreground">{sub.label}</span>
-                    <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
+                    <span className="text-sm md:text-base font-semibold text-foreground">{sub.label}</span>
+                    <ChevronRight className="ml-auto h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground/40 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
                   </button>
                 );
               })}
               {/* Custom Request option */}
               <button
                 onClick={() => handleSelectSub(`${broadCategory}: Custom`)}
-                className="group flex items-center gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/[0.04] p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
-                style={{ animationDelay: `${(SUBCATEGORIES[broadCategory]?.length || 0) * 60}ms` }}
+                className="group flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl border border-dashed border-primary/30 bg-primary/[0.04] p-3 md:p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                style={{ animationDelay: `${(SUBCATEGORIES[broadCategory]?.length || 0) * 40}ms` }}
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/[0.12] text-primary transition-transform duration-300 group-hover:scale-110">
-                  <MessageSquarePlus className="h-6 w-6" />
+                <div className="flex h-9 w-9 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-lg md:rounded-xl bg-primary/[0.12] text-primary transition-transform duration-300 group-hover:scale-110">
+                  <MessageSquarePlus className="h-4 w-4 md:h-6 md:w-6" />
                 </div>
                 <div className="text-left">
-                  <span className="font-semibold text-foreground">Custom Request</span>
-                  <p className="text-xs text-muted-foreground">Something else in {broadCategory}</p>
+                  <span className="text-sm md:text-base font-semibold text-foreground">Custom Request</span>
+                  <p className="text-[10px] md:text-xs text-muted-foreground">Something else in {broadCategory}</p>
                 </div>
-                <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
+                <ChevronRight className="ml-auto h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground/40 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
               </button>
             </div>
           </div>

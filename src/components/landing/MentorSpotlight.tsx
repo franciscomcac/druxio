@@ -109,46 +109,47 @@ const MentorSpotlight = () => {
   const [visible] = useState(() => pickRandom(allRequests, 5));
 
   return (
-    <section ref={ref} className="relative bg-background py-28 overflow-hidden">
+    <section ref={ref} className="relative bg-background py-12 md:py-28 overflow-hidden">
       <div className="absolute top-[20%] right-[5%] h-[400px] w-[400px] rounded-full bg-primary/[0.04] blur-[120px] pointer-events-none" />
 
       <div className="container relative z-10 mx-auto px-4">
-        <div className="mb-16 flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-8 md:mb-16 flex flex-col items-start gap-4 md:gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="reveal">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">Live Feed</p>
-            <h2 className="mb-3 text-4xl font-bold text-foreground">Recent Requests</h2>
-            <p className="text-muted-foreground">See what people are getting help with right now</p>
+            <p className="mb-2 md:mb-3 text-xs md:text-sm font-semibold uppercase tracking-widest text-primary">Live Feed</p>
+            <h2 className="mb-2 md:mb-3 text-2xl md:text-4xl font-bold text-foreground">Recent Requests</h2>
+            <p className="text-sm md:text-base text-muted-foreground">See what people are getting help with right now</p>
           </div>
           <div className="reveal reveal-right delay-200">
             <Link to="/post-request">
-              <Button className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500">
+              <Button size="sm" className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow duration-500">
                 Post a Task <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {/* Horizontal scroll on mobile, grid on larger screens */}
+        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:overflow-x-visible md:pb-0">
           {visible.map((req, i) => (
             <Card
               key={`${req.title}-${i}`}
-              className={`group border-border bg-card backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:shadow-glow hover:-translate-y-2 reveal delay-${i * 100 + 100}`}
+              className={`group border-border bg-card backdrop-blur-sm transition-all duration-500 hover:border-primary/30 hover:shadow-glow hover:-translate-y-2 reveal delay-${i * 100 + 100} min-w-[200px] md:min-w-0 snap-start shrink-0 md:shrink`}
             >
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <Badge variant="outline" className="text-xs font-normal border-primary/20 text-primary/80">{req.category}</Badge>
-                  {req.hot && <TrendingUp className="h-3.5 w-3.5 text-primary animate-pulse" />}
+              <CardContent className="p-4 md:p-5">
+                <div className="flex items-center justify-between mb-2 md:mb-3">
+                  <Badge variant="outline" className="text-[10px] md:text-xs font-normal border-primary/20 text-primary/80">{req.category}</Badge>
+                  {req.hot && <TrendingUp className="h-3 w-3 md:h-3.5 md:w-3.5 text-primary animate-pulse" />}
                 </div>
-                <h3 className="mb-4 font-semibold text-foreground line-clamp-2 text-sm leading-snug">{req.title}</h3>
+                <h3 className="mb-3 md:mb-4 font-semibold text-foreground line-clamp-2 text-xs md:text-sm leading-snug">{req.title}</h3>
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span className="font-bold text-foreground text-lg">{req.budget}</span>
+                  <span className="font-bold text-foreground text-base md:text-lg">{req.budget}</span>
                   <div className="flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {req.deadline}
                   </div>
                 </div>
-                <div className="mt-3 pt-3 border-t border-border">
-                  <span className="text-xs text-primary/80 font-medium">{req.status}</span>
+                <div className="mt-2 md:mt-3 pt-2 md:pt-3 border-t border-border">
+                  <span className="text-[10px] md:text-xs text-primary/80 font-medium">{req.status}</span>
                 </div>
               </CardContent>
             </Card>

@@ -121,16 +121,15 @@ const Hero = () => {
   };
 
   return (
-    <section id="hero-section" className="relative bg-background pt-12 pb-16 md:pt-16 md:pb-24 overflow-hidden min-h-[calc(100vh-4rem)] flex items-center">
+    <section id="hero-section" className="relative bg-background pt-8 pb-10 md:pt-16 md:pb-24 overflow-hidden min-h-[calc(100vh-3.5rem)] flex items-center">
       {/* Gradient blobs */}
       <div className="absolute top-[-10%] left-[-5%] h-[600px] w-[600px] rounded-full bg-primary/[0.07] blur-[160px] pointer-events-none" />
       <div className="absolute bottom-[-15%] right-[-8%] h-[500px] w-[500px] rounded-full bg-primary/[0.05] blur-[140px] pointer-events-none" />
-      <div className="absolute top-[30%] right-[15%] h-[300px] w-[300px] rounded-full bg-primary/[0.03] blur-[100px] pointer-events-none" />
 
       {/* Subtle grid */}
       <div className="absolute inset-0 bg-[linear-gradient(hsl(var(--primary)/0.012)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--primary)/0.012)_1px,transparent_1px)] bg-[size:80px_80px] pointer-events-none" />
 
-      {/* Floating task cards — cycling */}
+      {/* Floating task cards — cycling (desktop only) */}
       {cardSlots.map((slot, i) => {
         const task = taskPool[slotIndices[i]];
         return (
@@ -171,72 +170,72 @@ const Hero = () => {
       <div className="container relative z-10 mx-auto px-4">
         <div className="mx-auto max-w-3xl text-center">
           {/* Live badge */}
-          <div className="mb-8 inline-flex items-center gap-2 border border-border bg-card/40 px-4 py-2 rounded-sm text-sm animate-fade-in">
-            <span className="relative flex h-2.5 w-2.5">
+          <div className="mb-5 md:mb-8 inline-flex items-center gap-2 border border-border bg-card/40 px-3 py-1.5 md:px-4 md:py-2 rounded-sm text-xs md:text-sm animate-fade-in">
+            <span className="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" style={{ backgroundColor: 'hsl(188 100% 48% / 0.6)' }} />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full" style={{ backgroundColor: 'hsl(188 100% 48%)' }} />
+              <span className="relative inline-flex h-2 w-2 md:h-2.5 md:w-2.5 rounded-full" style={{ backgroundColor: 'hsl(188 100% 48%)' }} />
             </span>
             <span className="font-bold" style={{ color: 'hsl(188 100% 48%)' }}>{stats.expertsOnline} experts</span>
-            <span className="text-foreground/70">online right now</span>
+            <span className="text-foreground/70">online now</span>
           </div>
 
-          <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl md:text-7xl lg:text-8xl leading-[1.05] animate-fade-in [animation-delay:100ms]">
+          <h1 className="mb-4 md:mb-6 text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-7xl lg:text-8xl leading-[1.1] animate-fade-in [animation-delay:100ms]">
             Post a task.{" "}
             <span className="bg-gradient-to-r from-primary via-primary/80 to-primary/50 bg-clip-text text-transparent">
               Get it done.
             </span>
           </h1>
 
-          <p className="mb-10 text-lg md:text-xl text-foreground/60 max-w-xl mx-auto leading-relaxed animate-fade-in [animation-delay:200ms]">
+          <p className="mb-6 md:mb-10 text-sm md:text-xl text-foreground/60 max-w-xl mx-auto leading-relaxed animate-fade-in [animation-delay:200ms]">
             Get verified quotes in under 2 minutes. Escrow-protected — you only pay when satisfied.
           </p>
 
           {/* Inline task form */}
-          <form onSubmit={handleQuickPost} className="mx-auto max-w-xl mb-6 animate-fade-in [animation-delay:300ms]">
-            <div className="flex gap-2 p-1.5 border border-border bg-card/60 rounded-sm backdrop-blur-sm">
+          <form onSubmit={handleQuickPost} className="mx-auto max-w-xl mb-4 md:mb-6 animate-fade-in [animation-delay:300ms]">
+            <div className="flex flex-col sm:flex-row gap-2 p-1.5 border border-border bg-card/60 rounded-sm backdrop-blur-sm">
               <div className="relative flex-1">
                 <Input
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   placeholder=""
                   aria-label="Describe your task"
-                  className="h-12 rounded-sm border-0 bg-transparent text-base placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="h-11 md:h-12 rounded-sm border-0 bg-transparent text-sm md:text-base placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
-                {/* Animated placeholder — only shown when input is empty */}
+                {/* Animated placeholder */}
                 {!taskTitle && (
                   <span
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-muted-foreground/50 truncate max-w-[calc(100%-1.5rem)] transition-opacity duration-300 select-none"
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm md:text-base text-muted-foreground/50 truncate max-w-[calc(100%-1.5rem)] transition-opacity duration-300 select-none"
                     style={{ opacity: placeholderVisible ? 1 : 0 }}
                   >
                     e.g. &ldquo;{placeholderExamples[placeholderIdx]}&rdquo;
                   </span>
                 )}
               </div>
-              <Button type="submit" size="lg" className="h-12 px-8 rounded-sm gap-2 font-bold shrink-0 text-base">
-                Post a Task <ArrowRight className="h-5 w-5" />
+              <Button type="submit" size="lg" className="h-11 md:h-12 px-6 md:px-8 rounded-sm gap-2 font-bold shrink-0 text-sm md:text-base w-full sm:w-auto">
+                Post a Task <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
               </Button>
             </div>
           </form>
 
-          <p className="text-sm text-muted-foreground/70 mb-12 animate-fade-in [animation-delay:400ms]">
+          <p className="text-xs md:text-sm text-muted-foreground/70 mb-6 md:mb-12 animate-fade-in [animation-delay:400ms]">
             Free to post · No commitment · Pay only when satisfied
           </p>
 
           {/* Trust row */}
-          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 animate-fade-in [animation-delay:500ms]">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 md:gap-12 animate-fade-in [animation-delay:500ms]">
             {[
-              { icon: <Shield className="h-5 w-5" />, text: "Escrow-protected payments" },
-              { icon: <Clock className="h-5 w-5" />, text: "~90s average response" },
-              { icon: <Users className="h-5 w-5" />, text: "500+ verified experts" },
+              { icon: <Shield className="h-4 w-4 md:h-5 md:w-5" />, text: "Escrow-protected" },
+              { icon: <Clock className="h-4 w-4 md:h-5 md:w-5" />, text: "~90s response" },
+              { icon: <Users className="h-4 w-4 md:h-5 md:w-5" />, text: "500+ experts" },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2.5 text-base text-muted-foreground">
+              <div key={i} className="flex items-center gap-2 text-xs md:text-base text-muted-foreground">
                 <span className="text-primary/70">{item.icon}</span>
                 <span>{item.text}</span>
               </div>
             ))}
           </div>
 
-          {/* Scroll down arrow */}
+          {/* Scroll down arrow — hidden on mobile */}
           <button
             onClick={() => {
               const hero = document.getElementById("hero-section");
@@ -245,7 +244,7 @@ const Hero = () => {
                 nextSection?.scrollIntoView({ behavior: "smooth" });
               }
             }}
-            className="mt-10 mx-auto flex flex-col items-center gap-1 text-muted-foreground/60 hover:text-primary transition-colors animate-fade-in [animation-delay:700ms] cursor-pointer"
+            className="mt-8 md:mt-10 mx-auto hidden sm:flex flex-col items-center gap-1 text-muted-foreground/60 hover:text-primary transition-colors animate-fade-in [animation-delay:700ms] cursor-pointer"
             aria-label="Scroll down"
           >
             <span className="text-xs">Scroll down</span>

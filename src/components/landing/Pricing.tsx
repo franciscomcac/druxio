@@ -8,13 +8,13 @@ const Pricing = () => {
       <div className="absolute top-0 right-[20%] h-[500px] w-[500px] rounded-full bg-primary/[0.03] blur-[130px] pointer-events-none" />
 
       <div className="container relative z-10 mx-auto px-4">
-        <div className="mb-16 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary animate-fade-in">Pricing</p>
-          <h2 className="mb-4 text-4xl font-bold text-foreground animate-fade-in [animation-delay:100ms]">Simple & Transparent</h2>
-          <p className="text-muted-foreground text-lg animate-fade-in [animation-delay:200ms]">No subscriptions. Experts set fixed prices. You only pay for results.</p>
+        <div className="mb-8 md:mb-16 text-center">
+          <p className="mb-2 md:mb-3 text-xs md:text-sm font-semibold uppercase tracking-widest text-primary animate-fade-in">Pricing</p>
+          <h2 className="mb-3 md:mb-4 text-2xl md:text-4xl font-bold text-foreground animate-fade-in [animation-delay:100ms]">Simple & Transparent</h2>
+          <p className="text-sm md:text-lg text-muted-foreground animate-fade-in [animation-delay:200ms]">No subscriptions. Experts set fixed prices. You only pay for results.</p>
         </div>
 
-        <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-3">
+        <div className="mx-auto grid max-w-4xl gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
           {[
             {
               icon: <Zap className="h-7 w-7" />,

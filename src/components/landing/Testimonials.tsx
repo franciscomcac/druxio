@@ -45,16 +45,16 @@ const Testimonials = () => {
   const visible = getVisible();
 
   return (
-    <section ref={ref} className="bg-card/20 py-24">
+    <section ref={ref} className="bg-card/20 py-12 md:py-24">
       <div className="container mx-auto px-4">
-        <div className="mb-14 max-w-lg reveal">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">Testimonials</p>
-          <h2 className="mb-3 text-4xl font-bold text-foreground leading-tight">Loved by Buyers & Experts</h2>
-          <p className="text-muted-foreground text-lg">Real stories from our community</p>
+        <div className="mb-8 md:mb-14 max-w-lg reveal">
+          <p className="mb-2 md:mb-3 text-xs md:text-sm font-semibold uppercase tracking-widest text-primary">Testimonials</p>
+          <h2 className="mb-2 md:mb-3 text-2xl md:text-4xl font-bold text-foreground leading-tight">Loved by Buyers & Experts</h2>
+          <p className="text-sm md:text-lg text-muted-foreground">Real stories from our community</p>
         </div>
 
         <div className="relative reveal delay-200">
-          {/* Nav arrows */}
+          {/* Nav arrows — desktop only */}
           <Button
             variant="ghost"
             size="icon"
@@ -72,33 +72,34 @@ const Testimonials = () => {
             <ChevronRight className="h-5 w-5" />
           </Button>
 
-          <div className={`grid gap-6 md:grid-cols-2 lg:grid-cols-3 transition-all duration-300 ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
+          {/* Mobile: show 1 card, tablet: 2, desktop: 3 */}
+          <div className={`grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 transition-all duration-300 ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
             {visible.map((t, i) => (
               <div
                 key={`${t.name}-${currentIndex}-${i}`}
-                className="rounded-xl border border-border bg-card p-7 flex flex-col transition-all duration-300 hover:border-primary/30"
+                className={`rounded-xl border border-border bg-card p-5 md:p-7 flex flex-col transition-all duration-300 hover:border-primary/30 ${i > 0 ? "hidden md:flex" : ""} ${i > 1 ? "md:hidden lg:flex" : ""}`}
                 style={{ transitionDelay: `${i * 50}ms` }}
               >
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex gap-1">
+                <div className="flex items-center justify-between mb-3 md:mb-5">
+                  <div className="flex gap-0.5">
                     {Array.from({ length: t.rating }).map((_, j) => (
-                      <Star key={j} className="h-4 w-4 fill-primary text-primary" />
+                      <Star key={j} className="h-3.5 w-3.5 md:h-4 md:w-4 fill-primary text-primary" />
                     ))}
                   </div>
-                  <Badge variant="outline" className="text-xs border-primary/30 text-primary rounded-sm px-2.5">
+                  <Badge variant="outline" className="text-[10px] md:text-xs border-primary/30 text-primary rounded-sm px-2 md:px-2.5">
                     {t.category}
                   </Badge>
                 </div>
 
-                <p className="text-[15px] text-foreground leading-relaxed flex-1 mb-6 font-medium">"{t.content}"</p>
+                <p className="text-sm md:text-[15px] text-foreground leading-relaxed flex-1 mb-4 md:mb-6 font-medium">"{t.content}"</p>
 
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                  <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/20 flex items-center justify-center text-[10px] md:text-xs font-bold text-primary">
                     {t.initials}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role} · {t.timeAgo}</p>
+                    <p className="text-xs md:text-sm font-semibold text-foreground">{t.name}</p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground">{t.role} · {t.timeAgo}</p>
                   </div>
                 </div>
               </div>
@@ -106,13 +107,13 @@ const Testimonials = () => {
           </div>
 
           {/* Dots */}
-          <div className="mt-10 flex justify-center gap-2">
+          <div className="mt-6 md:mt-10 flex justify-center gap-2">
             {testimonials.map((_, index) => (
               <button
                 key={index}
                 onClick={() => { setIsAutoPlaying(false); changeIndex(index); }}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentIndex ? "w-8 bg-primary" : "w-2 bg-border/60"
+                  index === currentIndex ? "w-6 md:w-8 bg-primary" : "w-2 bg-border/60"
                 }`}
               />
             ))}
