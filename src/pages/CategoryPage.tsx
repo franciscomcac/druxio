@@ -44,7 +44,7 @@ const CategoryPage = () => {
           "@type": "ListItem",
           "position": i + 1,
           "name": sub,
-          "url": `https://duxio.lovable.app/post-request?category=${meta.label}: ${sub}`,
+          "url": `https://druxio.lovable.app/post-request?category=${meta.label}: ${sub}`,
         })),
       },
       {
