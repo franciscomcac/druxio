@@ -204,12 +204,15 @@ const Inbox = () => {
         }
       }
 
-      // Determine conversation type
-      let convType: ConversationItem["convType"] = "quote";
+      // Determine conversation type — skip pure quotes (no accepted order)
+      let convType: ConversationItem["convType"] = "order";
       if (linkedJob) {
-        if (linkedJob.delivered_at) convType = "delivered";
-        else if (["accepted", "in_progress", "completed"].includes(linkedJob.status)) convType = "order";
-        else convType = "quote";
+        if (["cancelled", "disputed"].includes(linkedJob.status)) convType = "cancelled";
+        else if (linkedJob.delivered_at || linkedJob.status === "completed") convType = "delivered";
+        else if (["accepted", "in_progress"].includes(linkedJob.status)) convType = "order";
+        else continue; // skip open/quote-only conversations — they belong in the Quotes Terminal
+      } else {
+        continue; // no linked job = skip
       }
 
       // Last message + unread
