@@ -351,12 +351,15 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          ban_reason: string | null
+          banned_at: string | null
           bio: string | null
           created_at: string | null
           display_name: string | null
           goals: Json | null
           hourly_rate: number | null
           id: string
+          is_banned: boolean | null
           is_online: boolean | null
           location: string | null
           rating_avg: number | null
@@ -372,12 +375,15 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
           goals?: Json | null
           hourly_rate?: number | null
           id: string
+          is_banned?: boolean | null
           is_online?: boolean | null
           location?: string | null
           rating_avg?: number | null
@@ -393,12 +399,15 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
           goals?: Json | null
           hourly_rate?: number | null
           id?: string
+          is_banned?: boolean | null
           is_online?: boolean | null
           location?: string | null
           rating_avg?: number | null
@@ -671,6 +680,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          image_urls: string[] | null
           reason: string
           reported_user_id: string
           reporter_id: string
@@ -682,6 +692,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_urls?: string[] | null
           reason: string
           reported_user_id: string
           reporter_id: string
@@ -693,6 +704,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_urls?: string[] | null
           reason?: string
           reported_user_id?: string
           reporter_id?: string
