@@ -191,7 +191,7 @@ export function buildPaymentReleasedEmail(opts: {
         ${infoRow("Amount credited", `€${opts.earning.toFixed(2)}`)}
       `)}
       ${paragraph("The funds are now in your wallet and available for withdrawal.")}
-      ${ctaButton("View Wallet", "https://duxio.lovable.app/wallet")}
+      ${ctaButton("View Wallet", "https://druxio.lovable.app/wallet")}
     `),
   };
 }
