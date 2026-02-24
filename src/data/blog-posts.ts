@@ -284,7 +284,7 @@ If you grew up in a major city, you had lawyers, accountants, consultants, and c
 
 The internet closed some of that gap. Email made it possible to contact experts anywhere. Video calls made it feel like a face-to-face conversation. But access still wasn't truly equal. The best consultants had long waiting lists. High hourly rates meant only well-funded companies or wealthy individuals could afford real expertise on demand.
 
-**Duxio changes the equation.**
+**Druxio changes the equation.**
 
 ## The Geography Problem
 
