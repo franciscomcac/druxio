@@ -9,7 +9,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
-import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck, Eye, EyeOff, FileText } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import { useCurrency, Currency } from "@/contexts/CurrencyContext";
