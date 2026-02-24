@@ -96,7 +96,7 @@ const faqSections = [
     category: "Trust & Safety",
     items: [
       {
-        q: "How does Duxio verify experts?",
+        q: "How does Druxio verify experts?",
         a: "All experts complete profile verification including identity checks and skills assessment. Ratings and reviews are collected after every completed order. Experts with repeated poor performance are removed from the platform.",
       },
       {

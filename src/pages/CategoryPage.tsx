@@ -51,8 +51,8 @@ const CategoryPage = () => {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://duxio.lovable.app/" },
-          { "@type": "ListItem", "position": 2, "name": meta.label, "item": `https://duxio.lovable.app/category/${slug}` },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://druxio.lovable.app/" },
+          { "@type": "ListItem", "position": 2, "name": meta.label, "item": `https://druxio.lovable.app/category/${slug}` },
         ],
       },
     ] : undefined,

@@ -244,7 +244,7 @@ We see clients using Druxio for an enormous variety of short-term needs:
 - **Career guidance** — "I have an interview tomorrow — can someone help me prepare?"
 - **Creative review** — "Does this logo work? What would a professional designer change?"
 
-These aren't niche use cases. These are the everyday friction points that slow people down — and Duxio is designed to remove them.
+These aren't niche use cases. These are the everyday friction points that slow people down — and Druxio is designed to remove them.
 
 ## Built on Trust
 
