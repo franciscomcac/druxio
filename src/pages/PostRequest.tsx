@@ -896,15 +896,15 @@ const PostRequest = () => {
               {/* Manual Pick Option */}
               <button
                 onClick={() => setWizardStep("category")}
-                className="group relative flex flex-col items-start gap-4 rounded-xl border border-border bg-card p-6 text-left transition-all duration-300 hover:border-primary/40 hover:bg-card/80 hover:-translate-y-1"
+                className="group relative flex flex-col items-start gap-3 md:gap-4 rounded-xl border border-border bg-card p-4 md:p-6 text-left transition-all duration-300 hover:border-primary/40 hover:bg-card/80 hover:-translate-y-1"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-muted-foreground transition-transform duration-300 group-hover:scale-110 group-hover:text-foreground">
-                  <Users className="h-6 w-6" />
+                <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-xl bg-secondary text-muted-foreground transition-transform duration-300 group-hover:scale-110 group-hover:text-foreground">
+                  <Users className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-foreground mb-1">Pick Category Manually</p>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Browse through categories yourself and choose the exact specialty you need help with.
+                  <p className="text-base md:text-lg font-semibold text-foreground mb-1">Pick Category Manually</p>
+                  <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">
+                    Browse categories and choose the exact specialty you need.
                   </p>
                 </div>
               </button>
