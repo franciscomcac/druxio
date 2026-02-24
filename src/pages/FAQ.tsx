@@ -75,7 +75,7 @@ const faqSections = [
     category: "For Experts",
     items: [
       {
-        q: "How do I become an expert on Duxio?",
+        q: "How do I become an expert on Druxio?",
         a: "Sign up, then complete the Expert Onboarding (accessible from your dashboard). You'll set your skills, hourly rate, availability, and add portfolio items. Once complete, you'll start receiving relevant task notifications.",
       },
       {
