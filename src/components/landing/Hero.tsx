@@ -218,12 +218,8 @@ const Hero = () => {
             </div>
           </form>
 
-          <p className="text-xs text-muted-foreground/50 mb-2 animate-fade-in [animation-delay:350ms]">
-            Describe any task — our AI matches you with the right expert
-          </p>
-
           <p className="text-sm text-muted-foreground/70 mb-12 animate-fade-in [animation-delay:400ms]">
-            Free to post · Only 5% fee · Escrow-protected
+            Free to post · No commitment · Pay only when satisfied
           </p>
 
           {/* Trust row */}
