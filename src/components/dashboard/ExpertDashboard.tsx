@@ -214,6 +214,29 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
   const handleSendQuote = async () => {
     if (!quoteDialog || !quotePrice) return;
+
+    // Demo quote — don't hit the DB, just navigate to the demo quote terminal
+    if (quoteDialog.id === "demo-tutorial-job") {
+      const timeValue = parseInt(quoteMinutes);
+      let estimatedMinutes = timeValue;
+      if (quoteTimeUnit === "hours") estimatedMinutes = timeValue * 60;
+      if (quoteTimeUnit === "days") estimatedMinutes = timeValue * 1440;
+
+      // Store demo quote data in sessionStorage for the Quotes Terminal to pick up
+      sessionStorage.setItem("demo_quote_data", JSON.stringify({
+        price: parseFloat(quotePrice),
+        estimated_minutes: estimatedMinutes,
+        message: quoteMessage || null,
+      }));
+      
+      toast({ title: "Demo quote sent! ✅", description: "Let's see it in the Quotes Terminal." });
+      setQuoteDialog(null);
+      setQuotePrice("");
+      setQuoteMessage("");
+      navigate("/quotes");
+      return;
+    }
+
     setSendingQuote(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
