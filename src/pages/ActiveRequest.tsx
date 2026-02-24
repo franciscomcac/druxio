@@ -64,6 +64,7 @@ interface SellerConvo {
   jobTitle: string;
   jobCategory: string;
   jobStatus: string;
+  quoteStatus: string;
   buyerId: string;
   buyerName: string | null;
   buyerAvatar: string | null;
