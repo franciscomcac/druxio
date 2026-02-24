@@ -356,7 +356,49 @@ const ActiveRequest = () => {
         .eq("expert_id", userId)
         .order("created_at", { ascending: false });
 
-      if (!myQuotes || myQuotes.length === 0) return;
+      const tutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
+      const shouldOpenDemo = tutorialActive && !jobId;
+
+      if (!myQuotes || myQuotes.length === 0) {
+        setSellerConvos([]);
+
+        if (shouldOpenDemo) {
+          const latestDemoMessage = demoChatMessages.length > 0
+            ? demoChatMessages[demoChatMessages.length - 1].content
+            : "Welcome!";
+
+          setActiveConvoJobId("demo-tutorial-quote");
+          setActiveConvo({
+            jobId: "demo-tutorial-quote",
+            jobTitle: "🎓 Tutorial: Practice Quoting",
+            jobCategory: "Getting Started",
+            jobStatus: "open",
+            quoteStatus: "pending",
+            buyerId: "demo-buyer",
+            buyerName: "Duxio Team",
+            buyerAvatar: null,
+            buyerRating: 5,
+            buyerTotalSpent: 0,
+            myPrice: demoPrice,
+            myDelivery: demoDelivery,
+            myQuoteId: "demo-quote-id",
+            sessionId: null,
+            lastMessage: latestDemoMessage,
+            lastMessageAt: new Date().toISOString(),
+            unread: demoChatMessages.some((m) => m.sender_id === "demo-buyer") ? 1 : 0,
+            budgetMin: 10,
+            budgetMax: 25,
+            quoteCreatedAt: new Date().toISOString(),
+            deadlineMinutes: 1440,
+          });
+          setSellerChatMessages([]);
+        } else {
+          setActiveConvoJobId(null);
+          setActiveConvo(null);
+          setSellerChatMessages([]);
+        }
+        return;
+      }
 
       const convos: SellerConvo[] = [];
 
@@ -439,16 +481,58 @@ const ActiveRequest = () => {
 
       setSellerConvos(convos);
 
-      // Set active convo to current job
+      if (shouldOpenDemo) {
+        const latestDemoMessage = demoChatMessages.length > 0
+          ? demoChatMessages[demoChatMessages.length - 1].content
+          : "Welcome!";
+
+        setActiveConvoJobId("demo-tutorial-quote");
+        setActiveConvo({
+          jobId: "demo-tutorial-quote",
+          jobTitle: "🎓 Tutorial: Practice Quoting",
+          jobCategory: "Getting Started",
+          jobStatus: "open",
+          quoteStatus: "pending",
+          buyerId: "demo-buyer",
+          buyerName: "Duxio Team",
+          buyerAvatar: null,
+          buyerRating: 5,
+          buyerTotalSpent: 0,
+          myPrice: demoPrice,
+          myDelivery: demoDelivery,
+          myQuoteId: "demo-quote-id",
+          sessionId: null,
+          lastMessage: latestDemoMessage,
+          lastMessageAt: new Date().toISOString(),
+          unread: demoChatMessages.some((m) => m.sender_id === "demo-buyer") ? 1 : 0,
+          budgetMin: 10,
+          budgetMax: 25,
+          quoteCreatedAt: new Date().toISOString(),
+          deadlineMinutes: 1440,
+        });
+        setSellerChatMessages([]);
+        return;
+      }
+
+      // Set active convo to current job; otherwise auto-open latest pending quote
       const currentConvo = convos.find(c => c.jobId === jobId);
       if (currentConvo) {
         setActiveConvoJobId(currentConvo.jobId);
         setActiveConvo(currentConvo);
+      } else {
+        const latestPendingConvo = convos
+          .filter(c => c.jobStatus === "open" && c.quoteStatus === "pending")
+          .sort((a, b) => new Date(b.quoteCreatedAt).getTime() - new Date(a.quoteCreatedAt).getTime())[0];
+
+        if (latestPendingConvo) {
+          setActiveConvoJobId(latestPendingConvo.jobId);
+          setActiveConvo(latestPendingConvo);
+        }
       }
     };
 
     loadSellerConvos();
-  }, [userId, isBuyer, jobId]);
+  }, [userId, isBuyer, jobId, demoPrice, demoDelivery, demoChatMessages]);
 
   // ── Load messages for active seller convo ─────────────────────────────────
   useEffect(() => {
@@ -929,7 +1013,7 @@ const ActiveRequest = () => {
   const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
   const realQuoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
   const showTutorialDemoConvo = isTutorialActive && !jobId;
-  const quoteConvos = showTutorialDemoConvo ? [...realQuoteConvos, DEMO_CONVO] : realQuoteConvos;
+  const quoteConvos = showTutorialDemoConvo ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
@@ -953,6 +1037,7 @@ const ActiveRequest = () => {
       return (
         <button
           key={convo.jobId}
+          id={isDemo(convo) ? "tour-quotes-demo-item" : undefined}
           onClick={() => {
             if (isDemo(convo)) {
               // Demo quote — show demo content in main area
@@ -1013,9 +1098,9 @@ const ActiveRequest = () => {
       <div className="h-[calc(100vh-64px)] bg-background flex overflow-hidden">
 
         {/* ── Left sidebar: quotes list ──────────────────────────────────── */}
-        <div className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
+        <div id="tour-quotes-sidebar" className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <div id="tour-quotes-header" className="px-4 py-3 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/dashboard")}>
                 <ArrowLeft className="h-3.5 w-3.5" />
@@ -1051,7 +1136,7 @@ const ActiveRequest = () => {
         {activeConvo ? (
           <div className="flex flex-1 min-w-0">
             {/* Chat */}
-            <div className="flex flex-col flex-1 min-h-0 min-w-0">
+            <div id="tour-quotes-chat-panel" className="flex flex-col flex-1 min-h-0 min-w-0">
               {/* Chat top bar */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/20 shrink-0">
                 <Avatar className="h-9 w-9 border border-border shrink-0">
@@ -1108,7 +1193,7 @@ const ActiveRequest = () => {
                         <span className="text-muted-foreground/50">Conversation complete</span>
                       )}
                     </div>
-                    <Button type="submit" size="icon" disabled={!nextSellerMessage} className="shrink-0">
+                    <Button id="tour-quotes-demo-send" type="submit" size="icon" disabled={!nextSellerMessage} className="shrink-0">
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>
@@ -1152,7 +1237,7 @@ const ActiveRequest = () => {
             </div>
 
             {/* ── Right panel: Quote Action Center ──────────────────────────── */}
-            <div className="hidden lg:flex flex-col w-72 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
+            <div id="tour-quotes-right-panel" className="hidden lg:flex flex-col w-72 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
               {/* Expiry countdown */}
               {(() => {
                 const expiry = getExpiryInfo(activeConvo.quoteCreatedAt);
@@ -1257,6 +1342,7 @@ const ActiveRequest = () => {
                   </div>
                 </div>
                 <Button
+                  id="tour-quotes-update-offer-button"
                   size="sm"
                   className="w-full h-8 text-xs"
                   onClick={activeConvo && isDemo(activeConvo) ? handleDemoUpdateOffer : handleSubmitNewQuote}

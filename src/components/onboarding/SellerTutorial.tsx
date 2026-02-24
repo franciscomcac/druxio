@@ -114,47 +114,78 @@ const TOUR_PHASES: TourPhase[] = [
       {
         popover: {
           title: "Your Quotes Terminal 📋",
-          description: "This is your <strong>command center</strong> for managing all your pending quotes. Every quote you send on a job appears here until it's accepted, expired, or withdrawn.",
+          description: "Now we’ll go step by step through the Active Quotes page, exactly like the Dashboard tutorial.",
           side: "bottom",
           align: "center",
         },
       },
       {
+        element: "#tour-quotes-header",
         popover: {
-          title: "📨 Sidebar — Your Active Quotes",
-          description: "The <strong>left sidebar</strong> lists all your active quotes. Colored dots show expiry status: 🟢 plenty of time, 🟡 running low, 🔴 expiring soon. Unread messages appear first!",
+          title: "Quotes Hub",
+          description: "This header shows how many pending quotes you currently have and is your entry point back to the Dashboard.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#tour-quotes-sidebar",
+        popover: {
+          title: "Sidebar: All Your Quotes",
+          description: "Each card is a buyer conversation. Cards show your offered price, delivery time, and urgency countdown.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#tour-quotes-demo-item",
+        popover: {
+          title: "Tutorial Quote (Auto Opened)",
+          description: "During tutorial mode, this demo quote is auto-opened so you can learn the full flow without searching.",
+          side: "right",
+          align: "start",
+        },
+      },
+      {
+        element: "#tour-quotes-chat-panel",
+        popover: {
+          title: "Center: Conversation",
+          description: "This is where buyer and seller messages appear. Read context here before changing your offer.",
           side: "bottom",
           align: "center",
         },
       },
       {
+        element: "#tour-quotes-demo-send",
         popover: {
-          title: "💬 Chat with the Buyer",
-          description: "The <strong>center area</strong> is where you chat with the buyer. Click the demo quote in the sidebar to open the conversation. You'll see a scripted demo — click <strong>Send</strong> to advance the conversation!",
-          side: "bottom",
+          title: "Step 1: Send Scripted Reply",
+          description: "Click Send to post the next guided seller message in the tutorial conversation.",
+          side: "top",
           align: "center",
         },
       },
       {
+        element: "#tour-quotes-right-panel",
         popover: {
-          title: "📊 Right Panel — Request Details & Offer",
-          description: "On desktop, the <strong>right panel</strong> shows the request details, buyer info, your current offer, and lets you <strong>update your price</strong> or <strong>withdraw</strong> your quote.",
-          side: "bottom",
-          align: "center",
+          title: "Right Panel: Decision Data",
+          description: "See request details, buyer profile, your current offer, and expiry timer in one place.",
+          side: "left",
+          align: "start",
         },
       },
       {
+        element: "#tour-quotes-update-offer-button",
         popover: {
-          title: "💡 Try It: Chat & Update Your Offer!",
-          description: "Click the <strong>demo quote</strong> in the sidebar, then:<br/><br/>1️⃣ Click <strong>Send</strong> to reply to the buyer<br/>2️⃣ Try <strong>updating your offer</strong> in the right panel<br/><br/>Take your time — the buyer will respond automatically!",
-          side: "bottom",
+          title: "Step 2: Update Offer",
+          description: "After editing price/time, click here to send an updated offer to the buyer.",
+          side: "left",
           align: "center",
         },
       },
       {
         popover: {
           title: "Pro Tip: Fast Replies Win ⚡",
-          description: "Buyers see your average response time on your profile. Responding within <strong>2 minutes</strong> dramatically increases your chances of being selected!",
+          description: "Responding quickly and updating offers clearly increases your chances of being accepted.",
           side: "bottom",
           align: "center",
         },
