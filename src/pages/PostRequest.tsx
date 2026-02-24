@@ -116,6 +116,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Fitness: Weight Loss", label: "Weight Loss", icon: Heart },
     { id: "Fitness: Sports Coaching", label: "Sports Coaching", icon: Trophy },
     { id: "Fitness: Rehab", label: "Injury Rehab", icon: Activity },
+    { id: "Fitness: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Languages: [
     { id: "Languages: English", label: "English", icon: BookOpen },
