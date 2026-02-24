@@ -114,7 +114,8 @@ const Header = () => {
                     Active Quotes
                   </Button>
                 </Link>
-              )}
+            </>
+          )}
           {user ? (
             <>
               <Link to="/post-request">
