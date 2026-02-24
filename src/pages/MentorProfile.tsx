@@ -439,7 +439,14 @@ const MentorProfile = () => {
         
       </main>
 
-      
+      {mentor && mentorId && (
+        <ReportUserDialog
+          open={reportOpen}
+          onOpenChange={setReportOpen}
+          reportedUserId={mentorId}
+          reportedUserName={mentor.display_name || "Unknown"}
+        />
+      )}
     </div>
   );
 };
