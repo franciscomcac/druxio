@@ -202,6 +202,7 @@ const Admin = () => {
   const [selectedReport, setSelectedReport] = useState<ReportRow | null>(null);
   const [reportAdminNote, setReportAdminNote] = useState("");
   const [reportActionLoading, setReportActionLoading] = useState(false);
+  const [reportSignedUrls, setReportSignedUrls] = useState<string[]>([]);
 
   // Stats
   const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0, pendingReports: 0 });
