@@ -977,35 +977,35 @@ const Admin = () => {
               <div className="space-y-3">
                 {disputes.map((d) => (
                   <Card key={d.job_id} className="hover:border-primary/30 transition-colors">
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <AlertTriangle className="h-4 w-4 text-destructive" />
-                            <h3 className="font-semibold text-foreground">{d.job_title}</h3>
-                            <Badge variant="outline">{d.job_category}</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-3">{d.reason}</p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span>Buyer: <strong className="text-foreground">{d.buyer_name}</strong></span>
-                            <span>Seller: <strong className="text-foreground">{d.seller_name}</strong></span>
-                            <span>Price: <strong className="text-foreground">€{d.quote_price.toFixed(2)}</strong></span>
-                            <span>{formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 shrink-0">
-                          <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate(`/order/${d.job_id}`)}>
-                            <Eye className="h-3.5 w-3.5" /> View
-                          </Button>
-                          <Button size="sm" variant="outline" className="gap-1 text-destructive hover:bg-destructive/10" onClick={() => { setSelectedDispute(d); setDisputeAction("refund"); }}>
-                            <RefreshCw className="h-3.5 w-3.5" /> Refund
-                          </Button>
-                          <Button size="sm" className="gap-1" onClick={() => { setSelectedDispute(d); setDisputeAction("release"); }}>
-                            <DollarSign className="h-3.5 w-3.5" /> Release
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
+                     <CardContent className="p-3 sm:p-5">
+                       <div className="space-y-3">
+                         <div>
+                           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                             <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                             <h3 className="font-semibold text-foreground text-sm">{d.job_title}</h3>
+                             <Badge variant="outline" className="text-[10px]">{d.job_category}</Badge>
+                           </div>
+                           <p className="text-xs sm:text-sm text-muted-foreground mb-2">{d.reason}</p>
+                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                             <span>Buyer: <strong className="text-foreground">{d.buyer_name}</strong></span>
+                             <span>Seller: <strong className="text-foreground">{d.seller_name}</strong></span>
+                             <span>€{d.quote_price.toFixed(2)}</span>
+                             <span>{formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}</span>
+                           </div>
+                         </div>
+                         <div className="flex flex-wrap gap-2">
+                           <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => navigate(`/order/${d.job_id}`)}>
+                             <Eye className="h-3 w-3" /> View
+                           </Button>
+                           <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-destructive hover:bg-destructive/10" onClick={() => { setSelectedDispute(d); setDisputeAction("refund"); }}>
+                             <RefreshCw className="h-3 w-3" /> Refund
+                           </Button>
+                           <Button size="sm" className="gap-1 text-xs h-8" onClick={() => { setSelectedDispute(d); setDisputeAction("release"); }}>
+                             <DollarSign className="h-3 w-3" /> Release
+                           </Button>
+                         </div>
+                       </div>
+                     </CardContent>
                   </Card>
                 ))}
               </div>
