@@ -19,7 +19,7 @@ function emailTemplate(content: string) {
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
         <tr><td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:28px 32px;text-align:center;">
-          <span style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Dux&#x26A1;o</span>
+          <span style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Drux&#x26A1;o</span>
         </td></tr>
         <tr><td style="padding:32px 32px 24px;">${content}</td></tr>
         <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;">
