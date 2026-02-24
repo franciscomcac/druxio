@@ -142,6 +142,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const { format } = useCurrency();
   const playNotificationSound = useNotificationSound();
   const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
+  const tutorialStep = localStorage.getItem("seller_tutorial_step");
+  const showTutorialDemoJob = isTutorialActive && tutorialStep === "0";
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -608,7 +610,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                     return (
                       <div className="space-y-1.5">
                         {/* Demo job — only visible during tutorial */}
-                        {isTutorialActive && (
+                        {showTutorialDemoJob && (
                         <div
                           id="tour-demo-job"
                           className="flex items-center gap-2 rounded-sm border border-primary/30 bg-primary/[0.04] p-3 transition-all duration-200 hover:border-primary/40 hover:bg-primary/[0.06] mb-2"
@@ -625,6 +627,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                             </div>
                           </div>
                           <Button
+                            id="tour-demo-job-quote"
                             size="sm"
                             className="h-8 px-2.5 gap-1 rounded-sm text-xs"
                             onClick={() => { setQuoteDialog(DEMO_JOB); setQuotePrice(String(Math.round(DEMO_JOB.budget_max * 0.8))); }}
