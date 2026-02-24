@@ -77,7 +77,7 @@ const MentorProfile = () => {
       "@context": "https://schema.org",
       "@type": "Person",
       "name": mentor.display_name,
-      "description": mentor.bio || "Verified expert on Duxio",
+      "description": mentor.bio || "Verified expert on Druxio",
       "image": mentor.avatar_url || undefined,
       "jobTitle": categories.length > 0 ? `${categories[0]} Expert` : "Freelance Expert",
       "url": `https://duxio.lovable.app/mentor/${mentorId}`,
