@@ -1058,23 +1058,9 @@ const ActiveRequest = () => {
               <ScrollArea className="flex-1 min-h-0">
                 <div className="p-4 space-y-3">
                   {activeConvo && isDemo(activeConvo) ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center px-6 max-w-md mx-auto">
-                      <div className="h-16 w-16 rounded-2xl bg-primary/[0.1] flex items-center justify-center mb-5">
-                        <span className="text-3xl">📘</span>
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground mb-2">Welcome to the Quotes Terminal!</h3>
-                      <div className="space-y-3 text-sm text-muted-foreground text-left">
-                        <p>This is your <strong className="text-foreground">command center</strong> for managing all your pending quotes. Here's how it works:</p>
-                        <div className="rounded-lg bg-muted/40 p-3 space-y-2">
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">1.</span> <span>The <strong className="text-foreground">left sidebar</strong> shows all your active quotes — sorted by urgency and unread messages.</span></p>
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">2.</span> <span>Click any quote to open the <strong className="text-foreground">chat</strong> with the buyer in this area.</span></p>
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">3.</span> <span>The <strong className="text-foreground">right panel</strong> (on desktop) shows request details, buyer info, and lets you update your offer.</span></p>
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">4.</span> <span>Each quote has a <strong className="text-foreground">5-day expiry timer</strong> — the colored dots (🟢🟡🔴) show urgency.</span></p>
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">5.</span> <span>Fast replies and competitive pricing <strong className="text-foreground">dramatically increase</strong> your chances of winning jobs!</span></p>
-                        </div>
-                        <p className="text-xs text-muted-foreground/70 pt-2">💡 This demo quote can't be deleted — it's always here for reference.</p>
-                      </div>
-                    </div>
+                    <>
+                      {demoChatMessages.map((msg) => renderMessageBubble(msg, msg.sender_id !== "demo-buyer"))}
+                    </>
                   ) : sellerChatMessages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
                       <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
@@ -1091,8 +1077,22 @@ const ActiveRequest = () => {
               </ScrollArea>
 
               {activeConvo && isDemo(activeConvo) ? (
-                <div className="border-t border-border p-3 shrink-0 bg-muted/20">
-                  <p className="text-xs text-center text-muted-foreground">💡 This is a demo — chat is disabled</p>
+                <div className="border-t border-border p-3 shrink-0 bg-card/20">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary">DEMO</Badge>
+                    <span className="text-[10px] text-muted-foreground">Try typing a message — the buyer will auto-reply!</span>
+                  </div>
+                  <form onSubmit={(e) => { e.preventDefault(); handleSendDemoChat(); }} className="flex gap-2">
+                    <Input
+                      value={demoChatInput}
+                      onChange={(e) => setDemoChatInput(e.target.value)}
+                      placeholder="Try sending a message..."
+                      className="bg-background/60 border-border/40 focus:border-primary/40"
+                    />
+                    <Button type="submit" size="icon" disabled={!demoChatInput.trim()} className="shrink-0">
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </form>
                 </div>
               ) : (
               <div className="border-t border-border p-3 shrink-0 bg-card/20">
