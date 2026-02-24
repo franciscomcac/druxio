@@ -56,6 +56,8 @@ const Footer = () => {
                 {links.map((link) => (
                   <li key={link.href}>
                     {link.href.startsWith("mailto:") || link.href.startsWith("http") ? (
+                      <a href={link.href} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</a>
+                    ) : link.href.startsWith("/#") ? (
                       <a href={link.href} className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</a>
                     ) : (
                       <Link to={link.href} className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</Link>
