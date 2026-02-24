@@ -182,7 +182,7 @@ To everyone who signed up early, tested the platform, reported bugs, and sent us
 
 We believe the future of expert access is fast, fair, and borderless. Today is just the beginning.
 
-**Welcome to Duxio.**
+**Welcome to Druxio.**
 
 — The Duxio Team
     `,
