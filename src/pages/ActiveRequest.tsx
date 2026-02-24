@@ -762,7 +762,8 @@ const ActiveRequest = () => {
     );
   }
 
-  if (!job) return null;
+  // If no job and user is buyer, nothing to show. Sellers can still see the demo quote.
+  if (!job && isBuyer) return null;
 
   const sortedQuotes = [...quotes].sort((a, b) => a.price - b.price);
   const recommendedId = sortedQuotes.length > 0 ? (() => {
