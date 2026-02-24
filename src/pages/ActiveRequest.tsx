@@ -213,7 +213,7 @@ const ActiveRequest = () => {
       // Get all quotes by this seller
       const { data: myQuotes } = await supabase
         .from("quotes")
-        .select("id, job_id, price, estimated_minutes, status")
+        .select("id, job_id, price, estimated_minutes, status, created_at")
         .eq("expert_id", userId)
         .order("created_at", { ascending: false });
 
