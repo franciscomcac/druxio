@@ -127,7 +127,7 @@ serve(async (req) => {
             ${row("Auto-release in", "3 days (if no action taken)")}
           `)}
           ${p("Please review the delivered work and confirm or raise a dispute.")}
-          ${cta("Review Delivery", `https://duxio.lovable.app/order/${jobId}`)}
+          ${cta("Review Delivery", `https://druxio.lovable.app/order/${jobId}`)}
         `);
         await sendResend(buyerEmail, `Your order has been delivered — "${job.title}"`, html, resendKey);
       }
