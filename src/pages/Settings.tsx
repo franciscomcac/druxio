@@ -43,6 +43,7 @@ const CATEGORY_TREE = [
       { id: "World of Warcraft", services: ["Boosting", "Coaching", "Raid Carry", "Dungeon Carry", "Leveling"] },
       { id: "Destiny 2", services: ["Raid Carry", "Dungeon Carry", "PvP Coaching", "Quest Help"] },
       { id: "Dead by Daylight", services: ["Coaching", "Carry / Duo", "Rank Boosting"] },
+      { id: "Custom Request", services: ["Any Gaming Task", "Unique Request"] },
     ],
   },
   {
