@@ -474,16 +474,26 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
 
     const parsedStep = parseInt(step || "0", 10);
     const storedPhaseIndex = Number.isNaN(parsedStep) ? 0 : parsedStep;
-    const routePhaseIndex = TOUR_PHASES.findIndex((phase) => matchesPhaseRoute(location.pathname, phase));
-    const effectivePhaseIndex = routePhaseIndex >= 0 ? routePhaseIndex : storedPhaseIndex;
 
-    if (routePhaseIndex >= 0 && routePhaseIndex !== storedPhaseIndex) {
-      localStorage.setItem(STEP_KEY, String(routePhaseIndex));
+    // If the stored phase matches the current route, always prefer it.
+    // This prevents Phase 0 (/dashboard) from overriding Phase 6 (/dashboard).
+    const storedPhase = TOUR_PHASES[storedPhaseIndex];
+    if (storedPhase && matchesPhaseRoute(location.pathname, storedPhase) && !driverRef.current) {
+      setTimeout(() => initDriver(storedPhaseIndex), 400);
+      return;
     }
 
-    const effectivePhase = TOUR_PHASES[effectivePhaseIndex];
-    if (effectivePhase && matchesPhaseRoute(location.pathname, effectivePhase) && !driverRef.current) {
-      setTimeout(() => initDriver(effectivePhaseIndex), 400);
+    // Otherwise, detect the phase from the route (user navigated manually).
+    // Only advance forward, never go backwards.
+    const routePhaseIndex = TOUR_PHASES.findIndex((phase) => matchesPhaseRoute(location.pathname, phase));
+    if (routePhaseIndex >= 0 && routePhaseIndex !== storedPhaseIndex) {
+      const effectivePhaseIndex = Math.max(routePhaseIndex, storedPhaseIndex);
+      localStorage.setItem(STEP_KEY, String(effectivePhaseIndex));
+
+      const effectivePhase = TOUR_PHASES[effectivePhaseIndex];
+      if (effectivePhase && matchesPhaseRoute(location.pathname, effectivePhase) && !driverRef.current) {
+        setTimeout(() => initDriver(effectivePhaseIndex), 400);
+      }
     }
   }, [location.pathname, initDriver]);
 
