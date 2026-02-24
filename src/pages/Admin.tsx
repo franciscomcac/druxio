@@ -237,6 +237,7 @@ const Admin = () => {
     if (activeTab === "withdrawals") loadWithdrawals();
     if (activeTab === "support") loadSupportTickets();
     if (activeTab === "feedback") loadFeedback();
+    if (activeTab === "reports") loadReports();
     loadStats();
   }, [isAdmin, activeTab]);
 
