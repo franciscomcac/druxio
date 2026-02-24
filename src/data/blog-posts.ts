@@ -218,7 +218,7 @@ For a one-hour problem, that process is completely disproportionate. And yet mil
 
 ## The Druxio Way: Expert Access in Minutes
 
-Here's what happens when you post a request on Duxio:
+Here's what happens when you post a request on Druxio:
 
 **1. You describe your need.** Our AI-assisted request builder helps you write a clear, complete brief — so experts understand exactly what you're looking for before they quote.
 
