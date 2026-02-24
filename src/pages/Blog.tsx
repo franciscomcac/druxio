@@ -54,7 +54,7 @@ const Blog = () => {
             Stories, updates, and insights
           </h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto animate-fade-in" style={{ animationDelay: "200ms", animationFillMode: "both" }}>
-            Thoughts on the future of on-demand expertise, platform updates, and how people are using Duxio to get unstuck.
+            Thoughts on the future of on-demand expertise, platform updates, and how people are using Druxio to get unstuck.
           </p>
         </div>
       </div>

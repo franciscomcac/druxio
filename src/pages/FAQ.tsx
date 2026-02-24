@@ -193,7 +193,7 @@ const FAQ = () => {
             Our support team is available Monday–Friday, 9am–6pm CET.
           </p>
           <a
-            href="mailto:support@duxio.store"
+            href="mailto:support@druxio.store"
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
           >
             Email Support

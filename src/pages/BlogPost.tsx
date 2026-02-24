@@ -143,18 +143,18 @@ const BlogPost = () => {
         },
         "publisher": {
           "@type": "Organization",
-          "name": "Duxio",
-          "url": "https://duxio.lovable.app"
+          "name": "Druxio",
+          "url": "https://druxio.lovable.app"
         },
-        "mainEntityOfPage": `https://duxio.lovable.app/blog/${post.slug}`
+        "mainEntityOfPage": `https://druxio.lovable.app/blog/${post.slug}`
       },
       {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
         "itemListElement": [
-          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://duxio.lovable.app/" },
-          { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://duxio.lovable.app/blog" },
-          { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://duxio.lovable.app/blog/${post.slug}` },
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://druxio.lovable.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://druxio.lovable.app/blog" },
+          { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://druxio.lovable.app/blog/${post.slug}` },
         ],
       },
     ] : undefined,
