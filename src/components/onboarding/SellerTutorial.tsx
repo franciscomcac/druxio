@@ -318,6 +318,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     }
 
     const phase = TOUR_PHASES[phaseIndex];
+    phaseRef.current = phaseIndex;
     const isLastPhase = phaseIndex === TOUR_PHASES.length - 1;
     const hasBridge = !isLastPhase && (phase.bridgeTitle || phase.bridgeDescription);
 
