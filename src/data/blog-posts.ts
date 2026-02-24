@@ -155,7 +155,7 @@ We know things don't always go perfectly. Druxio includes a built-in dispute pro
 
 ## Who Is Druxio For?
 
-This is important to us. Duxio is built for **real human needs across a wide range of domains**:
+This is important to us. Druxio is built for **real human needs across a wide range of domains**:
 
 - **Professionals and freelancers** who hit roadblocks and need fast, expert input
 - **Entrepreneurs and small business owners** navigating decisions in finance, law, marketing, or operations
