@@ -213,7 +213,7 @@ const Hero = () => {
                 )}
               </div>
               <Button type="submit" size="lg" className="h-12 px-8 rounded-sm gap-2 font-bold shrink-0 text-base">
-                Post Task <ArrowRight className="h-5 w-5" />
+                Post a Task <ArrowRight className="h-5 w-5" />
               </Button>
             </div>
           </form>
