@@ -113,6 +113,7 @@ const CATEGORY_TREE = [
       { id: "Weight Loss", services: ["Program Design", "Accountability", "Progress Tracking"] },
       { id: "Sports Coaching", services: ["Technique", "Game Strategy", "Conditioning", "Mental Prep"] },
       { id: "Injury Rehab", services: ["Exercise Prescription", "Recovery Plan", "Movement Assessment"] },
+      { id: "Custom Request", services: ["Any Fitness Task", "Unique Request"] },
     ],
   },
   {
