@@ -107,6 +107,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Music: Vocals", label: "Vocal Coaching", icon: Mic },
     { id: "Music: Beats", label: "Beat Making", icon: Disc3 },
     { id: "Music: Songwriting", label: "Songwriting", icon: PencilLine },
+    { id: "Music: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Fitness: [
     { id: "Fitness: Training", label: "Personal Training", icon: Dumbbell },
