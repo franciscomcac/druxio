@@ -861,13 +861,13 @@ const PostRequest = () => {
         {/* Choose method: AI or Manual */}
         {wizardStep === "choose-method" && (
           <div className="mx-auto max-w-2xl animate-fade-in">
-            <Button variant="ghost" className="mb-6 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]" onClick={() => navigate("/")}>
+            <Button variant="ghost" className="mb-4 md:mb-6 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06] text-sm" onClick={() => navigate("/")}>
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
 
-            <div className="mb-10 text-center">
-              <h1 className="mb-3 text-3xl font-bold text-foreground">How would you like to start?</h1>
-              <p className="text-muted-foreground text-lg">Choose your preferred way to post a task.</p>
+            <div className="mb-6 md:mb-10 text-center">
+              <h1 className="mb-2 md:mb-3 text-2xl md:text-3xl font-bold text-foreground">How would you like to start?</h1>
+              <p className="text-sm md:text-lg text-muted-foreground">Choose your preferred way to post a task.</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
