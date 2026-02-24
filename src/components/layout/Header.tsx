@@ -286,6 +286,11 @@ const Header = () => {
                     <Link to="/inbox" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start gap-2 h-11"><MessageSquare className="h-4 w-4" /> Messages</Button>
                     </Link>
+                    {isMentorUser && (
+                      <Link to="/quotes" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start gap-2 h-11"><FileText className="h-4 w-4" /> Active Quotes</Button>
+                      </Link>
+                    )}
                     <Link to="/wallet" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Wallet className="h-4 w-4" /> Wallet</Button>
                     </Link>
