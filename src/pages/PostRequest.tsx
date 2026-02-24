@@ -282,6 +282,30 @@ const PostRequest = () => {
 
   // AI refine state
   const [userIdea, setUserIdea] = useState("");
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const ROTATING_PLACEHOLDERS = [
+    'e.g. "Fix a React login bug that redirects to a blank page"',
+    'e.g. "Boost my Valorant account from Gold to Diamond"',
+    'e.g. "Design a modern logo for my startup"',
+    'e.g. "Edit a 10-minute YouTube video with transitions"',
+    'e.g. "Build a custom Discord bot for my server"',
+    'e.g. "Create a 12-week workout plan for muscle gain"',
+    'e.g. "Write SEO-optimized blog posts for my website"',
+    'e.g. "Mix and master my new track"',
+    'e.g. "Set up my Shopify store from scratch"',
+    'e.g. "Help me prep for IELTS speaking test"',
+    'e.g. "Create a social media marketing strategy"',
+    'e.g. "Deploy my app to AWS with CI/CD"',
+    'e.g. "Design thumbnails for my YouTube channel"',
+    'e.g. "Translate my website to Spanish"',
+    'e.g. "Build a landing page for my SaaS product"',
+  ];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % ROTATING_PLACEHOLDERS.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
   const [templateData, setTemplateData] = useState<Record<string, string>>({});
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<{
