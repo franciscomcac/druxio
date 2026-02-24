@@ -32,7 +32,7 @@ const Blog = () => {
         "itemListElement": blogPosts.map((post, i) => ({
           "@type": "ListItem",
           "position": i + 1,
-          "url": `https://duxio.lovable.app/blog/${post.slug}`,
+          "url": `https://druxio.lovable.app/blog/${post.slug}`,
           "name": post.title
         }))
       }
