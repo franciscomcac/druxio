@@ -318,6 +318,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     }
 
     const phase = TOUR_PHASES[phaseIndex];
+    phaseRef.current = phaseIndex;
     const isLastPhase = phaseIndex === TOUR_PHASES.length - 1;
     const hasBridge = !isLastPhase && (phase.bridgeTitle || phase.bridgeDescription);
 
@@ -434,17 +435,24 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     // Otherwise don't navigate — the resume logic will handle it when user arrives
   }, [location.pathname, navigate, completeAll, initDriver]);
 
-  // Resume across navigation
+  // Resume across navigation (also recover if user lands on a later phase route)
   useEffect(() => {
     const active = localStorage.getItem(ACTIVE_KEY);
     const step = localStorage.getItem(STEP_KEY);
-    if (active === "true" && step) {
-      const phaseIndex = parseInt(step, 10);
-      const phase = TOUR_PHASES[phaseIndex];
-      // Only resume if we're on the right route
-      if (phase && matchesPhaseRoute(location.pathname, phase) && !driverRef.current) {
-        setTimeout(() => initDriver(phaseIndex), 400);
-      }
+    if (active !== "true") return;
+
+    const parsedStep = parseInt(step || "0", 10);
+    const storedPhaseIndex = Number.isNaN(parsedStep) ? 0 : parsedStep;
+    const routePhaseIndex = TOUR_PHASES.findIndex((phase) => matchesPhaseRoute(location.pathname, phase));
+    const effectivePhaseIndex = routePhaseIndex >= 0 ? routePhaseIndex : storedPhaseIndex;
+
+    if (routePhaseIndex >= 0 && routePhaseIndex !== storedPhaseIndex) {
+      localStorage.setItem(STEP_KEY, String(routePhaseIndex));
+    }
+
+    const effectivePhase = TOUR_PHASES[effectivePhaseIndex];
+    if (effectivePhase && matchesPhaseRoute(location.pathname, effectivePhase) && !driverRef.current) {
+      setTimeout(() => initDriver(effectivePhaseIndex), 400);
     }
   }, [location.pathname, initDriver]);
 
