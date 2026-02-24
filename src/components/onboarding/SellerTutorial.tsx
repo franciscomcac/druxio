@@ -373,7 +373,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     if (phaseIndex === 0 && location.pathname !== phase.route) {
       navigate(phase.route);
       setTimeout(() => initDriver(phaseIndex), 600);
-    } else if (location.pathname === phase.route) {
+    } else if (matchesPhaseRoute(location.pathname, phase)) {
       setTimeout(() => initDriver(phaseIndex), 300);
     }
     // Otherwise don't navigate — the resume logic will handle it when user arrives
