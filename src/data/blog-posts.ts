@@ -116,7 +116,7 @@ This is a milestone we've been working toward for a long time — and we couldn'
 
 ## What Is Druxio?
 
-Duxio is an on-demand marketplace that connects people who need fast, focused expert help with verified professionals who can deliver it — often within minutes.
+Druxio is an on-demand marketplace that connects people who need fast, focused expert help with verified professionals who can deliver it — often within minutes.
 
 Think of it like this: you don't always need to hire a full-time consultant, book a three-hour coaching call, or post on a forum and wait days for an answer. Sometimes you just need **the right person for 20 minutes**, right now.
 
