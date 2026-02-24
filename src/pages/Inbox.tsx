@@ -768,8 +768,8 @@ const Inbox = () => {
             {([
               { key: "all", label: "All", icon: <LayoutList className="h-3 w-3" /> },
               { key: "order", label: "Active", icon: <ShoppingBag className="h-3 w-3" /> },
-              { key: "quote", label: "Quotes", icon: <MessageSquare className="h-3 w-3" /> },
               { key: "delivered", label: "Completed", icon: <CheckCircle2 className="h-3 w-3" /> },
+              { key: "cancelled", label: "Cancelled", icon: <AlertTriangle className="h-3 w-3" /> },
             ] as const).map(tab => (
               <button
                 key={tab.key}
