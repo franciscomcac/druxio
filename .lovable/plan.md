@@ -1,107 +1,89 @@
 
 
-## Landing Page UX & Conversion Improvements
+## Seller Orders Overhaul: Separate Quotes from Active Orders + Auto-Expiry + Withdraw Quotes
 
-After reviewing the AI's suggestions against the actual codebase, here's a filtered list of high-impact, actionable improvements. I've removed suggestions that are already implemented (e.g., expert benefits are already listed), impractical (e.g., payment provider logos in an iframe preview), or low-ROI.
-
----
-
-### 1. Standardize CTA Label Across the Entire Site (P0)
-
-Currently there are 4 different labels used interchangeably:
-- "Post Task" (Hero button, Header desktop/mobile)
-- "Post a Task" (HowItWorks section)
-- "Post Your Request" (MentorSpotlight / Recent Requests)
-- "Post a Request" (Footer, ClientDashboard, BlogPost, CategoryPage, FAQ text)
-
-**Standardize everything to: "Post a Task"** -- it's short, action-oriented, and matches the hero headline "Post a task. Get it done."
-
-Files to update:
-- `src/components/landing/Hero.tsx` -- button text "Post Task" to "Post a Task"
-- `src/components/layout/Header.tsx` -- desktop "Post Request" and mobile "Post Request" to "Post a Task"
-- `src/components/landing/MentorSpotlight.tsx` -- "Post Your Request" to "Post a Task"
-- `src/components/layout/Footer.tsx` -- "Post a Request" to "Post a Task"
-- `src/components/dashboard/ClientDashboard.tsx` -- "Post a Request" to "Post a Task"
-- `src/pages/BlogPost.tsx` -- "Post a Request" to "Post a Task"
-- `src/pages/CategoryPage.tsx` -- "Post a Request" to "Post a Task"
+This plan restructures the seller-side experience to reduce clutter, separate concerns, and add quote lifecycle management.
 
 ---
 
-### 2. Improve Hero Subtext with Quantified Reassurance (P1)
+### Current Problem
 
-Current subtext: *"Describe what you need. Verified experts compete with fixed-price quotes in under 2 minutes."*
-
-Replace with more compelling, trust-forward copy:
-
-**New subtext:** *"Get verified quotes in under 2 minutes. Escrow-protected -- you only pay when satisfied."*
-
-Also update the trust microcopy line below the input from generic bullets to include the fee advantage:
-
-**Current:** "Free to post . No commitment . Pay only when satisfied"
-**New:** "Free to post . Only 5% fee . Escrow-protected"
-
-File: `src/components/landing/Hero.tsx`
+Right now, the seller's "My Orders" page (`ActiveRequest.tsx`) mixes **pending quotes** (pre-payment conversations) with **active orders** (paid, in-progress work) in a single sidebar. This creates clutter and makes it hard to focus on actual paid work. Sellers also cannot withdraw/close their own quotes, and stale quotes live forever.
 
 ---
 
-### 3. Add Visible Label and Helper Text to Hero Input (P0)
+### What Changes
 
-The hero input currently has no visible label (only an animated placeholder). This is an accessibility issue.
+**1. Separate the Seller Sidebar into Two Tabs: "Quotes" and "Orders"**
 
-- Add an `aria-label="Describe your task"` to the input
-- Add a small helper text below the form: *"Describe any task -- our AI matches you with the right expert"*
+Inside the seller layout in `ActiveRequest.tsx`, split the left sidebar into two tabs:
 
-File: `src/components/landing/Hero.tsx`
+- **Quotes tab** -- Shows all conversations where the seller has a pending quote (job status = `open`, quote status = `pending`). These are pre-sale negotiations.
+- **Orders tab** -- Shows conversations where the quote was accepted and payment was made (job status = `accepted`/`completed`/`disputed`). These are active/completed orders.
 
----
+This keeps the same page and same chat interface but separates the list cleanly.
 
-### 4. Add Visible Label to Newsletter Email Input (P1)
+**2. Allow Sellers to Withdraw/Close Their Own Quotes**
 
-The newsletter email input uses only a placeholder with no visible label or privacy microcopy.
+Add a "Withdraw Quote" button in the right panel (job details section) when viewing a pending quote. This will:
+- Update the quote status to `rejected` (reuse existing status)
+- Send a notification to the buyer: "Expert X has withdrawn their offer on [job title]"
+- Remove the conversation from the seller's Quotes tab
+- Show a confirmation dialog before withdrawing
 
-- Add a visible `<Label>` element: "Your email"
-- Add privacy microcopy below the form: *"No spam. Unsubscribe anytime."*
+**3. Auto-Expire Unanswered Quotes After 5 Days**
 
-File: `src/components/landing/Newsletter.tsx`
+Update the existing `expire-stale-jobs` edge function to also handle individual quote expiration:
+- Find quotes with status `pending` where `created_at` is older than 5 days AND the job is still `open`
+- Update those quotes to status `expired`
+- Notify the seller: "Your quote on [job title] expired after 5 days without response"
 
----
+This complements the existing job-level expiration (which expires the whole job after 5 days).
 
-### 5. Improve Stats Legibility (P2)
+**4. Enhance the SoldOrders Page**
 
-The LiveStats section uses `text-2xl` for stat values and `text-[11px]` for labels -- both are small for quick scanning.
-
-- Increase stat values to `text-3xl` with `font-extrabold`
-- Increase labels to `text-xs`
-- Add a timestamp: "Updated just now" to add real-time credibility
-
-File: `src/components/landing/LiveStats.tsx`
-
----
-
-### 6. Enhance Testimonials with Verifiable Context (P1)
-
-Testimonials currently lack timestamps or context. Add a "time ago" string to each testimonial to make them feel current and real.
-
-Add a `timeAgo` field to each testimonial (e.g., "2 days ago", "1 week ago") and display it.
-
-Also replace one Gaming testimonial with a Business/Tech one for category balance. Currently 2 of 5 are Gaming-tagged.
-
-File: `src/components/landing/Testimonials.tsx`
+Improve `SoldOrders.tsx` with:
+- Add a "Delivered" tab for orders marked as delivered but awaiting buyer confirmation
+- Show delivery countdown timer (3-day auto-release) on delivered orders
+- Add clickability to completed/disputed orders (currently only active orders are clickable)
+- Show the order status more prominently with color-coded borders
 
 ---
 
-### Technical Summary
+### Technical Details
+
+#### Files to modify:
 
 | File | Changes |
 |---|---|
-| `Hero.tsx` | Standardize CTA to "Post a Task", update subtext, add aria-label, add helper text, update trust microcopy |
-| `Header.tsx` | Change "Post Request" to "Post a Task" (desktop + mobile) |
-| `MentorSpotlight.tsx` | Change "Post Your Request" to "Post a Task" |
-| `Footer.tsx` | Change "Post a Request" to "Post a Task" |
-| `ClientDashboard.tsx` | Change "Post a Request" to "Post a Task" |
-| `BlogPost.tsx` | Change "Post a Request" to "Post a Task" |
-| `CategoryPage.tsx` | Change "Post a Request" to "Post a Task" |
-| `Newsletter.tsx` | Add visible label, privacy microcopy |
-| `LiveStats.tsx` | Increase font sizes, add "Updated just now" |
-| `Testimonials.tsx` | Add time context, rebalance categories |
+| `src/pages/ActiveRequest.tsx` | Add Tabs component to seller sidebar splitting "Quotes" vs "Orders"; add "Withdraw Quote" button + confirmation dialog in right panel; filter `sellerConvos` by job/quote status for each tab |
+| `src/pages/SoldOrders.tsx` | Add "Delivered" tab filtering `escrow_status = 'delivered'`; make completed/disputed orders clickable; add auto-release countdown display; improve card styling with status-colored left borders |
+| `supabase/functions/expire-stale-jobs/index.ts` | Add logic to expire individual pending quotes older than 5 days on still-open jobs; send notifications to affected sellers |
+
+#### Database changes:
+- No schema changes needed. The existing `quotes.status` field already supports `pending`, `accepted`, `rejected` values. We'll use `rejected` for seller-withdrawn and `expired` for auto-expired quotes.
+
+#### Quote withdrawal flow:
+1. Seller clicks "Withdraw Quote" in right panel
+2. Confirmation dialog appears
+3. On confirm: `UPDATE quotes SET status = 'rejected' WHERE id = quoteId`
+4. Insert notification for buyer
+5. Remove from seller's sidebar list
+6. Toast confirmation
+
+#### Auto-expiry addition to edge function:
+```text
+1. Query: quotes WHERE status = 'pending' AND created_at < 5_days_ago
+2. Join with jobs WHERE status = 'open' (only expire if job is still open)
+3. Update matched quotes to status = 'expired'  
+4. Notify each seller about their expired quote
+```
+
+#### Seller sidebar tab structure:
+```text
+Sidebar Header: "My Orders" with back button
++-- TabsList: [Quotes (count)] [Orders (count)]
+    |-- Quotes tab: sellerConvos where jobStatus = 'open' && quoteStatus = 'pending'
+    |-- Orders tab: sellerConvos where jobStatus in ('accepted','completed','disputed')
+```
 
