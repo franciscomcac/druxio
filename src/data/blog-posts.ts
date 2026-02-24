@@ -259,7 +259,7 @@ We understand that trusting a stranger with your problem requires confidence. Th
 
 The way people access professional expertise is changing. Just as platforms changed how we access accommodation, transport, and food — Druxio is changing how we access knowledge and skill.
 
-The professional sitting across from you on Duxio might be a former McKinsey analyst who consults part-time, a certified accountant who helps three clients a day between school runs, or a senior developer who loves helping people in their spare hours.
+The professional sitting across from you on Druxio might be a former McKinsey analyst who consults part-time, a certified accountant who helps three clients a day between school runs, or a senior developer who loves helping people in their spare hours.
 
 Every one of them is on Duxio because they want to share their expertise efficiently — and every client is there because they need real help, not a six-month contract.
 
