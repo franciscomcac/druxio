@@ -289,6 +289,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
   const location = useLocation();
   const driverRef = useRef<ReturnType<typeof driver> | null>(null);
   const phaseRef = useRef(0);
+  const isPausingForDemoRef = useRef(false);
   const [userId, setUserId] = useState(propUserId || "");
 
   // Get userId
