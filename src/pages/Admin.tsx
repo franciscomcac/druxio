@@ -546,6 +546,48 @@ const Admin = () => {
     setReportActionLoading(false);
   };
 
+  const handleBanUser = async (userId: string, userName: string, ban: boolean) => {
+    setReportActionLoading(true);
+    try {
+      await supabase.from("profiles").update({
+        is_banned: ban,
+        ban_reason: ban ? (reportAdminNote.trim() || "Banned by admin") : null,
+        banned_at: ban ? new Date().toISOString() : null,
+      }).eq("id", userId);
+
+      if (selectedReport) {
+        await supabase.from("user_reports" as any).update({
+          status: "action_taken",
+          admin_notes: reportAdminNote.trim() || `User ${ban ? "banned" : "unbanned"} by admin`,
+        } as any).eq("id", selectedReport.id);
+      }
+
+      // Notify the user
+      await supabase.from("notifications").insert({
+        user_id: userId,
+        type: ban ? "account_banned" : "account_unbanned",
+        title: ban ? "Account Suspended" : "Account Reinstated",
+        message: ban
+          ? "Your account has been suspended due to violations of our community guidelines. Contact support if you believe this is an error."
+          : "Your account has been reinstated. Please adhere to our community guidelines.",
+      });
+
+      toast({ title: ban ? `${userName} has been banned` : `${userName} has been unbanned` });
+      setSelectedReport(null);
+      setReportAdminNote("");
+      loadReports();
+      loadStats();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setReportActionLoading(false);
+  };
+
+  const getSignedImageUrl = async (path: string): Promise<string> => {
+    const { data } = await supabase.storage.from("report-images").createSignedUrl(path, 3600);
+    return data?.signedUrl || "";
+  };
+
   const openSupportTicket = async (ticket: SupportTicket) => {
     setSelectedTicket(ticket);
     const { data: msgs } = await supabase
