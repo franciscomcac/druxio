@@ -75,11 +75,11 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
       {
-        element: "#tour-demo-job",
+        element: "#tour-demo-job-quote",
         popover: {
           title: "🎓 Click Quote to Try It!",
           description: "Click the <strong>Quote</strong> button on this demo request. Set your price, delivery time, and message — then send it! The tour will resume automatically after.",
-          side: "bottom",
+          side: "left",
           align: "center",
         },
       },
