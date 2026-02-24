@@ -95,7 +95,7 @@ As always, we'd love your feedback. Use the Feedback button at the bottom of any
 
 **Happy posting.**
 
-— The Duxio Team
+— The Druxio Team
     `,
   },
   {
