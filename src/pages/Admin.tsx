@@ -1502,7 +1502,162 @@ const Admin = () => {
               </div>
             )}
           </TabsContent>
+
+          {/* ═══ REPORTS TAB ═══ */}
+          <TabsContent value="reports">
+            <div className="flex items-center gap-3 mb-4">
+              <Select value={reportsFilter} onValueChange={setReportsFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="reviewed">Reviewed</SelectItem>
+                  <SelectItem value="action_taken">Action Taken</SelectItem>
+                  <SelectItem value="dismissed">Dismissed</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={loadReports}>
+                <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+              </Button>
+            </div>
+
+            {reportsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full" />)}
+              </div>
+            ) : reports.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  <ShieldCheck className="h-12 w-12 mx-auto mb-3 text-primary/40" />
+                  <p className="font-semibold text-foreground">No reports</p>
+                  <p className="text-sm">No user reports matching this filter.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {reports.map((r) => (
+                  <Card key={r.id} className="hover:border-primary/30 transition-colors cursor-pointer" onClick={() => { setSelectedReport(r); setReportAdminNote(r.admin_notes || ""); }}>
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Flag className="h-4 w-4 text-destructive" />
+                            <span className="font-medium text-foreground">{r.reported_user_name}</span>
+                            <Badge variant={r.status === "pending" ? "destructive" : r.status === "action_taken" ? "default" : "secondary"}>
+                              {r.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Reported by <span className="font-medium">{r.reporter_name}</span> — {r.reason.replace("_", " ")}
+                          </p>
+                          {r.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-2">{r.description}</p>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
         </Tabs>
+
+        {/* ═══ REPORT DETAIL DIALOG ═══ */}
+        <Dialog open={!!selectedReport} onOpenChange={(open) => { if (!open) setSelectedReport(null); }}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShieldAlert className="h-5 w-5 text-destructive" />
+                Report Details
+              </DialogTitle>
+            </DialogHeader>
+            {selectedReport && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Reported User</p>
+                    <p className="font-medium text-foreground">{selectedReport.reported_user_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Reporter</p>
+                    <p className="font-medium text-foreground">{selectedReport.reporter_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Reason</p>
+                    <p className="font-medium text-foreground capitalize">{selectedReport.reason.replace("_", " ")}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Status</p>
+                    <Badge variant={selectedReport.status === "pending" ? "destructive" : "secondary"}>{selectedReport.status}</Badge>
+                  </div>
+                </div>
+
+                {selectedReport.description && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Description</p>
+                    <p className="text-sm text-foreground bg-muted/50 p-3 rounded-md">{selectedReport.description}</p>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="report-admin-note">Admin Notes</Label>
+                  <Textarea
+                    id="report-admin-note"
+                    value={reportAdminNote}
+                    onChange={(e) => setReportAdminNote(e.target.value)}
+                    placeholder="Add notes about the action taken..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    disabled={reportActionLoading}
+                    onClick={() => handleReportAction(selectedReport.id, "action_taken")}
+                  >
+                    {reportActionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Ban className="h-4 w-4 mr-1" />}
+                    Take Action
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={reportActionLoading}
+                    onClick={() => handleReportAction(selectedReport.id, "reviewed")}
+                  >
+                    <Eye className="h-4 w-4 mr-1" /> Mark Reviewed
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={reportActionLoading}
+                    onClick={() => handleReportAction(selectedReport.id, "dismissed")}
+                  >
+                    <XCircle className="h-4 w-4 mr-1" /> Dismiss
+                  </Button>
+                </div>
+
+                <div className="flex gap-2 pt-2 border-t border-border">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => window.open(`/mentor/${selectedReport.reported_user_id}`, "_blank")}
+                  >
+                    <Eye className="h-4 w-4 mr-1" /> View Profile
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
       
 
