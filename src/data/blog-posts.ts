@@ -148,7 +148,7 @@ We've built AI into several parts of the platform — from helping clients refin
 After every completed session, both parties can leave a review. Expert ratings are aggregated and displayed prominently — creating a transparent trust layer that rewards quality.
 
 ### Real-Time Notifications
-You'll never miss an update. Duxio pushes instant notifications for new quotes, accepted requests, session updates, and messages — across the platform.
+You'll never miss an update. Druxio pushes instant notifications for new quotes, accepted requests, session updates, and messages — across the platform.
 
 ### Dispute Resolution
 We know things don't always go perfectly. Duxio includes a built-in dispute process with admin oversight to mediate when a session doesn't go as expected.
