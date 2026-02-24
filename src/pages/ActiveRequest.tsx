@@ -14,8 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Star, Check, Clock, Send, MessageSquare, XCircle, Users, ThumbsUp,
   ArrowLeft, Zap, Loader2, CreditCard, ShieldCheck, RefreshCw, ChevronRight,
-  ImageIcon, X as XIcon,
+  ImageIcon, X as XIcon, Ban, Package,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow } from "date-fns";
 
@@ -63,6 +64,7 @@ interface SellerConvo {
   jobTitle: string;
   jobCategory: string;
   jobStatus: string;
+  quoteStatus: string;
   buyerId: string;
   buyerName: string | null;
   buyerAvatar: string | null;
@@ -123,6 +125,12 @@ const ActiveRequest = () => {
   const [newQuoteMinutes, setNewQuoteMinutes] = useState("");
   const [newQuoteUnit, setNewQuoteUnit] = useState<"minutes" | "hours" | "days">("minutes");
   const [submittingQuote, setSubmittingQuote] = useState(false);
+
+  // Withdraw quote
+  const [withdrawDialog, setWithdrawDialog] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+  // Seller sidebar tab
+  const [sellerTab, setSellerTab] = useState<"quotes" | "orders">("quotes");
 
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
@@ -255,6 +263,7 @@ const ActiveRequest = () => {
           jobTitle: jobData.title,
           jobCategory: jobData.category,
           jobStatus: jobData.status,
+          quoteStatus: q.status,
           buyerId: jobData.buyer_id,
           buyerName: bp?.display_name || null,
           buyerAvatar: bp?.avatar_url || null,
@@ -605,7 +614,31 @@ const ActiveRequest = () => {
     setSubmittingQuote(false);
   };
 
-  // ── Image select helpers ──────────────────────────────────────────────────
+  // ── Withdraw quote ────────────────────────────────────────────────────────
+  const handleWithdrawQuote = async () => {
+    if (!activeConvo || !userId) return;
+    setWithdrawing(true);
+    const { error } = await supabase.from("quotes").update({ status: "rejected" }).eq("id", activeConvo.myQuoteId);
+    if (error) {
+      toast({ title: "Failed to withdraw", description: error.message, variant: "destructive" });
+    } else {
+      // Notify buyer
+      await supabase.from("notifications").insert({
+        user_id: activeConvo.buyerId,
+        type: "quote_withdrawn",
+        title: "Offer Withdrawn",
+        message: `An expert has withdrawn their offer on "${activeConvo.jobTitle}"`,
+        data: { job_id: activeConvo.jobId },
+      });
+      toast({ title: "Quote withdrawn" });
+      setSellerConvos(prev => prev.filter(c => c.myQuoteId !== activeConvo.myQuoteId));
+      setActiveConvo(null);
+      setActiveConvoJobId(null);
+    }
+    setWithdrawing(false);
+    setWithdrawDialog(false);
+  };
+
   const handleBuyerImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setBuyerImageFiles(prev => [...prev, ...files]);
@@ -712,86 +745,110 @@ const ActiveRequest = () => {
   const chatPartnerName = isBuyer ? selectedQuote?.profile?.display_name || "Expert" : buyerProfile?.display_name || "Buyer";
   const selectedMessages = selectedChatPartnerId ? (chatMessages[selectedChatPartnerId] || []) : [];
 
+  // Filter convos into quotes vs orders
+  const quoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
+  const orderConvos = sellerConvos.filter(c => ["accepted", "completed", "disputed"].includes(c.jobStatus));
+
   // ── SELLER LAYOUT — multi-convo sidebar ────────────────────────────────────
   if (!isBuyer) {
+    const renderConvoItem = (convo: SellerConvo) => {
+      const isActive = activeConvoJobId === convo.jobId;
+      return (
+        <button
+          key={convo.jobId}
+          onClick={() => handleSwitchConvo(convo)}
+          className={`w-full text-left rounded-xl p-3 transition-all ${
+            isActive
+              ? "bg-primary/10 border border-primary/20"
+              : "hover:bg-muted/50 border border-transparent"
+          }`}
+        >
+          <div className="flex items-start gap-2.5">
+            <Avatar className="h-9 w-9 border border-border shrink-0">
+              <AvatarImage src={convo.buyerAvatar || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                {convo.buyerName?.[0] || "B"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-1">
+                <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                  {convo.buyerName || "Buyer"}
+                </p>
+                {convo.unread > 0 && (
+                  <span className="h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shrink-0">
+                    {convo.unread}
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-muted-foreground truncate">{convo.jobTitle}</p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-[10px] text-primary font-semibold">€{convo.myPrice.toFixed(2)}</p>
+                <Badge
+                  variant={convo.jobStatus === "open" ? "outline" : "secondary"}
+                  className="text-[9px] h-3.5 px-1"
+                >
+                  {convo.jobStatus}
+                </Badge>
+              </div>
+              {convo.lastMessage && (
+                <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                  {convo.lastMessage.startsWith("📋") ? "📋 Auto message" : convo.lastMessage}
+                </p>
+              )}
+            </div>
+          </div>
+        </button>
+      );
+    };
+
+    const renderEmptyState = (text: string) => (
+      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground px-4">
+        <MessageSquare className="h-8 w-8 opacity-30 mb-2" />
+        <p className="text-xs">{text}</p>
+      </div>
+    );
+
     return (
       <div className="h-[calc(100vh-64px)] bg-background flex overflow-hidden">
 
-        {/* ── Left sidebar: all conversations ──────────────────────────────── */}
+        {/* ── Left sidebar: tabbed conversations ──────────────────────────── */}
         <div className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/dashboard")}>
-                <ArrowLeft className="h-3.5 w-3.5" />
-              </Button>
-              <p className="text-sm font-semibold text-foreground">My Orders</p>
-            </div>
-            <Badge variant="secondary" className="text-[10px]">{sellerConvos.length}</Badge>
+          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/dashboard")}>
+              <ArrowLeft className="h-3.5 w-3.5" />
+            </Button>
+            <p className="text-sm font-semibold text-foreground">My Orders</p>
           </div>
 
-          {/* Convo list */}
-          <ScrollArea className="flex-1">
-            {sellerConvos.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground px-4">
-                <MessageSquare className="h-8 w-8 opacity-30 mb-2" />
-                <p className="text-xs">No active orders yet</p>
-              </div>
-            ) : (
-              <div className="p-2 space-y-1">
-                {sellerConvos.map((convo) => {
-                  const isActive = activeConvoJobId === convo.jobId;
-                  return (
-                    <button
-                      key={convo.jobId}
-                      onClick={() => handleSwitchConvo(convo)}
-                      className={`w-full text-left rounded-xl p-3 transition-all ${
-                        isActive
-                          ? "bg-primary/10 border border-primary/20"
-                          : "hover:bg-muted/50 border border-transparent"
-                      }`}
-                    >
-                      <div className="flex items-start gap-2.5">
-                        <Avatar className="h-9 w-9 border border-border shrink-0">
-                          <AvatarImage src={convo.buyerAvatar || undefined} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
-                            {convo.buyerName?.[0] || "B"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-1">
-                            <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
-                              {convo.buyerName || "Buyer"}
-                            </p>
-                            {convo.unread > 0 && (
-                              <span className="h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shrink-0">
-                                {convo.unread}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[10px] text-muted-foreground truncate">{convo.jobTitle}</p>
-                          <div className="flex items-center justify-between mt-1">
-                            <p className="text-[10px] text-primary font-semibold">€{convo.myPrice.toFixed(2)}</p>
-                            <Badge
-                              variant={convo.jobStatus === "open" ? "outline" : "secondary"}
-                              className="text-[9px] h-3.5 px-1"
-                            >
-                              {convo.jobStatus}
-                            </Badge>
-                          </div>
-                          {convo.lastMessage && (
-                            <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                              {convo.lastMessage.startsWith("📋") ? "📋 Auto message" : convo.lastMessage}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </ScrollArea>
+          {/* Tabs */}
+          <Tabs value={sellerTab} onValueChange={(v) => setSellerTab(v as "quotes" | "orders")} className="flex flex-col flex-1 min-h-0">
+            <TabsList className="mx-2 mt-2 bg-muted/50">
+              <TabsTrigger value="quotes" className="flex-1 text-xs gap-1">
+                <MessageSquare className="h-3 w-3" />
+                Quotes {quoteConvos.length > 0 && <Badge variant="secondary" className="text-[9px] h-4 px-1 ml-0.5">{quoteConvos.length}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="orders" className="flex-1 text-xs gap-1">
+                <Package className="h-3 w-3" />
+                Orders {orderConvos.length > 0 && <Badge variant="secondary" className="text-[9px] h-4 px-1 ml-0.5">{orderConvos.length}</Badge>}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="quotes" className="flex-1 min-h-0 mt-0">
+              <ScrollArea className="h-full">
+                {quoteConvos.length === 0 ? renderEmptyState("No pending quotes") : (
+                  <div className="p-2 space-y-1">{quoteConvos.map(renderConvoItem)}</div>
+                )}
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="orders" className="flex-1 min-h-0 mt-0">
+              <ScrollArea className="h-full">
+                {orderConvos.length === 0 ? renderEmptyState("No active orders") : (
+                  <div className="p-2 space-y-1">{orderConvos.map(renderConvoItem)}</div>
+                )}
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* ── Main area ─────────────────────────────────────────────────────── */}
@@ -935,6 +992,21 @@ const ActiveRequest = () => {
                   Send Updated Offer
                 </Button>
               </div>
+
+              {/* Withdraw quote — only for pending quotes */}
+              {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && (
+                <div className="p-4 border-t border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => setWithdrawDialog(true)}
+                  >
+                    <Ban className="h-3 w-3 mr-1" />
+                    Withdraw Quote
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -945,6 +1017,27 @@ const ActiveRequest = () => {
             </div>
           </div>
         )}
+
+        {/* Withdraw Quote Dialog */}
+        <Dialog open={withdrawDialog} onOpenChange={setWithdrawDialog}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Ban className="h-5 w-5 text-destructive" />Withdraw Quote
+              </DialogTitle>
+              <DialogDescription>
+                This will remove your offer on &quot;{activeConvo?.jobTitle}&quot;. The buyer will be notified. This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setWithdrawDialog(false)} disabled={withdrawing}>Cancel</Button>
+              <Button variant="destructive" onClick={handleWithdrawQuote} disabled={withdrawing} className="gap-1.5">
+                {withdrawing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
+                Withdraw
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }

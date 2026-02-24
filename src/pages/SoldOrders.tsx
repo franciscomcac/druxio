@@ -7,8 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Package, Clock, CheckCircle2, AlertTriangle, ArrowRight, DollarSign } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { Loader2, Package, Clock, CheckCircle2, AlertTriangle, ArrowRight, DollarSign, Timer } from "lucide-react";
+import { formatDistanceToNow, differenceInHours, differenceInMinutes } from "date-fns";
 
 interface SoldOrderData {
   job: any;
@@ -17,11 +17,11 @@ interface SoldOrderData {
   earning: any;
 }
 
-const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
-  accepted: { label: "In Progress", variant: "default", icon: Clock },
-  completed: { label: "Completed", variant: "secondary", icon: CheckCircle2 },
-  cancelled: { label: "Cancelled", variant: "destructive", icon: AlertTriangle },
-  disputed: { label: "Disputed", variant: "destructive", icon: AlertTriangle },
+const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: any; borderColor: string }> = {
+  accepted: { label: "In Progress", variant: "default", icon: Clock, borderColor: "border-l-primary" },
+  completed: { label: "Completed", variant: "secondary", icon: CheckCircle2, borderColor: "border-l-chart-2" },
+  cancelled: { label: "Cancelled", variant: "destructive", icon: AlertTriangle, borderColor: "border-l-destructive" },
+  disputed: { label: "Disputed", variant: "destructive", icon: AlertTriangle, borderColor: "border-l-destructive" },
 };
 
 const SoldOrders = () => {
@@ -82,40 +82,47 @@ const SoldOrders = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    load();
-  }, [navigate]);
+  useEffect(() => { load(); }, [navigate]);
 
-  // Realtime: refetch on job or quote updates
   useEffect(() => {
     if (!userId) return;
     const channel = supabase
       .channel("sold-orders-realtime")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "jobs" }, () => {
-        load();
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
-        load();
-      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "jobs" }, () => load())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
-  const activeOrders = orders.filter(o => o.job.status === "accepted");
+  const activeOrders = orders.filter(o => o.job.status === "accepted" && o.job.escrow_status !== "delivered");
+  const deliveredOrders = orders.filter(o => o.job.status === "accepted" && o.job.escrow_status === "delivered");
   const completedOrders = orders.filter(o => o.job.status === "completed");
   const disputedOrders = orders.filter(o => o.job.status === "disputed");
   const otherOrders = orders.filter(o => !["accepted", "completed", "disputed"].includes(o.job.status));
 
-  const renderOrder = (order: SoldOrderData) => {
+  const getAutoReleaseCountdown = (deliveredAt: string | null) => {
+    if (!deliveredAt) return null;
+    const releaseDate = new Date(new Date(deliveredAt).getTime() + 3 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    if (now >= releaseDate) return "Releasing soon...";
+    const hoursLeft = differenceInHours(releaseDate, now);
+    if (hoursLeft >= 24) return `${Math.floor(hoursLeft / 24)}d ${hoursLeft % 24}h left`;
+    if (hoursLeft >= 1) return `${hoursLeft}h ${differenceInMinutes(releaseDate, now) % 60}m left`;
+    return `${differenceInMinutes(releaseDate, now)}m left`;
+  };
+
+  const renderOrder = (order: SoldOrderData, clickable = true) => {
     const config = statusConfig[order.job.status] || statusConfig.accepted;
     const StatusIcon = config.icon;
+    const isDelivered = order.job.escrow_status === "delivered";
+    const countdown = isDelivered ? getAutoReleaseCountdown(order.job.delivered_at) : null;
 
     return (
       <Card
         key={order.job.id}
-        className="cursor-pointer border-border bg-background/40 hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
+        className={`border-l-4 ${config.borderColor} ${clickable ? "cursor-pointer hover:border-primary/20 hover:bg-primary/[0.03]" : ""} bg-background/40 transition-all duration-300`}
         onClick={() => {
-          if (order.job.status === "accepted") navigate(`/order/${order.job.id}`, { state: { from: "/orders/sold" } });
+          if (clickable) navigate(`/order/${order.job.id}`, { state: { from: "/orders/sold" } });
         }}
       >
         <CardContent className="p-5">
@@ -125,7 +132,7 @@ const SoldOrders = () => {
                 <h3 className="font-semibold text-foreground truncate">{order.job.title}</h3>
                 <Badge variant={config.variant} className="shrink-0 gap-1">
                   <StatusIcon className="h-3 w-3" />
-                  {config.label}
+                  {isDelivered ? "Delivered" : config.label}
                 </Badge>
               </div>
               <p className="text-sm text-muted-foreground line-clamp-1 mb-3">{order.job.description || "No description"}</p>
@@ -140,6 +147,12 @@ const SoldOrders = () => {
                   {order.quote.estimated_minutes}min deadline
                 </span>
               </div>
+              {countdown && (
+                <div className="mt-2 flex items-center gap-1.5 text-xs text-chart-4 font-medium">
+                  <Timer className="h-3.5 w-3.5" />
+                  Auto-release: {countdown}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col items-end gap-2 shrink-0">
@@ -159,7 +172,7 @@ const SoldOrders = () => {
                 </Avatar>
                 <span className="text-xs text-muted-foreground">{order.buyerProfile?.display_name || "Buyer"}</span>
               </div>
-              {order.job.status === "accepted" && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
+              {clickable && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
             </div>
           </div>
         </CardContent>
@@ -169,7 +182,6 @@ const SoldOrders = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      
       <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
         <div className="flex items-center gap-3 mb-6">
           <DollarSign className="h-6 w-6 text-primary" />
@@ -192,14 +204,19 @@ const SoldOrders = () => {
           <Tabs defaultValue="active" className="space-y-4">
             <TabsList className="bg-background/60 border border-border">
               <TabsTrigger value="active" className="gap-1.5">
-                <Clock className="h-3.5 w-3.5" /> In Progress ({activeOrders.length})
+                <Clock className="h-3.5 w-3.5" /> Active ({activeOrders.length})
+              </TabsTrigger>
+              <TabsTrigger value="delivered" className="gap-1.5">
+                <Timer className="h-3.5 w-3.5" /> Delivered ({deliveredOrders.length})
               </TabsTrigger>
               <TabsTrigger value="completed" className="gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Completed ({completedOrders.length})
               </TabsTrigger>
-              <TabsTrigger value="disputed" className="gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5" /> Disputed ({disputedOrders.length})
-              </TabsTrigger>
+              {disputedOrders.length > 0 && (
+                <TabsTrigger value="disputed" className="gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5" /> Disputed ({disputedOrders.length})
+                </TabsTrigger>
+              )}
               {otherOrders.length > 0 && (
                 <TabsTrigger value="other" className="gap-1.5">
                   Other ({otherOrders.length})
@@ -208,23 +225,27 @@ const SoldOrders = () => {
             </TabsList>
 
             <TabsContent value="active" className="space-y-3">
-              {activeOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No active orders</p> : activeOrders.map(renderOrder)}
+              {activeOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No active orders</p> : activeOrders.map(o => renderOrder(o))}
+            </TabsContent>
+            <TabsContent value="delivered" className="space-y-3">
+              {deliveredOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No delivered orders awaiting confirmation</p> : deliveredOrders.map(o => renderOrder(o))}
             </TabsContent>
             <TabsContent value="completed" className="space-y-3">
-              {completedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No completed orders</p> : completedOrders.map(renderOrder)}
+              {completedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No completed orders</p> : completedOrders.map(o => renderOrder(o))}
             </TabsContent>
-            <TabsContent value="disputed" className="space-y-3">
-              {disputedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No disputed orders</p> : disputedOrders.map(renderOrder)}
-            </TabsContent>
+            {disputedOrders.length > 0 && (
+              <TabsContent value="disputed" className="space-y-3">
+                {disputedOrders.map(o => renderOrder(o))}
+              </TabsContent>
+            )}
             {otherOrders.length > 0 && (
               <TabsContent value="other" className="space-y-3">
-                {otherOrders.map(renderOrder)}
+                {otherOrders.map(o => renderOrder(o))}
               </TabsContent>
             )}
           </Tabs>
         )}
       </main>
-      
     </div>
   );
 };
