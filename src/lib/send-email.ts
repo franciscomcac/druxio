@@ -22,7 +22,7 @@ function emailTemplate(content: string) {
           <!-- Header -->
           <tr>
             <td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:28px 32px;text-align:center;">
-              <span style="font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Dux⚡o</span>
+              <span style="font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Drux⚡o</span>
             </td>
           </tr>
           <!-- Body -->
