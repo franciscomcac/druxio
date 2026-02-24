@@ -309,7 +309,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     onComplete?.();
   }, [userId, onComplete]);
 
-  const initDriver = useCallback((phaseIndex: number) => {
+  const initDriver = useCallback((phaseIndex: number, startStep?: number) => {
     // Clean up previous
     if (driverRef.current) {
       driverRef.current.destroy();
@@ -333,6 +333,33 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
         },
       };
       allSteps.push(bridgeStep);
+    }
+
+    // For phase 0, modify the demo job step to allow interaction
+    if (phaseIndex === 0) {
+      const demoIdx = allSteps.findIndex(s => s.element === "#tour-demo-job");
+      if (demoIdx >= 0 && (!startStep || startStep <= demoIdx)) {
+        const origPopover = allSteps[demoIdx].popover!;
+        allSteps[demoIdx] = {
+          element: "#tour-demo-job",
+          popover: {
+            ...origPopover,
+            disableActiveInteraction: false,
+            onNextClick: () => {
+              // Pause tour — user should click Quote instead. "Skip" fallback.
+              driverRef.current?.destroy();
+              driverRef.current = null;
+              localStorage.setItem(SUBSTEP_KEY, String(demoIdx + 1));
+            },
+            onPopoverRender: (popover: any) => {
+              // Change next button to "Skip" so user knows to click Quote
+              if (popover.nextButton) {
+                popover.nextButton.textContent = "Skip →";
+              }
+            },
+          },
+        };
+      }
     }
 
     const d = driver({
@@ -366,7 +393,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     } as Config);
 
     driverRef.current = d;
-    d.drive();
+    d.drive(startStep || 0);
   }, [completeAll]);
 
   const startPhase = useCallback((phaseIndex: number) => {
