@@ -272,8 +272,18 @@ const ActiveRequest = () => {
       if (!user) { navigate("/auth"); return; }
       setUserId(user.id);
 
-      // If no jobId (e.g. /quotes route), find first pending quote for this seller
+      // If no jobId (e.g. /quotes route), only sellers may access
       if (!jobId) {
+        const { data: mentorRole } = await supabase
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("role", "mentor")
+          .maybeSingle();
+        if (!mentorRole) {
+          navigate("/dashboard", { replace: true });
+          return;
+        }
         const { data: firstQuote } = await supabase
           .from("quotes")
           .select("job_id, status")
