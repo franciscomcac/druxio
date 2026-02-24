@@ -1,75 +1,107 @@
 
 
-## SEO Improvements Plan
+## Landing Page UX & Conversion Improvements
 
-### 1. Sync `index.html` static meta with `useSEO`
-
-Update the static meta tags in `index.html` (lines 8-9, 18-19, 30-31) to match the current `Index.tsx` useSEO values -- specifically the "Low Fees" messaging and "5% marketplace fee" description. This ensures crawlers that read the pre-hydration HTML see the same messaging as the dynamic hook sets.
-
-**Changes to `index.html`:**
-- Title: "Duxio -- Hire Expert Freelancers with Low Fees"
-- Description: "Post any task, get real-time quotes from verified experts in under 2 minutes. Only 5% marketplace fee -- lower than Fiverr or Upwork. Escrow-protected payments."
-- Update `og:title`, `og:description`, `twitter:title`, `twitter:description` to match
+After reviewing the AI's suggestions against the actual codebase, here's a filtered list of high-impact, actionable improvements. I've removed suggestions that are already implemented (e.g., expert benefits are already listed), impractical (e.g., payment provider logos in an iframe preview), or low-ROI.
 
 ---
 
-### 2. Add BreadcrumbList JSON-LD to blog posts
+### 1. Standardize CTA Label Across the Entire Site (P0)
 
-**File: `src/pages/BlogPost.tsx`**
+Currently there are 4 different labels used interchangeably:
+- "Post Task" (Hero button, Header desktop/mobile)
+- "Post a Task" (HowItWorks section)
+- "Post Your Request" (MentorSpotlight / Recent Requests)
+- "Post a Request" (Footer, ClientDashboard, BlogPost, CategoryPage, FAQ text)
 
-Extend the existing `jsonLd` in the `useSEO` call to an array containing both the current `Article` schema and a new `BreadcrumbList` schema:
+**Standardize everything to: "Post a Task"** -- it's short, action-oriented, and matches the hero headline "Post a task. Get it done."
 
-```
-Home > Blog > [Post Title]
-```
-
-This gives Google a breadcrumb trail in search results.
-
----
-
-### 3. Add BreadcrumbList JSON-LD to category pages
-
-**File: `src/pages/CategoryPage.tsx`**
-
-Extend the `jsonLd` to an array containing both the current `ItemList` and a new `BreadcrumbList`:
-
-```
-Home > [Category Label]
-```
+Files to update:
+- `src/components/landing/Hero.tsx` -- button text "Post Task" to "Post a Task"
+- `src/components/layout/Header.tsx` -- desktop "Post Request" and mobile "Post Request" to "Post a Task"
+- `src/components/landing/MentorSpotlight.tsx` -- "Post Your Request" to "Post a Task"
+- `src/components/layout/Footer.tsx` -- "Post a Request" to "Post a Task"
+- `src/components/dashboard/ClientDashboard.tsx` -- "Post a Request" to "Post a Task"
+- `src/pages/BlogPost.tsx` -- "Post a Request" to "Post a Task"
+- `src/pages/CategoryPage.tsx` -- "Post a Request" to "Post a Task"
 
 ---
 
-### 4. Pass blog `ogImage` (coverImage) to `useSEO`
+### 2. Improve Hero Subtext with Quantified Reassurance (P1)
 
-**File: `src/pages/BlogPost.tsx`**
+Current subtext: *"Describe what you need. Verified experts compete with fixed-price quotes in under 2 minutes."*
 
-Add `ogImage: post?.coverImage` to the `useSEO` call so social shares use the article's cover image instead of the default fallback.
+Replace with more compelling, trust-forward copy:
+
+**New subtext:** *"Get verified quotes in under 2 minutes. Escrow-protected -- you only pay when satisfied."*
+
+Also update the trust microcopy line below the input from generic bullets to include the fee advantage:
+
+**Current:** "Free to post . No commitment . Pay only when satisfied"
+**New:** "Free to post . Only 5% fee . Escrow-protected"
+
+File: `src/components/landing/Hero.tsx`
 
 ---
 
-### 5. Add Person schema to mentor profiles
+### 3. Add Visible Label and Helper Text to Hero Input (P0)
 
-**File: `src/pages/MentorProfile.tsx`**
+The hero input currently has no visible label (only an animated placeholder). This is an accessibility issue.
 
-Add JSON-LD to the existing `useSEO` call with a `Person` schema including `name`, `description` (bio), `image` (avatar), `jobTitle`, `url`, and an `AggregateRating` when reviews exist.
+- Add an `aria-label="Describe your task"` to the input
+- Add a small helper text below the form: *"Describe any task -- our AI matches you with the right expert"*
+
+File: `src/components/landing/Hero.tsx`
 
 ---
 
-### 6. Reduce gaming examples in hero task pool
+### 4. Add Visible Label to Newsletter Email Input (P1)
 
-**File: `src/components/landing/Hero.tsx`**
+The newsletter email input uses only a placeholder with no visible label or privacy microcopy.
 
-Currently `taskPool` has 4 gaming entries out of 16 (25%). Reduce to 2 (Valorant coaching + one Minecraft/Roblox entry) and replace the removed ones with non-gaming examples (e.g., Shopify store setup, resume writing). Similarly trim `placeholderExamples` from ~4 gaming entries down to 2 and add non-gaming replacements.
+- Add a visible `<Label>` element: "Your email"
+- Add privacy microcopy below the form: *"No spam. Unsubscribe anytime."*
+
+File: `src/components/landing/Newsletter.tsx`
+
+---
+
+### 5. Improve Stats Legibility (P2)
+
+The LiveStats section uses `text-2xl` for stat values and `text-[11px]` for labels -- both are small for quick scanning.
+
+- Increase stat values to `text-3xl` with `font-extrabold`
+- Increase labels to `text-xs`
+- Add a timestamp: "Updated just now" to add real-time credibility
+
+File: `src/components/landing/LiveStats.tsx`
+
+---
+
+### 6. Enhance Testimonials with Verifiable Context (P1)
+
+Testimonials currently lack timestamps or context. Add a "time ago" string to each testimonial to make them feel current and real.
+
+Add a `timeAgo` field to each testimonial (e.g., "2 days ago", "1 week ago") and display it.
+
+Also replace one Gaming testimonial with a Business/Tech one for category balance. Currently 2 of 5 are Gaming-tagged.
+
+File: `src/components/landing/Testimonials.tsx`
 
 ---
 
 ### Technical Summary
 
-| File | Change |
+| File | Changes |
 |---|---|
-| `index.html` | Sync static meta title + description with low-fees messaging |
-| `src/pages/BlogPost.tsx` | Add `ogImage`, add `BreadcrumbList` JSON-LD |
-| `src/pages/CategoryPage.tsx` | Add `BreadcrumbList` JSON-LD |
-| `src/pages/MentorProfile.tsx` | Add `Person` + `AggregateRating` JSON-LD |
-| `src/components/landing/Hero.tsx` | Replace 2 gaming taskPool entries and 2 gaming placeholders with non-gaming examples |
+| `Hero.tsx` | Standardize CTA to "Post a Task", update subtext, add aria-label, add helper text, update trust microcopy |
+| `Header.tsx` | Change "Post Request" to "Post a Task" (desktop + mobile) |
+| `MentorSpotlight.tsx` | Change "Post Your Request" to "Post a Task" |
+| `Footer.tsx` | Change "Post a Request" to "Post a Task" |
+| `ClientDashboard.tsx` | Change "Post a Request" to "Post a Task" |
+| `BlogPost.tsx` | Change "Post a Request" to "Post a Task" |
+| `CategoryPage.tsx` | Change "Post a Request" to "Post a Task" |
+| `Newsletter.tsx` | Add visible label, privacy microcopy |
+| `LiveStats.tsx` | Increase font sizes, add "Updated just now" |
+| `Testimonials.tsx` | Add time context, rebalance categories |
 
