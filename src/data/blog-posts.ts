@@ -184,7 +184,7 @@ We believe the future of expert access is fast, fair, and borderless. Today is j
 
 **Welcome to Druxio.**
 
-— The Duxio Team
+— The Druxio Team
     `,
   },
   {
