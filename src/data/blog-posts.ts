@@ -232,7 +232,7 @@ Here's what happens when you post a request on Druxio:
 
 That's it. Start to finish, you can go from "I have a problem" to "problem solved" in under an hour.
 
-## Real Situations Where Duxio Shines
+## Real Situations Where Druxio Shines
 
 We see clients using Druxio for an enormous variety of short-term needs:
 
