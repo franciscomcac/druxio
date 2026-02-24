@@ -79,12 +79,12 @@ function infoTable(rows: string) {
 export function buildWelcomeEmail(userEmail: string) {
   return {
     to: userEmail,
-    subject: "Welcome to Duxio! 🎉",
+    subject: "Welcome to Druxio! 🎉",
     html: emailTemplate(`
       ${heading("Welcome aboard! 🎉")}
-      ${paragraph("You've just joined Duxio — the fastest way to get expert help on demand.")}
+      ${paragraph("You've just joined Druxio — the fastest way to get expert help on demand.")}
       ${paragraph("Post a request, receive quotes from vetted experts in minutes, and get your work done — all within a safe, escrow-protected environment.")}
-      ${ctaButton("Go to Dashboard", "https://duxio.lovable.app/dashboard")}
+      ${ctaButton("Go to Dashboard", "https://druxio.lovable.app/dashboard")}
     `),
   };
 }
