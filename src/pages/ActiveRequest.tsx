@@ -1136,7 +1136,7 @@ const ActiveRequest = () => {
         {activeConvo ? (
           <div className="flex flex-1 min-w-0">
             {/* Chat */}
-            <div className="flex flex-col flex-1 min-h-0 min-w-0">
+            <div id="tour-quotes-chat-panel" className="flex flex-col flex-1 min-h-0 min-w-0">
               {/* Chat top bar */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card/20 shrink-0">
                 <Avatar className="h-9 w-9 border border-border shrink-0">
