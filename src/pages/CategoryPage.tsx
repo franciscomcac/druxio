@@ -38,7 +38,7 @@ const CategoryPage = () => {
         "@type": "ItemList",
         "name": `${meta.label} Experts on Druxio`,
         "description": meta.seoDescription,
-        "url": `https://duxio.lovable.app/category/${slug}`,
+        "url": `https://druxio.lovable.app/category/${slug}`,
         "numberOfItems": meta.subcategories.length,
         "itemListElement": meta.subcategories.map((sub, i) => ({
           "@type": "ListItem",
