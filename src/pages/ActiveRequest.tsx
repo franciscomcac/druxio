@@ -1094,16 +1094,19 @@ const ActiveRequest = () => {
                 <div className="border-t border-border p-3 shrink-0 bg-card/20">
                   <div className="flex items-center gap-1.5 mb-2">
                     <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary">DEMO</Badge>
-                    <span className="text-[10px] text-muted-foreground">Try typing a message — the buyer will auto-reply!</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {nextSellerMessage ? "Click Send to reply to the buyer" : demoOfferUpdated ? "Great job! You've completed the demo conversation ✅" : "Now try updating your offer in the right panel →"}
+                    </span>
                   </div>
                   <form onSubmit={(e) => { e.preventDefault(); handleSendDemoChat(); }} className="flex gap-2">
-                    <Input
-                      value={demoChatInput}
-                      onChange={(e) => setDemoChatInput(e.target.value)}
-                      placeholder="Try sending a message..."
-                      className="bg-background/60 border-border/40 focus:border-primary/40"
-                    />
-                    <Button type="submit" size="icon" disabled={!demoChatInput.trim()} className="shrink-0">
+                    <div className="flex-1 rounded-md border border-border/40 bg-background/60 px-3 py-2 text-sm text-foreground min-h-[36px] flex items-center">
+                      {nextSellerMessage ? (
+                        <span className="text-muted-foreground italic">{nextSellerMessage}</span>
+                      ) : (
+                        <span className="text-muted-foreground/50">Conversation complete</span>
+                      )}
+                    </div>
+                    <Button type="submit" size="icon" disabled={!nextSellerMessage} className="shrink-0">
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>
