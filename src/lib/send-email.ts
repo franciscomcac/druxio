@@ -242,7 +242,7 @@ export function buildOrderCancelledEmail(opts: {
         ${infoRow("Reason", opts.reason)}
       `)}
       ${paragraph("A refund will be processed to your original payment method. If you have any questions, please contact our support team.")}
-      ${ctaButton("Contact Support", "https://duxio.lovable.app/dashboard")}
+      ${ctaButton("Contact Support", "https://druxio.lovable.app/dashboard")}
     `),
   };
 }
