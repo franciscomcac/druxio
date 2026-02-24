@@ -270,6 +270,8 @@ const ActiveRequest = () => {
           buyerId: jobData.buyer_id,
           buyerName: bp?.display_name || null,
           buyerAvatar: bp?.avatar_url || null,
+          buyerRating: bp?.rating_avg || null,
+          buyerTotalSpent: bp?.total_spent || null,
           myPrice: q.price,
           myDelivery: q.estimated_minutes,
           myQuoteId: q.id,
@@ -277,6 +279,10 @@ const ActiveRequest = () => {
           lastMessage,
           lastMessageAt,
           unread,
+          budgetMin: jobData.budget_min,
+          budgetMax: jobData.budget_max,
+          quoteCreatedAt: q.created_at || new Date().toISOString(),
+          deadlineMinutes: jobData.deadline_minutes,
         });
       }));
 
