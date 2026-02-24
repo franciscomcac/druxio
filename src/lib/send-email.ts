@@ -117,7 +117,7 @@ export function buildNewQuoteEmail(opts: {
         ${infoRow("Delivery time", delivery)}
       `)}
       ${paragraph("Review the quote and chat with the expert before accepting.")}
-      ${ctaButton("View Quotes", `https://duxio.lovable.app/active-request/${opts.jobId}`)}
+      ${ctaButton("View Quotes", `https://druxio.lovable.app/active-request/${opts.jobId}`)}
     `),
   };
 }
