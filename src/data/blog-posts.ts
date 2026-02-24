@@ -24,7 +24,7 @@ export const blogPosts: BlogPost[] = [
       "Posting a task on Druxio just got faster. Our new AI Auto-Match feature analyses what you need in plain language and automatically selects the best category, refines your title, and writes a description — so you can go from idea to live request in seconds.",
     date: "February 22, 2026",
     readTime: "4 min read",
-    author: "The Duxio Team",
+    author: "The Druxio Team",
     authorRole: "Product",
     category: "Announcement",
     coverImage: heroAiAutoMatch,
