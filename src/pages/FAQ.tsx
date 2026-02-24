@@ -153,8 +153,8 @@ const FAQ = () => {
             Frequently Asked Questions
           </h1>
           <p className="text-lg text-muted-foreground">
-            Everything you need to know about Duxio. Can't find your answer?{" "}
-            <a href="mailto:support@duxio.store" className="text-primary underline underline-offset-4">
+            Everything you need to know about Druxio. Can't find your answer?{" "}
+            <a href="mailto:support@druxio.store" className="text-primary underline underline-offset-4">
               Contact support
             </a>
             .
