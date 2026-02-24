@@ -35,7 +35,7 @@ Starting today, when you click "Post Task" on Druxio, you'll be greeted with a c
 
 ## The Problem We Solved
 
-Duxio supports dozens of categories and hundreds of subcategories across gaming, tech, business, creative services, music, fitness, languages, and content creation. That breadth is one of our strengths — but it also meant that new users sometimes spent too long browsing through options before they could post their first request.
+Druxio supports dozens of categories and hundreds of subcategories across gaming, tech, business, creative services, music, fitness, languages, and content creation. That breadth is one of our strengths — but it also meant that new users sometimes spent too long browsing through options before they could post their first request.
 
 We heard the feedback: "I know what I need, I just don't know which category it falls under."
 
