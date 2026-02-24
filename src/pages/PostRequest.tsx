@@ -931,11 +931,12 @@ const PostRequest = () => {
             {/* Input form — shown when no auto-match is running or completed */}
             {!autoMatchLoading && !autoMatchResult && (
               <div className="space-y-4 animate-fade-in">
-                <Textarea
-                  value={userIdea}
-                  onChange={(e) => setUserIdea(e.target.value)}
-                  placeholder={ROTATING_PLACEHOLDERS[placeholderIndex]}
-                  className="min-h-[120px] text-base resize-none"
+                <div className="relative">
+                  <Textarea
+                    value={userIdea}
+                    onChange={(e) => setUserIdea(e.target.value)}
+                    className="min-h-[120px] text-base resize-none"
+                    placeholder=" "
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey && userIdea.trim()) {
                       e.preventDefault();
