@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SimilarExperts from "@/components/experts/SimilarExperts";
 import PortfolioSection from "@/components/experts/PortfolioSection";
 import AvailabilityBadge from "@/components/experts/AvailabilityBadge";
+import ReportUserDialog from "@/components/reports/ReportUserDialog";
 import { useFavorites } from "@/hooks/use-favorites";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
