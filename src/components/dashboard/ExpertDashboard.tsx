@@ -596,7 +596,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingJobs ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : (() => {
-                    const visibleJobs = openJobs.filter(j => !discardedJobIds.has(j.id));
+                    const visibleJobs = [...openJobs.filter(j => !discardedJobIds.has(j.id)), DEMO_JOB];
                     if (visibleJobs.length === 0) return (
                       <div className="text-center py-10 text-muted-foreground">
                         <div className="mx-auto mb-3 h-12 w-12 rounded-sm bg-primary/[0.06] flex items-center justify-center">
