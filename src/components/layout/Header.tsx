@@ -9,7 +9,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import NotificationsDropdown from "@/components/notifications/NotificationsDropdown";
-import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { Menu, Zap, User, LogOut, Settings, LayoutDashboard, Wallet, MessageSquare, Plus, Package, ShieldCheck, Eye, EyeOff, FileText } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import QuickAuthDialog from "@/components/auth/QuickAuthDialog";
 import { useCurrency, Currency } from "@/contexts/CurrencyContext";
@@ -107,6 +107,14 @@ const Header = () => {
                   My Orders
                 </Button>
               </Link>
+              {isMentorUser && (
+                <Link to="/quotes">
+                  <Button variant="ghost" size="sm" className={`text-sm font-medium ${(isActive("/quotes") || location.pathname.startsWith("/request/")) ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
+                    <FileText className="h-3.5 w-3.5 mr-1" />
+                    Active Quotes
+                  </Button>
+                </Link>
+              )}
             </>
           )}
           {user ? (
@@ -147,6 +155,9 @@ const Header = () => {
                   <DropdownMenuItem onClick={() => navigate("/orders/purchased")} className="hover:bg-primary/[0.06]"><Package className="mr-2 h-4 w-4" /> Purchased Orders</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/orders/sold")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Sold Orders</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/inbox")} className="hover:bg-primary/[0.06]"><MessageSquare className="mr-2 h-4 w-4" /> Messages</DropdownMenuItem>
+                  {isMentorUser && (
+                    <DropdownMenuItem onClick={() => navigate("/quotes")} className="hover:bg-primary/[0.06]"><FileText className="mr-2 h-4 w-4" /> Active Quotes</DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator className="bg-border/30" />
                   <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Balance & Wallet</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
@@ -275,6 +286,11 @@ const Header = () => {
                     <Link to="/inbox" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start gap-2 h-11"><MessageSquare className="h-4 w-4" /> Messages</Button>
                     </Link>
+                    {isMentorUser && (
+                      <Link to="/quotes" onClick={() => setIsOpen(false)}>
+                        <Button variant="ghost" className="w-full justify-start gap-2 h-11"><FileText className="h-4 w-4" /> Active Quotes</Button>
+                      </Link>
+                    )}
                     <Link to="/wallet" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Wallet className="h-4 w-4" /> Wallet</Button>
                     </Link>

@@ -156,7 +156,30 @@ const ActiveRequest = () => {
       if (!user) { navigate("/auth"); return; }
       setUserId(user.id);
 
-      if (!jobId) { navigate("/dashboard"); return; }
+      // If no jobId (e.g. /quotes route), find first pending quote for this seller
+      if (!jobId) {
+        const { data: firstQuote } = await supabase
+          .from("quotes")
+          .select("job_id, status")
+          .eq("expert_id", user.id)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (firstQuote) {
+          // Check the job is still open
+          const { data: jd } = await supabase.from("jobs").select("status").eq("id", firstQuote.job_id).single();
+          if (jd?.status === "open") {
+            navigate(`/request/${firstQuote.job_id}`, { replace: true });
+            return;
+          }
+        }
+        // No pending quotes — show empty state
+        setIsBuyer(false);
+        setLoading(false);
+        return;
+      }
 
       const { data: jobData } = await supabase.from("jobs").select("*").eq("id", jobId).single();
       if (!jobData) { navigate("/dashboard"); return; }
