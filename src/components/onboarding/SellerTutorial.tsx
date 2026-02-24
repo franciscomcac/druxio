@@ -34,7 +34,7 @@ const matchesPhaseRoute = (pathname: string, phase: TourPhase): boolean => {
 };
 
 const TOUR_PHASES: TourPhase[] = [
-  // Phase 0 — Dashboard overview
+  // Phase 0 — Dashboard overview + Demo job
   {
     route: "/dashboard",
     steps: [
@@ -74,6 +74,15 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
       {
+        element: "#tour-demo-job",
+        popover: {
+          title: "🎓 Try It: Send a Demo Quote!",
+          description: "Here's a <strong>practice request</strong>! Click the <strong>Quote</strong> button to open the quote form. Set your price, delivery time, and an optional message — then send it. This won't affect your real data!",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
         element: "#tour-categories",
         popover: {
           title: "Your Subscribed Categories",
@@ -94,9 +103,9 @@ const TOUR_PHASES: TourPhase[] = [
     ],
     bridgeElement: "#tour-quotes-link",
     bridgeTitle: "Next: Active Quotes 📋",
-    bridgeDescription: "Click the <strong>Active Quotes</strong> button in the navigation bar to continue the tour!",
+    bridgeDescription: "Now send a <strong>Quote</strong> on the demo job above, then click <strong>Active Quotes</strong> in the navigation bar to see it!",
   },
-  // Phase 1 — Active Quotes (Quotes Terminal)
+  // Phase 1 — Active Quotes (Quotes Terminal) with demo highlights
   {
     route: "/quotes",
     altRoutes: ["/request/"],
@@ -111,24 +120,32 @@ const TOUR_PHASES: TourPhase[] = [
       },
       {
         popover: {
-          title: "How the Sidebar Works",
-          description: "The <strong>left sidebar</strong> lists all your active quotes, sorted by urgency. Colored dots show expiry status: 🟢 plenty of time, 🟡 running low, 🔴 expiring soon. Unread messages appear first!",
+          title: "📨 Sidebar — Your Active Quotes",
+          description: "The <strong>left sidebar</strong> lists all your active quotes. Colored dots show expiry status: 🟢 plenty of time, 🟡 running low, 🔴 expiring soon. Unread messages appear first!",
           side: "bottom",
           align: "center",
         },
       },
       {
         popover: {
-          title: "Demo Quote 📘",
-          description: "You'll always see a <strong>Tutorial quote</strong> at the bottom of your list — it explains everything and can't be deleted. Click it anytime for a refresher!",
+          title: "💬 Chat with the Buyer",
+          description: "The <strong>center area</strong> is where you chat with the buyer. Click the demo quote in the sidebar to open the conversation. You'll see a scripted demo — click <strong>Send</strong> to advance the conversation!",
           side: "bottom",
           align: "center",
         },
       },
       {
         popover: {
-          title: "Chat + Right Panel",
-          description: "Click any quote to open the <strong>buyer chat</strong> in the center. On desktop, the <strong>right panel</strong> shows request details, buyer info, and lets you <strong>update your offer</strong> or <strong>withdraw</strong> your quote.",
+          title: "📊 Right Panel — Request Details & Offer",
+          description: "On desktop, the <strong>right panel</strong> shows the request details, buyer info, your current offer, and lets you <strong>update your price</strong> or <strong>withdraw</strong> your quote.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        popover: {
+          title: "💡 Try It: Chat & Update Your Offer!",
+          description: "Click the <strong>demo quote</strong> in the sidebar, then:<br/><br/>1️⃣ Click <strong>Send</strong> to reply to the buyer<br/>2️⃣ Try <strong>updating your offer</strong> in the right panel<br/><br/>Take your time — the buyer will respond automatically!",
           side: "bottom",
           align: "center",
         },
@@ -245,7 +262,7 @@ const TOUR_PHASES: TourPhase[] = [
       {
         popover: {
           title: "You're All Set! 🚀",
-          description: "You now know the basics of selling on Duxio.<br/><br/>✅ Subscribe to categories<br/>✅ Send competitive quotes<br/>✅ Use the <strong>Quotes Terminal</strong> to manage offers<br/>✅ Respond fast & deliver quality work<br/>✅ Earn money and build your reputation<br/><br/>You can replay this tutorial anytime from your Expert Dashboard. Good luck!",
+          description: "You now know the basics of selling on Duxio.<br/><br/>✅ Subscribe to categories<br/>✅ Send competitive quotes<br/>✅ Chat with buyers & update offers<br/>✅ Use the <strong>Quotes Terminal</strong> to manage everything<br/>✅ Respond fast & deliver quality work<br/>✅ Earn money and build your reputation<br/><br/>You can replay this tutorial anytime from your Expert Dashboard. Good luck!",
           side: "bottom",
           align: "center",
         },

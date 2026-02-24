@@ -135,23 +135,25 @@ const ActiveRequest = () => {
   const [withdrawDialog, setWithdrawDialog] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
 
-  // Demo chat state
+  // Demo scripted conversation
+  const [demoScriptIndex, setDemoScriptIndex] = useState(0);
   const [demoChatMessages, setDemoChatMessages] = useState<ChatMessage[]>([]);
-  const [demoChatInput, setDemoChatInput] = useState("");
   const [demoPrice, setDemoPrice] = useState(15);
   const [demoDelivery, setDemoDelivery] = useState(60);
+  const [demoOfferUpdated, setDemoOfferUpdated] = useState(false);
 
-  // Demo bot replies
-  const DEMO_BOT_REPLIES = [
-    "Thanks for your offer! 🙌 Can you tell me more about your experience with this?",
-    "That price looks fair. How quickly can you start?",
-    "I see you updated your offer — thanks! Let me think about it.",
-    "Your delivery time works for me. Do you have any portfolio examples?",
-    "Great, I appreciate the quick response! I'll make my decision soon.",
-    "Sounds good! I'm comparing a few experts right now.",
+  // Full scripted conversation — seller clicks send to advance
+  const DEMO_SCRIPT: { sender: "buyer" | "seller"; content: string }[] = [
+    { sender: "buyer", content: "Hi there! 👋 I need help with this task. Can you tell me about your experience?" },
+    { sender: "seller", content: "Hi! I have 3+ years of experience in this area. I can deliver high-quality work within the deadline." },
+    { sender: "buyer", content: "That sounds great! Your price seems fair. Can you start right away?" },
+    { sender: "seller", content: "Absolutely! I can start working on it immediately after you accept my offer." },
+    { sender: "buyer", content: "Perfect! I'll review all offers and get back to you soon. Thanks for the quick response! 🙌" },
   ];
 
-  // Initialize demo chat with welcome message on mount
+  const DEMO_OFFER_REPLY = "I see you updated your offer — thanks! That looks even better. Let me compare with the other quotes. 🤔";
+
+  // Initialize demo chat with the order request card
   useEffect(() => {
     if (demoChatMessages.length === 0) {
       const storedQuote = sessionStorage.getItem("demo_quote_data");
@@ -171,39 +173,51 @@ const ActiveRequest = () => {
           sender_id: "demo-buyer",
           created_at: new Date(Date.now() - 60000).toISOString(),
         },
-        {
-          id: "demo-welcome-2",
-          content: "Hi there! 👋 I posted this request and I'd love to see what you can offer. Feel free to send me a message or update your quote!",
-          sender_id: "demo-buyer",
-          created_at: new Date(Date.now() - 30000).toISOString(),
-        },
       ];
       setDemoChatMessages(welcomeMessages);
+      // Auto-show first buyer message after a short delay
+      setTimeout(() => {
+        setDemoChatMessages(prev => [...prev, {
+          id: "demo-script-0",
+          content: DEMO_SCRIPT[0].content,
+          sender_id: "demo-buyer",
+          created_at: new Date().toISOString(),
+        }]);
+        setDemoScriptIndex(1);
+      }, 800);
     }
   }, []);
 
+  // Get the next seller message to "send"
+  const nextSellerMessage = demoScriptIndex < DEMO_SCRIPT.length && DEMO_SCRIPT[demoScriptIndex].sender === "seller"
+    ? DEMO_SCRIPT[demoScriptIndex].content
+    : null;
+
   const handleSendDemoChat = () => {
-    if (!demoChatInput.trim()) return;
-    const userMsg: ChatMessage = {
-      id: `demo-user-${Date.now()}`,
-      content: demoChatInput.trim(),
+    if (!nextSellerMessage) return;
+    // Add seller message
+    const sellerMsg: ChatMessage = {
+      id: `demo-script-${demoScriptIndex}`,
+      content: nextSellerMessage,
       sender_id: userId || "me",
       created_at: new Date().toISOString(),
     };
-    setDemoChatMessages(prev => [...prev, userMsg]);
-    setDemoChatInput("");
+    setDemoChatMessages(prev => [...prev, sellerMsg]);
+    const nextIdx = demoScriptIndex + 1;
+    setDemoScriptIndex(nextIdx);
 
-    // Bot auto-reply after 1-2 seconds
-    setTimeout(() => {
-      const replyIndex = Math.floor(Math.random() * DEMO_BOT_REPLIES.length);
-      const botMsg: ChatMessage = {
-        id: `demo-bot-${Date.now()}`,
-        content: DEMO_BOT_REPLIES[replyIndex],
-        sender_id: "demo-buyer",
-        created_at: new Date().toISOString(),
-      };
-      setDemoChatMessages(prev => [...prev, botMsg]);
-    }, 1000 + Math.random() * 1500);
+    // If next is a buyer message, auto-show it after delay
+    if (nextIdx < DEMO_SCRIPT.length && DEMO_SCRIPT[nextIdx].sender === "buyer") {
+      setTimeout(() => {
+        setDemoChatMessages(prev => [...prev, {
+          id: `demo-script-${nextIdx}`,
+          content: DEMO_SCRIPT[nextIdx].content,
+          sender_id: "demo-buyer",
+          created_at: new Date().toISOString(),
+        }]);
+        setDemoScriptIndex(nextIdx + 1);
+      }, 1200);
+    }
   };
 
   const handleDemoUpdateOffer = () => {
@@ -215,6 +229,7 @@ const ActiveRequest = () => {
     setDemoDelivery(minutes);
     setNewQuotePrice("");
     setNewQuoteMinutes("");
+    setDemoOfferUpdated(true);
 
     // Add offer update message
     const offerMsg: ChatMessage = {
@@ -225,15 +240,14 @@ const ActiveRequest = () => {
     };
     setDemoChatMessages(prev => [...prev, offerMsg]);
 
-    // Bot reply to updated offer
+    // Buyer reply to updated offer
     setTimeout(() => {
-      const botMsg: ChatMessage = {
+      setDemoChatMessages(prev => [...prev, {
         id: `demo-bot-offer-${Date.now()}`,
-        content: "I see you updated your offer — thanks! That looks interesting. Let me compare with other quotes. 🤔",
+        content: DEMO_OFFER_REPLY,
         sender_id: "demo-buyer",
         created_at: new Date().toISOString(),
-      };
-      setDemoChatMessages(prev => [...prev, botMsg]);
+      }]);
     }, 1500);
   };
 
@@ -911,9 +925,10 @@ const ActiveRequest = () => {
 
   const isDemo = (convo: SellerConvo) => convo.jobId === "demo-tutorial-quote";
 
-  // Filter to pending quotes only + always include demo
+  // Filter to pending quotes only + include demo only during tutorial
+  const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
   const realQuoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
-  const quoteConvos = [...realQuoteConvos, DEMO_CONVO];
+  const quoteConvos = isTutorialActive ? [...realQuoteConvos, DEMO_CONVO] : realQuoteConvos;
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
@@ -1080,16 +1095,19 @@ const ActiveRequest = () => {
                 <div className="border-t border-border p-3 shrink-0 bg-card/20">
                   <div className="flex items-center gap-1.5 mb-2">
                     <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary">DEMO</Badge>
-                    <span className="text-[10px] text-muted-foreground">Try typing a message — the buyer will auto-reply!</span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {nextSellerMessage ? "Click Send to reply to the buyer" : demoOfferUpdated ? "Great job! You've completed the demo conversation ✅" : "Now try updating your offer in the right panel →"}
+                    </span>
                   </div>
                   <form onSubmit={(e) => { e.preventDefault(); handleSendDemoChat(); }} className="flex gap-2">
-                    <Input
-                      value={demoChatInput}
-                      onChange={(e) => setDemoChatInput(e.target.value)}
-                      placeholder="Try sending a message..."
-                      className="bg-background/60 border-border/40 focus:border-primary/40"
-                    />
-                    <Button type="submit" size="icon" disabled={!demoChatInput.trim()} className="shrink-0">
+                    <div className="flex-1 rounded-md border border-border/40 bg-background/60 px-3 py-2 text-sm text-foreground min-h-[36px] flex items-center">
+                      {nextSellerMessage ? (
+                        <span className="text-muted-foreground italic">{nextSellerMessage}</span>
+                      ) : (
+                        <span className="text-muted-foreground/50">Conversation complete</span>
+                      )}
+                    </div>
+                    <Button type="submit" size="icon" disabled={!nextSellerMessage} className="shrink-0">
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>
