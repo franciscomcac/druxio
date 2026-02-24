@@ -134,6 +134,7 @@ const CATEGORY_TREE = [
       { id: "Dutch", services: ["Conversation", "Grammar", "NT2 Prep"] },
       { id: "Turkish", services: ["Conversation", "Grammar", "TYS Prep"] },
       { id: "Translation", services: ["Document Translation", "Localization", "Subtitling", "Proofreading"] },
+      { id: "Custom Request", services: ["Any Language Task", "Unique Request"] },
     ],
   },
   {
