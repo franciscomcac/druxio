@@ -13,22 +13,21 @@ const LiveStats = () => {
   ];
 
   return (
-    <section ref={ref} className="border-y border-border bg-card/30 py-6">
+    <section ref={ref} className="border-y border-border bg-card/30 py-4 md:py-6">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap items-center justify-center gap-10 md:gap-20">
+        <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-10 md:gap-20">
           {items.map((stat, i) => (
             <div
               key={i}
               className={`text-center reveal delay-${i * 100 + 100}`}
             >
-              <p className="text-3xl font-extrabold text-primary tabular-nums">
+              <p className="text-xl sm:text-3xl font-extrabold text-primary tabular-nums">
                 {typeof stat.value === "number" ? stat.value.toLocaleString() : stat.value}
               </p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">{stat.label}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider mt-0.5 sm:mt-1">{stat.label}</p>
             </div>
           ))}
         </div>
-        
       </div>
     </section>
   );

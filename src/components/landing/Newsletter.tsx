@@ -16,27 +16,27 @@ const Newsletter = () => {
   };
 
   return (
-    <section ref={ref} className="bg-background py-24">
+    <section ref={ref} className="bg-background py-12 md:py-24">
       <div className="container mx-auto px-4">
-        <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-2">
+        <div className="mx-auto grid max-w-5xl gap-4 md:gap-6 lg:grid-cols-2">
           {/* Stay Updated card */}
-          <div className="rounded-lg border border-border bg-card p-8 flex flex-col reveal reveal-left">
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Mail className="h-6 w-6" />
+          <div className="rounded-lg border border-border bg-card p-5 md:p-8 flex flex-col reveal reveal-left">
+            <div className="mb-4 md:mb-6 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Mail className="h-5 w-5 md:h-6 md:w-6" />
             </div>
-            <h3 className="mb-2 text-2xl font-bold text-foreground">Stay Updated</h3>
-            <p className="mb-8 text-muted-foreground text-sm leading-relaxed flex-1">
+            <h3 className="mb-2 text-xl md:text-2xl font-bold text-foreground">Stay Updated</h3>
+            <p className="mb-5 md:mb-8 text-muted-foreground text-xs md:text-sm leading-relaxed flex-1">
               Get notified about new categories, features, and platform updates.
             </p>
 
             {submitted ? (
-              <div className="flex items-center gap-3 rounded-lg bg-primary/10 p-4 text-primary border border-primary/20">
-                <CheckCircle className="h-5 w-5" />
-                <span className="font-medium text-sm">Thanks — a confirmation email has been sent.</span>
+              <div className="flex items-center gap-3 rounded-lg bg-primary/10 p-3 md:p-4 text-primary border border-primary/20">
+                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 shrink-0" />
+                <span className="font-medium text-xs md:text-sm">Thanks — a confirmation email has been sent.</span>
               </div>
             ) : (
               <div className="space-y-2">
-                <label htmlFor="newsletter-email" className="text-sm font-medium text-foreground">
+                <label htmlFor="newsletter-email" className="text-xs md:text-sm font-medium text-foreground">
                   Your email
                 </label>
                 <form onSubmit={handleSubmit} className="flex gap-2">
@@ -48,36 +48,36 @@ const Newsletter = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     maxLength={255}
-                    className="flex-1 h-11 rounded-lg bg-background border-border"
+                    className="flex-1 h-10 md:h-11 rounded-lg bg-background border-border text-sm"
                   />
-                  <Button type="submit" className="gap-2 h-11 rounded-lg px-5">
+                  <Button type="submit" className="gap-2 h-10 md:h-11 rounded-lg px-4 md:px-5 text-sm">
                     Subscribe <ArrowRight className="h-4 w-4" />
                   </Button>
                 </form>
-                <p className="text-xs text-muted-foreground">No spam. Unsubscribe anytime.</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground">No spam. Unsubscribe anytime.</p>
               </div>
             )}
           </div>
 
           {/* Become an Expert card */}
-          <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-card p-8 flex flex-col reveal reveal-right delay-150">
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground glow-pulse">
-              <Sparkles className="h-6 w-6" />
+          <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-card p-5 md:p-8 flex flex-col reveal reveal-right delay-150">
+            <div className="mb-4 md:mb-6 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground glow-pulse">
+              <Sparkles className="h-5 w-5 md:h-6 md:w-6" />
             </div>
-            <h3 className="mb-2 text-2xl font-bold text-foreground">Become an Expert</h3>
-            <p className="mb-6 text-muted-foreground text-sm leading-relaxed">
-              Monetize your skills. Get pinged for jobs in your categories and earn up to{" "}
+            <h3 className="mb-2 text-xl md:text-2xl font-bold text-foreground">Become an Expert</h3>
+            <p className="mb-4 md:mb-6 text-muted-foreground text-xs md:text-sm leading-relaxed">
+              Monetize your skills. Get pinged for jobs and earn up to{" "}
               <span className="font-bold text-primary">€500/week</span>.
             </p>
-            <ul className="mb-8 space-y-3 flex-1">
-              {["Real-time job notifications", "Set your own fixed prices", "90% earnings, weekly payouts"].map((f) => (
-                <li key={f} className="flex items-center gap-2.5 text-sm text-foreground/90">
-                  <CheckCircle className="h-4 w-4 text-primary shrink-0" /> {f}
+            <ul className="mb-5 md:mb-8 space-y-2 md:space-y-3 flex-1">
+              {["Real-time notifications", "Set your own prices", "95% earnings, weekly payouts"].map((f) => (
+                <li key={f} className="flex items-center gap-2 text-xs md:text-sm text-foreground/90">
+                  <CheckCircle className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary shrink-0" /> {f}
                 </li>
               ))}
             </ul>
             <Link to="/auth">
-              <Button className="w-full gap-2 h-12 rounded-lg text-base font-semibold">
+              <Button className="w-full gap-2 h-10 md:h-12 rounded-lg text-sm md:text-base font-semibold">
                 Join as Expert <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
