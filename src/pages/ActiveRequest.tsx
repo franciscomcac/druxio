@@ -263,6 +263,7 @@ const ActiveRequest = () => {
           jobTitle: jobData.title,
           jobCategory: jobData.category,
           jobStatus: jobData.status,
+          quoteStatus: q.status,
           buyerId: jobData.buyer_id,
           buyerName: bp?.display_name || null,
           buyerAvatar: bp?.avatar_url || null,
