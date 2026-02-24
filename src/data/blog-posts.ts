@@ -178,7 +178,7 @@ Your feedback directly shapes what we build next. We've already built a feedback
 
 ## Thank You
 
-To everyone who signed up early, tested the platform, reported bugs, and sent us encouragement — thank you. Duxio exists because of you.
+To everyone who signed up early, tested the platform, reported bugs, and sent us encouragement — thank you. Druxio exists because of you.
 
 We believe the future of expert access is fast, fair, and borderless. Today is just the beginning.
 
