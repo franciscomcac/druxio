@@ -781,8 +781,36 @@ const ActiveRequest = () => {
   const chatPartnerName = isBuyer ? selectedQuote?.profile?.display_name || "Expert" : buyerProfile?.display_name || "Buyer";
   const selectedMessages = selectedChatPartnerId ? (chatMessages[selectedChatPartnerId] || []) : [];
 
-  // Filter to pending quotes only
-  const quoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
+  // Demo/tutorial quote — always present, cannot be withdrawn
+  const DEMO_CONVO: SellerConvo = {
+    jobId: "demo-tutorial-quote",
+    jobTitle: "📘 Tutorial: How Quoting Works",
+    jobCategory: "Getting Started",
+    jobStatus: "open",
+    quoteStatus: "pending",
+    buyerId: "demo-buyer",
+    buyerName: "Duxio Team",
+    buyerAvatar: null,
+    buyerRating: 5,
+    buyerTotalSpent: 0,
+    myPrice: 15,
+    myDelivery: 60,
+    myQuoteId: "demo-quote-id",
+    sessionId: null,
+    lastMessage: "Welcome! This is a demo quote to show you how the Quotes Terminal works.",
+    lastMessageAt: new Date().toISOString(),
+    unread: 1,
+    budgetMin: 10,
+    budgetMax: 25,
+    quoteCreatedAt: new Date().toISOString(),
+    deadlineMinutes: 1440,
+  };
+
+  const isDemo = (convo: SellerConvo) => convo.jobId === "demo-tutorial-quote";
+
+  // Filter to pending quotes only + always include demo
+  const realQuoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
+  const quoteConvos = [...realQuoteConvos, DEMO_CONVO];
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
@@ -806,12 +834,21 @@ const ActiveRequest = () => {
       return (
         <button
           key={convo.jobId}
-          onClick={() => handleSwitchConvo(convo)}
+          onClick={() => {
+            if (isDemo(convo)) {
+              // Demo quote — show demo content in main area
+              setActiveConvoJobId(convo.jobId);
+              setActiveConvo(convo);
+              setSellerChatMessages([]);
+              return;
+            }
+            handleSwitchConvo(convo);
+          }}
           className={`w-full text-left rounded-xl p-3 transition-all ${
             isActive
               ? "bg-primary/10 border border-primary/20"
               : "hover:bg-muted/50 border border-transparent"
-          }`}
+          } ${isDemo(convo) ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background" : ""}`}
         >
           <div className="flex items-start gap-2.5">
             {/* Urgency dot */}
@@ -917,7 +954,25 @@ const ActiveRequest = () => {
               {/* Messages */}
               <ScrollArea className="flex-1 min-h-0">
                 <div className="p-4 space-y-3">
-                  {sellerChatMessages.length === 0 ? (
+                  {activeConvo && isDemo(activeConvo) ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center px-6 max-w-md mx-auto">
+                      <div className="h-16 w-16 rounded-2xl bg-primary/[0.1] flex items-center justify-center mb-5">
+                        <span className="text-3xl">📘</span>
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground mb-2">Welcome to the Quotes Terminal!</h3>
+                      <div className="space-y-3 text-sm text-muted-foreground text-left">
+                        <p>This is your <strong className="text-foreground">command center</strong> for managing all your pending quotes. Here's how it works:</p>
+                        <div className="rounded-lg bg-muted/40 p-3 space-y-2">
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">1.</span> <span>The <strong className="text-foreground">left sidebar</strong> shows all your active quotes — sorted by urgency and unread messages.</span></p>
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">2.</span> <span>Click any quote to open the <strong className="text-foreground">chat</strong> with the buyer in this area.</span></p>
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">3.</span> <span>The <strong className="text-foreground">right panel</strong> (on desktop) shows request details, buyer info, and lets you update your offer.</span></p>
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">4.</span> <span>Each quote has a <strong className="text-foreground">5-day expiry timer</strong> — the colored dots (🟢🟡🔴) show urgency.</span></p>
+                          <p className="flex items-start gap-2"><span className="text-primary font-bold">5.</span> <span>Fast replies and competitive pricing <strong className="text-foreground">dramatically increase</strong> your chances of winning jobs!</span></p>
+                        </div>
+                        <p className="text-xs text-muted-foreground/70 pt-2">💡 This demo quote can't be deleted — it's always here for reference.</p>
+                      </div>
+                    </div>
+                  ) : sellerChatMessages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
                       <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
                         <MessageSquare className="h-7 w-7 text-primary/50" />
@@ -932,7 +987,11 @@ const ActiveRequest = () => {
                 </div>
               </ScrollArea>
 
-              {/* Chat input */}
+              {activeConvo && isDemo(activeConvo) ? (
+                <div className="border-t border-border p-3 shrink-0 bg-muted/20">
+                  <p className="text-xs text-center text-muted-foreground">💡 This is a demo — chat is disabled</p>
+                </div>
+              ) : (
               <div className="border-t border-border p-3 shrink-0 bg-card/20">
                 <input type="file" accept="image/*" multiple ref={sellerFileInputRef} className="hidden" onChange={handleSellerImageSelect} />
                 {sellerImagePreviews.length > 0 && (
@@ -966,6 +1025,7 @@ const ActiveRequest = () => {
                   </Button>
                 </form>
               </div>
+              )}
 
             </div>
 
@@ -1042,7 +1102,8 @@ const ActiveRequest = () => {
                 </div>
               </div>
 
-              {/* Update offer */}
+              {/* Update offer — hidden for demo */}
+              {!isDemo(activeConvo) && (
               <div className="p-4 space-y-2">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Update Offer</p>
                 <Input
@@ -1083,9 +1144,10 @@ const ActiveRequest = () => {
                   Send Updated Offer
                 </Button>
               </div>
+              )}
 
               {/* Withdraw quote — only for pending quotes */}
-              {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && (
+              {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && !isDemo(activeConvo) && (
                 <div className="p-4 border-t border-border">
                   <Button
                     variant="ghost"

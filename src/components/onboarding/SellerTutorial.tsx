@@ -17,6 +17,8 @@ const STEP_KEY = "seller_tutorial_step";
 
 interface TourPhase {
   route: string;
+  /** Additional route prefixes that also match this phase */
+  altRoutes?: string[];
   steps: DriveStep[];
   /** Element selector for the nav link the user should click to proceed */
   bridgeElement?: string;
@@ -24,6 +26,12 @@ interface TourPhase {
   bridgeTitle?: string;
   bridgeDescription?: string;
 }
+
+/** Check if current path matches the phase route or any alt routes */
+const matchesPhaseRoute = (pathname: string, phase: TourPhase): boolean => {
+  if (pathname === phase.route) return true;
+  return (phase.altRoutes || []).some(alt => pathname.startsWith(alt));
+};
 
 const TOUR_PHASES: TourPhase[] = [
   // Phase 0 — Dashboard overview
@@ -84,18 +92,68 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
+    bridgeElement: "#tour-quotes-link",
+    bridgeTitle: "Next: Active Quotes 📋",
+    bridgeDescription: "Click the <strong>Active Quotes</strong> button in the navigation bar to continue the tour!",
+  },
+  // Phase 1 — Active Quotes (Quotes Terminal)
+  {
+    route: "/quotes",
+    altRoutes: ["/request/"],
+    steps: [
+      {
+        popover: {
+          title: "Your Quotes Terminal 📋",
+          description: "This is your <strong>command center</strong> for managing all your pending quotes. Every quote you send on a job appears here until it's accepted, expired, or withdrawn.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        popover: {
+          title: "How the Sidebar Works",
+          description: "The <strong>left sidebar</strong> lists all your active quotes, sorted by urgency. Colored dots show expiry status: 🟢 plenty of time, 🟡 running low, 🔴 expiring soon. Unread messages appear first!",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        popover: {
+          title: "Demo Quote 📘",
+          description: "You'll always see a <strong>Tutorial quote</strong> at the bottom of your list — it explains everything and can't be deleted. Click it anytime for a refresher!",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        popover: {
+          title: "Chat + Right Panel",
+          description: "Click any quote to open the <strong>buyer chat</strong> in the center. On desktop, the <strong>right panel</strong> shows request details, buyer info, and lets you <strong>update your offer</strong> or <strong>withdraw</strong> your quote.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        popover: {
+          title: "5-Day Expiry ⏳",
+          description: "Each quote automatically <strong>expires after 5 days</strong>. Keep an eye on the countdown timers! Respond quickly and competitively to maximize your chances.",
+          side: "bottom",
+          align: "center",
+        },
+      },
+    ],
     bridgeElement: "#tour-inbox-link",
     bridgeTitle: "Next: Your Inbox 💬",
     bridgeDescription: "Click the <strong>Inbox icon</strong> in the navigation bar to continue the tour!",
   },
-  // Phase 1 — Inbox
+  // Phase 2 — Inbox
   {
     route: "/inbox",
     steps: [
       {
         popover: {
           title: "Your Inbox 💬",
-          description: "After you send a quote, a chat session opens with the buyer here. Discuss details, share files, and negotiate before they accept your offer.",
+          description: "This is where you see all your <strong>active orders</strong> and <strong>completed/cancelled</strong> conversations. Quote chats are managed separately in the Quotes Terminal.",
           side: "bottom",
           align: "center",
         },
@@ -113,7 +171,7 @@ const TOUR_PHASES: TourPhase[] = [
     bridgeTitle: "Next: Sold Orders 📦",
     bridgeDescription: "Click your <strong>profile avatar</strong> to open the menu, then click <strong>Sold Orders</strong> to continue the tour!",
   },
-  // Phase 2 — Sold Orders
+  // Phase 3 — Sold Orders
   {
     route: "/orders/sold",
     steps: [
@@ -138,7 +196,7 @@ const TOUR_PHASES: TourPhase[] = [
     bridgeTitle: "Next: Your Wallet 💰",
     bridgeDescription: "Click the <strong>Balance / Wallet button</strong> in the navigation bar to continue!",
   },
-  // Phase 3 — Wallet
+  // Phase 4 — Wallet
   {
     route: "/wallet",
     steps: [
@@ -163,7 +221,7 @@ const TOUR_PHASES: TourPhase[] = [
     bridgeTitle: "Next: Settings ⚙️",
     bridgeDescription: "Click your <strong>profile avatar</strong> to open the menu, then click <strong>Settings</strong> to continue the tour!",
   },
-  // Phase 4 — Settings
+  // Phase 5 — Settings
   {
     route: "/settings",
     steps: [
@@ -188,14 +246,14 @@ const TOUR_PHASES: TourPhase[] = [
     bridgeTitle: "Final Step: Back to Dashboard 🏠",
     bridgeDescription: "Click <strong>Dashboard</strong> in the navigation bar to finish the tour!",
   },
-  // Phase 5 — Back to dashboard, final
+  // Phase 6 — Back to dashboard, final
   {
     route: "/dashboard",
     steps: [
       {
         popover: {
           title: "You're All Set! 🚀",
-          description: "You now know the basics of selling on Duxio.<br/><br/>✅ Subscribe to categories<br/>✅ Send competitive quotes<br/>✅ Respond fast & deliver quality work<br/>✅ Earn money and build your reputation<br/><br/>You can replay this tutorial anytime from your Expert Dashboard. Good luck!",
+          description: "You now know the basics of selling on Duxio.<br/><br/>✅ Subscribe to categories<br/>✅ Send competitive quotes<br/>✅ Use the <strong>Quotes Terminal</strong> to manage offers<br/>✅ Respond fast & deliver quality work<br/>✅ Earn money and build your reputation<br/><br/>You can replay this tutorial anytime from your Expert Dashboard. Good luck!",
           side: "bottom",
           align: "center",
         },
@@ -315,7 +373,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     if (phaseIndex === 0 && location.pathname !== phase.route) {
       navigate(phase.route);
       setTimeout(() => initDriver(phaseIndex), 600);
-    } else if (location.pathname === phase.route) {
+    } else if (matchesPhaseRoute(location.pathname, phase)) {
       setTimeout(() => initDriver(phaseIndex), 300);
     }
     // Otherwise don't navigate — the resume logic will handle it when user arrives
@@ -329,7 +387,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       const phaseIndex = parseInt(step, 10);
       const phase = TOUR_PHASES[phaseIndex];
       // Only resume if we're on the right route
-      if (phase && location.pathname === phase.route && !driverRef.current) {
+      if (phase && matchesPhaseRoute(location.pathname, phase) && !driverRef.current) {
         setTimeout(() => initDriver(phaseIndex), 400);
       }
     }

@@ -108,7 +108,7 @@ const Header = () => {
                 </Button>
               </Link>
               {isMentorUser && (
-                <Link to="/quotes">
+                <Link to="/quotes" id="tour-quotes-link">
                   <Button variant="ghost" size="sm" className={`text-sm font-medium ${(isActive("/quotes") || location.pathname.startsWith("/request/")) ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
                     <FileText className="h-3.5 w-3.5 mr-1" />
                     Active Quotes
