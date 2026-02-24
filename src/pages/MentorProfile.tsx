@@ -70,6 +70,25 @@ const MentorProfile = () => {
     title: mentor ? mentor.display_name : "Expert Profile",
     description: mentor ? `${mentor.display_name} — ${mentor.bio?.slice(0, 140) || "Verified expert on Duxio"}` : undefined,
     canonical: mentorId ? `/mentor/${mentorId}` : undefined,
+    ogImage: mentor?.avatar_url || undefined,
+    jsonLd: mentor ? {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": mentor.display_name,
+      "description": mentor.bio || "Verified expert on Duxio",
+      "image": mentor.avatar_url || undefined,
+      "jobTitle": categories.length > 0 ? `${categories[0]} Expert` : "Freelance Expert",
+      "url": `https://duxio.lovable.app/mentor/${mentorId}`,
+      ...(reviews.length > 0 && mentor.rating_avg ? {
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": mentor.rating_avg.toFixed(1),
+          "reviewCount": reviews.length,
+          "bestRating": "5",
+          "worstRating": "1",
+        },
+      } : {}),
+    } : undefined,
   });
 
   useLayoutEffect(() => { window.scrollTo(0, 0); }, []);

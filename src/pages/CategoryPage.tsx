@@ -32,20 +32,30 @@ const CategoryPage = () => {
     title: meta ? `${meta.label} Freelancers & Experts — Low Fees` : "Category",
     description: meta ? meta.seoDescription : undefined,
     canonical: slug ? `/category/${slug}` : undefined,
-    jsonLd: meta ? {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "name": `${meta.label} Experts on Duxio`,
-      "description": meta.seoDescription,
-      "url": `https://duxio.lovable.app/category/${slug}`,
-      "numberOfItems": meta.subcategories.length,
-      "itemListElement": meta.subcategories.map((sub, i) => ({
-        "@type": "ListItem",
-        "position": i + 1,
-        "name": sub,
-        "url": `https://duxio.lovable.app/post-request?category=${meta.label}: ${sub}`,
-      })),
-    } : undefined,
+    jsonLd: meta ? [
+      {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": `${meta.label} Experts on Duxio`,
+        "description": meta.seoDescription,
+        "url": `https://duxio.lovable.app/category/${slug}`,
+        "numberOfItems": meta.subcategories.length,
+        "itemListElement": meta.subcategories.map((sub, i) => ({
+          "@type": "ListItem",
+          "position": i + 1,
+          "name": sub,
+          "url": `https://duxio.lovable.app/post-request?category=${meta.label}: ${sub}`,
+        })),
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://duxio.lovable.app/" },
+          { "@type": "ListItem", "position": 2, "name": meta.label, "item": `https://duxio.lovable.app/category/${slug}` },
+        ],
+      },
+    ] : undefined,
   });
 
   const { format } = useCurrency();
