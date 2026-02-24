@@ -41,7 +41,7 @@ const TOUR_PHASES: TourPhase[] = [
     steps: [
       {
         popover: {
-          title: "Welcome to Selling on Duxio! 🎉",
+          title: "Welcome to Selling on Druxio! 🎉",
           description: "Let's take a quick tour of everything you need to know as a seller. We'll walk through the real interface — no simulations!",
           side: "bottom",
           align: "center",
