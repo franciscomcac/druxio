@@ -105,7 +105,7 @@ As always, we'd love your feedback. Use the Feedback button at the bottom of any
       "After months of building, refining, and stress-testing every corner of the platform, Druxio is officially open to the public in beta. Here's what we've built, why we built it, and what comes next.",
     date: "February 18, 2026",
     readTime: "6 min read",
-    author: "The Duxio Team",
+    author: "The Druxio Team",
     authorRole: "Founders",
     category: "Announcement",
     coverImage: heroBetaLaunch,
