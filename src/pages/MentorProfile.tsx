@@ -70,7 +70,7 @@ const MentorProfile = () => {
 
   useSEO({
     title: mentor ? mentor.display_name : "Expert Profile",
-    description: mentor ? `${mentor.display_name} — ${mentor.bio?.slice(0, 140) || "Verified expert on Duxio"}` : undefined,
+    description: mentor ? `${mentor.display_name} — ${mentor.bio?.slice(0, 140) || "Verified expert on Druxio"}` : undefined,
     canonical: mentorId ? `/mentor/${mentorId}` : undefined,
     ogImage: mentor?.avatar_url || undefined,
     jsonLd: mentor ? {
