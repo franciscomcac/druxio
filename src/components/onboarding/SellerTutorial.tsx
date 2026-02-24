@@ -337,29 +337,36 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       allSteps.push(bridgeStep);
     }
 
-    // For phase 0, modify the demo job step to allow interaction
+    // For phase 0, modify the demo quote step to allow direct interaction
     if (phaseIndex === 0) {
-      const demoIdx = allSteps.findIndex(s => s.element === "#tour-demo-job");
+      const demoIdx = allSteps.findIndex(s => s.element === "#tour-demo-job-quote");
       if (demoIdx >= 0 && (!startStep || startStep <= demoIdx)) {
+        const pauseAtDemoQuote = () => {
+          if (!driverRef.current) return;
+          localStorage.setItem(SUBSTEP_KEY, String(demoIdx + 1));
+          localStorage.setItem(STEP_KEY, "0");
+          isPausingForDemoRef.current = true;
+          driverRef.current.destroy();
+          driverRef.current = null;
+        };
+
         const origPopover = allSteps[demoIdx].popover!;
         allSteps[demoIdx] = {
-          element: "#tour-demo-job",
+          element: "#tour-demo-job-quote",
+          disableActiveInteraction: false,
           popover: {
             ...origPopover,
-            onNextClick: () => {
-              // Pause tour — user should click Quote instead. "Skip" fallback.
-              driverRef.current?.destroy();
-              driverRef.current = null;
-              localStorage.setItem(SUBSTEP_KEY, String(demoIdx + 1));
-            },
             onPopoverRender: (popover: any) => {
-              // Change next button to "Skip" so user knows to click Quote
+              // Remove Next button: this step advances by clicking the Quote button
               if (popover.nextButton) {
-                popover.nextButton.textContent = "Skip →";
+                popover.nextButton.style.display = "none";
               }
-              // Allow clicking the highlighted element
-              const activeEl = document.querySelector(".driver-active-element");
-              if (activeEl) (activeEl as HTMLElement).style.pointerEvents = "auto";
+
+              const quoteBtn = document.querySelector("#tour-demo-job-quote");
+              if (quoteBtn) {
+                (quoteBtn as HTMLElement).style.pointerEvents = "auto";
+                quoteBtn.addEventListener("click", pauseAtDemoQuote, { once: true });
+              }
             },
           },
         };
