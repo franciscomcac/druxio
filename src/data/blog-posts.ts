@@ -151,7 +151,7 @@ After every completed session, both parties can leave a review. Expert ratings a
 You'll never miss an update. Druxio pushes instant notifications for new quotes, accepted requests, session updates, and messages — across the platform.
 
 ### Dispute Resolution
-We know things don't always go perfectly. Duxio includes a built-in dispute process with admin oversight to mediate when a session doesn't go as expected.
+We know things don't always go perfectly. Druxio includes a built-in dispute process with admin oversight to mediate when a session doesn't go as expected.
 
 ## Who Is Duxio For?
 
