@@ -304,6 +304,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     if (userId) localStorage.setItem(`${STORAGE_KEY}_${userId}`, "true");
     localStorage.removeItem(ACTIVE_KEY);
     localStorage.removeItem(STEP_KEY);
+    localStorage.removeItem(SUBSTEP_KEY);
     driverRef.current?.destroy();
     driverRef.current = null;
     onComplete?.();
