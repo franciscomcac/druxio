@@ -892,6 +892,11 @@ const Admin = () => {
               <MessageSquarePlus className="h-4 w-4" />
               Feedback
             </TabsTrigger>
+            <TabsTrigger value="reports" className="gap-2">
+              <ShieldAlert className="h-4 w-4" />
+              Reports
+              {stats.pendingReports > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingReports}</Badge>}
+            </TabsTrigger>
           </TabsList>
 
           {/* ═══ DISPUTES TAB ═══ */}
