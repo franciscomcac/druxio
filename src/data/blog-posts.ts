@@ -261,7 +261,7 @@ The way people access professional expertise is changing. Just as platforms chan
 
 The professional sitting across from you on Druxio might be a former McKinsey analyst who consults part-time, a certified accountant who helps three clients a day between school runs, or a senior developer who loves helping people in their spare hours.
 
-Every one of them is on Duxio because they want to share their expertise efficiently — and every client is there because they need real help, not a six-month contract.
+Every one of them is on Druxio because they want to share their expertise efficiently — and every client is there because they need real help, not a six-month contract.
 
 **That's the Duxio promise: the right expert, at the right time, for exactly as long as you need.**
     `,
