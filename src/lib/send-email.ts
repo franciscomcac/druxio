@@ -143,7 +143,7 @@ export function buildQuoteAcceptedEmail(opts: {
         ${infoRow("Your earning", `€${(opts.price * 0.95).toFixed(2)}`)}
       `)}
       ${paragraph("Head to the order page to start working and communicate with the buyer.")}
-      ${ctaButton("Go to Order", `https://duxio.lovable.app/order/${opts.jobId}`)}
+      ${ctaButton("Go to Order", `https://druxio.lovable.app/order/${opts.jobId}`)}
     `),
   };
 }
