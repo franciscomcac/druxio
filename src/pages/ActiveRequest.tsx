@@ -85,6 +85,7 @@ interface SellerConvo {
 
 const ActiveRequest = () => {
   useSEO({ title: "Active Request", noIndex: true });
+  const isMobile = useIsMobile();
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
