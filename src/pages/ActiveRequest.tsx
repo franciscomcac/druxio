@@ -286,8 +286,12 @@ const ActiveRequest = () => {
         });
       }));
 
-      // Sort: current job first, then by last message time
+      // Sort: unread first, then by most recent activity
       convos.sort((a, b) => {
+        // Unread first
+        if (a.unread > 0 && b.unread === 0) return -1;
+        if (a.unread === 0 && b.unread > 0) return 1;
+        // Then current job
         if (a.jobId === jobId) return -1;
         if (b.jobId === jobId) return 1;
         if (a.lastMessageAt && b.lastMessageAt) return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime();
