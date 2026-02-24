@@ -121,6 +121,19 @@ interface FeedbackRow {
   created_at: string;
 }
 
+interface ReportRow {
+  id: string;
+  reporter_id: string;
+  reporter_name: string;
+  reported_user_id: string;
+  reported_user_name: string;
+  reason: string;
+  description: string | null;
+  status: string;
+  admin_notes: string | null;
+  created_at: string;
+}
+
 // ─── Component ───────────────────────────────────────────────────
 
 const Admin = () => {
