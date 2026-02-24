@@ -79,7 +79,7 @@ In fact, we've also expanded the category selection with a dedicated **Custom** 
 
 ## What's Next
 
-This is the first step in a broader push to make Duxio smarter about understanding what you need. In the coming weeks, we're working on:
+This is the first step in a broader push to make Druxio smarter about understanding what you need. In the coming weeks, we're working on:
 
 - **Smarter expert matching** — using AI to recommend the best-fit experts based on your request content, not just category tags
 - **Dynamic pricing suggestions** — helping clients set realistic budgets based on task complexity
