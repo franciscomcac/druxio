@@ -114,7 +114,7 @@ We're thrilled to announce that **Druxio.store is now live in public beta**.
 
 This is a milestone we've been working toward for a long time — and we couldn't be more excited to finally put it in your hands.
 
-## What Is Duxio?
+## What Is Druxio?
 
 Duxio is an on-demand marketplace that connects people who need fast, focused expert help with verified professionals who can deliver it — often within minutes.
 
