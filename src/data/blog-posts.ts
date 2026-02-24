@@ -263,7 +263,7 @@ The professional sitting across from you on Druxio might be a former McKinsey an
 
 Every one of them is on Druxio because they want to share their expertise efficiently — and every client is there because they need real help, not a six-month contract.
 
-**That's the Duxio promise: the right expert, at the right time, for exactly as long as you need.**
+**That's the Druxio promise: the right expert, at the right time, for exactly as long as you need.**
     `,
   },
   {
