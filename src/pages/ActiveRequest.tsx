@@ -1122,7 +1122,7 @@ const ActiveRequest = () => {
               </div>
 
               {/* Withdraw quote — only for pending quotes */}
-              {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && (
+              {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && !isDemo(activeConvo) && (
                 <div className="p-4 border-t border-border">
                   <Button
                     variant="ghost"
