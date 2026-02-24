@@ -16,7 +16,7 @@ const faqSections = [
         a: "Anyone can sign up as a client (buyer) to post tasks. Experts (sellers) go through a short onboarding to set their profile, skills, and hourly rate. Both roles can coexist — you can post tasks and accept tasks with the same account.",
       },
       {
-        q: "Is Duxio free to join?",
+        q: "Is Druxio free to join?",
         a: "Yes. Creating an account and browsing the platform is completely free. Clients only pay when they accept a quote. Experts pay a platform fee (deducted automatically) on completed earnings.",
       },
       {
