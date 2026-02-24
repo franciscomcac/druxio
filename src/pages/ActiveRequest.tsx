@@ -574,8 +574,18 @@ const ActiveRequest = () => {
 
   // Scroll seller chat
   useEffect(() => {
-    sellerChatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [sellerChatMessages]);
+    setTimeout(() => {
+      const el = sellerChatEndRef.current;
+      if (el) {
+        const viewport = el.closest('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          viewport.scrollTop = viewport.scrollHeight;
+        } else {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    }, 50);
+  }, [sellerChatMessages, demoChatMessages]);
 
   // ── Realtime: new quotes (buyer) ───────────────────────────────────────────
   useEffect(() => {
@@ -676,7 +686,17 @@ const ActiveRequest = () => {
   }, [selectedChatPartnerId, sessionMap, isBuyer]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setTimeout(() => {
+      const el = chatEndRef.current;
+      if (el) {
+        const viewport = el.closest('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+          viewport.scrollTop = viewport.scrollHeight;
+        } else {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    }, 50);
   }, [chatMessages, selectedChatPartnerId]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
