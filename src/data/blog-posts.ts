@@ -339,7 +339,7 @@ We're building Druxio because we believe **expertise should be a resource, not a
 
 A brilliant question shouldn't go unanswered because you can't afford a retainer. A critical decision shouldn't be made in the dark because you don't know the right person. A skill gap shouldn't hold back a capable person who just needs twenty minutes with the right expert.
 
-That's the world Duxio is building toward. One session at a time.
+That's the world Druxio is building toward. One session at a time.
     `,
   },
 ];
