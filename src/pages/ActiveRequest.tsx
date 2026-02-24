@@ -837,6 +837,8 @@ const ActiveRequest = () => {
     setActiveConvo(convo);
     setSellerChatMessages([]);
     setSellerChatInput("");
+    setMobileOfferOpen(false);
+    if (isMobile) setMobileView("chat");
     // If no session yet, create one and auto-send offer
     if (!convo.sessionId && userId) {
       const { data: existing } = await supabase.from("sessions").select("id").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).order("created_at", { ascending: false }).limit(1).maybeSingle();
