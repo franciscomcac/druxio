@@ -8,8 +8,8 @@ const faqSections = [
     category: "Getting Started",
     items: [
       {
-        q: "What is Duxio?",
-        a: "Duxio is a real-time micro-task marketplace where clients post tasks and verified experts submit quotes within minutes. Unlike traditional freelance platforms, you don't search for an expert — they come to you. Once a quote is accepted, an escrow is created so both sides are protected.",
+        q: "What is Druxio?",
+        a: "Druxio is a real-time micro-task marketplace where clients post tasks and verified experts submit quotes within minutes. Unlike traditional freelance platforms, you don't search for an expert — they come to you. Once a quote is accepted, an escrow is created so both sides are protected.",
       },
       {
         q: "Who can use Duxio?",
