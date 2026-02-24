@@ -387,7 +387,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       const phaseIndex = parseInt(step, 10);
       const phase = TOUR_PHASES[phaseIndex];
       // Only resume if we're on the right route
-      if (phase && location.pathname === phase.route && !driverRef.current) {
+      if (phase && matchesPhaseRoute(location.pathname, phase) && !driverRef.current) {
         setTimeout(() => initDriver(phaseIndex), 400);
       }
     }
