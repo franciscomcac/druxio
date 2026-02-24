@@ -1240,7 +1240,7 @@ const ActiveRequest = () => {
                 <Button
                   size="sm"
                   className="w-full h-8 text-xs"
-                  onClick={handleSubmitNewQuote}
+                  onClick={activeConvo && isDemo(activeConvo) ? handleDemoUpdateOffer : handleSubmitNewQuote}
                   disabled={submittingQuote || !newQuotePrice}
                 >
                   {submittingQuote ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
