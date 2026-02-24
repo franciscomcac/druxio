@@ -199,6 +199,7 @@ const Hero = () => {
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   placeholder=""
+                  aria-label="Describe your task"
                   className="h-12 rounded-sm border-0 bg-transparent text-base placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 {/* Animated placeholder — only shown when input is empty */}
