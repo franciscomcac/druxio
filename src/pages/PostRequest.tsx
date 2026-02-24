@@ -145,10 +145,6 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Content: Community", label: "Community Management", icon: Users },
     { id: "Content: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
-  Custom: [
-    { id: "Custom: General", label: "General Request", icon: MessageSquarePlus },
-    { id: "Custom: Other", label: "Other / Unlisted", icon: Wand2 },
-  ],
 };
 
 const TITLE_PLACEHOLDERS: Record<string, string> = {
