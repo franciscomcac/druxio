@@ -101,6 +101,7 @@ const CATEGORY_TREE = [
       { id: "Vocal Coaching", services: ["Technique", "Performance", "Recording", "Pitch Training"] },
       { id: "Beat Making", services: ["Hip Hop", "EDM", "Lo-Fi", "Custom Beats"] },
       { id: "Songwriting", services: ["Lyrics", "Melody", "Full Song", "Co-Writing"] },
+      { id: "Custom Request", services: ["Any Music Task", "Unique Request"] },
     ],
   },
   {
