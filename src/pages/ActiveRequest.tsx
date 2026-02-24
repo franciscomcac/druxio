@@ -1017,6 +1017,27 @@ const ActiveRequest = () => {
             </div>
           </div>
         )}
+
+        {/* Withdraw Quote Dialog */}
+        <Dialog open={withdrawDialog} onOpenChange={setWithdrawDialog}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Ban className="h-5 w-5 text-destructive" />Withdraw Quote
+              </DialogTitle>
+              <DialogDescription>
+                This will remove your offer on &quot;{activeConvo?.jobTitle}&quot;. The buyer will be notified. This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setWithdrawDialog(false)} disabled={withdrawing}>Cancel</Button>
+              <Button variant="destructive" onClick={handleWithdrawQuote} disabled={withdrawing} className="gap-1.5">
+                {withdrawing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
+                Withdraw
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
