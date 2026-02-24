@@ -310,7 +310,7 @@ This isn't just a convenience feature. For the freelancer who needs to unblock a
 
 ## The Fair Exchange
 
-One thing we thought about deeply when building Duxio is **what's fair for experts**.
+One thing we thought about deeply when building Druxio is **what's fair for experts**.
 
 The traditional model extracts value from experts in two ways: either they're employed and their employer takes the margin, or they freelance and spend enormous time on unpaid business development, client acquisition, and admin.
 
