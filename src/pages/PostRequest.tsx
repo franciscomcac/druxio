@@ -712,7 +712,14 @@ const PostRequest = () => {
       }
       setUserId(currentUserId);
 
-      const mainCategory = category.split(":")[0]?.trim() || category;
+      // Ban check
+      const { data: profileCheck } = await supabase.from("profiles").select("is_banned").eq("id", currentUserId).single();
+      if (profileCheck?.is_banned) {
+        toast({ title: "Account suspended", description: "Your account has been suspended. You cannot post new requests.", variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
       
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 3);
