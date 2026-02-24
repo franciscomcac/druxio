@@ -135,6 +135,108 @@ const ActiveRequest = () => {
   const [withdrawDialog, setWithdrawDialog] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
 
+  // Demo chat state
+  const [demoChatMessages, setDemoChatMessages] = useState<ChatMessage[]>([]);
+  const [demoChatInput, setDemoChatInput] = useState("");
+  const [demoPrice, setDemoPrice] = useState(15);
+  const [demoDelivery, setDemoDelivery] = useState(60);
+
+  // Demo bot replies
+  const DEMO_BOT_REPLIES = [
+    "Thanks for your offer! 🙌 Can you tell me more about your experience with this?",
+    "That price looks fair. How quickly can you start?",
+    "I see you updated your offer — thanks! Let me think about it.",
+    "Your delivery time works for me. Do you have any portfolio examples?",
+    "Great, I appreciate the quick response! I'll make my decision soon.",
+    "Sounds good! I'm comparing a few experts right now.",
+  ];
+
+  // Initialize demo chat with welcome message on mount
+  useEffect(() => {
+    if (demoChatMessages.length === 0) {
+      const storedQuote = sessionStorage.getItem("demo_quote_data");
+      if (storedQuote) {
+        try {
+          const parsed = JSON.parse(storedQuote);
+          setDemoPrice(parsed.price || 15);
+          setDemoDelivery(parsed.estimated_minutes || 60);
+          sessionStorage.removeItem("demo_quote_data");
+        } catch {}
+      }
+
+      const welcomeMessages: ChatMessage[] = [
+        {
+          id: "demo-welcome-1",
+          content: "📋 Order Request\n\n📌 Tutorial: Practice Sending a Quote\n🏷 Category: Getting Started\n💰 Budget: €10 – €25\n⏱ Deadline: 1 day\n\n📄 Details:\nThis is a demo request! Practice chatting and updating your offer here.",
+          sender_id: "demo-buyer",
+          created_at: new Date(Date.now() - 60000).toISOString(),
+        },
+        {
+          id: "demo-welcome-2",
+          content: "Hi there! 👋 I posted this request and I'd love to see what you can offer. Feel free to send me a message or update your quote!",
+          sender_id: "demo-buyer",
+          created_at: new Date(Date.now() - 30000).toISOString(),
+        },
+      ];
+      setDemoChatMessages(welcomeMessages);
+    }
+  }, []);
+
+  const handleSendDemoChat = () => {
+    if (!demoChatInput.trim()) return;
+    const userMsg: ChatMessage = {
+      id: `demo-user-${Date.now()}`,
+      content: demoChatInput.trim(),
+      sender_id: userId || "me",
+      created_at: new Date().toISOString(),
+    };
+    setDemoChatMessages(prev => [...prev, userMsg]);
+    setDemoChatInput("");
+
+    // Bot auto-reply after 1-2 seconds
+    setTimeout(() => {
+      const replyIndex = Math.floor(Math.random() * DEMO_BOT_REPLIES.length);
+      const botMsg: ChatMessage = {
+        id: `demo-bot-${Date.now()}`,
+        content: DEMO_BOT_REPLIES[replyIndex],
+        sender_id: "demo-buyer",
+        created_at: new Date().toISOString(),
+      };
+      setDemoChatMessages(prev => [...prev, botMsg]);
+    }, 1000 + Math.random() * 1500);
+  };
+
+  const handleDemoUpdateOffer = () => {
+    const price = parseFloat(newQuotePrice);
+    const rawValue = parseInt(newQuoteMinutes) || 20;
+    const minutes = newQuoteUnit === "days" ? rawValue * 1440 : newQuoteUnit === "hours" ? rawValue * 60 : rawValue;
+    if (isNaN(price) || price <= 0) return;
+    setDemoPrice(price);
+    setDemoDelivery(minutes);
+    setNewQuotePrice("");
+    setNewQuoteMinutes("");
+
+    // Add offer update message
+    const offerMsg: ChatMessage = {
+      id: `demo-offer-${Date.now()}`,
+      content: `📋 New offer: €${price.toFixed(2)} — delivery in ${formatDeliveryTime(minutes)}`,
+      sender_id: userId || "me",
+      created_at: new Date().toISOString(),
+    };
+    setDemoChatMessages(prev => [...prev, offerMsg]);
+
+    // Bot reply to updated offer
+    setTimeout(() => {
+      const botMsg: ChatMessage = {
+        id: `demo-bot-offer-${Date.now()}`,
+        content: "I see you updated your offer — thanks! That looks interesting. Let me compare with other quotes. 🤔",
+        sender_id: "demo-buyer",
+        created_at: new Date().toISOString(),
+      };
+      setDemoChatMessages(prev => [...prev, botMsg]);
+    }, 1500);
+  };
+
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
 
@@ -785,7 +887,7 @@ const ActiveRequest = () => {
   // Demo/tutorial quote — always present, cannot be withdrawn
   const DEMO_CONVO: SellerConvo = {
     jobId: "demo-tutorial-quote",
-    jobTitle: "📘 Tutorial: How Quoting Works",
+    jobTitle: "🎓 Tutorial: Practice Quoting",
     jobCategory: "Getting Started",
     jobStatus: "open",
     quoteStatus: "pending",
@@ -794,13 +896,13 @@ const ActiveRequest = () => {
     buyerAvatar: null,
     buyerRating: 5,
     buyerTotalSpent: 0,
-    myPrice: 15,
-    myDelivery: 60,
+    myPrice: demoPrice,
+    myDelivery: demoDelivery,
     myQuoteId: "demo-quote-id",
     sessionId: null,
-    lastMessage: "Welcome! This is a demo quote to show you how the Quotes Terminal works.",
+    lastMessage: demoChatMessages.length > 0 ? demoChatMessages[demoChatMessages.length - 1].content : "Welcome!",
     lastMessageAt: new Date().toISOString(),
-    unread: 1,
+    unread: demoChatMessages.filter(m => m.sender_id === "demo-buyer").length > 0 ? 1 : 0,
     budgetMin: 10,
     budgetMax: 25,
     quoteCreatedAt: new Date().toISOString(),
@@ -956,23 +1058,9 @@ const ActiveRequest = () => {
               <ScrollArea className="flex-1 min-h-0">
                 <div className="p-4 space-y-3">
                   {activeConvo && isDemo(activeConvo) ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-center px-6 max-w-md mx-auto">
-                      <div className="h-16 w-16 rounded-2xl bg-primary/[0.1] flex items-center justify-center mb-5">
-                        <span className="text-3xl">📘</span>
-                      </div>
-                      <h3 className="text-base font-semibold text-foreground mb-2">Welcome to the Quotes Terminal!</h3>
-                      <div className="space-y-3 text-sm text-muted-foreground text-left">
-                        <p>This is your <strong className="text-foreground">command center</strong> for managing all your pending quotes. Here's how it works:</p>
-                        <div className="rounded-lg bg-muted/40 p-3 space-y-2">
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">1.</span> <span>The <strong className="text-foreground">left sidebar</strong> shows all your active quotes — sorted by urgency and unread messages.</span></p>
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">2.</span> <span>Click any quote to open the <strong className="text-foreground">chat</strong> with the buyer in this area.</span></p>
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">3.</span> <span>The <strong className="text-foreground">right panel</strong> (on desktop) shows request details, buyer info, and lets you update your offer.</span></p>
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">4.</span> <span>Each quote has a <strong className="text-foreground">5-day expiry timer</strong> — the colored dots (🟢🟡🔴) show urgency.</span></p>
-                          <p className="flex items-start gap-2"><span className="text-primary font-bold">5.</span> <span>Fast replies and competitive pricing <strong className="text-foreground">dramatically increase</strong> your chances of winning jobs!</span></p>
-                        </div>
-                        <p className="text-xs text-muted-foreground/70 pt-2">💡 This demo quote can't be deleted — it's always here for reference.</p>
-                      </div>
-                    </div>
+                    <>
+                      {demoChatMessages.map((msg) => renderMessageBubble(msg, msg.sender_id !== "demo-buyer"))}
+                    </>
                   ) : sellerChatMessages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground">
                       <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
@@ -989,8 +1077,22 @@ const ActiveRequest = () => {
               </ScrollArea>
 
               {activeConvo && isDemo(activeConvo) ? (
-                <div className="border-t border-border p-3 shrink-0 bg-muted/20">
-                  <p className="text-xs text-center text-muted-foreground">💡 This is a demo — chat is disabled</p>
+                <div className="border-t border-border p-3 shrink-0 bg-card/20">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary">DEMO</Badge>
+                    <span className="text-[10px] text-muted-foreground">Try typing a message — the buyer will auto-reply!</span>
+                  </div>
+                  <form onSubmit={(e) => { e.preventDefault(); handleSendDemoChat(); }} className="flex gap-2">
+                    <Input
+                      value={demoChatInput}
+                      onChange={(e) => setDemoChatInput(e.target.value)}
+                      placeholder="Try sending a message..."
+                      className="bg-background/60 border-border/40 focus:border-primary/40"
+                    />
+                    <Button type="submit" size="icon" disabled={!demoChatInput.trim()} className="shrink-0">
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </form>
                 </div>
               ) : (
               <div className="border-t border-border p-3 shrink-0 bg-card/20">
@@ -1103,8 +1205,8 @@ const ActiveRequest = () => {
                 </div>
               </div>
 
-              {/* Update offer — hidden for demo */}
-              {!isDemo(activeConvo) && (
+              {/* Update offer */}
+              {(
               <div className="p-4 space-y-2">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Update Offer</p>
                 <Input
@@ -1138,7 +1240,7 @@ const ActiveRequest = () => {
                 <Button
                   size="sm"
                   className="w-full h-8 text-xs"
-                  onClick={handleSubmitNewQuote}
+                  onClick={activeConvo && isDemo(activeConvo) ? handleDemoUpdateOffer : handleSubmitNewQuote}
                   disabled={submittingQuote || !newQuotePrice}
                 >
                   {submittingQuote ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}

@@ -107,6 +107,20 @@ function getSubGroups<T>(items: T[], getCat: (item: T) => string): { sub: string
   return Array.from(map.entries()).map(([sub, items]) => ({ sub, items }));
 }
 
+const DEMO_JOB: Job = {
+  id: "demo-tutorial-job",
+  title: "🎓 Tutorial: Practice Sending a Quote",
+  description: "This is a demo request! Practice sending a quote here — it won't affect your real data. Try setting a price, delivery time, and message. After quoting, you'll be taken to the Quotes Terminal where you can chat with the simulated buyer.",
+  category: "Getting Started",
+  subcategory: null,
+  budget_max: 25,
+  deadline_minutes: 1440,
+  status: "open",
+  created_at: new Date().toISOString(),
+  expires_at: null,
+  buyer_id: "demo-buyer",
+};
+
 const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps) => {
   const [openJobs, setOpenJobs] = useState<Job[]>([]);
   const [quotedJobIds, setQuotedJobIds] = useState<Set<string>>(new Set());
@@ -200,6 +214,29 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
   const handleSendQuote = async () => {
     if (!quoteDialog || !quotePrice) return;
+
+    // Demo quote — don't hit the DB, just navigate to the demo quote terminal
+    if (quoteDialog.id === "demo-tutorial-job") {
+      const timeValue = parseInt(quoteMinutes);
+      let estimatedMinutes = timeValue;
+      if (quoteTimeUnit === "hours") estimatedMinutes = timeValue * 60;
+      if (quoteTimeUnit === "days") estimatedMinutes = timeValue * 1440;
+
+      // Store demo quote data in sessionStorage for the Quotes Terminal to pick up
+      sessionStorage.setItem("demo_quote_data", JSON.stringify({
+        price: parseFloat(quotePrice),
+        estimated_minutes: estimatedMinutes,
+        message: quoteMessage || null,
+      }));
+      
+      toast({ title: "Demo quote sent! ✅", description: "Let's see it in the Quotes Terminal." });
+      setQuoteDialog(null);
+      setQuotePrice("");
+      setQuoteMessage("");
+      navigate("/quotes");
+      return;
+    }
+
     setSendingQuote(true);
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
@@ -559,25 +596,37 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                   {loadingJobs ? (
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : (() => {
-                    const visibleJobs = openJobs.filter(j => !discardedJobIds.has(j.id));
-                    if (visibleJobs.length === 0) return (
-                      <div className="text-center py-10 text-muted-foreground">
-                        <div className="mx-auto mb-3 h-12 w-12 rounded-sm bg-primary/[0.06] flex items-center justify-center">
-                          <Bell className="h-6 w-6 text-primary/40" />
-                        </div>
-                        <p className="font-medium text-foreground mb-1 text-sm">No open requests</p>
-                        <p className="text-xs">New requests will appear here in real-time</p>
-                      </div>
-                    );
-                    const grouped = groupByCategory(visibleJobs.slice(0, 10), j => j.category, subscribedCategories);
-                    if (grouped.length === 0) return (
-                      <div className="text-center py-10 text-muted-foreground">
-                        <p className="text-sm">No requests matching your categories</p>
-                      </div>
-                    );
+                    const realJobs = openJobs.filter(j => !discardedJobIds.has(j.id));
+                    const grouped = groupByCategory(realJobs.slice(0, 10), j => j.category, subscribedCategories);
                     return (
                       <div className="space-y-1.5">
-                        {grouped.map(({ broad, icon: CatIcon, items }) => (
+                        {/* Demo job — always pinned at top */}
+                        <div
+                          id="tour-demo-job"
+                          className="flex items-center gap-2 rounded-sm border border-primary/30 bg-primary/[0.04] p-3 transition-all duration-200 hover:border-primary/40 hover:bg-primary/[0.06] mb-2"
+                        >
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setPreviewJob(DEMO_JOB)}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="default" className="text-[9px] px-1.5 py-0 h-4">DEMO</Badge>
+                              <p className="font-medium text-foreground text-sm leading-snug line-clamp-1">{DEMO_JOB.title}</p>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="font-bold text-foreground">€{DEMO_JOB.budget_max}</span>
+                              <span className="flex items-center gap-0.5"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(DEMO_JOB.deadline_minutes)}</span>
+                              <span className="text-primary text-[10px]">Practice quoting!</span>
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="h-8 px-2.5 gap-1 rounded-sm text-xs"
+                            onClick={() => { setQuoteDialog(DEMO_JOB); setQuotePrice(String(Math.round(DEMO_JOB.budget_max * 0.8))); }}
+                          >
+                            <Send className="h-3 w-3" />
+                            <span className="hidden sm:inline">Quote</span>
+                          </Button>
+                        </div>
+
+                        {grouped.length > 0 ? grouped.map(({ broad, icon: CatIcon, items }) => (
                           <Collapsible key={broad} defaultOpen={grouped.length <= 3}>
                             <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-2 py-2 hover:bg-primary/[0.04] transition-colors group">
                               <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90 shrink-0" />
@@ -595,7 +644,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                         key={job.id}
                                         className="flex items-center gap-2 rounded-sm border border-border bg-background/40 p-3 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03] mb-1.5"
                                       >
-                                        {/* Info — tappable to preview */}
                                         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setPreviewJob(job)}>
                                           <p className="font-medium text-foreground text-sm leading-snug line-clamp-1 hover:text-primary transition-colors">
                                             {job.title}
@@ -606,8 +654,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                             <span>{timeAgo(job.created_at)}</span>
                                           </div>
                                         </div>
-
-                                        {/* Actions */}
                                         <div className="flex items-center gap-1 shrink-0">
                                           {quotedJobIds.has(job.id) ? (
                                             <Button
@@ -647,7 +693,11 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                               </div>
                             </CollapsibleContent>
                           </Collapsible>
-                        ))}
+                        )) : (
+                          <div className="text-center py-6 text-muted-foreground">
+                            <p className="text-xs">No other requests matching your categories right now</p>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
