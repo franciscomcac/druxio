@@ -194,7 +194,7 @@ We believe the future of expert access is fast, fair, and borderless. Today is j
       "Traditional consulting is slow, expensive, and built for enterprise. Druxio is built for the rest of us — the freelancers, founders, and individuals who need expert help today, not next Tuesday.",
     date: "February 18, 2026",
     readTime: "5 min read",
-    author: "The Duxio Team",
+    author: "The Druxio Team",
     authorRole: "Founders",
     category: "Platform",
     coverImage: heroHowItWorks,
