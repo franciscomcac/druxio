@@ -1138,46 +1138,46 @@ const PostRequest = () => {
         {/* Step 2: Subcategory */}
         {wizardStep === "subcategory" && (
           <div className="mx-auto max-w-3xl animate-fade-in">
-            <div className="mb-8">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary">Step 2</p>
-              <h1 className="mb-2 text-3xl font-bold text-foreground">
+            <div className="mb-5 md:mb-8">
+              <p className="mb-1 md:mb-2 text-xs md:text-sm font-semibold uppercase tracking-widest text-primary">Step 2</p>
+              <h1 className="mb-1 md:mb-2 text-xl md:text-3xl font-bold text-foreground">
                 What kind of <span className="text-primary">{broadCategory}</span>?
               </h1>
-              <p className="text-muted-foreground">Pick a specialty so we can match you with the best experts.</p>
+              <p className="text-xs md:text-base text-muted-foreground">Pick a specialty so we can match you with the best experts.</p>
             </div>
 
-            <div id="tour-subcategory-grid" className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div id="tour-subcategory-grid" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
               {(SUBCATEGORIES[broadCategory] || []).map((sub, i) => {
                 const Icon = sub.icon;
                 return (
                   <button
                     key={sub.id}
                     onClick={() => handleSelectSub(sub.id)}
-                    className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
-                    style={{ animationDelay: `${i * 60}ms` }}
+                    className="group flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl border border-border bg-card p-3 md:p-5 transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                    style={{ animationDelay: `${i * 40}ms` }}
                   >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
-                      <Icon className="h-6 w-6" />
+                    <div className="flex h-9 w-9 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-lg md:rounded-xl bg-primary/20 text-primary transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/30">
+                      <Icon className="h-4 w-4 md:h-6 md:w-6" />
                     </div>
-                    <span className="font-semibold text-foreground">{sub.label}</span>
-                    <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
+                    <span className="text-sm md:text-base font-semibold text-foreground">{sub.label}</span>
+                    <ChevronRight className="ml-auto h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground/40 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
                   </button>
                 );
               })}
               {/* Custom Request option */}
               <button
                 onClick={() => handleSelectSub(`${broadCategory}: Custom`)}
-                className="group flex items-center gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/[0.04] p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
-                style={{ animationDelay: `${(SUBCATEGORIES[broadCategory]?.length || 0) * 60}ms` }}
+                className="group flex items-center gap-3 md:gap-4 rounded-xl md:rounded-2xl border border-dashed border-primary/30 bg-primary/[0.04] p-3 md:p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:shadow-glow hover:-translate-y-1 animate-slide-up"
+                style={{ animationDelay: `${(SUBCATEGORIES[broadCategory]?.length || 0) * 40}ms` }}
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/[0.12] text-primary transition-transform duration-300 group-hover:scale-110">
-                  <MessageSquarePlus className="h-6 w-6" />
+                <div className="flex h-9 w-9 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-lg md:rounded-xl bg-primary/[0.12] text-primary transition-transform duration-300 group-hover:scale-110">
+                  <MessageSquarePlus className="h-4 w-4 md:h-6 md:w-6" />
                 </div>
                 <div className="text-left">
-                  <span className="font-semibold text-foreground">Custom Request</span>
-                  <p className="text-xs text-muted-foreground">Something else in {broadCategory}</p>
+                  <span className="text-sm md:text-base font-semibold text-foreground">Custom Request</span>
+                  <p className="text-[10px] md:text-xs text-muted-foreground">Something else in {broadCategory}</p>
                 </div>
-                <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground/40 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
+                <ChevronRight className="ml-auto h-3.5 w-3.5 md:h-4 md:w-4 text-muted-foreground/40 shrink-0 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5" />
               </button>
             </div>
           </div>
