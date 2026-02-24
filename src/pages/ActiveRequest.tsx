@@ -225,7 +225,7 @@ const ActiveRequest = () => {
         const { data: jobData } = await supabase.from("jobs").select("id, title, category, status, buyer_id, budget_min, budget_max, deadline_minutes").eq("id", q.job_id).single();
         if (!jobData) return;
 
-        const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", jobData.buyer_id).single();
+        const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url, rating_avg, total_spent").eq("id", jobData.buyer_id).single();
 
         // Find session for this pair
         const { data: session } = await supabase
