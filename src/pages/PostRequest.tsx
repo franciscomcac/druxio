@@ -61,6 +61,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Gaming: World of Warcraft", label: "World of Warcraft", icon: Swords },
     { id: "Gaming: Destiny 2", label: "Destiny 2", icon: Target },
     { id: "Gaming: Dead by Daylight", label: "Dead by Daylight", icon: Gamepad2 },
+    { id: "Gaming: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Tech: [
     { id: "Tech: Discord Bots", label: "Discord Bots", icon: Bot },
@@ -74,6 +75,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Tech: Database", label: "Database & SQL", icon: Database },
     { id: "Tech: Networking", label: "Networking & WiFi", icon: Wifi },
     { id: "Tech: Cloud", label: "Cloud & DevOps", icon: Cloud },
+    { id: "Tech: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Business: [
     { id: "Business: Marketing", label: "Marketing", icon: TrendingUp },
@@ -84,6 +86,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Business: Sales", label: "Sales & Outreach", icon: Megaphone },
     { id: "Business: Investing", label: "Investing & Crypto", icon: HandCoins },
     { id: "Business: HR", label: "HR & Hiring", icon: Users2 },
+    { id: "Business: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Creative: [
     { id: "Creative: Design", label: "Graphic Design", icon: PenTool },
@@ -94,6 +97,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Creative: UI/UX", label: "UI/UX Design", icon: Layers },
     { id: "Creative: Illustration", label: "Illustration", icon: Brush },
     { id: "Creative: Copywriting", label: "Copywriting", icon: Type },
+    { id: "Creative: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Music: [
     { id: "Music: Production", label: "Production", icon: Headphones },
@@ -103,6 +107,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Music: Vocals", label: "Vocal Coaching", icon: Mic },
     { id: "Music: Beats", label: "Beat Making", icon: Disc3 },
     { id: "Music: Songwriting", label: "Songwriting", icon: PencilLine },
+    { id: "Music: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Fitness: [
     { id: "Fitness: Training", label: "Personal Training", icon: Dumbbell },
@@ -111,6 +116,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Fitness: Weight Loss", label: "Weight Loss", icon: Heart },
     { id: "Fitness: Sports Coaching", label: "Sports Coaching", icon: Trophy },
     { id: "Fitness: Rehab", label: "Injury Rehab", icon: Activity },
+    { id: "Fitness: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Languages: [
     { id: "Languages: English", label: "English", icon: BookOpen },
@@ -128,6 +134,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Languages: Dutch", label: "Dutch", icon: Languages },
     { id: "Languages: Turkish", label: "Turkish", icon: Languages },
     { id: "Languages: Translation", label: "Translation", icon: GraduationCap },
+    { id: "Languages: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Content: [
     { id: "Content: Streaming", label: "Streaming", icon: Tv },
@@ -137,6 +144,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Content: Podcasting", label: "Podcasting", icon: Podcast },
     { id: "Content: Blogging", label: "Blogging & SEO Writing", icon: FileText },
     { id: "Content: Community", label: "Community Management", icon: Users },
+    { id: "Content: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Custom: [
     { id: "Custom: General", label: "General Request", icon: MessageSquarePlus },

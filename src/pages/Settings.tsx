@@ -43,6 +43,7 @@ const CATEGORY_TREE = [
       { id: "World of Warcraft", services: ["Boosting", "Coaching", "Raid Carry", "Dungeon Carry", "Leveling"] },
       { id: "Destiny 2", services: ["Raid Carry", "Dungeon Carry", "PvP Coaching", "Quest Help"] },
       { id: "Dead by Daylight", services: ["Coaching", "Carry / Duo", "Rank Boosting"] },
+      { id: "Custom Request", services: ["Any Gaming Task", "Unique Request"] },
     ],
   },
   {
@@ -59,6 +60,7 @@ const CATEGORY_TREE = [
       { id: "Database & SQL", services: ["Database Design", "Query Optimization", "Migration", "Backup & Recovery"] },
       { id: "Networking & WiFi", services: ["Network Setup", "Troubleshooting", "VPN Config", "WiFi Optimization"] },
       { id: "Cloud & DevOps", services: ["AWS Setup", "CI/CD Pipelines", "Kubernetes", "Monitoring"] },
+      { id: "Custom Request", services: ["Any Tech Task", "Unique Request"] },
     ],
   },
   {
@@ -72,6 +74,7 @@ const CATEGORY_TREE = [
       { id: "Sales & Outreach", services: ["Cold Outreach", "Lead Generation", "CRM Setup", "Sales Strategy"] },
       { id: "Investing & Crypto", services: ["Portfolio Review", "Crypto Strategy", "DeFi Setup", "Market Analysis"] },
       { id: "HR & Hiring", services: ["Job Posting", "Resume Screening", "Interview Prep", "Onboarding"] },
+      { id: "Custom Request", services: ["Any Business Task", "Unique Request"] },
     ],
   },
   {
@@ -85,6 +88,7 @@ const CATEGORY_TREE = [
       { id: "UI/UX Design", services: ["Wireframing", "Prototyping", "User Research", "Design System"] },
       { id: "Illustration", services: ["Digital Art", "Character Design", "Concept Art", "Icon Design"] },
       { id: "Copywriting", services: ["Website Copy", "Blog Posts", "Brand Voice", "Taglines"] },
+      { id: "Custom Request", services: ["Any Creative Task", "Unique Request"] },
     ],
   },
   {
@@ -97,6 +101,7 @@ const CATEGORY_TREE = [
       { id: "Vocal Coaching", services: ["Technique", "Performance", "Recording", "Pitch Training"] },
       { id: "Beat Making", services: ["Hip Hop", "EDM", "Lo-Fi", "Custom Beats"] },
       { id: "Songwriting", services: ["Lyrics", "Melody", "Full Song", "Co-Writing"] },
+      { id: "Custom Request", services: ["Any Music Task", "Unique Request"] },
     ],
   },
   {
@@ -108,6 +113,7 @@ const CATEGORY_TREE = [
       { id: "Weight Loss", services: ["Program Design", "Accountability", "Progress Tracking"] },
       { id: "Sports Coaching", services: ["Technique", "Game Strategy", "Conditioning", "Mental Prep"] },
       { id: "Injury Rehab", services: ["Exercise Prescription", "Recovery Plan", "Movement Assessment"] },
+      { id: "Custom Request", services: ["Any Fitness Task", "Unique Request"] },
     ],
   },
   {
@@ -128,6 +134,7 @@ const CATEGORY_TREE = [
       { id: "Dutch", services: ["Conversation", "Grammar", "NT2 Prep"] },
       { id: "Turkish", services: ["Conversation", "Grammar", "TYS Prep"] },
       { id: "Translation", services: ["Document Translation", "Localization", "Subtitling", "Proofreading"] },
+      { id: "Custom Request", services: ["Any Language Task", "Unique Request"] },
     ],
   },
   {
@@ -140,6 +147,7 @@ const CATEGORY_TREE = [
       { id: "Podcasting", services: ["Setup & Equipment", "Editing", "Distribution", "Growth"] },
       { id: "Blogging & SEO Writing", services: ["Blog Strategy", "SEO Articles", "Content Calendar", "Ghostwriting"] },
       { id: "Community Management", services: ["Discord Moderation", "Engagement Strategy", "Community Building"] },
+      { id: "Custom Request", services: ["Any Content Task", "Unique Request"] },
     ],
   },
   {
