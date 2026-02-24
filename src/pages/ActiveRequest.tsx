@@ -1193,7 +1193,7 @@ const ActiveRequest = () => {
                         <span className="text-muted-foreground/50">Conversation complete</span>
                       )}
                     </div>
-                    <Button type="submit" size="icon" disabled={!nextSellerMessage} className="shrink-0">
+                    <Button id="tour-quotes-demo-send" type="submit" size="icon" disabled={!nextSellerMessage} className="shrink-0">
                       <Send className="h-4 w-4" />
                     </Button>
                   </form>
