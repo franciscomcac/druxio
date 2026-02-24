@@ -133,6 +133,8 @@ interface ReportRow {
   status: string;
   admin_notes: string | null;
   created_at: string;
+  image_urls: string[] | null;
+  is_banned: boolean;
 }
 
 // ─── Component ───────────────────────────────────────────────────
