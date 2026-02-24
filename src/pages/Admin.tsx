@@ -286,6 +286,11 @@ const Admin = () => {
     if (isAdmin && activeTab === "support") loadSupportTickets();
   }, [supportFilter]);
 
+  // Reload reports when filter changes
+  useEffect(() => {
+    if (isAdmin && activeTab === "reports") loadReports();
+  }, [reportsFilter]);
+
   // ─── Data loaders ───────────────────────────────────────────────
 
   const loadStats = async () => {
