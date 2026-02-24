@@ -67,6 +67,8 @@ interface SellerConvo {
   buyerId: string;
   buyerName: string | null;
   buyerAvatar: string | null;
+  buyerRating: number | null;
+  buyerTotalSpent: number | null;
   myPrice: number;
   myDelivery: number;
   myQuoteId: string;
@@ -74,6 +76,10 @@ interface SellerConvo {
   lastMessage: string | null;
   lastMessageAt: string | null;
   unread: number;
+  budgetMin: number;
+  budgetMax: number;
+  quoteCreatedAt: string;
+  deadlineMinutes: number;
 }
 
 const ActiveRequest = () => {
