@@ -509,7 +509,7 @@ const ActiveRequest = () => {
           jobStatus: "open",
           quoteStatus: "pending",
           buyerId: "demo-buyer",
-          buyerName: "Duxio Team",
+          buyerName: "Druxio Team",
           buyerAvatar: null,
           buyerRating: 5,
           buyerTotalSpent: 0,
