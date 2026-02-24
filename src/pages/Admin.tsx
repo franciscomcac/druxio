@@ -1138,7 +1138,8 @@ const Admin = () => {
             ) : (
               <Card>
                 <ScrollArea className="max-h-[600px]">
-                  <Table>
+                  <div className="overflow-x-auto">
+                   <Table className="min-w-[700px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>User</TableHead>
