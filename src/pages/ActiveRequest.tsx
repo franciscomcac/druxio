@@ -614,7 +614,31 @@ const ActiveRequest = () => {
     setSubmittingQuote(false);
   };
 
-  // ── Image select helpers ──────────────────────────────────────────────────
+  // ── Withdraw quote ────────────────────────────────────────────────────────
+  const handleWithdrawQuote = async () => {
+    if (!activeConvo || !userId) return;
+    setWithdrawing(true);
+    const { error } = await supabase.from("quotes").update({ status: "rejected" }).eq("id", activeConvo.myQuoteId);
+    if (error) {
+      toast({ title: "Failed to withdraw", description: error.message, variant: "destructive" });
+    } else {
+      // Notify buyer
+      await supabase.from("notifications").insert({
+        user_id: activeConvo.buyerId,
+        type: "quote_withdrawn",
+        title: "Offer Withdrawn",
+        message: `An expert has withdrawn their offer on "${activeConvo.jobTitle}"`,
+        data: { job_id: activeConvo.jobId },
+      });
+      toast({ title: "Quote withdrawn" });
+      setSellerConvos(prev => prev.filter(c => c.myQuoteId !== activeConvo.myQuoteId));
+      setActiveConvo(null);
+      setActiveConvoJobId(null);
+    }
+    setWithdrawing(false);
+    setWithdrawDialog(false);
+  };
+
   const handleBuyerImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     setBuyerImageFiles(prev => [...prev, ...files]);
