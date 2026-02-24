@@ -36,7 +36,7 @@ const CategoryPage = () => {
       {
         "@context": "https://schema.org",
         "@type": "ItemList",
-        "name": `${meta.label} Experts on Duxio`,
+        "name": `${meta.label} Experts on Druxio`,
         "description": meta.seoDescription,
         "url": `https://duxio.lovable.app/category/${slug}`,
         "numberOfItems": meta.subcategories.length,
