@@ -860,13 +860,13 @@ const Admin = () => {
         {/* Stats */}
         <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4 mb-4 sm:mb-6">
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Package className="h-5 w-5 text-primary" />
+            <CardContent className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{stats.totalOrders}</p>
-                <p className="text-xs text-muted-foreground">Total Orders</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">{stats.totalOrders}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Orders</p>
               </div>
             </CardContent>
           </Card>
