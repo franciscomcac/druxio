@@ -136,6 +136,9 @@ const ActiveRequest = () => {
   // Withdraw quote
   const [withdrawDialog, setWithdrawDialog] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
+  // Mobile view state for seller quotes terminal
+  const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const [mobileOfferOpen, setMobileOfferOpen] = useState(false);
 
   // Demo scripted conversation
   const [demoScriptIndex, setDemoScriptIndex] = useState(0);
