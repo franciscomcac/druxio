@@ -601,7 +601,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                     const grouped = groupByCategory(realJobs.slice(0, 10), j => j.category, subscribedCategories);
                     return (
                       <div className="space-y-1.5">
-                        {/* Demo job — always pinned at top */}
+                        {/* Demo job — only visible during tutorial */}
+                        {isTutorialActive && (
                         <div
                           id="tour-demo-job"
                           className="flex items-center gap-2 rounded-sm border border-primary/30 bg-primary/[0.04] p-3 transition-all duration-200 hover:border-primary/40 hover:bg-primary/[0.06] mb-2"
@@ -626,6 +627,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                             <span className="hidden sm:inline">Quote</span>
                           </Button>
                         </div>
+                        )}
 
                         {grouped.length > 0 ? grouped.map(({ broad, icon: CatIcon, items }) => (
                           <Collapsible key={broad} defaultOpen={grouped.length <= 3}>
