@@ -289,12 +289,13 @@ const Admin = () => {
   // ─── Data loaders ───────────────────────────────────────────────
 
   const loadStats = async () => {
-    const [jobsCount, disputeCount, usersCount, transactionsData, pendingWdCount] = await Promise.all([
+    const [jobsCount, disputeCount, usersCount, transactionsData, pendingWdCount, pendingReportsCount] = await Promise.all([
       supabase.from("jobs").select("id", { count: "exact", head: true }),
       supabase.from("jobs").select("id", { count: "exact", head: true }).eq("status", "disputed"),
       supabase.from("profiles").select("id", { count: "exact", head: true }),
       supabase.from("transactions").select("amount").eq("type", "session_payment").eq("status", "completed"),
       supabase.from("withdrawals").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("user_reports" as any).select("id", { count: "exact", head: true }).eq("status", "pending"),
     ]);
     const revenue = transactionsData.data?.reduce((sum, t) => sum + Number(t.amount), 0) || 0;
     setStats({
@@ -304,6 +305,7 @@ const Admin = () => {
       revenue,
       pendingWithdrawals: pendingWdCount.count || 0,
       openSupport: 0,
+      pendingReports: (pendingReportsCount as any).count || 0,
     });
   };
 
