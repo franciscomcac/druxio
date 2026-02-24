@@ -190,7 +190,7 @@ serve(async (req) => {
               ${row("Seller ID", sellerId)}
               ${row("Reason", reason)}
             `)}
-            ${cta("View Admin Panel", "https://duxio.lovable.app/admin")}
+            ${cta("View Admin Panel", "https://druxio.lovable.app/admin")}
           `);
           await sendResend(adminEmail, `⚠️ Dispute raised — "${job.title}"`, html, resendKey);
         }));
