@@ -188,8 +188,8 @@ We believe the future of expert access is fast, fair, and borderless. Today is j
     `,
   },
   {
-    slug: "how-duxio-works-for-clients",
-    title: "From Problem to Solved: How Duxio Handles Short-Term Expert Needs Better Than Traditional Hiring",
+    slug: "how-druxio-works-for-clients",
+    title: "From Problem to Solved: How Druxio Handles Short-Term Expert Needs Better Than Traditional Hiring",
     excerpt:
       "Traditional consulting is slow, expensive, and built for enterprise. Duxio is built for the rest of us — the freelancers, founders, and individuals who need expert help today, not next Tuesday.",
     date: "February 18, 2026",
