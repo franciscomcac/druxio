@@ -845,72 +845,72 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-6 max-w-7xl">
+        <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-7xl">
         {/* Page header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <ShieldCheck className="h-5 w-5 text-primary" />
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Manage disputes, orders, users, and withdrawals</p>
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground">Admin Dashboard</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Manage disputes, orders, users, and withdrawals</p>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4 mb-4 sm:mb-6">
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Package className="h-5 w-5 text-primary" />
+            <CardContent className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Package className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{stats.totalOrders}</p>
-                <p className="text-xs text-muted-foreground">Total Orders</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">{stats.totalOrders}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Orders</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
+            <CardContent className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{stats.activeDisputes}</p>
-                <p className="text-xs text-muted-foreground">Active Disputes</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">{stats.activeDisputes}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Disputes</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Users className="h-5 w-5 text-primary" />
+            <CardContent className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{stats.totalUsers}</p>
-                <p className="text-xs text-muted-foreground">Users</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">{stats.totalUsers}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Users</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <DollarSign className="h-5 w-5 text-primary" />
+            <CardContent className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">€{stats.revenue.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">Revenue</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">€{stats.revenue.toFixed(0)}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Revenue</p>
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
-                <ArrowDownToLine className="h-5 w-5 text-destructive" />
+            <CardContent className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-destructive/10 flex items-center justify-center shrink-0">
+                <ArrowDownToLine className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{stats.pendingWithdrawals}</p>
-                <p className="text-xs text-muted-foreground">Pending Withdrawals</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">{stats.pendingWithdrawals}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Withdrawals</p>
               </div>
             </CardContent>
           </Card>
@@ -918,39 +918,46 @@ const Admin = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="disputes" className="gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Disputes
-              {stats.activeDisputes > 0 && <Badge variant="destructive" className="ml-1">{stats.activeDisputes}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2">
-              <Package className="h-4 w-4" />
-              Orders
-            </TabsTrigger>
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="h-4 w-4" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="withdrawals" className="gap-2">
-              <ArrowDownToLine className="h-4 w-4" />
-              Withdrawals
-              {stats.pendingWithdrawals > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingWithdrawals}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="support" className="gap-2">
-              <Headphones className="h-4 w-4" />
-              Support
-            </TabsTrigger>
-            <TabsTrigger value="feedback" className="gap-2">
-              <MessageSquarePlus className="h-4 w-4" />
-              Feedback
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="gap-2">
-              <ShieldAlert className="h-4 w-4" />
-              Reports
-              {stats.pendingReports > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingReports}</Badge>}
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 mb-4 sm:mb-6">
+            <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
+              <TabsTrigger value="disputes" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Disputes</span>
+                <span className="sm:hidden">Disp.</span>
+                {stats.activeDisputes > 0 && <Badge variant="destructive" className="ml-0.5 text-[9px] h-4 px-1">{stats.activeDisputes}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="orders" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Package className="h-3.5 w-3.5" />
+                Orders
+              </TabsTrigger>
+              <TabsTrigger value="users" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Users className="h-3.5 w-3.5" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger value="withdrawals" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <ArrowDownToLine className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Withdrawals</span>
+                <span className="sm:hidden">WD</span>
+                {stats.pendingWithdrawals > 0 && <Badge variant="destructive" className="ml-0.5 text-[9px] h-4 px-1">{stats.pendingWithdrawals}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="support" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Headphones className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Support</span>
+                <span className="sm:hidden">Help</span>
+              </TabsTrigger>
+              <TabsTrigger value="feedback" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <MessageSquarePlus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Feedback</span>
+                <span className="sm:hidden">FB</span>
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <ShieldAlert className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Reports</span>
+                <span className="sm:hidden">Rep.</span>
+                {stats.pendingReports > 0 && <Badge variant="destructive" className="ml-0.5 text-[9px] h-4 px-1">{stats.pendingReports}</Badge>}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* ═══ DISPUTES TAB ═══ */}
           <TabsContent value="disputes">
@@ -970,35 +977,35 @@ const Admin = () => {
               <div className="space-y-3">
                 {disputes.map((d) => (
                   <Card key={d.job_id} className="hover:border-primary/30 transition-colors">
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <AlertTriangle className="h-4 w-4 text-destructive" />
-                            <h3 className="font-semibold text-foreground">{d.job_title}</h3>
-                            <Badge variant="outline">{d.job_category}</Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-3">{d.reason}</p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span>Buyer: <strong className="text-foreground">{d.buyer_name}</strong></span>
-                            <span>Seller: <strong className="text-foreground">{d.seller_name}</strong></span>
-                            <span>Price: <strong className="text-foreground">€{d.quote_price.toFixed(2)}</strong></span>
-                            <span>{formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}</span>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 shrink-0">
-                          <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate(`/order/${d.job_id}`)}>
-                            <Eye className="h-3.5 w-3.5" /> View
-                          </Button>
-                          <Button size="sm" variant="outline" className="gap-1 text-destructive hover:bg-destructive/10" onClick={() => { setSelectedDispute(d); setDisputeAction("refund"); }}>
-                            <RefreshCw className="h-3.5 w-3.5" /> Refund
-                          </Button>
-                          <Button size="sm" className="gap-1" onClick={() => { setSelectedDispute(d); setDisputeAction("release"); }}>
-                            <DollarSign className="h-3.5 w-3.5" /> Release
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
+                     <CardContent className="p-3 sm:p-5">
+                       <div className="space-y-3">
+                         <div>
+                           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                             <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
+                             <h3 className="font-semibold text-foreground text-sm">{d.job_title}</h3>
+                             <Badge variant="outline" className="text-[10px]">{d.job_category}</Badge>
+                           </div>
+                           <p className="text-xs sm:text-sm text-muted-foreground mb-2">{d.reason}</p>
+                           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                             <span>Buyer: <strong className="text-foreground">{d.buyer_name}</strong></span>
+                             <span>Seller: <strong className="text-foreground">{d.seller_name}</strong></span>
+                             <span>€{d.quote_price.toFixed(2)}</span>
+                             <span>{formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}</span>
+                           </div>
+                         </div>
+                         <div className="flex flex-wrap gap-2">
+                           <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => navigate(`/order/${d.job_id}`)}>
+                             <Eye className="h-3 w-3" /> View
+                           </Button>
+                           <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-destructive hover:bg-destructive/10" onClick={() => { setSelectedDispute(d); setDisputeAction("refund"); }}>
+                             <RefreshCw className="h-3 w-3" /> Refund
+                           </Button>
+                           <Button size="sm" className="gap-1 text-xs h-8" onClick={() => { setSelectedDispute(d); setDisputeAction("release"); }}>
+                             <DollarSign className="h-3 w-3" /> Release
+                           </Button>
+                         </div>
+                       </div>
+                     </CardContent>
                   </Card>
                 ))}
               </div>
@@ -1040,7 +1047,8 @@ const Admin = () => {
             ) : (
               <Card>
                 <ScrollArea className="max-h-[600px]">
-                  <Table>
+                 <div className="overflow-x-auto">
+                   <Table className="min-w-[700px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Order</TableHead>
@@ -1101,7 +1109,8 @@ const Admin = () => {
                         ))
                       )}
                     </TableBody>
-                  </Table>
+                   </Table>
+                 </div>
                 </ScrollArea>
               </Card>
             )}
@@ -1129,7 +1138,8 @@ const Admin = () => {
             ) : (
               <Card>
                 <ScrollArea className="max-h-[600px]">
-                  <Table>
+                  <div className="overflow-x-auto">
+                   <Table className="min-w-[700px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>User</TableHead>
@@ -1189,7 +1199,8 @@ const Admin = () => {
                         ))
                       )}
                     </TableBody>
-                  </Table>
+                   </Table>
+                  </div>
                 </ScrollArea>
               </Card>
             )}
@@ -1219,7 +1230,8 @@ const Admin = () => {
             ) : (
               <Card>
                 <ScrollArea className="max-h-[600px]">
-                  <Table>
+                  <div className="overflow-x-auto">
+                   <Table className="min-w-[800px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>User</TableHead>
@@ -1278,7 +1290,8 @@ const Admin = () => {
                         ))
                       )}
                     </TableBody>
-                  </Table>
+                   </Table>
+                  </div>
                 </ScrollArea>
               </Card>
             )}
@@ -1286,9 +1299,9 @@ const Admin = () => {
 
           {/* ═══ SUPPORT TAB ═══ */}
           <TabsContent value="support">
-            <div className="flex flex-col md:flex-row gap-4 h-[600px]">
+            <div className="flex flex-col md:flex-row gap-3 sm:gap-4 h-[calc(100vh-280px)] sm:h-[600px]">
               {/* Ticket List */}
-              <div className="w-full md:w-72 shrink-0 flex flex-col gap-3">
+              <div className="w-full md:w-72 shrink-0 flex flex-col gap-2 sm:gap-3 max-h-[200px] md:max-h-none">
                 <div className="flex items-center gap-2">
                   <Select value={supportFilter} onValueChange={setSupportFilter}>
                     <SelectTrigger className="flex-1">
@@ -1445,13 +1458,13 @@ const Admin = () => {
                 {feedbackItems.length > 0 && (() => {
                   const avg = feedbackItems.reduce((s, f) => s + f.rating, 0) / feedbackItems.length;
                   return (
-                    <div className="flex flex-wrap items-center gap-4 p-4 rounded-lg bg-muted/50 border border-border">
+                    <div className="flex flex-wrap items-center gap-4 p-3 sm:p-4 rounded-lg bg-muted/50 border border-border">
                       <div className="flex items-center gap-2">
                         <Star className="h-4 w-4 text-primary fill-primary" />
                         <span className="text-sm font-semibold text-foreground">{avg.toFixed(1)} avg rating</span>
                       </div>
                       <span className="text-sm text-muted-foreground">{feedbackItems.length} submission{feedbackItems.length !== 1 ? "s" : ""}</span>
-                      <div className="flex items-center gap-2 ml-auto">
+                      <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto flex-wrap">
                         <Select value={feedbackRatingFilter} onValueChange={setFeedbackRatingFilter}>
                           <SelectTrigger className="w-32 h-8 text-xs">
                             <SelectValue placeholder="All ratings" />
