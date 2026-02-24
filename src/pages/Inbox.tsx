@@ -835,10 +835,10 @@ const Inbox = () => {
                       {delivered.map(c => <ConvRow key={c.sessionId} conv={c} />)}
                     </>
                   )}
-                  {quotes.length > 0 && (
+                  {cancelled.length > 0 && (
                     <>
-                      <SectionHeader label="Quotes & Offers" count={quotes.length} />
-                      {quotes.map(c => <ConvRow key={c.sessionId} conv={c} />)}
+                      <SectionHeader label="Cancelled / Refunded" count={cancelled.length} />
+                      {cancelled.map(c => <ConvRow key={c.sessionId} conv={c} />)}
                     </>
                   )}
                 </>
