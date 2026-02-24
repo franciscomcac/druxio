@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
           <tr><td style="padding:8px 12px;font-size:14px;color:#6b7280;font-weight:500;">Processing time</td><td style="padding:8px 12px;font-size:14px;color:#111827;font-weight:600;">24–48 hours</td></tr>
         </table>
         <p style="margin:0 0 10px;font-size:15px;color:#374151;line-height:1.6;">Our team will process your withdrawal manually. You'll be notified once it's completed.</p>
-        <a href="https://duxio.lovable.app/wallet" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;">View Wallet</a>
+        <a href="https://druxio.lovable.app/wallet" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;">View Wallet</a>
       </td></tr>
       <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;">
         <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you have an account on Duxio.<br/>
