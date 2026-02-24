@@ -543,7 +543,7 @@ const Admin = () => {
     setReportActionLoading(false);
   };
 
-
+  const openSupportTicket = async (ticket: SupportTicket) => {
     setSelectedTicket(ticket);
     const { data: msgs } = await supabase
       .from("support_messages")
