@@ -597,16 +597,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                     <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary/60" /></div>
                   ) : (() => {
                     const realJobs = openJobs.filter(j => !discardedJobIds.has(j.id));
-                    const visibleJobs = realJobs;
-                    if (visibleJobs.length === 0 && !DEMO_JOB) return (
-                      <div className="text-center py-10 text-muted-foreground">
-                        <div className="mx-auto mb-3 h-12 w-12 rounded-sm bg-primary/[0.06] flex items-center justify-center">
-                          <Bell className="h-6 w-6 text-primary/40" />
-                        </div>
-                        <p className="font-medium text-foreground mb-1 text-sm">No open requests</p>
-                        <p className="text-xs">New requests will appear here in real-time</p>
-                      </div>
-                    );
+                    const grouped = groupByCategory(realJobs.slice(0, 10), j => j.category, subscribedCategories);
                     return (
                       <div className="space-y-1.5">
                         {/* Demo job — always pinned at top */}
@@ -634,15 +625,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                             <span className="hidden sm:inline">Quote</span>
                           </Button>
                         </div>
-                    const grouped = groupByCategory(visibleJobs.slice(0, 10), j => j.category, subscribedCategories);
-                    if (grouped.length === 0) return (
-                      <div className="text-center py-10 text-muted-foreground">
-                        <p className="text-sm">No requests matching your categories</p>
-                      </div>
-                    );
-                    return (
-                      <div className="space-y-1.5">
-                        {grouped.map(({ broad, icon: CatIcon, items }) => (
+
+                        {grouped.length > 0 ? grouped.map(({ broad, icon: CatIcon, items }) => (
                           <Collapsible key={broad} defaultOpen={grouped.length <= 3}>
                             <CollapsibleTrigger className="flex items-center gap-2 w-full rounded-sm px-2 py-2 hover:bg-primary/[0.04] transition-colors group">
                               <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-90 shrink-0" />
@@ -660,7 +644,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                         key={job.id}
                                         className="flex items-center gap-2 rounded-sm border border-border bg-background/40 p-3 transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03] mb-1.5"
                                       >
-                                        {/* Info — tappable to preview */}
                                         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setPreviewJob(job)}>
                                           <p className="font-medium text-foreground text-sm leading-snug line-clamp-1 hover:text-primary transition-colors">
                                             {job.title}
@@ -671,8 +654,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                             <span>{timeAgo(job.created_at)}</span>
                                           </div>
                                         </div>
-
-                                        {/* Actions */}
                                         <div className="flex items-center gap-1 shrink-0">
                                           {quotedJobIds.has(job.id) ? (
                                             <Button
@@ -712,7 +693,11 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                               </div>
                             </CollapsibleContent>
                           </Collapsible>
-                        ))}
+                        )) : (
+                          <div className="text-center py-6 text-muted-foreground">
+                            <p className="text-xs">No other requests matching your categories right now</p>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
