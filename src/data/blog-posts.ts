@@ -31,7 +31,7 @@ export const blogPosts: BlogPost[] = [
     content: `
 We've just shipped one of the most requested features since launch: **AI-powered category detection** when posting a task.
 
-Starting today, when you click "Post Task" on Duxio, you'll be greeted with a choice: let AI handle the setup, or pick a category manually. If you choose AI Auto-Match, you simply describe what you need in your own words — and our system does the rest.
+Starting today, when you click "Post Task" on Druxio, you'll be greeted with a choice: let AI handle the setup, or pick a category manually. If you choose AI Auto-Match, you simply describe what you need in your own words — and our system does the rest.
 
 ## The Problem We Solved
 
