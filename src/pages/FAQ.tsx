@@ -58,12 +58,12 @@ const faqSections = [
         a: "We accept major credit/debit cards (Visa, Mastercard, Amex) via Stripe, as well as PayPal. Wallet top-ups can also be used for faster checkout.",
       },
       {
-        q: "What currencies does Duxio support?",
-        a: "Duxio supports EUR, USD, GBP, CAD, AUD, CHF, and more. Your display currency can be changed in Settings → Currency. All transactions are processed securely via Stripe.",
+        q: "What currencies does Druxio support?",
+        a: "Druxio supports EUR, USD, GBP, CAD, AUD, CHF, and more. Your display currency can be changed in Settings → Currency. All transactions are processed securely via Stripe.",
       },
       {
         q: "What is the platform fee?",
-        a: "Duxio charges a service fee on completed transactions. For clients, this is included in the quoted price. For experts, a percentage is deducted from each earned payment. Exact fee rates are shown before you confirm any transaction.",
+        a: "Druxio charges a service fee on completed transactions. For clients, this is included in the quoted price. For experts, a percentage is deducted from each earned payment. Exact fee rates are shown before you confirm any transaction.",
       },
       {
         q: "How do I withdraw my earnings?",
