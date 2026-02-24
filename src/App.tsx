@@ -66,6 +66,7 @@ const App = () => (
             <Route element={<AppLayout showFooter={false} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/post-request" element={<PostRequest />} />
+              <Route path="/quotes" element={<ActiveRequest />} />
               <Route path="/request/:jobId" element={<ActiveRequest />} />
               <Route path="/session/:sessionId" element={<Session />} />
               <Route path="/inbox" element={<Inbox />} />
