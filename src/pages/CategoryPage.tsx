@@ -12,15 +12,15 @@ import {
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
 
-const CATEGORY_META: Record<string, { label: string; icon: any; description: string; subcategories: string[] }> = {
-  gaming: { label: "Gaming", icon: Gamepad2, description: "Boosting, coaching & game expertise", subcategories: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends"] },
-  tech: { label: "Tech", icon: Code, description: "Development, bots, servers & SEO", subcategories: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress"] },
-  business: { label: "Business", icon: Briefcase, description: "Marketing, e-commerce & growth", subcategories: ["Marketing", "Startup Advice", "E-commerce", "Accounting"] },
-  creative: { label: "Creative", icon: Palette, description: "Design, video editing & copywriting", subcategories: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails"] },
-  music: { label: "Music", icon: Music, description: "Production, mixing & lessons", subcategories: ["Production", "Mixing & Mastering", "Guitar Lessons"] },
-  fitness: { label: "Fitness", icon: Dumbbell, description: "Training & nutrition plans", subcategories: ["Personal Training", "Nutrition Plans"] },
-  languages: { label: "Languages", icon: Globe, description: "Tutoring & translation", subcategories: ["English", "Spanish"] },
-  content: { label: "Content", icon: Video, description: "Streaming, YouTube & TikTok", subcategories: ["Streaming", "YouTube", "TikTok"] },
+const CATEGORY_META: Record<string, { label: string; icon: any; description: string; seoDescription: string; subcategories: string[] }> = {
+  gaming: { label: "Gaming", icon: Gamepad2, description: "Boosting, coaching & game expertise", seoDescription: "Find gaming coaches and boosting services on Duxio. Verified experts for Valorant, Fortnite, CS2 and more.", subcategories: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends"] },
+  tech: { label: "Tech", icon: Code, description: "Development, bots, servers & SEO", seoDescription: "Hire freelance developers, SEO specialists, and tech experts with only 5% fees. Web development, app development, WordPress and more — cheaper than Fiverr or Upwork.", subcategories: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress"] },
+  business: { label: "Business", icon: Briefcase, description: "Marketing, e-commerce & growth", seoDescription: "Get affordable business consulting, marketing help, and startup advice from verified experts. Low 5% marketplace fee — save more than on traditional freelance platforms.", subcategories: ["Marketing", "Startup Advice", "E-commerce", "Accounting"] },
+  creative: { label: "Creative", icon: Palette, description: "Design, video editing & copywriting", seoDescription: "Hire freelance designers, video editors, and copywriters at the lowest marketplace fees. Logo design, thumbnails, ad copy and more on Duxio.", subcategories: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails"] },
+  music: { label: "Music", icon: Music, description: "Production, mixing & lessons", seoDescription: "Find music producers, mixing engineers, and music tutors on Duxio. Affordable rates with escrow-protected payments.", subcategories: ["Production", "Mixing & Mastering", "Guitar Lessons"] },
+  fitness: { label: "Fitness", icon: Dumbbell, description: "Training & nutrition plans", seoDescription: "Connect with personal trainers and nutritionists instantly on Duxio. Get custom plans and expert coaching at low fees.", subcategories: ["Personal Training", "Nutrition Plans"] },
+  languages: { label: "Languages", icon: Globe, description: "Tutoring & translation", seoDescription: "Find language tutors and translators on Duxio. Affordable English, Spanish, and multilingual services with real-time quotes.", subcategories: ["English", "Spanish"] },
+  content: { label: "Content", icon: Video, description: "Streaming, YouTube & TikTok", seoDescription: "Hire content creators, YouTube editors, and TikTok strategists with low marketplace fees. Grow your channel with verified experts on Duxio.", subcategories: ["Streaming", "YouTube", "TikTok"] },
 };
 
 const CategoryPage = () => {
@@ -29,9 +29,23 @@ const CategoryPage = () => {
   const meta = CATEGORY_META[slug || ""];
 
   useSEO({
-    title: meta ? `${meta.label} Experts` : "Category",
-    description: meta ? `Find top ${meta.label} experts on Duxio. ${meta.description}. Get instant quotes and escrow-protected payments.` : undefined,
+    title: meta ? `${meta.label} Freelancers & Experts — Low Fees` : "Category",
+    description: meta ? meta.seoDescription : undefined,
     canonical: slug ? `/category/${slug}` : undefined,
+    jsonLd: meta ? {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": `${meta.label} Experts on Duxio`,
+      "description": meta.seoDescription,
+      "url": `https://duxio.lovable.app/category/${slug}`,
+      "numberOfItems": meta.subcategories.length,
+      "itemListElement": meta.subcategories.map((sub, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "name": sub,
+        "url": `https://duxio.lovable.app/post-request?category=${meta.label}: ${sub}`,
+      })),
+    } : undefined,
   });
 
   const { format } = useCurrency();
