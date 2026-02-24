@@ -455,6 +455,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       if (substep) {
         localStorage.removeItem(SUBSTEP_KEY);
         const stepIdx = parseInt(substep, 10);
+        localStorage.setItem(STEP_KEY, "0");
         // Resume phase 0 from the step after the demo
         setTimeout(() => initDriver(0, stepIdx), 600);
       }
