@@ -126,25 +126,38 @@ const BlogPost = () => {
     title: post ? post.title : "Post Not Found",
     description: post ? post.excerpt : undefined,
     canonical: post ? `/blog/${post.slug}` : undefined,
+    ogImage: post?.coverImage || undefined,
     ogType: "article",
     articlePublishedTime: publishedIso,
-    jsonLd: post ? {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      "headline": post.title,
-      "description": post.excerpt,
-      "datePublished": publishedIso,
-      "author": {
-        "@type": "Organization",
-        "name": post.author
+    jsonLd: post ? [
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": post.title,
+        "description": post.excerpt,
+        "image": post.coverImage || undefined,
+        "datePublished": publishedIso,
+        "author": {
+          "@type": "Organization",
+          "name": post.author
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Duxio",
+          "url": "https://duxio.lovable.app"
+        },
+        "mainEntityOfPage": `https://duxio.lovable.app/blog/${post.slug}`
       },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Duxio",
-        "url": "https://duxio.lovable.app"
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://duxio.lovable.app/" },
+          { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://duxio.lovable.app/blog" },
+          { "@type": "ListItem", "position": 3, "name": post.title, "item": `https://duxio.lovable.app/blog/${post.slug}` },
+        ],
       },
-      "mainEntityOfPage": `https://duxio.lovable.app/blog/${post.slug}`
-    } : undefined,
+    ] : undefined,
   });
 
   if (!post) {

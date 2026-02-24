@@ -26,7 +26,6 @@ const taskPool = [
 ];
 
 const placeholderExamples = [
-  "Fix my Minecraft server lag",
   "Build a Discord bot for my server",
   "Design a logo for my startup",
   "Valorant coaching — Silver to Gold",
@@ -38,9 +37,10 @@ const placeholderExamples = [
   "Help with Python data scraping",
   "Roblox scripting for my game",
   "Instagram growth strategy for my brand",
-  "Fortnite map design & testing",
+  "Set up my Shopify store",
   "Podcast intro jingle creation",
   "Brand identity kit for my café",
+  "Rewrite my resume and LinkedIn",
 ];
 
 const cardSlots = [
