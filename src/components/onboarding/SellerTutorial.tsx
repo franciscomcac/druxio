@@ -135,8 +135,8 @@ const TOUR_PHASES: TourPhase[] = [
       },
       {
         popover: {
-          title: "5-Day Expiry ⏳",
-          description: "Each quote automatically <strong>expires after 5 days</strong>. Keep an eye on the countdown timers! Respond quickly and competitively to maximize your chances.",
+          title: "Pro Tip: Fast Replies Win ⚡",
+          description: "Buyers see your average response time on your profile. Responding within <strong>2 minutes</strong> dramatically increases your chances of being selected!",
           side: "bottom",
           align: "center",
         },
@@ -154,14 +154,6 @@ const TOUR_PHASES: TourPhase[] = [
         popover: {
           title: "Your Inbox 💬",
           description: "This is where you see all your <strong>active orders</strong> and <strong>completed/cancelled</strong> conversations. Quote chats are managed separately in the Quotes Terminal.",
-          side: "bottom",
-          align: "center",
-        },
-      },
-      {
-        popover: {
-          title: "Pro Tip: Fast Replies Win",
-          description: "Buyers see your average response time on your profile. Responding within <strong>2 minutes</strong> dramatically increases your chances of being selected!",
           side: "bottom",
           align: "center",
         },
