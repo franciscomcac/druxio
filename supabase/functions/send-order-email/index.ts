@@ -216,7 +216,7 @@ serve(async (req) => {
               ${row("Delivery time", delivery)}
             `)}
             ${p("Review the quote and chat with the expert before accepting.")}
-            ${cta("View Quotes", `https://duxio.lovable.app/active-request/${jobId}`)}
+            ${cta("View Quotes", `https://druxio.lovable.app/active-request/${jobId}`)}
           `);
           await sendResend(buyerEmail, `New quote received for "${job.title}"`, html, resendKey);
         }
