@@ -107,8 +107,14 @@ const Header = () => {
                   My Orders
                 </Button>
               </Link>
-            </>
-          )}
+              {isMentorUser && (
+                <Link to="/quotes">
+                  <Button variant="ghost" size="sm" className={`text-sm font-medium ${(isActive("/quotes") || location.pathname.startsWith("/request/")) ? "text-foreground bg-primary/[0.06]" : "text-muted-foreground hover:text-foreground hover:bg-primary/[0.06]"}`}>
+                    <FileText className="h-3.5 w-3.5 mr-1" />
+                    Active Quotes
+                  </Button>
+                </Link>
+              )}
           {user ? (
             <>
               <Link to="/post-request">
