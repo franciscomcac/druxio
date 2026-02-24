@@ -142,6 +142,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const { format } = useCurrency();
   const playNotificationSound = useNotificationSound();
   const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
+  const tutorialStep = localStorage.getItem("seller_tutorial_step");
+  const showTutorialDemoJob = isTutorialActive && tutorialStep === "0";
 
   useEffect(() => {
     const fetchJobs = async () => {
