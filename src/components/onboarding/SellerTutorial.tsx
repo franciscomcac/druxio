@@ -344,7 +344,6 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
           element: "#tour-demo-job",
           popover: {
             ...origPopover,
-            disableActiveInteraction: false,
             onNextClick: () => {
               // Pause tour — user should click Quote instead. "Skip" fallback.
               driverRef.current?.destroy();
@@ -356,6 +355,9 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
               if (popover.nextButton) {
                 popover.nextButton.textContent = "Skip →";
               }
+              // Allow clicking the highlighted element
+              const activeEl = document.querySelector(".driver-active-element");
+              if (activeEl) (activeEl as HTMLElement).style.pointerEvents = "auto";
             },
           },
         };
