@@ -321,6 +321,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       showProgress: true,
       animate: true,
       allowClose: true,
+      disableActiveInteraction: true,
       overlayColor: "hsl(0 0% 0% / 0.6)",
       stagePadding: 8,
       stageRadius: 8,
