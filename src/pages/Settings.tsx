@@ -60,6 +60,7 @@ const CATEGORY_TREE = [
       { id: "Database & SQL", services: ["Database Design", "Query Optimization", "Migration", "Backup & Recovery"] },
       { id: "Networking & WiFi", services: ["Network Setup", "Troubleshooting", "VPN Config", "WiFi Optimization"] },
       { id: "Cloud & DevOps", services: ["AWS Setup", "CI/CD Pipelines", "Kubernetes", "Monitoring"] },
+      { id: "Custom Request", services: ["Any Tech Task", "Unique Request"] },
     ],
   },
   {
