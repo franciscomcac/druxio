@@ -391,6 +391,12 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
         d.destroy();
         driverRef.current = null;
 
+        // Pause without advancing phases when the user clicks the demo Quote button
+        if (isPausingForDemoRef.current) {
+          isPausingForDemoRef.current = false;
+          return;
+        }
+
         // Move to next phase — but DON'T navigate, wait for user to click
         const next = phaseIndex + 1;
         if (next < TOUR_PHASES.length) {
