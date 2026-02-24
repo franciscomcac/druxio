@@ -1509,7 +1509,7 @@ const ActiveRequest = () => {
   // ── BUYER LAYOUT ───────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
+      <div className="max-w-6xl mx-auto px-3 py-4 sm:px-6 sm:py-6">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-start gap-3">
