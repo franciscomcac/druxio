@@ -134,8 +134,6 @@ const ActiveRequest = () => {
   // Withdraw quote
   const [withdrawDialog, setWithdrawDialog] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
-  // Seller sidebar tab
-  const [sellerTab, setSellerTab] = useState<"quotes" | "orders">("quotes");
 
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
