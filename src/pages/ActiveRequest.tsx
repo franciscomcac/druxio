@@ -1102,7 +1102,8 @@ const ActiveRequest = () => {
                 </div>
               </div>
 
-              {/* Update offer */}
+              {/* Update offer — hidden for demo */}
+              {!isDemo(activeConvo) && (
               <div className="p-4 space-y-2">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Update Offer</p>
                 <Input
@@ -1143,6 +1144,7 @@ const ActiveRequest = () => {
                   Send Updated Offer
                 </Button>
               </div>
+              )}
 
               {/* Withdraw quote — only for pending quotes */}
               {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && !isDemo(activeConvo) && (
