@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
             method: "POST",
             headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
-              from: "Duxio <noreply@duxio.lovable.app>",
+              from: "Druxio <noreply@druxio.lovable.app>",
               to: userEmail,
               subject: `Withdrawal of €${Number(amount).toFixed(2)} submitted ✅`,
               html,

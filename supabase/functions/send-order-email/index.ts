@@ -238,7 +238,7 @@ serve(async (req) => {
             ${row("Your earning", `€${(Number(quote.price) * 0.95).toFixed(2)}`)}
           `)}
           ${p("Head to the order page to start working and communicate with the buyer.")}
-          ${cta("Go to Order", `https://duxio.lovable.app/order/${jobId}`)}
+          ${cta("Go to Order", `https://druxio.lovable.app/order/${jobId}`)}
         `);
         await sendResend(sellerEmail, `Your quote was accepted! 🎉`, html, resendKey);
       }
