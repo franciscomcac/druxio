@@ -1109,7 +1109,8 @@ const Admin = () => {
                         ))
                       )}
                     </TableBody>
-                  </Table>
+                   </Table>
+                 </div>
                 </ScrollArea>
               </Card>
             )}
