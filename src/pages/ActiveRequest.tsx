@@ -1037,6 +1037,7 @@ const ActiveRequest = () => {
       return (
         <button
           key={convo.jobId}
+          id={isDemo(convo) ? "tour-quotes-demo-item" : undefined}
           onClick={() => {
             if (isDemo(convo)) {
               // Demo quote — show demo content in main area
