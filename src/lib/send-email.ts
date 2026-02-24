@@ -168,7 +168,7 @@ export function buildOrderDeliveredEmail(opts: {
         ${infoRow("Auto-release in", "3 days (if no action taken)")}
       `)}
       ${paragraph("Please review the delivered work and either confirm delivery to release payment, or raise a dispute if there is an issue.")}
-      ${ctaButton("Review Delivery", `https://duxio.lovable.app/order/${opts.jobId}`)}
+      ${ctaButton("Review Delivery", `https://druxio.lovable.app/order/${opts.jobId}`)}
     `),
   };
 }
