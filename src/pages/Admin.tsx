@@ -918,39 +918,46 @@ const Admin = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="disputes" className="gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Disputes
-              {stats.activeDisputes > 0 && <Badge variant="destructive" className="ml-1">{stats.activeDisputes}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2">
-              <Package className="h-4 w-4" />
-              Orders
-            </TabsTrigger>
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="h-4 w-4" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="withdrawals" className="gap-2">
-              <ArrowDownToLine className="h-4 w-4" />
-              Withdrawals
-              {stats.pendingWithdrawals > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingWithdrawals}</Badge>}
-            </TabsTrigger>
-            <TabsTrigger value="support" className="gap-2">
-              <Headphones className="h-4 w-4" />
-              Support
-            </TabsTrigger>
-            <TabsTrigger value="feedback" className="gap-2">
-              <MessageSquarePlus className="h-4 w-4" />
-              Feedback
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="gap-2">
-              <ShieldAlert className="h-4 w-4" />
-              Reports
-              {stats.pendingReports > 0 && <Badge variant="destructive" className="ml-1">{stats.pendingReports}</Badge>}
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 mb-4 sm:mb-6">
+            <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
+              <TabsTrigger value="disputes" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <AlertTriangle className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Disputes</span>
+                <span className="sm:hidden">Disp.</span>
+                {stats.activeDisputes > 0 && <Badge variant="destructive" className="ml-0.5 text-[9px] h-4 px-1">{stats.activeDisputes}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="orders" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Package className="h-3.5 w-3.5" />
+                Orders
+              </TabsTrigger>
+              <TabsTrigger value="users" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Users className="h-3.5 w-3.5" />
+                Users
+              </TabsTrigger>
+              <TabsTrigger value="withdrawals" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <ArrowDownToLine className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Withdrawals</span>
+                <span className="sm:hidden">WD</span>
+                {stats.pendingWithdrawals > 0 && <Badge variant="destructive" className="ml-0.5 text-[9px] h-4 px-1">{stats.pendingWithdrawals}</Badge>}
+              </TabsTrigger>
+              <TabsTrigger value="support" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Headphones className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Support</span>
+                <span className="sm:hidden">Help</span>
+              </TabsTrigger>
+              <TabsTrigger value="feedback" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <MessageSquarePlus className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Feedback</span>
+                <span className="sm:hidden">FB</span>
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <ShieldAlert className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Reports</span>
+                <span className="sm:hidden">Rep.</span>
+                {stats.pendingReports > 0 && <Badge variant="destructive" className="ml-0.5 text-[9px] h-4 px-1">{stats.pendingReports}</Badge>}
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* ═══ DISPUTES TAB ═══ */}
           <TabsContent value="disputes">
