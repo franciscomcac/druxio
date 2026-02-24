@@ -234,7 +234,7 @@ That's it. Start to finish, you can go from "I have a problem" to "problem solve
 
 ## Real Situations Where Duxio Shines
 
-We see clients using Duxio for an enormous variety of short-term needs:
+We see clients using Druxio for an enormous variety of short-term needs:
 
 - **Legal questions** — "Can someone explain what this clause actually means?"
 - **Financial decisions** — "I need a second opinion on whether this investment makes sense."
