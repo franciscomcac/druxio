@@ -77,8 +77,8 @@ const TOUR_PHASES: TourPhase[] = [
       {
         element: "#tour-demo-job",
         popover: {
-          title: "🎓 Try It: Send a Demo Quote!",
-          description: "Here's a <strong>practice request</strong>! Click the <strong>Quote</strong> button to open the quote form. Set your price, delivery time, and an optional message — then send it. This won't affect your real data!",
+          title: "🎓 Click Quote to Try It!",
+          description: "Click the <strong>Quote</strong> button on this demo request. Set your price, delivery time, and message — then send it! The tour will resume automatically after.",
           side: "bottom",
           align: "center",
         },
