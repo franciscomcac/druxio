@@ -135,7 +135,7 @@ const faqSections = [
 const FAQ = () => {
   useSEO({
     title: "Frequently Asked Questions",
-    description: "Find answers to common questions about Duxio — how to post tasks, hire experts, manage payments, and more.",
+    description: "Find answers to common questions about Druxio — how to post tasks, hire experts, manage payments, and more.",
     canonical: "/faq",
   });
 
