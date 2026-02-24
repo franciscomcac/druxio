@@ -75,6 +75,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Tech: Database", label: "Database & SQL", icon: Database },
     { id: "Tech: Networking", label: "Networking & WiFi", icon: Wifi },
     { id: "Tech: Cloud", label: "Cloud & DevOps", icon: Cloud },
+    { id: "Tech: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Business: [
     { id: "Business: Marketing", label: "Marketing", icon: TrendingUp },
