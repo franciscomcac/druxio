@@ -314,7 +314,7 @@ One thing we thought about deeply when building Druxio is **what's fair for expe
 
 The traditional model extracts value from experts in two ways: either they're employed and their employer takes the margin, or they freelance and spend enormous time on unpaid business development, client acquisition, and admin.
 
-Duxio removes the overhead. Experts are found by clients, not the other way around. Sessions are structured, timed, and paid. Reviews build reputation. An expert can focus entirely on what they're good at — helping people — and the platform handles the rest.
+Druxio removes the overhead. Experts are found by clients, not the other way around. Sessions are structured, timed, and paid. Reviews build reputation. An expert can focus entirely on what they're good at — helping people — and the platform handles the rest.
 
 We believe this is how professional expertise should work: fairly compensated, efficiently delivered, and accessible to anyone who needs it.
 
