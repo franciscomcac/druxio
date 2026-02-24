@@ -195,8 +195,8 @@ Deno.serve(async (req) => {
         <a href="https://druxio.lovable.app/wallet" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;">View Wallet</a>
       </td></tr>
       <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;">
-        <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you have an account on Duxio.<br/>
-        <a href="https://duxio.lovable.app" style="color:#7c3aed;text-decoration:none;">Visit Duxio</a></p>
+        <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you have an account on Druxio.<br/>
+        <a href="https://druxio.lovable.app" style="color:#7c3aed;text-decoration:none;">Visit Druxio</a></p>
       </td></tr>
     </table>
   </td></tr>
