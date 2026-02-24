@@ -290,6 +290,12 @@ const Admin = () => {
     if (isAdmin && activeTab === "support") loadSupportTickets();
   }, [supportFilter]);
 
+  // Load signed URLs for report images
+  useEffect(() => {
+    if (!selectedReport?.image_urls?.length) { setReportSignedUrls([]); return; }
+    Promise.all(selectedReport.image_urls.map(p => getSignedImageUrl(p))).then(setReportSignedUrls);
+  }, [selectedReport]);
+
   // Reload reports when filter changes
   useEffect(() => {
     if (isAdmin && activeTab === "reports") loadReports();
