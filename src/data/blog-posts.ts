@@ -216,7 +216,7 @@ Hiring a consultant traditionally means:
 
 For a one-hour problem, that process is completely disproportionate. And yet millions of people every day either suffer through problems they could have solved with one focused session — or pay far too much for help they only needed briefly.
 
-## The Duxio Way: Expert Access in Minutes
+## The Druxio Way: Expert Access in Minutes
 
 Here's what happens when you post a request on Duxio:
 
