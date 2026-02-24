@@ -162,7 +162,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
                   <p className="font-medium text-foreground mb-1 text-sm">No requests yet</p>
                   <p className="text-xs mb-4">Post your first request and get expert quotes in seconds</p>
                   <Button size="sm" className="gap-2" onClick={() => navigate("/post-request")}>
-                    <Plus className="h-3.5 w-3.5" /> Post a Request
+                    <Plus className="h-3.5 w-3.5" /> Post a Task
                   </Button>
                 </div>
               )}
