@@ -294,7 +294,7 @@ One lives in London. She can walk into a business advisory firm, pay a premium r
 
 The other lives in a mid-sized town. She's a first-generation entrepreneur with a strong business but limited access to high-quality professional guidance. Her local accountant is great for tax returns, but doesn't specialise in market strategy. She can Google her question, but Google doesn't know the specifics of her situation.
 
-On Duxio, both of these women post their request. Both receive quotes from specialists who understand their question. Both pay a fair, competitive rate. Both finish with a clear answer.
+On Druxio, both of these women post their request. Both receive quotes from specialists who understand their question. Both pay a fair, competitive rate. Both finish with a clear answer.
 
 Geography becomes irrelevant.
 
