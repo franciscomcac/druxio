@@ -155,6 +155,9 @@ const Header = () => {
                   <DropdownMenuItem onClick={() => navigate("/orders/purchased")} className="hover:bg-primary/[0.06]"><Package className="mr-2 h-4 w-4" /> Purchased Orders</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/orders/sold")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Sold Orders</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/inbox")} className="hover:bg-primary/[0.06]"><MessageSquare className="mr-2 h-4 w-4" /> Messages</DropdownMenuItem>
+                  {isMentorUser && (
+                    <DropdownMenuItem onClick={() => navigate("/quotes")} className="hover:bg-primary/[0.06]"><FileText className="mr-2 h-4 w-4" /> Active Quotes</DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator className="bg-border/30" />
                   <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Balance & Wallet</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
