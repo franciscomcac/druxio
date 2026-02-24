@@ -28,7 +28,7 @@ const LiveStats = () => {
             </div>
           ))}
         </div>
-        <p className="text-center text-[10px] text-muted-foreground/50 mt-3">Updated just now</p>
+        
       </div>
     </section>
   );
