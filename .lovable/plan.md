@@ -1,89 +1,85 @@
 
 
-## Seller Orders Overhaul: Separate Quotes from Active Orders + Auto-Expiry + Withdraw Quotes
+## Transform the Requests Page into a Dedicated Seller Quotes Dashboard
 
-This plan restructures the seller-side experience to reduce clutter, separate concerns, and add quote lifecycle management.
-
----
-
-### Current Problem
-
-Right now, the seller's "My Orders" page (`ActiveRequest.tsx`) mixes **pending quotes** (pre-payment conversations) with **active orders** (paid, in-progress work) in a single sidebar. This creates clutter and makes it hard to focus on actual paid work. Sellers also cannot withdraw/close their own quotes, and stale quotes live forever.
+### Goal
+Turn the current `/request/:jobId` page into a focused, fast **Quotes Terminal** for sellers. This is where sellers spend most of their time responding to new customer requests, making/updating offers, and managing pending quotes. Orders (paid work) will be handled separately via `/orders/sold` and `/order/:jobId`.
 
 ---
 
 ### What Changes
 
-**1. Separate the Seller Sidebar into Two Tabs: "Quotes" and "Orders"**
+**1. Remove the "Orders" tab from the seller sidebar**
 
-Inside the seller layout in `ActiveRequest.tsx`, split the left sidebar into two tabs:
+The seller sidebar in `ActiveRequest.tsx` currently has two tabs: "Quotes" and "Orders". We'll remove the Orders tab entirely since those are already handled by the Sold Orders page (`/orders/sold`) and individual order pages (`/order/:jobId`). The sidebar becomes a flat list of all pending quote conversations -- no tabs needed.
 
-- **Quotes tab** -- Shows all conversations where the seller has a pending quote (job status = `open`, quote status = `pending`). These are pre-sale negotiations.
-- **Orders tab** -- Shows conversations where the quote was accepted and payment was made (job status = `accepted`/`completed`/`disputed`). These are active/completed orders.
+**2. Redesign the sidebar as a Quotes Dashboard list**
 
-This keeps the same page and same chat interface but separates the list cleanly.
+Each sidebar item will show:
+- Buyer name + avatar
+- Job title + category badge
+- Your quoted price + delivery time
+- Time since quote was sent (e.g., "2h ago")
+- Unread message indicator
+- Visual urgency indicator for quotes nearing the 5-day expiry
 
-**2. Allow Sellers to Withdraw/Close Their Own Quotes**
+The list will be sorted by: unread first, then most recent activity.
 
-Add a "Withdraw Quote" button in the right panel (job details section) when viewing a pending quote. This will:
-- Update the quote status to `rejected` (reuse existing status)
-- Send a notification to the buyer: "Expert X has withdrawn their offer on [job title]"
-- Remove the conversation from the seller's Quotes tab
-- Show a confirmation dialog before withdrawing
+**3. Enhance the right panel into a Quote Action Center**
 
-**3. Auto-Expire Unanswered Quotes After 5 Days**
+The right panel (currently just "Update Offer" + "Withdraw") becomes a compact, information-dense control panel:
 
-Update the existing `expire-stale-jobs` edge function to also handle individual quote expiration:
-- Find quotes with status `pending` where `created_at` is older than 5 days AND the job is still `open`
-- Update those quotes to status `expired`
-- Notify the seller: "Your quote on [job title] expired after 5 days without response"
+- **Request Summary**: Job title, category, buyer's budget range, deadline
+- **Your Current Offer**: Price + delivery time displayed prominently
+- **Quick Actions**:
+  - Update offer (price + delivery time form -- already exists, keep it)
+  - Withdraw quote (already exists, keep it)
+- **Quote Status**: Visual indicator showing "Pending", "Expired in Xd", etc.
+- **Buyer Info**: Name, avatar, rating (if available), total spend
 
-This complements the existing job-level expiration (which expires the whole job after 5 days).
+**4. Add quote expiry countdown**
 
-**4. Enhance the SoldOrders Page**
+Each quote sidebar item and the right panel will show how many days remain before the 5-day auto-expiry. Color-coded: green (3+ days), yellow (1-2 days), red (less than 1 day).
 
-Improve `SoldOrders.tsx` with:
-- Add a "Delivered" tab for orders marked as delivered but awaiting buyer confirmation
-- Show delivery countdown timer (3-day auto-release) on delivered orders
-- Add clickability to completed/disputed orders (currently only active orders are clickable)
-- Show the order status more prominently with color-coded borders
+**5. Empty state improvements**
+
+When no pending quotes exist, show a motivational empty state: "No pending quotes -- browse open requests to start quoting" with a CTA to go to the dashboard's open requests feed.
+
+**6. Filter out non-pending quotes from the sidebar**
+
+Only show quotes where `quoteStatus === 'pending'` AND `jobStatus === 'open'`. Rejected, expired, and accepted quotes should not appear here (they're handled elsewhere).
 
 ---
 
 ### Technical Details
 
-#### Files to modify:
+#### File: `src/pages/ActiveRequest.tsx`
 
-| File | Changes |
-|---|---|
-| `src/pages/ActiveRequest.tsx` | Add Tabs component to seller sidebar splitting "Quotes" vs "Orders"; add "Withdraw Quote" button + confirmation dialog in right panel; filter `sellerConvos` by job/quote status for each tab |
-| `src/pages/SoldOrders.tsx` | Add "Delivered" tab filtering `escrow_status = 'delivered'`; make completed/disputed orders clickable; add auto-release countdown display; improve card styling with status-colored left borders |
-| `supabase/functions/expire-stale-jobs/index.ts` | Add logic to expire individual pending quotes older than 5 days on still-open jobs; send notifications to affected sellers |
+**Seller sidebar changes:**
+- Remove the `Tabs` component wrapping "Quotes" / "Orders"
+- Replace with a direct `ScrollArea` list of `quoteConvos` only
+- Remove `sellerTab` state and `orderConvos` filtering
+- Update sidebar header from "My Orders" to "Quotes"
+- Add expiry countdown per item using `differenceInDays(addDays(new Date(quote.created_at), 5), new Date())`
+- Sort sidebar: unread messages first, then by most recent `lastMessageAt`
 
-#### Database changes:
-- No schema changes needed. The existing `quotes.status` field already supports `pending`, `accepted`, `rejected` values. We'll use `rejected` for seller-withdrawn and `expired` for auto-expired quotes.
+**Right panel enhancements:**
+- Add buyer's budget range display (`budget_min` - `budget_max`) from job data (need to fetch and store in `SellerConvo`)
+- Add expiry countdown prominently at the top
+- Add buyer rating/total spend if available
+- Keep existing Update Offer form and Withdraw button
+- Add a quick "Go to Dashboard" link in the header for browsing new requests
 
-#### Quote withdrawal flow:
-1. Seller clicks "Withdraw Quote" in right panel
-2. Confirmation dialog appears
-3. On confirm: `UPDATE quotes SET status = 'rejected' WHERE id = quoteId`
-4. Insert notification for buyer
-5. Remove from seller's sidebar list
-6. Toast confirmation
+**Sidebar item redesign:**
+- Add a small colored dot for expiry urgency (green/yellow/red)
+- Show quote age: "Quoted 2h ago"
+- Slightly larger touch targets for mobile-friendliness
 
-#### Auto-expiry addition to edge function:
-```text
-1. Query: quotes WHERE status = 'pending' AND created_at < 5_days_ago
-2. Join with jobs WHERE status = 'open' (only expire if job is still open)
-3. Update matched quotes to status = 'expired'  
-4. Notify each seller about their expired quote
-```
+#### Data changes to `SellerConvo` interface:
+- Add `budgetMin: number` and `budgetMax: number` fields
+- Add `quoteCreatedAt: string` field (already available from quotes query, just need to store it)
+- These get populated from the existing `loadSellerConvos` function where we already fetch `budget_min` and `budget_max` from job data
 
-#### Seller sidebar tab structure:
-```text
-Sidebar Header: "My Orders" with back button
-+-- TabsList: [Quotes (count)] [Orders (count)]
-    |-- Quotes tab: sellerConvos where jobStatus = 'open' && quoteStatus = 'pending'
-    |-- Orders tab: sellerConvos where jobStatus in ('accepted','completed','disputed')
-```
+#### No database changes needed
+All data is already available. This is purely a frontend restructuring.
 
