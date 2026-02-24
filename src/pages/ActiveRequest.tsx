@@ -992,6 +992,21 @@ const ActiveRequest = () => {
                   Send Updated Offer
                 </Button>
               </div>
+
+              {/* Withdraw quote — only for pending quotes */}
+              {activeConvo.quoteStatus === "pending" && activeConvo.jobStatus === "open" && (
+                <div className="p-4 border-t border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => setWithdrawDialog(true)}
+                  >
+                    <Ban className="h-3 w-3 mr-1" />
+                    Withdraw Quote
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         ) : (
