@@ -335,7 +335,7 @@ And this list grows every week as more experts join the platform.
 
 ## The Bigger Picture
 
-We're building Duxio because we believe **expertise should be a resource, not a privilege**.
+We're building Druxio because we believe **expertise should be a resource, not a privilege**.
 
 A brilliant question shouldn't go unanswered because you can't afford a retainer. A critical decision shouldn't be made in the dark because you don't know the right person. A skill gap shouldn't hold back a capable person who just needs twenty minutes with the right expert.
 
