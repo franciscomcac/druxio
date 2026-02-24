@@ -17,6 +17,8 @@ const STEP_KEY = "seller_tutorial_step";
 
 interface TourPhase {
   route: string;
+  /** Additional route prefixes that also match this phase */
+  altRoutes?: string[];
   steps: DriveStep[];
   /** Element selector for the nav link the user should click to proceed */
   bridgeElement?: string;
@@ -24,6 +26,12 @@ interface TourPhase {
   bridgeTitle?: string;
   bridgeDescription?: string;
 }
+
+/** Check if current path matches the phase route or any alt routes */
+const matchesPhaseRoute = (pathname: string, phase: TourPhase): boolean => {
+  if (pathname === phase.route) return true;
+  return (phase.altRoutes || []).some(alt => pathname.startsWith(alt));
+};
 
 const TOUR_PHASES: TourPhase[] = [
   // Phase 0 — Dashboard overview
