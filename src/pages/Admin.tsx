@@ -1464,7 +1464,7 @@ const Admin = () => {
                         <span className="text-sm font-semibold text-foreground">{avg.toFixed(1)} avg rating</span>
                       </div>
                       <span className="text-sm text-muted-foreground">{feedbackItems.length} submission{feedbackItems.length !== 1 ? "s" : ""}</span>
-                      <div className="flex items-center gap-2 ml-auto">
+                      <div className="flex items-center gap-2 w-full sm:w-auto sm:ml-auto flex-wrap">
                         <Select value={feedbackRatingFilter} onValueChange={setFeedbackRatingFilter}>
                           <SelectTrigger className="w-32 h-8 text-xs">
                             <SelectValue placeholder="All ratings" />
