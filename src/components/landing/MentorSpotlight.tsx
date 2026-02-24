@@ -128,7 +128,7 @@ const MentorSpotlight = () => {
           </div>
         </div>
 
-        <div className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 transition-all duration-400 ${fading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {visible.map((req, i) => (
             <Card
               key={`${req.title}-${i}`}
