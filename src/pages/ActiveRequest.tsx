@@ -758,14 +758,28 @@ const ActiveRequest = () => {
   const chatPartnerName = isBuyer ? selectedQuote?.profile?.display_name || "Expert" : buyerProfile?.display_name || "Buyer";
   const selectedMessages = selectedChatPartnerId ? (chatMessages[selectedChatPartnerId] || []) : [];
 
-  // Filter convos into quotes vs orders
+  // Filter to pending quotes only
   const quoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
-  const orderConvos = sellerConvos.filter(c => ["accepted", "completed", "disputed"].includes(c.jobStatus));
 
-  // ── SELLER LAYOUT — multi-convo sidebar ────────────────────────────────────
+  // Helper: get expiry info for a quote
+  const getExpiryInfo = (quoteCreatedAt: string) => {
+    const expiryDate = addDays(new Date(quoteCreatedAt), 5);
+    const now = new Date();
+    const daysLeft = differenceInDays(expiryDate, now);
+    const hoursLeft = differenceInHours(expiryDate, now);
+    if (hoursLeft <= 0) return { label: "Expired", color: "bg-destructive", textColor: "text-destructive", urgent: true };
+    if (daysLeft < 1) return { label: `${hoursLeft}h left`, color: "bg-destructive", textColor: "text-destructive", urgent: true };
+    if (daysLeft <= 2) return { label: `${daysLeft}d left`, color: "bg-chart-4", textColor: "text-chart-4", urgent: false };
+    return { label: `${daysLeft}d left`, color: "bg-chart-2", textColor: "text-chart-2", urgent: false };
+  };
+
+  // ── SELLER LAYOUT — Quotes Terminal ────────────────────────────────────────
   if (!isBuyer) {
     const renderConvoItem = (convo: SellerConvo) => {
       const isActive = activeConvoJobId === convo.jobId;
+      const expiry = getExpiryInfo(convo.quoteCreatedAt);
+      const quotedAgo = formatDistanceToNow(new Date(convo.quoteCreatedAt), { addSuffix: true });
+
       return (
         <button
           key={convo.jobId}
@@ -777,6 +791,10 @@ const ActiveRequest = () => {
           }`}
         >
           <div className="flex items-start gap-2.5">
+            {/* Urgency dot */}
+            <div className="flex flex-col items-center gap-1 pt-1">
+              <span className={`h-2 w-2 rounded-full shrink-0 ${expiry.color}`} />
+            </div>
             <Avatar className="h-9 w-9 border border-border shrink-0">
               <AvatarImage src={convo.buyerAvatar || undefined} />
               <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
@@ -788,80 +806,66 @@ const ActiveRequest = () => {
                 <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
                   {convo.buyerName || "Buyer"}
                 </p>
-                {convo.unread > 0 && (
-                  <span className="h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shrink-0">
-                    {convo.unread}
-                  </span>
-                )}
+                <div className="flex items-center gap-1 shrink-0">
+                  {convo.unread > 0 && (
+                    <span className="h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
+                      {convo.unread}
+                    </span>
+                  )}
+                </div>
               </div>
               <p className="text-[10px] text-muted-foreground truncate">{convo.jobTitle}</p>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-[10px] text-primary font-semibold">€{convo.myPrice.toFixed(2)}</p>
-                <Badge
-                  variant={convo.jobStatus === "open" ? "outline" : "secondary"}
-                  className="text-[9px] h-3.5 px-1"
-                >
-                  {convo.jobStatus}
-                </Badge>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-[10px] text-primary font-semibold">{format(convo.myPrice)}</p>
+                <span className="text-[9px] text-muted-foreground">·</span>
+                <p className="text-[10px] text-muted-foreground">{formatDeliveryTime(convo.myDelivery)}</p>
               </div>
-              {convo.lastMessage && (
-                <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                  {convo.lastMessage.startsWith("📋") ? "📋 Auto message" : convo.lastMessage}
-                </p>
-              )}
+              <div className="flex items-center justify-between mt-0.5">
+                <p className="text-[9px] text-muted-foreground">Quoted {quotedAgo}</p>
+                <span className={`text-[9px] font-medium ${expiry.textColor}`}>{expiry.label}</span>
+              </div>
             </div>
           </div>
         </button>
       );
     };
 
-    const renderEmptyState = (text: string) => (
-      <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground px-4">
-        <MessageSquare className="h-8 w-8 opacity-30 mb-2" />
-        <p className="text-xs">{text}</p>
-      </div>
-    );
-
     return (
       <div className="h-[calc(100vh-64px)] bg-background flex overflow-hidden">
 
-        {/* ── Left sidebar: tabbed conversations ──────────────────────────── */}
+        {/* ── Left sidebar: quotes list ──────────────────────────────────── */}
         <div className="w-72 border-r border-border bg-card/40 flex flex-col shrink-0">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </Button>
-            <p className="text-sm font-semibold text-foreground">My Orders</p>
+          <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => navigate("/dashboard")}>
+                <ArrowLeft className="h-3.5 w-3.5" />
+              </Button>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Quotes</p>
+                <p className="text-[10px] text-muted-foreground">{quoteConvos.length} pending</p>
+              </div>
+            </div>
           </div>
 
-          {/* Tabs */}
-          <Tabs value={sellerTab} onValueChange={(v) => setSellerTab(v as "quotes" | "orders")} className="flex flex-col flex-1 min-h-0">
-            <TabsList className="mx-2 mt-2 bg-muted/50">
-              <TabsTrigger value="quotes" className="flex-1 text-xs gap-1">
-                <MessageSquare className="h-3 w-3" />
-                Quotes {quoteConvos.length > 0 && <Badge variant="secondary" className="text-[9px] h-4 px-1 ml-0.5">{quoteConvos.length}</Badge>}
-              </TabsTrigger>
-              <TabsTrigger value="orders" className="flex-1 text-xs gap-1">
-                <Package className="h-3 w-3" />
-                Orders {orderConvos.length > 0 && <Badge variant="secondary" className="text-[9px] h-4 px-1 ml-0.5">{orderConvos.length}</Badge>}
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="quotes" className="flex-1 min-h-0 mt-0">
-              <ScrollArea className="h-full">
-                {quoteConvos.length === 0 ? renderEmptyState("No pending quotes") : (
-                  <div className="p-2 space-y-1">{quoteConvos.map(renderConvoItem)}</div>
-                )}
-              </ScrollArea>
-            </TabsContent>
-            <TabsContent value="orders" className="flex-1 min-h-0 mt-0">
-              <ScrollArea className="h-full">
-                {orderConvos.length === 0 ? renderEmptyState("No active orders") : (
-                  <div className="p-2 space-y-1">{orderConvos.map(renderConvoItem)}</div>
-                )}
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
+          {/* Quotes list */}
+          <ScrollArea className="flex-1 min-h-0">
+            {quoteConvos.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground px-6">
+                <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
+                  <Zap className="h-7 w-7 text-primary/50" />
+                </div>
+                <p className="text-sm font-medium text-foreground mb-1">No pending quotes</p>
+                <p className="text-xs text-muted-foreground mb-4">Browse open requests to start quoting</p>
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
+                  <Search className="h-3 w-3 mr-1" />
+                  Browse Requests
+                </Button>
+              </div>
+            ) : (
+              <div className="p-2 space-y-1">{quoteConvos.map(renderConvoItem)}</div>
+            )}
+          </ScrollArea>
         </div>
 
         {/* ── Main area ─────────────────────────────────────────────────────── */}
@@ -883,7 +887,7 @@ const ActiveRequest = () => {
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-[10px] text-muted-foreground">Your offer</p>
-                  <p className="text-base font-bold text-primary">€{activeConvo.myPrice.toFixed(2)}</p>
+                  <p className="text-base font-bold text-primary">{format(activeConvo.myPrice)}</p>
                 </div>
               </div>
 
@@ -942,25 +946,76 @@ const ActiveRequest = () => {
 
             </div>
 
-            {/* ── Right panel: job details + update offer ───────────────────── */}
-            <div className="hidden lg:flex flex-col w-64 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
-              {/* Job details */}
-              <div className="p-4 border-b border-border space-y-2">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Request</p>
-                <p className="text-sm font-semibold text-foreground">{activeConvo.jobTitle}</p>
+            {/* ── Right panel: Quote Action Center ──────────────────────────── */}
+            <div className="hidden lg:flex flex-col w-72 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
+              {/* Expiry countdown */}
+              {(() => {
+                const expiry = getExpiryInfo(activeConvo.quoteCreatedAt);
+                return (
+                  <div className={`px-4 py-2.5 border-b border-border flex items-center gap-2 ${
+                    expiry.urgent ? "bg-destructive/10" : "bg-muted/30"
+                  }`}>
+                    <Timer className={`h-3.5 w-3.5 ${expiry.textColor}`} />
+                    <span className={`text-xs font-medium ${expiry.textColor}`}>{expiry.label}</span>
+                    <span className="text-[10px] text-muted-foreground">until auto-expiry</span>
+                  </div>
+                );
+              })()}
+
+              {/* Request summary */}
+              <div className="p-4 border-b border-border space-y-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Request Details</p>
+                <p className="text-sm font-semibold text-foreground leading-snug">{activeConvo.jobTitle}</p>
                 <Badge variant="outline" className="text-[10px]">{activeConvo.jobCategory}</Badge>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="rounded-lg bg-muted/40 p-2">
+                    <p className="text-[9px] text-muted-foreground uppercase">Budget</p>
+                    <p className="text-xs font-semibold text-foreground">{format(activeConvo.budgetMin)} – {format(activeConvo.budgetMax)}</p>
+                  </div>
+                  <div className="rounded-lg bg-muted/40 p-2">
+                    <p className="text-[9px] text-muted-foreground uppercase">Deadline</p>
+                    <p className="text-xs font-semibold text-foreground">{formatDeliveryTime(activeConvo.deadlineMinutes)}</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Your offer */}
+              {/* Buyer info */}
+              <div className="p-4 border-b border-border">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Buyer</p>
+                <div className="flex items-center gap-2.5">
+                  <Avatar className="h-8 w-8 border border-border">
+                    <AvatarImage src={activeConvo.buyerAvatar || undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{activeConvo.buyerName?.[0] || "B"}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{activeConvo.buyerName || "Buyer"}</p>
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                      {activeConvo.buyerRating && activeConvo.buyerRating > 0 && (
+                        <span className="flex items-center gap-0.5">
+                          <Star className="h-2.5 w-2.5 fill-primary text-primary" />
+                          {activeConvo.buyerRating.toFixed(1)}
+                        </span>
+                      )}
+                      {activeConvo.buyerTotalSpent !== null && activeConvo.buyerTotalSpent > 0 && (
+                        <span>{format(activeConvo.buyerTotalSpent)} spent</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Your current offer */}
               <div className="p-4 border-b border-border space-y-2">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Your Offer</p>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Price</span>
-                  <span className="font-bold text-primary">€{activeConvo.myPrice.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Delivery</span>
-                  <span className="font-medium text-foreground">{formatDeliveryTime(activeConvo.myDelivery)}</span>
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">Price</span>
+                    <span className="text-lg font-bold text-primary">{format(activeConvo.myPrice)}</span>
+                  </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <span className="text-xs text-muted-foreground">Delivery</span>
+                    <span className="text-sm font-medium text-foreground">{formatDeliveryTime(activeConvo.myDelivery)}</span>
+                  </div>
                 </div>
               </div>
 
@@ -1025,8 +1080,21 @@ const ActiveRequest = () => {
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
-              <MessageSquare className="h-12 w-12 opacity-20 mx-auto mb-3" />
-              <p className="text-sm">Select a conversation</p>
+              <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mx-auto mb-4">
+                <Zap className="h-7 w-7 text-primary/50" />
+              </div>
+              <p className="text-sm font-medium text-foreground mb-1">
+                {quoteConvos.length > 0 ? "Select a quote" : "No pending quotes"}
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {quoteConvos.length > 0 ? "Pick a conversation from the sidebar" : "Browse open requests to start quoting"}
+              </p>
+              {quoteConvos.length === 0 && (
+                <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
+                  <Search className="h-3 w-3 mr-1" />
+                  Browse Requests
+                </Button>
+              )}
             </div>
           </div>
         )}
