@@ -88,7 +88,7 @@ const faqSections = [
       },
       {
         q: "Can I set my availability?",
-        a: "Yes. In Settings → Availability, you can set which days and hours you're available to take on work. This helps clients know when to expect a response and helps Duxio match you with suitable requests.",
+        a: "Yes. In Settings → Availability, you can set which days and hours you're available to take on work. This helps clients know when to expect a response and helps Druxio match you with suitable requests.",
       },
     ],
   },
