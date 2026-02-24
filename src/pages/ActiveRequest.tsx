@@ -135,6 +135,12 @@ const ActiveRequest = () => {
   const [withdrawDialog, setWithdrawDialog] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
 
+  // Demo chat state
+  const [demoChatMessages, setDemoChatMessages] = useState<ChatMessage[]>([]);
+  const [demoChatInput, setDemoChatInput] = useState("");
+  const [demoPrice, setDemoPrice] = useState(15);
+  const [demoDelivery, setDemoDelivery] = useState(60);
+
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
 
