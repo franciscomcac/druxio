@@ -141,6 +141,102 @@ const ActiveRequest = () => {
   const [demoPrice, setDemoPrice] = useState(15);
   const [demoDelivery, setDemoDelivery] = useState(60);
 
+  // Demo bot replies
+  const DEMO_BOT_REPLIES = [
+    "Thanks for your offer! 🙌 Can you tell me more about your experience with this?",
+    "That price looks fair. How quickly can you start?",
+    "I see you updated your offer — thanks! Let me think about it.",
+    "Your delivery time works for me. Do you have any portfolio examples?",
+    "Great, I appreciate the quick response! I'll make my decision soon.",
+    "Sounds good! I'm comparing a few experts right now.",
+  ];
+
+  // Initialize demo chat with welcome message on mount
+  useEffect(() => {
+    if (demoChatMessages.length === 0) {
+      const storedQuote = sessionStorage.getItem("demo_quote_data");
+      if (storedQuote) {
+        try {
+          const parsed = JSON.parse(storedQuote);
+          setDemoPrice(parsed.price || 15);
+          setDemoDelivery(parsed.estimated_minutes || 60);
+          sessionStorage.removeItem("demo_quote_data");
+        } catch {}
+      }
+
+      const welcomeMessages: ChatMessage[] = [
+        {
+          id: "demo-welcome-1",
+          content: "📋 Order Request\n\n📌 Tutorial: Practice Sending a Quote\n🏷 Category: Getting Started\n💰 Budget: €10 – €25\n⏱ Deadline: 1 day\n\n📄 Details:\nThis is a demo request! Practice chatting and updating your offer here.",
+          sender_id: "demo-buyer",
+          created_at: new Date(Date.now() - 60000).toISOString(),
+        },
+        {
+          id: "demo-welcome-2",
+          content: "Hi there! 👋 I posted this request and I'd love to see what you can offer. Feel free to send me a message or update your quote!",
+          sender_id: "demo-buyer",
+          created_at: new Date(Date.now() - 30000).toISOString(),
+        },
+      ];
+      setDemoChatMessages(welcomeMessages);
+    }
+  }, []);
+
+  const handleSendDemoChat = () => {
+    if (!demoChatInput.trim()) return;
+    const userMsg: ChatMessage = {
+      id: `demo-user-${Date.now()}`,
+      content: demoChatInput.trim(),
+      sender_id: userId || "me",
+      created_at: new Date().toISOString(),
+    };
+    setDemoChatMessages(prev => [...prev, userMsg]);
+    setDemoChatInput("");
+
+    // Bot auto-reply after 1-2 seconds
+    setTimeout(() => {
+      const replyIndex = Math.floor(Math.random() * DEMO_BOT_REPLIES.length);
+      const botMsg: ChatMessage = {
+        id: `demo-bot-${Date.now()}`,
+        content: DEMO_BOT_REPLIES[replyIndex],
+        sender_id: "demo-buyer",
+        created_at: new Date().toISOString(),
+      };
+      setDemoChatMessages(prev => [...prev, botMsg]);
+    }, 1000 + Math.random() * 1500);
+  };
+
+  const handleDemoUpdateOffer = () => {
+    const price = parseFloat(newQuotePrice);
+    const rawValue = parseInt(newQuoteMinutes) || 20;
+    const minutes = newQuoteUnit === "days" ? rawValue * 1440 : newQuoteUnit === "hours" ? rawValue * 60 : rawValue;
+    if (isNaN(price) || price <= 0) return;
+    setDemoPrice(price);
+    setDemoDelivery(minutes);
+    setNewQuotePrice("");
+    setNewQuoteMinutes("");
+
+    // Add offer update message
+    const offerMsg: ChatMessage = {
+      id: `demo-offer-${Date.now()}`,
+      content: `📋 New offer: €${price.toFixed(2)} — delivery in ${formatDeliveryTime(minutes)}`,
+      sender_id: userId || "me",
+      created_at: new Date().toISOString(),
+    };
+    setDemoChatMessages(prev => [...prev, offerMsg]);
+
+    // Bot reply to updated offer
+    setTimeout(() => {
+      const botMsg: ChatMessage = {
+        id: `demo-bot-offer-${Date.now()}`,
+        content: "I see you updated your offer — thanks! That looks interesting. Let me compare with other quotes. 🤔",
+        sender_id: "demo-buyer",
+        created_at: new Date().toISOString(),
+      };
+      setDemoChatMessages(prev => [...prev, botMsg]);
+    }, 1500);
+  };
+
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
 
