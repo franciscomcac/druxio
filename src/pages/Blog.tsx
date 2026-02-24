@@ -48,7 +48,7 @@ const Blog = () => {
         <div className="container mx-auto px-4 py-14 max-w-4xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary mb-4 animate-fade-in">
             <Zap className="h-3 w-3 fill-primary" />
-            Duxio Blog
+            Druxio Blog
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 tracking-tight animate-fade-in" style={{ animationDelay: "100ms", animationFillMode: "both" }}>
             Stories, updates, and insights
