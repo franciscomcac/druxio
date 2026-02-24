@@ -88,6 +88,7 @@ const CATEGORY_TREE = [
       { id: "UI/UX Design", services: ["Wireframing", "Prototyping", "User Research", "Design System"] },
       { id: "Illustration", services: ["Digital Art", "Character Design", "Concept Art", "Icon Design"] },
       { id: "Copywriting", services: ["Website Copy", "Blog Posts", "Brand Voice", "Taglines"] },
+      { id: "Custom Request", services: ["Any Creative Task", "Unique Request"] },
     ],
   },
   {
