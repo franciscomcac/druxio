@@ -218,7 +218,7 @@ export function buildDisputeAdminEmail(opts: {
         ${infoRow("Seller ID", opts.sellerId)}
         ${infoRow("Reason", opts.reason)}
       `)}
-      ${ctaButton("View in Admin", "https://duxio.lovable.app/admin")}
+      ${ctaButton("View in Admin", "https://druxio.lovable.app/admin")}
     `),
   };
 }
