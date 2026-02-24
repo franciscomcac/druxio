@@ -192,8 +192,16 @@ const Admin = () => {
   const [feedbackRatingFilter, setFeedbackRatingFilter] = useState("all");
   const [feedbackCategoryFilter, setFeedbackCategoryFilter] = useState("all");
 
+  // Reports
+  const [reports, setReports] = useState<ReportRow[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsFilter, setReportsFilter] = useState("pending");
+  const [selectedReport, setSelectedReport] = useState<ReportRow | null>(null);
+  const [reportAdminNote, setReportAdminNote] = useState("");
+  const [reportActionLoading, setReportActionLoading] = useState(false);
+
   // Stats
-  const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0 });
+  const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0, pendingReports: 0 });
 
   // ─── Auth check ─────────────────────────────────────────────────
 
