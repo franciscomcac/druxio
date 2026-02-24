@@ -150,13 +150,6 @@ const CATEGORY_TREE = [
       { id: "Custom Request", services: ["Any Content Task", "Unique Request"] },
     ],
   },
-  {
-    id: "Custom", label: "Custom", icon: MessageSquarePlus,
-    subs: [
-      { id: "General Request", services: ["Any Task", "Custom Work", "Consultation"] },
-      { id: "Other / Unlisted", services: ["Anything Else", "Unique Request", "Special Service"] },
-    ],
-  },
 ];
 
 const CategoryAccordion = ({
