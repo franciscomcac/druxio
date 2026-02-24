@@ -845,15 +845,15 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="container mx-auto px-4 py-6 max-w-7xl">
+        <main className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 max-w-7xl">
         {/* Page header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <ShieldCheck className="h-5 w-5 text-primary" />
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Manage disputes, orders, users, and withdrawals</p>
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground">Admin Dashboard</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Manage disputes, orders, users, and withdrawals</p>
           </div>
         </div>
 
