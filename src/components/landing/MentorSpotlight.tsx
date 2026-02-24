@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, TrendingUp } from "lucide-react";
@@ -106,21 +106,7 @@ function pickRandom(pool: typeof allRequests, count: number): (typeof allRequest
 
 const MentorSpotlight = () => {
   const ref = useScrollReveal<HTMLElement>();
-  const [visible, setVisible] = useState(() => pickRandom(allRequests, 5));
-  const [fading, setFading] = useState(false);
-
-  const cycle = useCallback(() => {
-    setFading(true);
-    setTimeout(() => {
-      setVisible(pickRandom(allRequests, 5));
-      setFading(false);
-    }, 400);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(cycle, 6000);
-    return () => clearInterval(interval);
-  }, [cycle]);
+  const [visible] = useState(() => pickRandom(allRequests, 5));
 
   return (
     <section ref={ref} className="relative bg-background py-28 overflow-hidden">
@@ -142,7 +128,7 @@ const MentorSpotlight = () => {
           </div>
         </div>
 
-        <div className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 transition-all duration-400 ${fading ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {visible.map((req, i) => (
             <Card
               key={`${req.title}-${i}`}
