@@ -188,7 +188,7 @@ const Hero = () => {
           </h1>
 
           <p className="mb-10 text-lg md:text-xl text-foreground/60 max-w-xl mx-auto leading-relaxed animate-fade-in [animation-delay:200ms]">
-            Describe what you need. Verified experts compete with fixed-price quotes in under 2 minutes.
+            Get verified quotes in under 2 minutes. Escrow-protected — you only pay when satisfied.
           </p>
 
           {/* Inline task form */}
