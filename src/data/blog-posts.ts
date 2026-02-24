@@ -67,7 +67,7 @@ If the match doesn't feel right, you can reject it with one click and browse cat
 
 ## Why This Matters
 
-Speed is central to the Duxio experience. The faster you can post a request, the faster experts get notified, and the faster you receive quotes. Every second of friction we remove from the posting flow directly improves the quality of the experience for both clients and experts.
+Speed is central to the Druxio experience. The faster you can post a request, the faster experts get notified, and the faster you receive quotes. Every second of friction we remove from the posting flow directly improves the quality of the experience for both clients and experts.
 
 With AI Auto-Match, first-time users no longer need to learn our category structure. They just describe their problem and start receiving expert quotes.
 
