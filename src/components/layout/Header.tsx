@@ -113,7 +113,7 @@ const Header = () => {
             <>
               <Link to="/post-request">
                 <Button size="sm" className="gap-2 shadow-glow hover:shadow-glow-lg transition-shadow">
-                  <Plus className="h-4 w-4" /> Post Request
+                  <Plus className="h-4 w-4" /> Post a Task
                 </Button>
               </Link>
               <Button id="tour-wallet-link" variant="ghost" size="sm" className="gap-1.5 hover:bg-primary/[0.06] text-sm font-medium" onClick={() => navigate("/wallet")}>
@@ -261,7 +261,7 @@ const Header = () => {
                     </div>
 
                     <Link to="/post-request" onClick={() => setIsOpen(false)}>
-                      <Button className="w-full gap-2 mb-2 shadow-glow"><Plus className="h-4 w-4" /> Post Request</Button>
+                      <Button className="w-full gap-2 mb-2 shadow-glow"><Plus className="h-4 w-4" /> Post a Task</Button>
                     </Link>
                     <Link to="/dashboard" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" className="w-full justify-start gap-2 h-11"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>

@@ -188,7 +188,7 @@ const Hero = () => {
           </h1>
 
           <p className="mb-10 text-lg md:text-xl text-foreground/60 max-w-xl mx-auto leading-relaxed animate-fade-in [animation-delay:200ms]">
-            Describe what you need. Verified experts compete with fixed-price quotes in under 2 minutes.
+            Get verified quotes in under 2 minutes. Escrow-protected — you only pay when satisfied.
           </p>
 
           {/* Inline task form */}
@@ -199,6 +199,7 @@ const Hero = () => {
                   value={taskTitle}
                   onChange={(e) => setTaskTitle(e.target.value)}
                   placeholder=""
+                  aria-label="Describe your task"
                   className="h-12 rounded-sm border-0 bg-transparent text-base placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 {/* Animated placeholder — only shown when input is empty */}
@@ -212,13 +213,17 @@ const Hero = () => {
                 )}
               </div>
               <Button type="submit" size="lg" className="h-12 px-8 rounded-sm gap-2 font-bold shrink-0 text-base">
-                Post Task <ArrowRight className="h-5 w-5" />
+                Post a Task <ArrowRight className="h-5 w-5" />
               </Button>
             </div>
           </form>
 
+          <p className="text-xs text-muted-foreground/50 mb-2 animate-fade-in [animation-delay:350ms]">
+            Describe any task — our AI matches you with the right expert
+          </p>
+
           <p className="text-sm text-muted-foreground/70 mb-12 animate-fade-in [animation-delay:400ms]">
-            Free to post · No commitment · Pay only when satisfied
+            Free to post · Only 5% fee · Escrow-protected
           </p>
 
           {/* Trust row */}

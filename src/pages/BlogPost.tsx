@@ -244,7 +244,7 @@ const BlogPost = () => {
           </p>
           <div className="flex justify-center gap-3 flex-wrap">
             <Button asChild>
-              <Link to="/post-request">Post a Request</Link>
+              <Link to="/post-request">Post a Task</Link>
             </Button>
             <Button variant="outline" asChild>
               <Link to="/search">Browse Experts</Link>

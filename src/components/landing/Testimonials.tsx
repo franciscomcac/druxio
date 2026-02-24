@@ -5,11 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
 const testimonials = [
-  { name: "Alex M.", role: "Buyer", initials: "AM", content: "Posted a Minecraft server debug request at 11pm — had 3 quotes in 90 seconds. Fixed in 15 minutes for €8. Insane.", rating: 5, category: "Gaming" },
-  { name: "Sarah K.", role: "Expert", initials: "SK", content: "I make €200/week just answering Discord bot questions in my spare time. The real-time pings mean I never miss a gig.", rating: 5, category: "Tech" },
-  { name: "Marcus J.", role: "Buyer", initials: "MJ", content: "Needed SEO help urgently before a launch. Got a quote in under a minute, expert delivered in 20 min. Worth every cent.", rating: 5, category: "Business" },
-  { name: "Elena R.", role: "Expert", initials: "ER", content: "As a graphic designer, Duxio fills my downtime perfectly. Quick jobs, instant payment, no negotiations.", rating: 5, category: "Creative" },
-  { name: "David L.", role: "Buyer", initials: "DL", content: "The payment system gives me confidence. I only pay when the work is actually done. No scams.", rating: 5, category: "Gaming" },
+  { name: "Alex M.", role: "Buyer", initials: "AM", content: "Posted a Minecraft server debug request at 11pm — had 3 quotes in 90 seconds. Fixed in 15 minutes for €8. Insane.", rating: 5, category: "Gaming", timeAgo: "2 days ago" },
+  { name: "Sarah K.", role: "Expert", initials: "SK", content: "I make €200/week just answering Discord bot questions in my spare time. The real-time pings mean I never miss a gig.", rating: 5, category: "Tech", timeAgo: "5 days ago" },
+  { name: "Marcus J.", role: "Buyer", initials: "MJ", content: "Needed SEO help urgently before a launch. Got a quote in under a minute, expert delivered in 20 min. Worth every cent.", rating: 5, category: "Business", timeAgo: "1 week ago" },
+  { name: "Elena R.", role: "Expert", initials: "ER", content: "As a graphic designer, Duxio fills my downtime perfectly. Quick jobs, instant payment, no negotiations.", rating: 5, category: "Creative", timeAgo: "3 days ago" },
+  { name: "Tom W.", role: "Buyer", initials: "TW", content: "Hired someone to set up my Shopify store in under an hour. The escrow system meant zero risk. Will definitely use again.", rating: 5, category: "Business", timeAgo: "4 days ago" },
 ];
 
 const Testimonials = () => {
@@ -98,7 +98,7 @@ const Testimonials = () => {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-foreground">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                    <p className="text-xs text-muted-foreground">{t.role} · {t.timeAgo}</p>
                   </div>
                 </div>
               </div>
