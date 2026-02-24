@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const FROM = "Duxio <noreply@duxio.lovable.app>";
+const FROM = "Druxio <noreply@druxio.lovable.app>";
 
 function emailTemplate(content: string) {
   return `<!DOCTYPE html>
