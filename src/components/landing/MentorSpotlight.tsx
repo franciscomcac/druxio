@@ -106,21 +106,7 @@ function pickRandom(pool: typeof allRequests, count: number): (typeof allRequest
 
 const MentorSpotlight = () => {
   const ref = useScrollReveal<HTMLElement>();
-  const [visible, setVisible] = useState(() => pickRandom(allRequests, 5));
-  const [fading, setFading] = useState(false);
-
-  const cycle = useCallback(() => {
-    setFading(true);
-    setTimeout(() => {
-      setVisible(pickRandom(allRequests, 5));
-      setFading(false);
-    }, 400);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(cycle, 6000);
-    return () => clearInterval(interval);
-  }, [cycle]);
+  const [visible] = useState(() => pickRandom(allRequests, 5));
 
   return (
     <section ref={ref} className="relative bg-background py-28 overflow-hidden">
