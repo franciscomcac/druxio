@@ -75,7 +75,7 @@ With AI Auto-Match, first-time users no longer need to learn our category struct
 
 We haven't removed anything. If you prefer to browse categories yourself — because you already know exactly what you need, or you enjoy exploring what's available — the full category grid is one click away.
 
-In fact, we've also expanded the category selection with a dedicated **Custom** category for requests that don't fit neatly into existing options. Between AI Auto-Match and Custom requests, there's now no task that Duxio can't handle.
+In fact, we've also expanded the category selection with a dedicated **Custom** category for requests that don't fit neatly into existing options. Between AI Auto-Match and Custom requests, there's now no task that Druxio can't handle.
 
 ## What's Next
 
