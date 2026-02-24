@@ -144,6 +144,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Content: Podcasting", label: "Podcasting", icon: Podcast },
     { id: "Content: Blogging", label: "Blogging & SEO Writing", icon: FileText },
     { id: "Content: Community", label: "Community Management", icon: Users },
+    { id: "Content: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Custom: [
     { id: "Custom: General", label: "General Request", icon: MessageSquarePlus },
