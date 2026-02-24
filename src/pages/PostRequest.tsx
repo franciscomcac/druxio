@@ -97,6 +97,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Creative: UI/UX", label: "UI/UX Design", icon: Layers },
     { id: "Creative: Illustration", label: "Illustration", icon: Brush },
     { id: "Creative: Copywriting", label: "Copywriting", icon: Type },
+    { id: "Creative: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Music: [
     { id: "Music: Production", label: "Production", icon: Headphones },
