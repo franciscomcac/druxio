@@ -1632,11 +1632,16 @@ const Admin = () => {
               </DialogTitle>
             </DialogHeader>
             {selectedReport && (
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Reported User</p>
-                    <p className="font-medium text-foreground">{selectedReport.reported_user_name}</p>
+                    <p className="font-medium text-foreground">
+                      {selectedReport.reported_user_name}
+                      {selectedReport.is_banned && (
+                        <Badge variant="destructive" className="ml-2 text-[10px]">BANNED</Badge>
+                      )}
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Reporter</p>
@@ -1659,6 +1664,20 @@ const Admin = () => {
                   </div>
                 )}
 
+                {/* Evidence images */}
+                {reportSignedUrls.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Evidence ({reportSignedUrls.length} image{reportSignedUrls.length > 1 ? "s" : ""})</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {reportSignedUrls.map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="aspect-square rounded-md overflow-hidden border border-border hover:border-primary transition-colors">
+                          <img src={url} alt={`Evidence ${i + 1}`} className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="report-admin-note">Admin Notes</Label>
                   <Textarea
@@ -1670,7 +1689,7 @@ const Admin = () => {
                   />
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     size="sm"
                     variant="destructive"
@@ -1698,7 +1717,27 @@ const Admin = () => {
                   </Button>
                 </div>
 
+                {/* Ban / Unban section */}
                 <div className="flex gap-2 pt-2 border-t border-border">
+                  {selectedReport.is_banned ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={reportActionLoading}
+                      onClick={() => handleBanUser(selectedReport.reported_user_id, selectedReport.reported_user_name, false)}
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-1" /> Unban User
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={reportActionLoading}
+                      onClick={() => handleBanUser(selectedReport.reported_user_id, selectedReport.reported_user_name, true)}
+                    >
+                      <Ban className="h-4 w-4 mr-1" /> Ban User
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
