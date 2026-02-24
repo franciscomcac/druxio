@@ -165,7 +165,7 @@ serve(async (req) => {
             ${row("Reason", reason)}
           `)}
           ${p("A refund will be processed. If you have questions, contact our support team.")}
-          ${cta("Contact Support", "https://duxio.lovable.app/dashboard")}
+          ${cta("Contact Support", "https://druxio.lovable.app/dashboard")}
         `);
         await sendResend(buyerEmail, `Order cancelled — "${job.title}"`, html, resendKey);
       }
