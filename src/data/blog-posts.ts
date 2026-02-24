@@ -203,7 +203,7 @@ There's a problem almost everyone faces at some point: **you need expert help, b
 
 You've hit a wall on a financial decision. You need a second opinion on a contract clause. You want a professional to review your pitch deck before tomorrow's meeting. You're trying to understand a medical report. You need someone to walk you through a complex software issue.
 
-The traditional options are slow, expensive, or inaccessible. Duxio exists to change that.
+The traditional options are slow, expensive, or inaccessible. Druxio exists to change that.
 
 ## The Old Way: Broken for Short-Term Needs
 
