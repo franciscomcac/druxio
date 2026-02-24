@@ -834,12 +834,21 @@ const ActiveRequest = () => {
       return (
         <button
           key={convo.jobId}
-          onClick={() => handleSwitchConvo(convo)}
+          onClick={() => {
+            if (isDemo(convo)) {
+              // Demo quote — show demo content in main area
+              setActiveConvoJobId(convo.jobId);
+              setActiveConvo(convo);
+              setSellerChatMessages([]);
+              return;
+            }
+            handleSwitchConvo(convo);
+          }}
           className={`w-full text-left rounded-xl p-3 transition-all ${
             isActive
               ? "bg-primary/10 border border-primary/20"
               : "hover:bg-muted/50 border border-transparent"
-          }`}
+          } ${isDemo(convo) ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background" : ""}`}
         >
           <div className="flex items-start gap-2.5">
             {/* Urgency dot */}
