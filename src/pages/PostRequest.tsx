@@ -86,6 +86,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Business: Sales", label: "Sales & Outreach", icon: Megaphone },
     { id: "Business: Investing", label: "Investing & Crypto", icon: HandCoins },
     { id: "Business: HR", label: "HR & Hiring", icon: Users2 },
+    { id: "Business: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Creative: [
     { id: "Creative: Design", label: "Graphic Design", icon: PenTool },
