@@ -135,23 +135,25 @@ const ActiveRequest = () => {
   const [withdrawDialog, setWithdrawDialog] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
 
-  // Demo chat state
+  // Demo scripted conversation
+  const [demoScriptIndex, setDemoScriptIndex] = useState(0);
   const [demoChatMessages, setDemoChatMessages] = useState<ChatMessage[]>([]);
-  const [demoChatInput, setDemoChatInput] = useState("");
   const [demoPrice, setDemoPrice] = useState(15);
   const [demoDelivery, setDemoDelivery] = useState(60);
+  const [demoOfferUpdated, setDemoOfferUpdated] = useState(false);
 
-  // Demo bot replies
-  const DEMO_BOT_REPLIES = [
-    "Thanks for your offer! 🙌 Can you tell me more about your experience with this?",
-    "That price looks fair. How quickly can you start?",
-    "I see you updated your offer — thanks! Let me think about it.",
-    "Your delivery time works for me. Do you have any portfolio examples?",
-    "Great, I appreciate the quick response! I'll make my decision soon.",
-    "Sounds good! I'm comparing a few experts right now.",
+  // Full scripted conversation — seller clicks send to advance
+  const DEMO_SCRIPT: { sender: "buyer" | "seller"; content: string }[] = [
+    { sender: "buyer", content: "Hi there! 👋 I need help with this task. Can you tell me about your experience?" },
+    { sender: "seller", content: "Hi! I have 3+ years of experience in this area. I can deliver high-quality work within the deadline." },
+    { sender: "buyer", content: "That sounds great! Your price seems fair. Can you start right away?" },
+    { sender: "seller", content: "Absolutely! I can start working on it immediately after you accept my offer." },
+    { sender: "buyer", content: "Perfect! I'll review all offers and get back to you soon. Thanks for the quick response! 🙌" },
   ];
 
-  // Initialize demo chat with welcome message on mount
+  const DEMO_OFFER_REPLY = "I see you updated your offer — thanks! That looks even better. Let me compare with the other quotes. 🤔";
+
+  // Initialize demo chat with the order request card
   useEffect(() => {
     if (demoChatMessages.length === 0) {
       const storedQuote = sessionStorage.getItem("demo_quote_data");
@@ -171,39 +173,51 @@ const ActiveRequest = () => {
           sender_id: "demo-buyer",
           created_at: new Date(Date.now() - 60000).toISOString(),
         },
-        {
-          id: "demo-welcome-2",
-          content: "Hi there! 👋 I posted this request and I'd love to see what you can offer. Feel free to send me a message or update your quote!",
-          sender_id: "demo-buyer",
-          created_at: new Date(Date.now() - 30000).toISOString(),
-        },
       ];
       setDemoChatMessages(welcomeMessages);
+      // Auto-show first buyer message after a short delay
+      setTimeout(() => {
+        setDemoChatMessages(prev => [...prev, {
+          id: "demo-script-0",
+          content: DEMO_SCRIPT[0].content,
+          sender_id: "demo-buyer",
+          created_at: new Date().toISOString(),
+        }]);
+        setDemoScriptIndex(1);
+      }, 800);
     }
   }, []);
 
+  // Get the next seller message to "send"
+  const nextSellerMessage = demoScriptIndex < DEMO_SCRIPT.length && DEMO_SCRIPT[demoScriptIndex].sender === "seller"
+    ? DEMO_SCRIPT[demoScriptIndex].content
+    : null;
+
   const handleSendDemoChat = () => {
-    if (!demoChatInput.trim()) return;
-    const userMsg: ChatMessage = {
-      id: `demo-user-${Date.now()}`,
-      content: demoChatInput.trim(),
+    if (!nextSellerMessage) return;
+    // Add seller message
+    const sellerMsg: ChatMessage = {
+      id: `demo-script-${demoScriptIndex}`,
+      content: nextSellerMessage,
       sender_id: userId || "me",
       created_at: new Date().toISOString(),
     };
-    setDemoChatMessages(prev => [...prev, userMsg]);
-    setDemoChatInput("");
+    setDemoChatMessages(prev => [...prev, sellerMsg]);
+    const nextIdx = demoScriptIndex + 1;
+    setDemoScriptIndex(nextIdx);
 
-    // Bot auto-reply after 1-2 seconds
-    setTimeout(() => {
-      const replyIndex = Math.floor(Math.random() * DEMO_BOT_REPLIES.length);
-      const botMsg: ChatMessage = {
-        id: `demo-bot-${Date.now()}`,
-        content: DEMO_BOT_REPLIES[replyIndex],
-        sender_id: "demo-buyer",
-        created_at: new Date().toISOString(),
-      };
-      setDemoChatMessages(prev => [...prev, botMsg]);
-    }, 1000 + Math.random() * 1500);
+    // If next is a buyer message, auto-show it after delay
+    if (nextIdx < DEMO_SCRIPT.length && DEMO_SCRIPT[nextIdx].sender === "buyer") {
+      setTimeout(() => {
+        setDemoChatMessages(prev => [...prev, {
+          id: `demo-script-${nextIdx}`,
+          content: DEMO_SCRIPT[nextIdx].content,
+          sender_id: "demo-buyer",
+          created_at: new Date().toISOString(),
+        }]);
+        setDemoScriptIndex(nextIdx + 1);
+      }, 1200);
+    }
   };
 
   const handleDemoUpdateOffer = () => {
@@ -215,6 +229,7 @@ const ActiveRequest = () => {
     setDemoDelivery(minutes);
     setNewQuotePrice("");
     setNewQuoteMinutes("");
+    setDemoOfferUpdated(true);
 
     // Add offer update message
     const offerMsg: ChatMessage = {
@@ -225,15 +240,14 @@ const ActiveRequest = () => {
     };
     setDemoChatMessages(prev => [...prev, offerMsg]);
 
-    // Bot reply to updated offer
+    // Buyer reply to updated offer
     setTimeout(() => {
-      const botMsg: ChatMessage = {
+      setDemoChatMessages(prev => [...prev, {
         id: `demo-bot-offer-${Date.now()}`,
-        content: "I see you updated your offer — thanks! That looks interesting. Let me compare with other quotes. 🤔",
+        content: DEMO_OFFER_REPLY,
         sender_id: "demo-buyer",
         created_at: new Date().toISOString(),
-      };
-      setDemoChatMessages(prev => [...prev, botMsg]);
+      }]);
     }, 1500);
   };
 
