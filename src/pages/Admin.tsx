@@ -893,13 +893,13 @@ const Admin = () => {
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <DollarSign className="h-5 w-5 text-primary" />
+            <CardContent className="p-2.5 sm:p-4 flex items-center gap-2 sm:gap-3">
+              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">€{stats.revenue.toFixed(2)}</p>
-                <p className="text-xs text-muted-foreground">Revenue</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">€{stats.revenue.toFixed(0)}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground">Revenue</p>
               </div>
             </CardContent>
           </Card>
