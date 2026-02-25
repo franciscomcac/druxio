@@ -29,8 +29,8 @@ const getPasswordStrength = (pwd: string): { level: number; label: string; color
 
 const Auth = () => {
   useSEO({
-    title: "Sign In",
-    description: "Create an account or sign in to Druxio. Post tasks, hire experts, and get work done instantly.",
+    title: "Sign In or Create Account",
+    description: "Join Druxio for free. Post tasks, hire verified freelancers, and get work done instantly with only 5% fees. Escrow-protected payments.",
     canonical: "/auth",
   });
 

@@ -11,7 +11,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 const TermsOfService = () => {
   useSEO({
     title: "Terms of Service",
-    description: "Terms and conditions for using Druxio. Understand your rights and responsibilities as a user.",
+    description: "Terms and conditions for using Druxio. Understand your rights, responsibilities, escrow policy, and dispute resolution as a buyer or expert.",
     canonical: "/terms",
   });
 

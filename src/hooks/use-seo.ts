@@ -38,8 +38,10 @@ function setLink(rel: string, href: string) {
 export function useSEO({ title, description, canonical, ogImage, ogType = "website", noIndex, jsonLd, articlePublishedTime }: SeoOptions) {
   useEffect(() => {
     const fullTitle = title.includes(SITE_NAME) ? title : `${title} — ${SITE_NAME}`;
+    // Keep title under 60 chars for SERP display
+    const truncatedTitle = fullTitle.length > 60 ? fullTitle.slice(0, 57) + "…" : fullTitle;
     const prevTitle = document.title;
-    document.title = fullTitle;
+    document.title = truncatedTitle;
 
     if (description) {
       setMeta("description", description);
@@ -53,8 +55,8 @@ export function useSEO({ title, description, canonical, ogImage, ogType = "websi
       setMeta("og:url", url, "property");
     }
 
-    setMeta("og:title", fullTitle, "property");
-    setMeta("twitter:title", fullTitle);
+    setMeta("og:title", truncatedTitle, "property");
+    setMeta("twitter:title", truncatedTitle);
     setMeta("og:type", ogType, "property");
     setMeta("og:image", ogImage || DEFAULT_OG_IMAGE, "property");
     setMeta("twitter:image", ogImage || DEFAULT_OG_IMAGE);
