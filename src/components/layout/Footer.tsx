@@ -11,11 +11,11 @@ const footerLinks = {
   Company: [
     { label: "Blog", href: "/blog" },
     { label: "How It Works", href: "/how-it-works" },
-    { label: "Contact", href: "mailto:support@druxio.store" },
+    { label: "Contact", href: "mailto:support@druxio.net" },
   ],
   Support: [
     { label: "FAQ", href: "/faq" },
-    { label: "Email Support", href: "mailto:support@druxio.store" },
+    { label: "Email Support", href: "mailto:support@druxio.net" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/privacy" },
