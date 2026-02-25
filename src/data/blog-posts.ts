@@ -110,7 +110,7 @@ As always, we'd love your feedback. Use the Feedback button at the bottom of any
     category: "Announcement",
     coverImage: heroBetaLaunch,
     content: `
-We're thrilled to announce that **Druxio.store is now live in public beta**.
+We're thrilled to announce that **Druxio.net is now live in public beta**.
 
 This is a milestone we've been working toward for a long time — and we couldn't be more excited to finally put it in your hands.
 

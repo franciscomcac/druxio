@@ -65,7 +65,7 @@ const PrivacyPolicy = () => {
         </Section>
 
         <Section title="6. Your Rights">
-          <p>Depending on your jurisdiction you may have the right to: access your personal data, correct inaccurate data, request deletion ("right to be forgotten"), restrict or object to processing, and data portability. To exercise these rights, email <a href="mailto:support@druxio.store" className="text-primary underline underline-offset-4">support@druxio.store</a>. We will respond within 30 days.</p>
+          <p>Depending on your jurisdiction you may have the right to: access your personal data, correct inaccurate data, request deletion ("right to be forgotten"), restrict or object to processing, and data portability. To exercise these rights, email <a href="mailto:support@druxio.net" className="text-primary underline underline-offset-4">support@druxio.net</a>. We will respond within 30 days.</p>
         </Section>
 
         <Section title="7. Security">
@@ -81,7 +81,7 @@ const PrivacyPolicy = () => {
         </Section>
 
         <Section title="10. Contact">
-          <p>For privacy-related questions or requests, contact our Data Protection team at <a href="mailto:support@druxio.store" className="text-primary underline underline-offset-4">support@druxio.store</a>.</p>
+          <p>For privacy-related questions or requests, contact our Data Protection team at <a href="mailto:support@druxio.net" className="text-primary underline underline-offset-4">support@druxio.net</a>.</p>
         </Section>
       </div>
     </main>

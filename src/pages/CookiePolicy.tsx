@@ -95,7 +95,7 @@ const CookiePolicy = () => {
         </Section>
 
         <Section title="6. Contact">
-          <p>For questions about our use of cookies, email <a href="mailto:support@druxio.store" className="text-primary underline underline-offset-4">support@druxio.store</a>.</p>
+          <p>For questions about our use of cookies, email <a href="mailto:support@druxio.net" className="text-primary underline underline-offset-4">support@druxio.net</a>.</p>
         </Section>
       </div>
     </main>

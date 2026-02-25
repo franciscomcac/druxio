@@ -109,12 +109,25 @@ const HowItWorks = () => {
         />
       </div>
 
-      <div className="container mx-auto px-4 pt-16 pb-20 relative z-10">
-        {/* Vertical connector line */}
+      <div className="container mx-auto px-4 pt-10 md:pt-16 pb-16 md:pb-20 relative z-10">
+        {/* Mobile header — shown only on mobile */}
+        <div className="md:hidden mb-8 text-center">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            How It Works
+          </p>
+          <h2 className="mb-3 text-2xl font-bold text-foreground leading-tight">
+            From request to done — here's exactly what happens
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            No sign-up fees, no subscriptions. Post what you need and let experts compete for your job.
+          </p>
+        </div>
+
+        {/* Vertical connector line — desktop only */}
         <div className="hidden md:block absolute left-1/2 top-[80px] bottom-32 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent pointer-events-none" />
 
-        {/* Steps — alternating left/right */}
-        <div className="relative">
+        {/* Steps */}
+        <div className="relative flex flex-col gap-4 md:gap-0">
           {steps.map((step, index) => {
             const isLeft = index % 2 === 0;
             const isVisible = visibleSet.has(index);
@@ -124,35 +137,35 @@ const HowItWorks = () => {
                 key={index}
                 ref={(el) => { refs.current[index] = el; }}
                 data-index={index}
-                className={`flex flex-col md:flex-row items-center gap-8 md:gap-0 transition-all duration-700 ease-out ${
+                className={`flex flex-col md:flex-row items-center md:gap-0 transition-all duration-700 ease-out ${
                   isVisible
                     ? "opacity-100 translate-y-0"
                     : `opacity-0 translate-y-12 ${isLeft ? "md:-translate-x-8" : "md:translate-x-8"}`
                 }`}
-                style={{ transitionDelay: "100ms", marginTop: index === 0 ? 0 : "-6rem" }}
+                style={{ transitionDelay: "100ms", marginTop: index === 0 ? 0 : undefined }}
               >
                 {/* Left spacer or content */}
                 <div className={`w-full md:w-[45%] ${isLeft ? "" : "md:order-2"}`}>
-                  <div className={`rounded-2xl border border-border bg-card/70 backdrop-blur-md p-6 md:p-8 transition-all duration-500 hover:border-primary/30 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.15)] group ${
+                  <div className={`rounded-xl md:rounded-2xl border border-border bg-card/70 backdrop-blur-md p-5 md:p-8 transition-all duration-500 hover:border-primary/30 hover:shadow-[0_0_40px_-10px_hsl(var(--primary)/0.15)] group ${
                     isLeft ? "md:mr-8" : "md:ml-8"
                   }`}>
                     {/* Step number + icon row */}
-                    <div className="flex items-center gap-4 mb-5">
-                      <span className="text-4xl font-bold text-foreground select-none font-mono">
+                    <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-5">
+                      <span className="text-3xl md:text-4xl font-bold text-foreground select-none font-mono">
                         0{index + 1}
                       </span>
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/[0.08] text-primary transition-transform duration-500 group-hover:scale-110 group-hover:bg-primary/[0.12]">
+                      <div className="flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg md:rounded-xl bg-primary/[0.08] text-primary transition-transform duration-500 group-hover:scale-110 group-hover:bg-primary/[0.12]">
                         {step.icon}
                       </div>
                     </div>
 
-                    <h3 className="mb-3 text-xl font-semibold text-foreground">{step.title}</h3>
-                    <p className="text-foreground/70 leading-relaxed mb-5 text-sm">{step.description}</p>
+                    <h3 className="mb-2 md:mb-3 text-lg md:text-xl font-semibold text-foreground">{step.title}</h3>
+                    <p className="text-foreground/70 leading-relaxed mb-3 md:mb-5 text-xs md:text-sm">{step.description}</p>
 
-                    <ul className="grid grid-cols-1 gap-2">
+                    <ul className="grid grid-cols-1 gap-1.5 md:gap-2">
                       {step.details.map((detail, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                          <CheckCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        <li key={i} className="flex items-start gap-2 text-xs md:text-sm text-muted-foreground">
+                          <CheckCircle className="h-3.5 w-3.5 md:h-4 md:w-4 text-primary shrink-0 mt-0.5" />
                           <span>{detail}</span>
                         </li>
                       ))}
@@ -160,14 +173,14 @@ const HowItWorks = () => {
                   </div>
                 </div>
 
-                {/* Center dot on the timeline */}
+                {/* Center dot on the timeline — desktop only */}
                 <div className="hidden md:flex w-[10%] justify-center relative">
                   <div className={`h-4 w-4 rounded-full border-2 border-primary bg-background transition-all duration-500 ${
                     isVisible ? "scale-100 shadow-[0_0_12px_hsl(var(--primary)/0.4)]" : "scale-50"
                   }`} />
                 </div>
 
-                {/* Right spacer — or header for step 1 */}
+                {/* Right spacer — or header for step 1 (desktop only) */}
                 <div className={`hidden md:block w-[45%] ${isLeft ? "" : "md:order-1"}`}>
                   {index === 0 && (
                     <div className="flex flex-col items-end text-right ml-8 -mt-32">
