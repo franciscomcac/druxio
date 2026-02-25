@@ -11,7 +11,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 const PrivacyPolicy = () => {
   useSEO({
     title: "Privacy Policy",
-    description: "How Druxio collects, uses, and protects your personal data. Read our full privacy policy.",
+    description: "How Druxio collects, uses, and protects your personal data. GDPR-compliant privacy practices for our freelance marketplace.",
     canonical: "/privacy",
   });
 

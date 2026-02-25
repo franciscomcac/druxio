@@ -3,8 +3,8 @@ import { useSEO } from "@/hooks/use-seo";
 
 const HowItWorksPage = () => {
   useSEO({
-    title: "How It Works",
-    description: "Learn how to post a task and get instant expert quotes on Druxio. Step-by-step guide to getting work done fast.",
+    title: "How Druxio Works — Post Tasks, Get Quotes",
+    description: "Learn how to post a task and get instant expert quotes on Druxio. 4-step guide: post → get notified → compare quotes → done. Only 5% fee.",
     canonical: "/how-it-works",
     jsonLd: {
       "@context": "https://schema.org",

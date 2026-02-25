@@ -13,7 +13,7 @@ const categoryColor: Record<string, string> = {
 
 const Blog = () => {
   useSEO({
-    title: "Blog",
+    title: "Blog — Freelancing Tips & Platform Updates",
     description: "Tips, guides, and insights on getting work done faster with Druxio. Platform updates, expert advice, and freelancing best practices.",
     canonical: "/blog",
     jsonLd: {
