@@ -110,13 +110,13 @@ Deno.serve(async (req) => {
       .eq("id", userId);
 
     // Build description
+    const feeDetails = [`payout fee €${withdrawalFee.toFixed(2)}`];
+    if (paypalPayoutFee > 0) feeDetails.push(`PayPal fee €${paypalPayoutFee.toFixed(2)}`);
     let description: string;
     if (method === "paypal") {
-      description = paypalPayoutFee > 0
-        ? `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — PayPal fee €${paypalPayoutFee.toFixed(2)}`
-        : `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email})`;
+      description = `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — ${feeDetails.join(", ")}`;
     } else {
-      description = `Withdrawal to ${crypto_token} (${crypto_network})`;
+      description = `Withdrawal €${netAmount.toFixed(2)} to ${crypto_token} (${crypto_network}) — ${feeDetails.join(", ")}`;
     }
 
     // Create transaction record (pending)
