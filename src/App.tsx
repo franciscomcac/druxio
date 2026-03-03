@@ -59,6 +59,9 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
+            {/* Pre-launch signup — standalone, no layout */}
+            <Route path="/coming-soon" element={<ComingSoon />} />
+
             {/* Auth pages — no shared layout */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
