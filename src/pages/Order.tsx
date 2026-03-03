@@ -450,7 +450,7 @@ const Order = () => {
         await supabase.from("messages").insert({
           session_id: sessionId,
           sender_id: userId,
-          content: `⚠️ DISPUTE: ${disputeReason.trim()}`,
+          content: `⚠️ DISPUTE: ${disputeReason.trim()}\n\nBoth parties have 24 hours to reach an agreement. If no resolution is reached, an admin will step in to mediate.`,
         });
       }
 
