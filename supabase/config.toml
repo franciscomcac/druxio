@@ -32,3 +32,9 @@ verify_jwt = false
 
 [functions.stripe-transfer-funds]
 verify_jwt = false
+
+[functions.stripe-refund]
+verify_jwt = false
+
+[functions.admin-order-message]
+verify_jwt = false
