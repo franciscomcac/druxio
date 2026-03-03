@@ -717,35 +717,42 @@ const ActiveRequest = () => {
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleAcceptQuote = (quote: QuoteWithProfile) => setStripeDialog(quote);
 
-  const handlePayPalCheckout = async () => {
-    if (!paypalDialog || !jobId) return;
-    setPaypalLoading(true);
+  const handleStripeCheckout = async () => {
+    if (!stripeDialog || !jobId) return;
+    setStripeLoading(true);
     try {
-      const createRes = await supabase.functions.invoke("paypal-create-order", { body: { quoteId: paypalDialog.id, jobId } });
-      if (createRes.error) throw new Error(createRes.error.message);
-      if (createRes.data?.error) throw new Error(createRes.data.error);
-      const { paypalOrderId, approvalUrl } = createRes.data;
-      if (!approvalUrl) throw new Error("No PayPal approval URL received");
-      const paypalWindow = window.open(approvalUrl, "_blank", "width=500,height=700");
+      const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
+        body: { quoteId: stripeDialog.id, jobId },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      const { url, sessionId: stripeSessionId } = data;
+      if (!url) throw new Error("No checkout URL received");
+
+      // Open Stripe Checkout in a new tab
+      const stripeWindow = window.open(url, "_blank");
+
+      // Poll for completion
       const pollInterval = setInterval(async () => {
         try {
-          const captureRes = await supabase.functions.invoke("paypal-capture-order", { body: { paypalOrderId, quoteId: paypalDialog.id, jobId } });
-          if (captureRes.data?.success) {
+          const { data: webhookData } = await supabase.functions.invoke("stripe-checkout-webhook", {
+            body: { sessionId: stripeSessionId },
+          });
+          if (webhookData?.success) {
             clearInterval(pollInterval);
-            paypalWindow?.close();
-            toast({ title: "Payment successful! 🎉", description: `${paypalDialog.profile?.display_name || "The expert"} will start working now.` });
-            // Email seller: quote accepted (fire-and-forget)
+            stripeWindow?.close();
+            toast({ title: "Payment successful! 🎉", description: `${stripeDialog.profile?.display_name || "The expert"} will start working now.` });
             supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
-            setPaypalDialog(null);
-            setPaypalLoading(false);
+            setStripeDialog(null);
+            setStripeLoading(false);
             navigate(`/order/${jobId}`);
           }
         } catch { /* keep polling */ }
       }, 3000);
-      setTimeout(() => { clearInterval(pollInterval); setPaypalLoading(false); }, 300000);
+      setTimeout(() => { clearInterval(pollInterval); setStripeLoading(false); }, 300000);
     } catch (err: any) {
       toast({ title: "Checkout error", description: err.message, variant: "destructive" });
-      setPaypalLoading(false);
+      setStripeLoading(false);
     }
   };
 
