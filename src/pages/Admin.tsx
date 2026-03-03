@@ -1831,7 +1831,7 @@ const Admin = () => {
       
 
       {/* ═══ Dispute Resolution Dialog ═══ */}
-      <Dialog open={!!disputeAction && !!selectedDispute} onOpenChange={() => { setDisputeAction(null); setSelectedDispute(null); setDisputeNote(""); }}>
+      <Dialog open={!!disputeAction && !!selectedDispute} onOpenChange={() => { setDisputeAction(null); setSelectedDispute(null); setDisputeNote(""); setRefundMethod("balance"); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1854,6 +1854,46 @@ const Admin = () => {
               <p><strong>Seller:</strong> {selectedDispute?.seller_name}</p>
               <p><strong>Reason:</strong> {selectedDispute?.reason}</p>
             </div>
+
+            {/* Refund method choice — only show for refund action */}
+            {disputeAction === "refund" && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Refund Method</Label>
+                <div className="grid grid-cols-1 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setRefundMethod("balance")}
+                    className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
+                      refundMethod === "balance"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30"
+                    }`}
+                  >
+                    <Wallet className={`h-5 w-5 mt-0.5 shrink-0 ${refundMethod === "balance" ? "text-primary" : "text-muted-foreground"}`} />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Store Balance</p>
+                      <p className="text-xs text-muted-foreground">Instant — credited to buyer's wallet immediately</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRefundMethod("source")}
+                    className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${
+                      refundMethod === "source"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30"
+                    }`}
+                  >
+                    <CreditCard className={`h-5 w-5 mt-0.5 shrink-0 ${refundMethod === "source" ? "text-primary" : "text-muted-foreground"}`} />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Original Payment Method</p>
+                      <p className="text-xs text-muted-foreground">Via Stripe — takes up to 7 business days</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
+
             <Textarea
               value={disputeNote}
               onChange={(e) => setDisputeNote(e.target.value)}
@@ -1862,7 +1902,7 @@ const Admin = () => {
             />
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => { setDisputeAction(null); setSelectedDispute(null); }} disabled={disputeActionLoading}>
+            <Button variant="outline" onClick={() => { setDisputeAction(null); setSelectedDispute(null); setRefundMethod("balance"); }} disabled={disputeActionLoading}>
               Cancel
             </Button>
             <Button
