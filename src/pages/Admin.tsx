@@ -1963,6 +1963,34 @@ const Admin = () => {
           )}
         </DialogContent>
       </Dialog>
+      {/* ═══ ADMIN MESSAGE TO ORDER DIALOG ═══ */}
+      <Dialog open={!!adminMsgOrderId} onOpenChange={(open) => { if (!open) setAdminMsgOrderId(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              Send Admin Message
+            </DialogTitle>
+            <DialogDescription>
+              This message will appear as a system notification in the order chat, visible to both buyer and seller.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Type your message to both parties..."
+            value={adminMsgText}
+            onChange={(e) => setAdminMsgText(e.target.value)}
+            rows={4}
+            className="resize-none"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdminMsgOrderId(null)}>Cancel</Button>
+            <Button onClick={handleSendAdminOrderMessage} disabled={adminMsgSending || !adminMsgText.trim()} className="gap-2">
+              {adminMsgSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send Message
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
