@@ -139,7 +139,7 @@ Once you accept a quote, a dedicated session workspace opens. You and your exper
 Your payment is held in escrow from the moment you accept a quote. The expert only receives funds once the work is marked complete — protecting both sides of every transaction.
 
 ### Wallet and Withdrawals
-Experts accumulate earnings directly in their Druxio wallet. Withdrawals can be initiated via PayPal or crypto, with admin review ensuring everything processes cleanly.
+Experts receive earnings directly to their bank account via Stripe Connect. Payouts are automatic — no manual withdrawals needed.
 
 ### AI-Assisted Tools
 We've built AI into several parts of the platform — from helping clients refine their request descriptions before posting, to surfacing the best-matched experts for a given need, to generating session summaries after a session ends.
