@@ -188,7 +188,7 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
   ],
   "What are the platform fees?": [
     { q: "How much does the platform charge?", a: "The platform charges a service fee on each completed order. The exact percentage is shown when you submit a quote." },
-    { q: "Are there any other fees?", a: "No withdrawal fees — Stripe handles payouts directly to your bank. The only fee is the 5% platform fee deducted from each order." },
+    { q: "Are there any other fees?", a: "Standard Stripe payout fees may apply when funds are transferred to your bank. The platform also charges a 5% fee deducted from each order." },
   ],
   "What is allowed in orders?": [
     { q: "What services can I offer?", a: "You can offer any digital service that complies with our Terms of Service: tutoring, consulting, gaming help, tech support, and more." },

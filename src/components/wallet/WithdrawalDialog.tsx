@@ -101,7 +101,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                   <li>• When a buyer confirms delivery, your earnings (minus 5% fee) are transferred instantly</li>
                   <li>• Stripe sends the money to your bank account on a rolling basis</li>
                   <li>• You can view payout details in your Stripe dashboard</li>
-                  <li>• No withdrawal fees — Stripe handles everything</li>
+                  <li>• Standard Stripe payout fees may apply</li>
                 </ul>
               </div>
 
@@ -138,7 +138,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {stripeStatus?.connected
                       ? "Your Stripe account needs additional details before you can receive payouts."
-                      : "Set up your Stripe account to receive direct payouts from completed orders. No withdrawal fees!"}
+                      : "Set up your Stripe account to receive direct payouts from completed orders."}
                   </p>
                 </div>
               </div>
@@ -147,7 +147,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                 <p className="text-sm font-medium text-foreground">Benefits</p>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li>✓ Direct bank transfers — no manual withdrawals</li>
-                  <li>✓ No withdrawal fees</li>
+                  <li>✓ Low payout fees handled by Stripe</li>
                   <li>✓ Automatic payouts on a rolling schedule</li>
                   <li>✓ Secure, powered by Stripe</li>
                 </ul>
