@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, CheckCircle, Rocket, ArrowRight, Zap, Shield, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSeo } from "@/hooks/use-seo";
+import { useSEO } from "@/hooks/use-seo";
 
 const ComingSoon = () => {
   const [email, setEmail] = useState("");
