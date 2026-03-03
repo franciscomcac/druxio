@@ -8,6 +8,8 @@ const corsHeaders = {
 };
 
 const PLATFORM_RATE = 0.05; // 5% buyer fee
+const STRIPE_RATE = 0.029; // ~2.9%
+const STRIPE_FIXED = 0.30; // €0.30
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -75,7 +77,10 @@ Deno.serve(async (req) => {
 
     const basePrice = Number(quote.price);
     const platformFee = Math.round(basePrice * PLATFORM_RATE * 100) / 100;
-    const total = Math.round((basePrice + platformFee) * 100) / 100;
+    const subtotal = basePrice + platformFee;
+    // Pass Stripe processing fees to buyer: total = (subtotal + fixed) / (1 - rate)
+    const total = Math.round(((subtotal + STRIPE_FIXED) / (1 - STRIPE_RATE)) * 100) / 100;
+    const stripeFee = Math.round((total - subtotal) * 100) / 100;
     const totalCents = Math.round(total * 100);
 
     // Create Stripe Checkout Session
