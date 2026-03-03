@@ -147,7 +147,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                 <p className="text-sm font-medium text-foreground">Benefits</p>
                 <ul className="text-xs text-muted-foreground space-y-1">
                   <li>✓ Direct bank transfers — no manual withdrawals</li>
-                  <li>✓ No withdrawal fees</li>
+                  <li>✓ Low payout fees handled by Stripe</li>
                   <li>✓ Automatic payouts on a rolling schedule</li>
                   <li>✓ Secure, powered by Stripe</li>
                 </ul>
