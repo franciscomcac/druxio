@@ -6,7 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Platform fee (5%) is deducted at order completion — NOT at withdrawal
+// Flat withdrawal/payout fee charged to seller
+const WITHDRAWAL_FEE = 0.25; // €0.25 per withdrawal
 // PayPal Payouts fee: 2% of amount, capped at €1.00 (EUR standard)
 const PAYPAL_PAYOUT_RATE = 0.02;
 const PAYPAL_PAYOUT_CAP = 1.00;
@@ -20,10 +21,10 @@ function calcWithdrawalFees(grossAmount: number, method: string) {
     );
   }
 
-  const totalFee = paypalPayoutFee;
+  const totalFee = Math.round((WITHDRAWAL_FEE + paypalPayoutFee) * 100) / 100;
   const netAmount = Math.round((grossAmount - totalFee) * 100) / 100;
 
-  return { platformFee: 0, paypalPayoutFee, totalFee, netAmount };
+  return { withdrawalFee: WITHDRAWAL_FEE, paypalPayoutFee, totalFee, netAmount };
 }
 
 Deno.serve(async (req) => {
@@ -100,7 +101,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { platformFee, paypalPayoutFee, totalFee, netAmount } = calcWithdrawalFees(amount, method);
+    const { withdrawalFee, paypalPayoutFee, totalFee, netAmount } = calcWithdrawalFees(amount, method);
 
     // Deduct full amount from wallet
     await adminClient
@@ -109,13 +110,13 @@ Deno.serve(async (req) => {
       .eq("id", userId);
 
     // Build description
+    const feeDetails = [`payout fee €${withdrawalFee.toFixed(2)}`];
+    if (paypalPayoutFee > 0) feeDetails.push(`PayPal fee €${paypalPayoutFee.toFixed(2)}`);
     let description: string;
     if (method === "paypal") {
-      description = paypalPayoutFee > 0
-        ? `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — PayPal fee €${paypalPayoutFee.toFixed(2)}`
-        : `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email})`;
+      description = `Withdrawal €${netAmount.toFixed(2)} to PayPal (${paypal_email}) — ${feeDetails.join(", ")}`;
     } else {
-      description = `Withdrawal to ${crypto_token} (${crypto_network})`;
+      description = `Withdrawal €${netAmount.toFixed(2)} to ${crypto_token} (${crypto_network}) — ${feeDetails.join(", ")}`;
     }
 
     // Create transaction record (pending)
@@ -225,7 +226,7 @@ Deno.serve(async (req) => {
         success: true,
         status: "pending",
         message: "Withdrawal submitted. It will be processed manually within 24-48h.",
-        breakdown: { grossAmount: amount, platformFee, paypalPayoutFee, totalFee, netAmount },
+        breakdown: { grossAmount: amount, withdrawalFee, paypalPayoutFee, totalFee, netAmount },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -92,32 +92,47 @@ const Wallet = () => {
   const filterByType = (types: string[]) =>
     transactions.filter(t => types.includes(t.type));
 
-  const renderTransaction = (tx: Transaction, index: number) => (
-    <div
-      key={tx.id}
-      className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-200 animate-fade-in"
-      style={{ animationDelay: `${index * 50}ms` }}
-    >
-      <div className="flex items-center gap-4">
-        <div className="p-2.5 rounded-lg bg-accent/60">{getTransactionIcon(tx.type)}</div>
-        <div>
-          <p className="font-medium text-foreground text-sm">{tx.description}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border/40">{typeLabels[tx.type] || tx.type}</Badge>
-            <span className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</span>
+  // Extract fee info from description for subtle display
+  const extractFeeFromDescription = (desc: string) => {
+    const feeMatch = desc.match(/minus 5% fee \(€([\d.]+)\)/);
+    if (feeMatch) return { cleanDesc: desc.replace(/ — €[\d.]+ minus 5% fee \(€[\d.]+\)/, ''), feeLabel: `5% fee: €${feeMatch[1]}` };
+    const wdFeeMatch = desc.match(/ — (.+)$/);
+    if (wdFeeMatch) return { cleanDesc: desc.replace(/ — .+$/, ''), feeLabel: wdFeeMatch[1] };
+    return { cleanDesc: desc, feeLabel: null };
+  };
+
+  const renderTransaction = (tx: Transaction, index: number) => {
+    const { cleanDesc, feeLabel } = extractFeeFromDescription(tx.description);
+    return (
+      <div
+        key={tx.id}
+        className="flex items-center justify-between p-4 rounded-lg border border-border/60 bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-200 animate-fade-in"
+        style={{ animationDelay: `${index * 50}ms` }}
+      >
+        <div className="flex items-center gap-4">
+          <div className="p-2.5 rounded-lg bg-accent/60">{getTransactionIcon(tx.type)}</div>
+          <div>
+            <p className="font-medium text-foreground text-sm">{cleanDesc}</p>
+            {feeLabel && (
+              <p className="text-[10px] text-muted-foreground/60 mt-0.5">{feeLabel}</p>
+            )}
+            <div className="flex items-center gap-2 mt-1">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-border/40">{typeLabels[tx.type] || tx.type}</Badge>
+              <span className="text-xs text-muted-foreground">{formatDate(tx.created_at)}</span>
+            </div>
           </div>
         </div>
+        <div className="text-right">
+          <p className={`font-semibold text-sm ${isIncome(tx.type) ? "text-chart-2" : "text-destructive"}`}>
+            {isIncome(tx.type) ? "+" : "−"}{format(tx.amount)}
+          </p>
+          <Badge variant={tx.status === "completed" ? "secondary" : tx.status === "pending" ? "outline" : "destructive"} className="text-[10px] mt-0.5">
+            {tx.status}
+          </Badge>
+        </div>
       </div>
-      <div className="text-right">
-        <p className={`font-semibold text-sm ${isIncome(tx.type) ? "text-chart-2" : "text-destructive"}`}>
-          {isIncome(tx.type) ? "+" : "−"}{format(tx.amount)}
-        </p>
-        <Badge variant={tx.status === "completed" ? "secondary" : tx.status === "pending" ? "outline" : "destructive"} className="text-[10px] mt-0.5">
-          {tx.status}
-        </Badge>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderEmptyState = (message: string) => (
     <div className="text-center py-16 text-muted-foreground animate-fade-in">
@@ -146,7 +161,7 @@ const Wallet = () => {
   const infoCards = [
     { icon: CreditCard, title: "Pay When You Confirm", desc: "Charged only after accepting a quote." },
     { icon: ShieldCheck, title: "Escrow Protection", desc: "Funds held until delivery is confirmed." },
-    { icon: Receipt, title: "Transparent Fees", desc: "Buyers: 5% platform fee. Sellers: 5% at payout. Standard Stripe fees apply." },
+    { icon: Receipt, title: "Transparent Fees", desc: "Buyers: 5% platform fee + processing. Sellers: 5% on earnings + €0.25 per withdrawal." },
   ];
 
   return (
