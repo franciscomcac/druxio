@@ -1113,8 +1113,14 @@ const Admin = () => {
                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => navigate(`/order/${d.job_id}`)}>
                              <Eye className="h-3 w-3" /> View
                            </Button>
+                           <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => handleDisputeResume(d)}>
+                             <RefreshCw className="h-3 w-3" /> Resume
+                           </Button>
+                           <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-chart-2 hover:bg-chart-2/10" onClick={() => handleDisputeEscalate(d)}>
+                             <AlertTriangle className="h-3 w-3" /> Escalate
+                           </Button>
                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-destructive hover:bg-destructive/10" onClick={() => { setSelectedDispute(d); setDisputeAction("refund"); }}>
-                             <RefreshCw className="h-3 w-3" /> Refund
+                             <DollarSign className="h-3 w-3" /> Refund
                            </Button>
                            <Button size="sm" className="gap-1 text-xs h-8" onClick={() => { setSelectedDispute(d); setDisputeAction("release"); }}>
                              <DollarSign className="h-3 w-3" /> Release
