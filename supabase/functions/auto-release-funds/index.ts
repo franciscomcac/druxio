@@ -70,12 +70,13 @@ Deno.serve(async (req) => {
             metadata: { job_id: job.id, seller_id: quote.expert_id, auto_release: "true" },
           });
 
+          const platformFeeAmt = Math.round(servicePrice * PLATFORM_FEE_RATE * 100) / 100;
           await supabase.from("transactions").insert({
             user_id: quote.expert_id,
             amount: sellerEarning,
             type: "session_earning",
             status: "completed",
-            description: `Auto-released: job ${job.id} (transferred via Stripe)`,
+            description: `Auto-released: job ${job.id} — €${servicePrice.toFixed(2)} minus 5% fee (€${platformFeeAmt.toFixed(2)})`,
             stripe_payment_id: transfer.id,
           });
         } else {
