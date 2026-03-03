@@ -1440,6 +1440,37 @@ const Order = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Seller Refund Dialog */}
+      <Dialog open={sellerRefundOpen} onOpenChange={setSellerRefundOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Undo2 className="h-5 w-5 text-destructive" /> Refund Buyer
+            </DialogTitle>
+            <DialogDescription>
+              This will issue a full refund to the buyer's store balance and cancel the order. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-2 text-sm">
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <span>The full amount (including fees) will be credited to the buyer's store balance <strong className="text-foreground">instantly</strong>.</span>
+            </div>
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              <span>This order will be <strong className="text-foreground">cancelled</strong> immediately.</span>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setSellerRefundOpen(false)} disabled={sellerRefundLoading}>Cancel</Button>
+            <Button variant="destructive" onClick={handleSellerRefund} disabled={sellerRefundLoading} className="gap-2">
+              {sellerRefundLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
+              {sellerRefundLoading ? "Processing..." : "Confirm Refund"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
