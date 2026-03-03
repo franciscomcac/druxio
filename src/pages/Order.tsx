@@ -792,9 +792,9 @@ const Order = () => {
             </Card>
 
             {/* Seller Actions */}
-            {isSeller && !isCompleted && !isDisputed && job.status !== "cancelled" && (
+            {isSeller && !isCompleted && job.status !== "cancelled" && (
               <div className="space-y-2">
-                {paymentStatus === "paid" && (
+                {!isDisputed && paymentStatus === "paid" && (
                   <>
                     <Button className="w-full gap-2" onClick={() => setDeliverConfirmOpen(true)}>
                       <Package className="h-4 w-4" /> Mark as Delivered
@@ -804,7 +804,7 @@ const Order = () => {
                     </Button>
                   </>
                 )}
-                {paymentStatus === "delivered" && (
+                {!isDisputed && paymentStatus === "delivered" && (
                   <>
                     <div className="rounded-lg border border-border bg-primary/[0.03] p-3 space-y-1">
                       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -821,6 +821,10 @@ const Order = () => {
                     </Button>
                   </>
                 )}
+                {/* Seller can always refund buyer */}
+                <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setSellerRefundOpen(true)}>
+                  <Undo2 className="h-4 w-4" /> Refund Buyer
+                </Button>
               </div>
             )}
 
