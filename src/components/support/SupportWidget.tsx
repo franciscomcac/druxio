@@ -134,21 +134,21 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
 
   // ── Expert FAQs ──
   "My withdrawal wasn't processed": [
-    { q: "What's the processing time?", a: "Withdrawals are reviewed within 24 hours. PayPal arrives in 1-3 days, crypto in 30-60 minutes after approval." },
-    { q: "Is your wallet address correct?", a: "Double-check your PayPal email or crypto wallet address in Settings." },
-    { q: "Minimum withdrawal amount", a: "The minimum withdrawal is €5.00. Check that your balance meets this threshold." },
+    { q: "How do payouts work?", a: "Earnings are transferred directly to your bank account via Stripe Connect. Set up your Stripe account in Wallet → Payouts." },
+    { q: "Is your Stripe account fully set up?", a: "Go to Wallet → Payouts and check your Stripe connection status. You may need to complete onboarding." },
+    { q: "When do payouts arrive?", a: "Stripe typically transfers funds to your bank within 2-7 business days after the transfer is initiated." },
   ],
   "I haven't received payment": [
     { q: "Is the order marked as completed?", a: "Payment is released once the buyer marks the order as complete. If they're unresponsive past the deadline, open a dispute." },
-    { q: "Check your wallet balance", a: "Go to Wallet to see your current balance and transaction history. Earnings appear as 'Session Earning' entries." },
+    { q: "Check your transaction history", a: "Go to Wallet to see your current balance and transaction history. Earnings appear as 'Session Earning' entries." },
   ],
   "I have a tax question": [
     { q: "Does the platform provide tax documents?", a: "Currently the platform does not issue tax documents. You are responsible for declaring your earnings as per your local tax laws." },
     { q: "What's the platform fee?", a: "The platform retains a percentage of each order as a service fee. The exact rate is displayed when you submit a quote." },
   ],
-  "I want to set up PayPal": [
-    { q: "How do I add my PayPal?", a: "Go to Wallet → Withdraw and select PayPal. Enter your PayPal email address to register it for withdrawals." },
-    { q: "Is PayPal the only option?", a: "No. You can also withdraw via crypto (USDT, BTC, ETH) by selecting the Crypto option and providing your wallet address." },
+  "I want to set up Stripe payouts": [
+    { q: "How do I connect Stripe?", a: "Go to Wallet → Payouts and click 'Connect with Stripe'. You'll be guided through Stripe's onboarding to link your bank account." },
+    { q: "What if I already have a Stripe account?", a: "You can use your existing Stripe account. The onboarding process will connect it to Druxio for receiving payouts." },
   ],
   "I can't access my active order": [
     { q: "Check your Inbox or Dashboard", a: "Active orders are accessible from your Expert Dashboard under 'Active Orders', or directly from the Inbox." },
