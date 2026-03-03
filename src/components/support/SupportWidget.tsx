@@ -75,7 +75,7 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
   "My payment didn't go through": [
     { q: "Did you check your card details?", a: "Please verify your card number, expiry and CVV are entered correctly." },
     { q: "Is your card 3D-Secure enabled?", a: "Some payments require 3D-Secure verification from your bank. Check your banking app for a pending confirmation." },
-    { q: "Try a different payment method", a: "You can also top up via PayPal or crypto from the Wallet page. If it still fails, contact live support below." },
+    { q: "Try a different payment method", a: "If your card payment fails, try a different card or contact your bank. If it still fails, contact live support below." },
   ],
   "I want to add funds to my wallet": [
     { q: "How do I top up?", a: "Go to the Wallet page and click 'Add Funds'. You can pay via PayPal or crypto." },
