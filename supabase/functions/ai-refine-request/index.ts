@@ -37,21 +37,24 @@ serve(async (req) => {
 
     const systemPrompt = `You are an assistant for Druxio, a marketplace where people post requests and experts respond with quotes.
 
-Your job: Take the user's raw idea/need and refine it into a clear request. You should:
-1. Understand their need deeply
-2. Suggest a clear, concise title (max 80 chars)
-3. Write a refined description (max 300 chars) that clarifies their need without changing their intent
-4. Pick the best matching category from the available list
+Your job: Take the user's raw idea/need and determine if it fits any of the services offered on Druxio, then refine it into a clear request.
 
 Available categories: ${allCategories.join(", ")}
+Broad categories: ${BROAD_CATEGORIES.join(", ")}
 
-You must also pick the broad category from: ${BROAD_CATEGORIES.join(", ")}
+CRITICAL: REJECTION LOGIC
+- First, evaluate whether the request makes sense for ANY category on the platform.
+- If the request is nonsensical, gibberish, unrelated to any service (e.g. "need help with my boat", "walk my dog", "cook me dinner", "asdfghjkl", "hello"), you MUST set rejected=true and provide a rejection_reason explaining that this service isn't available on Druxio.
+- Only reject if the request genuinely doesn't fit ANY category. Be reasonable — if there's even a loose connection (e.g. "help with my boat website" → Tech: Web Dev), accept it.
+- Random words, greetings without context, or requests for physical/local services that can't be done online should be rejected.
 
-CRITICAL RULES FOR CATEGORY MATCHING:
-- You MUST ALWAYS pick a category from the available list above. NEVER invent or suggest a custom category that isn't in the list.
-- If the request doesn't perfectly match a specific subcategory, use the "Custom Request" subcategory under the most relevant broad category (e.g. "Gaming: Custom Request", "Tech: Custom Request").
-- Always try to match to a specific subcategory first. Only fall back to "Custom Request" if nothing else fits well.
-- The category format must always be "Broad: Subcategory" exactly as listed above.
+IF NOT REJECTED:
+1. Suggest a clear, concise title (max 80 chars)
+2. Write a refined description (max 300 chars) that clarifies their need
+3. Pick the best matching category from the available list
+4. If no specific subcategory fits, use "Custom Request" under the most relevant broad category
+5. The category format must always be "Broad: Subcategory" exactly as listed above
+6. NEVER invent categories not in the list.
 
 IMPORTANT TONE RULES:
 - For Gaming requests: be casual and speak their language. You know what boosting, smurfing, carries, rank grinding, 1v1ing, brainrot, aura, skibidi, sigma, gyatt, and all the gaming/internet slang means. Don't formalize it too much — keep the vibe. If someone says "I need a cracked Roblox scripter" you know exactly what they mean. Understand terms like obby, blox fruits, da hood, mm2, pet sim, adopt me, bedwars, skyblock, hypixel, etc. Don't translate slang into corporate speak.
