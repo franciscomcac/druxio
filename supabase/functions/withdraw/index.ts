@@ -6,7 +6,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Platform fee (5%) is deducted at order completion — NOT at withdrawal
+// Flat withdrawal/payout fee charged to seller
+const WITHDRAWAL_FEE = 0.25; // €0.25 per withdrawal
 // PayPal Payouts fee: 2% of amount, capped at €1.00 (EUR standard)
 const PAYPAL_PAYOUT_RATE = 0.02;
 const PAYPAL_PAYOUT_CAP = 1.00;
@@ -20,10 +21,10 @@ function calcWithdrawalFees(grossAmount: number, method: string) {
     );
   }
 
-  const totalFee = paypalPayoutFee;
+  const totalFee = Math.round((WITHDRAWAL_FEE + paypalPayoutFee) * 100) / 100;
   const netAmount = Math.round((grossAmount - totalFee) * 100) / 100;
 
-  return { platformFee: 0, paypalPayoutFee, totalFee, netAmount };
+  return { withdrawalFee: WITHDRAWAL_FEE, paypalPayoutFee, totalFee, netAmount };
 }
 
 Deno.serve(async (req) => {
