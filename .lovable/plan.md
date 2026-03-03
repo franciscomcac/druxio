@@ -1,85 +1,110 @@
 
 
-## Transform the Requests Page into a Dedicated Seller Quotes Dashboard
+# Stripe Connect Integration Plan for Druxio
 
-### Goal
-Turn the current `/request/:jobId` page into a focused, fast **Quotes Terminal** for sellers. This is where sellers spend most of their time responding to new customer requests, making/updating offers, and managing pending quotes. Orders (paid work) will be handled separately via `/orders/sold` and `/order/:jobId`.
+## Current State
 
----
+The platform currently uses **PayPal** for both buyer payments (checkout) and seller withdrawals. The flow:
+- **Buyer pays**: PayPal Checkout popup → `paypal-create-order` → `paypal-capture-order` edge functions
+- **Seller receives**: Funds credited to internal wallet on delivery confirmation → withdraw via PayPal Payout or Crypto
+- **Auto-release**: `auto-release-funds` credits seller wallet after 3 days if buyer doesn't act
+- The `profiles` table already has `stripe_connect_id` and `stripe_customer_id` columns (currently unused)
 
-### What Changes
+## Architecture: Stripe Connect (Destination Charges)
 
-**1. Remove the "Orders" tab from the seller sidebar**
+Using **Stripe Connect with destination charges**, the platform collects the full payment and transfers the seller's portion minus the 5% platform fee. This is the simplest Connect model for marketplaces.
 
-The seller sidebar in `ActiveRequest.tsx` currently has two tabs: "Quotes" and "Orders". We'll remove the Orders tab entirely since those are already handled by the Sold Orders page (`/orders/sold`) and individual order pages (`/order/:jobId`). The sidebar becomes a flat list of all pending quote conversations -- no tabs needed.
+```text
+Buyer → Stripe Checkout → Platform account (holds funds)
+                              │
+                              ├─ On delivery confirm: Transfer to seller's Connect account
+                              │   (minus 5% platform fee)
+                              └─ On dispute: Admin handles refund
+```
 
-**2. Redesign the sidebar as a Quotes Dashboard list**
+## Changes Required
 
-Each sidebar item will show:
-- Buyer name + avatar
-- Job title + category badge
-- Your quoted price + delivery time
-- Time since quote was sent (e.g., "2h ago")
-- Unread message indicator
-- Visual urgency indicator for quotes nearing the 5-day expiry
+### 1. Enable Stripe via Lovable tool
+Use the `stripe--enable_stripe` tool to set up the Stripe secret key.
 
-The list will be sorted by: unread first, then most recent activity.
+### 2. New Edge Functions
 
-**3. Enhance the right panel into a Quote Action Center**
+**`stripe-create-checkout`** — Replaces `paypal-create-order`
+- Receives `quoteId`, `jobId`
+- Creates a Stripe Checkout Session with the service price + 5% platform fee
+- Uses `payment_intent_data.transfer_group` to tag payments for later transfer
+- Returns the Checkout Session URL
 
-The right panel (currently just "Update Offer" + "Withdraw") becomes a compact, information-dense control panel:
+**`stripe-checkout-webhook`** — Handles `checkout.session.completed`
+- Marks job as accepted, quote as accepted, creates session
+- Stores `stripe_payment_intent_id` on the transaction or job
 
-- **Request Summary**: Job title, category, buyer's budget range, deadline
-- **Your Current Offer**: Price + delivery time displayed prominently
-- **Quick Actions**:
-  - Update offer (price + delivery time form -- already exists, keep it)
-  - Withdraw quote (already exists, keep it)
-- **Quote Status**: Visual indicator showing "Pending", "Expired in Xd", etc.
-- **Buyer Info**: Name, avatar, rating (if available), total spend
+**`stripe-onboard-seller`** — Creates Stripe Connect Account Link
+- Creates a Connect Express account if seller doesn't have one
+- Returns the onboarding URL
+- On return, stores `stripe_connect_id` on the seller's profile
 
-**4. Add quote expiry countdown**
+**`stripe-account-status`** — Checks if seller's Connect account is active
+- Returns `charges_enabled`, `payouts_enabled`
 
-Each quote sidebar item and the right panel will show how many days remain before the 5-day auto-expiry. Color-coded: green (3+ days), yellow (1-2 days), red (less than 1 day).
+**`stripe-transfer-funds`** — Replaces wallet crediting on delivery confirm
+- Creates a Stripe Transfer from platform to seller's Connect account
+- Deducts 5% platform fee as `application_fee`
 
-**5. Empty state improvements**
+**`stripe-payout`** — Replaces `withdraw` function
+- Triggers a payout from the seller's Connect account to their bank
+- Or sellers can rely on Stripe's automatic daily/weekly payouts
 
-When no pending quotes exist, show a motivational empty state: "No pending quotes -- browse open requests to start quoting" with a CTA to go to the dashboard's open requests feed.
+### 3. Database Changes
 
-**6. Filter out non-pending quotes from the sidebar**
+- Add `stripe_payment_intent_id` column to `jobs` table (to track the payment for transfers)
+- Add migration for any new columns needed
 
-Only show quotes where `quoteStatus === 'pending'` AND `jobStatus === 'open'`. Rejected, expired, and accepted quotes should not appear here (they're handled elsewhere).
+### 4. Frontend Changes
 
----
+**`ActiveRequest.tsx`** — Replace PayPal dialog
+- Remove PayPal popup flow
+- Replace with Stripe Checkout redirect (server-side session → redirect to Stripe hosted page → return URL)
+- Update fee breakdown display (remove PayPal fees, show only 5% platform fee)
 
-### Technical Details
+**`Order.tsx`** — Update delivery confirmation
+- `handleConfirmDelivery`: Instead of crediting wallet directly, call `stripe-transfer-funds` to transfer to seller's Connect account
+- `auto-release-funds`: Same — call Stripe Transfer instead of wallet credit
 
-#### File: `src/pages/ActiveRequest.tsx`
+**`WithdrawalDialog.tsx`** — Simplify or replace
+- Remove PayPal/Crypto withdrawal options
+- Replace with "Stripe manages your payouts" info card, or a manual payout trigger
+- Sellers configure their bank/payout details via Stripe Connect dashboard
 
-**Seller sidebar changes:**
-- Remove the `Tabs` component wrapping "Quotes" / "Orders"
-- Replace with a direct `ScrollArea` list of `quoteConvos` only
-- Remove `sellerTab` state and `orderConvos` filtering
-- Update sidebar header from "My Orders" to "Quotes"
-- Add expiry countdown per item using `differenceInDays(addDays(new Date(quote.created_at), 5), new Date())`
-- Sort sidebar: unread messages first, then by most recent `lastMessageAt`
+**`Wallet.tsx`** — Update info cards
+- Remove PayPal fee references
+- Update to reflect Stripe-based flow
 
-**Right panel enhancements:**
-- Add buyer's budget range display (`budget_min` - `budget_max`) from job data (need to fetch and store in `SellerConvo`)
-- Add expiry countdown prominently at the top
-- Add buyer rating/total spend if available
-- Keep existing Update Offer form and Withdraw button
-- Add a quick "Go to Dashboard" link in the header for browsing new requests
+**Settings or Dashboard** — Add Stripe Connect onboarding
+- Button for sellers to "Connect with Stripe" (redirects to Stripe onboarding)
+- Show connection status (active/pending)
 
-**Sidebar item redesign:**
-- Add a small colored dot for expiry urgency (green/yellow/red)
-- Show quote age: "Quoted 2h ago"
-- Slightly larger touch targets for mobile-friendliness
+**Legal pages** — Remove PayPal cookie references, update fee descriptions
 
-#### Data changes to `SellerConvo` interface:
-- Add `budgetMin: number` and `budgetMax: number` fields
-- Add `quoteCreatedAt: string` field (already available from quotes query, just need to store it)
-- These get populated from the existing `loadSellerConvos` function where we already fetch `budget_min` and `budget_max` from job data
+### 5. Remove PayPal
+- Delete `paypal-create-order` and `paypal-capture-order` edge functions
+- Remove `PAYPAL_CLIENT_ID` and `PAYPAL_SECRET` secrets (optional, can leave)
+- Clean up all PayPal references in UI text
 
-#### No database changes needed
-All data is already available. This is purely a frontend restructuring.
+### 6. Update `auto-release-funds`
+- Instead of crediting seller wallet, call Stripe Transfer to seller's Connect account
+
+## Implementation Order
+
+1. Enable Stripe via tool
+2. Create DB migration (add `stripe_payment_intent_id` to jobs)
+3. Create edge functions: `stripe-onboard-seller`, `stripe-account-status`, `stripe-create-checkout`, `stripe-checkout-webhook`, `stripe-transfer-funds`
+4. Update frontend: seller onboarding flow, checkout flow, delivery confirmation, wallet page, withdrawal dialog
+5. Delete PayPal edge functions
+6. Update legal/content pages
+
+## Fee Structure (unchanged conceptually)
+- Buyers: 5% platform fee (no more PayPal processing fee visible — Stripe fees are absorbed or passed through transparently)
+- Sellers: 5% deducted at transfer time
+- No withdrawal fees — Stripe handles payouts to seller's bank directly
 
