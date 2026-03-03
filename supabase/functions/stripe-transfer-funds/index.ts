@@ -79,12 +79,13 @@ Deno.serve(async (req) => {
       }).eq("id", quote.expert_id);
 
       // Record earning transaction
+      const platformFeeAmount = Math.round(servicePrice * PLATFORM_FEE_RATE * 100) / 100;
       await serviceClient.from("transactions").insert({
         user_id: quote.expert_id,
         amount: sellerEarning,
         type: "session_earning",
         status: "completed",
-        description: `Earning for job ${jobId} (wallet credit — set up Stripe to receive direct payouts)`,
+        description: `Earning for job ${jobId} — €${servicePrice.toFixed(2)} minus 5% fee (€${platformFeeAmount.toFixed(2)})`,
       });
 
       return new Response(
