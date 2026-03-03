@@ -614,6 +614,15 @@ const PostRequest = () => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+      if (data?.rejected) {
+        toast({
+          title: "This service isn't available",
+          description: data.rejection_reason || "We couldn't match your request to any service on our platform. Try something else!",
+          variant: "destructive",
+        });
+        setWizardStep("choose-method");
+        return;
+      }
       setAutoMatchResult(data);
     } catch (err: any) {
       console.error("Auto-match error:", err);
@@ -654,6 +663,15 @@ const PostRequest = () => {
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
+
+      if (data?.rejected) {
+        toast({
+          title: "This service isn't available",
+          description: data.rejection_reason || "We couldn't match your request to any service on our platform. Try something else!",
+          variant: "destructive",
+        });
+        return;
+      }
 
       setAiResult(data);
     } catch (err: any) {
