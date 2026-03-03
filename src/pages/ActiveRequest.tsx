@@ -1699,8 +1699,8 @@ const ActiveRequest = () => {
         </div>
       </div>
 
-      {/* PayPal Dialog */}
-      <Dialog open={!!paypalDialog} onOpenChange={() => { if (!paypalLoading) setPaypalDialog(null); }}>
+      {/* Stripe Checkout Dialog */}
+      <Dialog open={!!stripeDialog} onOpenChange={() => { if (!stripeLoading) setStripeDialog(null); }}>
         <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1708,24 +1708,20 @@ const ActiveRequest = () => {
             </DialogTitle>
             <DialogDescription>Funds will be held in escrow until you confirm delivery.</DialogDescription>
           </DialogHeader>
-          {paypalDialog && (
+          {stripeDialog && (
             <div className="space-y-4">
               <div className="rounded-lg border border-border bg-background/40 p-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Service price</span>
-                  <span className="font-medium text-foreground">€{paypalDialog.price.toFixed(2)}</span>
+                  <span className="font-medium text-foreground">€{stripeDialog.price.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Buyer fee (5%)</span>
-                  <span className="font-medium text-foreground">€{(paypalDialog.price * 0.05).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">PayPal fee (3.49% + €0.35)</span>
-                  <span className="font-medium text-foreground">€{(paypalDialog.price * 1.05 * 0.0349 + 0.35).toFixed(2)}</span>
+                  <span className="text-muted-foreground">Platform fee (5%)</span>
+                  <span className="font-medium text-foreground">€{(stripeDialog.price * 0.05).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm border-t border-border pt-2">
                   <span className="font-semibold text-foreground">Total</span>
-                  <span className="font-bold text-primary">€{(paypalDialog.price * 1.05 * 1.0349 + 0.35).toFixed(2)}</span>
+                  <span className="font-bold text-primary">€{(stripeDialog.price * 1.05).toFixed(2)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
@@ -1735,9 +1731,9 @@ const ActiveRequest = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setPaypalDialog(null)} disabled={paypalLoading}>Cancel</Button>
-            <Button onClick={handlePayPalCheckout} disabled={paypalLoading} className="gap-2">
-              {paypalLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : <><CreditCard className="h-4 w-4" /> Pay with PayPal</>}
+            <Button variant="ghost" onClick={() => setStripeDialog(null)} disabled={stripeLoading}>Cancel</Button>
+            <Button onClick={handleStripeCheckout} disabled={stripeLoading} className="gap-2">
+              {stripeLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : <><CreditCard className="h-4 w-4" /> Pay with Card</>}
             </Button>
           </DialogFooter>
         </DialogContent>
