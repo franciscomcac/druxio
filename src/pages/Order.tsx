@@ -1025,27 +1025,46 @@ const Order = () => {
                       );
                     })
                   )}
-                  {isDisputed && (
+                  {/* Resolution card for terminal states after dispute */}
+                  {(job.status === "cancelled" || (job.status === "completed" && messages.some((m: ChatMessage) => m.content.startsWith("⚠️ DISPUTE:") || m.content.startsWith("🛡️ ADMIN:")))) && (
                     <div className="flex justify-center my-3">
                       <div className="w-full max-w-sm">
                         <div className="flex items-center gap-2 mb-2 justify-center">
                           <div className="h-px flex-1 bg-border/60" />
-                          <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">System</span>
+                          <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">Resolution</span>
                           <div className="h-px flex-1 bg-border/60" />
                         </div>
-                        <div className="rounded-xl border border-destructive/30 bg-destructive/5 overflow-hidden">
-                          <div className="flex items-center gap-2.5 px-4 py-3 border-b border-destructive/20 bg-destructive/8">
-                            <div className="h-8 w-8 rounded-lg bg-destructive/15 flex items-center justify-center shrink-0">
-                              <ShieldCheck className="h-4 w-4 text-destructive" />
+                        <div className={`rounded-xl border overflow-hidden ${
+                          job.status === "cancelled"
+                            ? "border-primary/25 bg-primary/5"
+                            : "border-chart-3/25 bg-chart-3/5"
+                        }`}>
+                          <div className={`flex items-center gap-2.5 px-4 py-3 border-b ${
+                            job.status === "cancelled"
+                              ? "border-primary/15 bg-primary/8"
+                              : "border-chart-3/15 bg-chart-3/8"
+                          }`}>
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              job.status === "cancelled" ? "bg-primary/15" : "bg-chart-3/15"
+                            }`}>
+                              {job.status === "cancelled"
+                                ? <Undo2 className="h-4 w-4 text-primary" />
+                                : <CheckCircle2 className="h-4 w-4 text-chart-3" />}
                             </div>
                             <div>
-                              <p className="text-sm font-semibold text-destructive">Dispute Raised</p>
-                              <p className="text-[10px] text-muted-foreground">Under admin review</p>
+                              <p className={`text-sm font-semibold ${job.status === "cancelled" ? "text-primary" : "text-chart-3"}`}>
+                                {job.status === "cancelled" ? "Refund Issued" : "Payment Released"}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">
+                                {job.status === "cancelled" ? "Order cancelled — buyer refunded" : "Order completed — funds released to seller"}
+                              </p>
                             </div>
                           </div>
                           <div className="px-4 py-3">
                             <p className="text-xs text-muted-foreground text-center">
-                              Our team will review this case and reach out to both parties within 24–48 hours.
+                              {job.status === "cancelled"
+                                ? "This order has been cancelled and a refund has been processed."
+                                : "This order has been completed and payment released to the seller."}
                             </p>
                           </div>
                         </div>
