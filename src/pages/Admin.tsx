@@ -708,6 +708,24 @@ const Admin = () => {
     loadStats();
   };
 
+  const handleSendAdminOrderMessage = async () => {
+    if (!adminMsgOrderId || !adminMsgText.trim()) return;
+    setAdminMsgSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-order-message", {
+        body: { jobId: adminMsgOrderId, message: adminMsgText.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Message sent", description: "Both parties can now see your message in the order chat." });
+      setAdminMsgOrderId(null);
+      setAdminMsgText("");
+    } catch (err: any) {
+      toast({ title: "Failed to send", description: err.message, variant: "destructive" });
+    }
+    setAdminMsgSending(false);
+  };
+
   const handleAddRole = async (userId: string, role: string) => {
     if (!role) return;
     const { error } = await supabase.from("user_roles").insert({
