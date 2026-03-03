@@ -919,6 +919,42 @@ const Order = () => {
                         );
                       }
 
+                      // Dispute system message
+                      if (isDisputeMsg) {
+                        const disputeText = msg.content.replace(/^⚠️ DISPUTE:\s*/, "");
+                        return (
+                          <div key={msg.id} className="flex justify-center my-3">
+                            <div className="w-full max-w-sm">
+                              <div className="flex items-center gap-2 mb-2 justify-center">
+                                <div className="h-px flex-1 bg-border/60" />
+                                <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">System</span>
+                                <div className="h-px flex-1 bg-border/60" />
+                              </div>
+                              <div className="rounded-xl border border-destructive/30 bg-destructive/5 overflow-hidden">
+                                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-destructive/20 bg-destructive/8">
+                                  <div className="h-8 w-8 rounded-lg bg-destructive/15 flex items-center justify-center shrink-0">
+                                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-destructive">Dispute Raised</p>
+                                    <p className="text-[10px] text-muted-foreground">Under admin review</p>
+                                  </div>
+                                </div>
+                                <div className="px-4 py-3 space-y-2">
+                                  <p className="text-xs text-muted-foreground whitespace-pre-wrap">{disputeText}</p>
+                                  <p className="text-[10px] text-muted-foreground/70 font-medium">
+                                    Our team will review this case and reach out within 24–48 hours.
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground/60 text-right">
+                                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
                       if (isMeetMsg && meetUrl) {
                         return (
                           <div key={msg.id} className="flex justify-center my-3">
