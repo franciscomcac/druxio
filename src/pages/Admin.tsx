@@ -644,36 +644,64 @@ const Admin = () => {
     setDisputeActionLoading(true);
 
     try {
+      const totalRefund = selectedDispute.quote_price * 1.05;
+
       if (action === "refund") {
+        if (refundMethod === "source") {
+          // Refund to original payment method via Stripe
+          const { data, error } = await supabase.functions.invoke("stripe-refund", {
+            body: { jobId: selectedDispute.job_id },
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          toast({ title: "Dispute resolved — Refund to original payment", description: `Refund of €${totalRefund.toFixed(2)} initiated. Takes up to 7 business days.` });
+        } else {
+          // Refund to store balance — instant
+          await supabase.from("transactions").insert({
+            user_id: selectedDispute.buyer_id,
+            amount: totalRefund,
+            type: "refund" as const,
+            status: "completed" as const,
+            description: `Refund to store balance for disputed order: ${selectedDispute.job_title}`,
+          });
+          // Credit wallet
+          const { data: profile } = await supabase.from("profiles").select("wallet_balance").eq("id", selectedDispute.buyer_id).single();
+          if (profile) {
+            await supabase.from("profiles").update({
+              wallet_balance: (Number(profile.wallet_balance) || 0) + totalRefund,
+            }).eq("id", selectedDispute.buyer_id);
+          }
+          toast({ title: "Dispute resolved — Refund to store balance", description: `€${totalRefund.toFixed(2)} credited instantly.` });
+        }
         await supabase.from("jobs").update({ status: "cancelled" }).eq("id", selectedDispute.job_id);
-        await supabase.from("transactions").insert({
-          user_id: selectedDispute.buyer_id,
-          amount: selectedDispute.quote_price * 1.05,
-          type: "refund" as const,
-          status: "completed" as const,
-          description: `Refund for disputed order: ${selectedDispute.job_title}`,
-        });
-        toast({ title: "Dispute resolved — Refund issued", description: `Buyer has been refunded €${(selectedDispute.quote_price * 1.05).toFixed(2)}` });
       } else {
+        // Release funds to seller
         try {
-          await supabase.functions.invoke("escrow-release", {
+          await supabase.functions.invoke("stripe-transfer-funds", {
             body: { jobId: selectedDispute.job_id },
           });
         } catch {
-          // If escrow-release fails, still mark as completed
+          // If transfer fails, still mark as completed
         }
         await supabase.from("jobs").update({ status: "completed" }).eq("id", selectedDispute.job_id);
         toast({ title: "Dispute resolved — Payment released", description: "Funds released to the seller." });
       }
 
-      // Always notify both parties about dispute resolution
+      // Build resolution messages
       const resolveTitle = action === "refund" ? "Refund issued" : "Payment released";
-      const resolveMessage = disputeNote.trim()
-        ? disputeNote.trim()
-        : action === "refund"
-          ? `Your dispute for "${selectedDispute.job_title}" has been resolved. A refund of €${(selectedDispute.quote_price * 1.05).toFixed(2)} has been issued to the buyer.`
-          : `Your dispute for "${selectedDispute.job_title}" has been resolved. Payment has been released to the seller.`;
+      let resolveMessage: string;
+      if (disputeNote.trim()) {
+        resolveMessage = disputeNote.trim();
+      } else if (action === "refund") {
+        const methodNote = refundMethod === "source"
+          ? "The refund has been issued to your original payment method. Please allow up to 7 business days for it to appear."
+          : `A refund of €${totalRefund.toFixed(2)} has been credited to the buyer's store balance instantly.`;
+        resolveMessage = `Your dispute for "${selectedDispute.job_title}" has been resolved. ${methodNote}`;
+      } else {
+        resolveMessage = `Your dispute for "${selectedDispute.job_title}" has been resolved. Payment has been released to the seller.`;
+      }
 
+      // Notify both parties
       await Promise.all([
         supabase.from("notifications").insert({
           user_id: selectedDispute.buyer_id,
@@ -691,9 +719,19 @@ const Admin = () => {
         }),
       ]);
 
+      // Send admin system message to the order chat
+      const adminMsg = action === "refund"
+        ? `Dispute resolved: Refund of €${totalRefund.toFixed(2)} issued to buyer (${refundMethod === "source" ? "original payment method — up to 7 business days" : "store balance — instant"}). Order cancelled.${disputeNote.trim() ? `\n\nAdmin note: ${disputeNote.trim()}` : ""}`
+        : `Dispute resolved: Payment released to seller. Order completed.${disputeNote.trim() ? `\n\nAdmin note: ${disputeNote.trim()}` : ""}`;
+
+      supabase.functions.invoke("admin-order-message", {
+        body: { jobId: selectedDispute.job_id, message: adminMsg },
+      }).catch(console.error);
+
       setSelectedDispute(null);
       setDisputeNote("");
       setDisputeAction(null);
+      setRefundMethod("balance");
       loadDisputes();
       loadStats();
     } catch (err: any) {
