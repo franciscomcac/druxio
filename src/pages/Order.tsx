@@ -466,6 +466,60 @@ const Order = () => {
     setDisputeLoading(false);
   };
 
+  // Seller voluntarily refunds the buyer
+  const handleSellerRefund = async () => {
+    if (!jobId || !quote || !job) return;
+    setSellerRefundLoading(true);
+    try {
+      const totalRefund = Number(quote.price) * 1.05;
+
+      // Credit buyer's wallet
+      await supabase.from("transactions").insert({
+        user_id: job.buyer_id,
+        amount: totalRefund,
+        type: "refund" as const,
+        status: "completed" as const,
+        description: `Seller-initiated refund for "${job.title}"`,
+      });
+      const { data: profile } = await supabase.from("profiles").select("wallet_balance").eq("id", job.buyer_id).single();
+      if (profile) {
+        await supabase.from("profiles").update({
+          wallet_balance: (Number(profile.wallet_balance) || 0) + totalRefund,
+        }).eq("id", job.buyer_id);
+      }
+
+      // Cancel the order
+      await supabase.from("jobs").update({ status: "cancelled", escrow_status: "refunded" }).eq("id", jobId);
+
+      // System message in chat
+      if (sessionId && userId) {
+        await supabase.from("messages").insert({
+          session_id: sessionId,
+          sender_id: userId,
+          content: `🛡️ ADMIN: The seller has voluntarily issued a full refund of €${totalRefund.toFixed(2)} to the buyer's store balance. This order has been cancelled.`,
+        });
+      }
+
+      // Notify buyer
+      await supabase.from("notifications").insert({
+        user_id: job.buyer_id, type: "refund_issued",
+        title: "Refund issued by seller",
+        message: `The seller has refunded €${totalRefund.toFixed(2)} to your store balance for "${job.title}".`,
+        data: { job_id: jobId },
+      });
+
+      // Email buyer
+      sendOrderEmail("order_cancelled", { reason: "Seller issued a voluntary refund" });
+
+      toast({ title: "Refund issued ✅", description: `€${totalRefund.toFixed(2)} refunded to buyer's store balance.` });
+      setSellerRefundOpen(false);
+      setJob((prev: any) => prev ? { ...prev, status: "cancelled", escrow_status: "refunded" } : prev);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setSellerRefundLoading(false);
+  };
+
   // Seller cancels delivery
   const handleCancelDelivery = async () => {
     if (!cancelReason.trim() || !jobId) return;
