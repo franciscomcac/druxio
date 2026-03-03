@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
         success: true,
         status: "pending",
         message: "Withdrawal submitted. It will be processed manually within 24-48h.",
-        breakdown: { grossAmount: amount, platformFee, paypalPayoutFee, totalFee, netAmount },
+        breakdown: { grossAmount: amount, withdrawalFee, paypalPayoutFee, totalFee, netAmount },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

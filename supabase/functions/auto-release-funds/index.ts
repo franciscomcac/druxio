@@ -86,12 +86,13 @@ Deno.serve(async (req) => {
             wallet_balance: currentBalance + sellerEarning,
           }).eq("id", quote.expert_id);
 
+          const platformFeeAmtWallet = Math.round(servicePrice * PLATFORM_FEE_RATE * 100) / 100;
           await supabase.from("transactions").insert({
             user_id: quote.expert_id,
             amount: sellerEarning,
             type: "session_earning",
             status: "completed",
-            description: `Auto-released: job ${job.id} (wallet credit — set up Stripe for direct payouts)`,
+            description: `Auto-released: job ${job.id} — €${servicePrice.toFixed(2)} minus 5% fee (€${platformFeeAmtWallet.toFixed(2)})`,
           });
         }
 

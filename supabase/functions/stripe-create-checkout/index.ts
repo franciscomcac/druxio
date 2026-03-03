@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         url: session.url,
         sessionId: session.id,
-        breakdown: { basePrice, platformFee, total },
+        breakdown: { basePrice, platformFee, stripeFee, total },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

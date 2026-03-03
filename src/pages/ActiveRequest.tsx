@@ -1710,20 +1710,33 @@ const ActiveRequest = () => {
           </DialogHeader>
           {stripeDialog && (
             <div className="space-y-4">
-              <div className="rounded-lg border border-border bg-background/40 p-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Service price</span>
-                  <span className="font-medium text-foreground">€{stripeDialog.price.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Platform fee (5%)</span>
-                  <span className="font-medium text-foreground">€{(stripeDialog.price * 0.05).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm border-t border-border pt-2">
-                  <span className="font-semibold text-foreground">Total</span>
-                  <span className="font-bold text-primary">€{(stripeDialog.price * 1.05).toFixed(2)}</span>
-                </div>
-              </div>
+              {(() => {
+                const base = stripeDialog.price;
+                const platform = Math.round(base * 0.05 * 100) / 100;
+                const subtotal = base + platform;
+                const total = Math.round(((subtotal + 0.30) / (1 - 0.029)) * 100) / 100;
+                const stripe = Math.round((total - subtotal) * 100) / 100;
+                return (
+                  <div className="rounded-lg border border-border bg-background/40 p-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Service price</span>
+                      <span className="font-medium text-foreground">€{base.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs opacity-60">
+                      <span className="text-muted-foreground">Platform fee (5%)</span>
+                      <span className="text-muted-foreground">€{platform.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs opacity-60">
+                      <span className="text-muted-foreground">Processing fee</span>
+                      <span className="text-muted-foreground">€{stripe.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t border-border pt-2">
+                      <span className="font-semibold text-foreground">Total</span>
+                      <span className="font-bold text-primary">€{total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
                 <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                 Funds are held in escrow and released only after you confirm delivery.
