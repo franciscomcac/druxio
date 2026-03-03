@@ -59,45 +59,9 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
-            {/* Pre-launch signup — standalone, no layout */}
+            {/* Pre-launch: all routes redirect to coming-soon */}
             <Route path="/coming-soon" element={<ComingSoon />} />
-
-            {/* Auth pages — no shared layout */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-
-            {/* Pages without footer (full-screen / app-like) */}
-            <Route element={<AppLayout showFooter={false} />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/post-request" element={<PostRequest />} />
-              <Route path="/quotes" element={<ActiveRequest />} />
-              <Route path="/request/:jobId" element={<ActiveRequest />} />
-              <Route path="/session/:sessionId" element={<Session />} />
-              <Route path="/inbox" element={<Inbox />} />
-            </Route>
-
-            {/* Pages with footer */}
-            <Route element={<AppLayout showFooter={true} />}>
-              <Route path="/" element={<Index />} />
-              <Route path="/category/:slug" element={<CategoryPage />} />
-              <Route path="/how-it-works" element={<HowItWorksPage />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
-              
-              <Route path="/wallet" element={<Wallet />} />
-              <Route path="/mentor/:mentorId" element={<MentorProfile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/order/:jobId" element={<Order />} />
-              <Route path="/orders/purchased" element={<PurchasedOrders />} />
-              <Route path="/orders/sold" element={<SoldOrders />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/cookie-policy" element={<CookiePolicy />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
+            <Route path="*" element={<ComingSoon />} />
           </Routes>
           <PresenceTracker />
           <GlobalSoundListener />
