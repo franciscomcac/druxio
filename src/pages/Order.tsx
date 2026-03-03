@@ -999,13 +999,13 @@ const Order = () => {
                                   </div>
                                   <div>
                                     <p className="text-sm font-semibold text-destructive">Dispute Raised</p>
-                                    <p className="text-[10px] text-muted-foreground">Under admin review</p>
+                                    <p className="text-[10px] text-muted-foreground">24h to reach agreement</p>
                                   </div>
                                 </div>
                                 <div className="px-4 py-3 space-y-2">
                                   <p className="text-xs text-muted-foreground whitespace-pre-wrap">{disputeText}</p>
                                   <p className="text-[10px] text-muted-foreground/70 font-medium">
-                                    Our team will review this case and reach out within 24–48 hours.
+                                    Both parties have 24 hours to reach an agreement. If no resolution is reached, an admin will step in. The seller may issue a refund at any time.
                                   </p>
                                   <p className="text-[10px] text-muted-foreground/60 text-right">
                                     {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
