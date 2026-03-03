@@ -11,7 +11,7 @@ const ComingSoon = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  useSeo({
+  useSEO({
     title: "Druxio — Coming Soon | Get Early Access",
     description: "Be the first to know when Druxio launches. Join the waitlist for early access to on-demand expert help.",
   });
