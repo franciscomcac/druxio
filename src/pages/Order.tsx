@@ -97,6 +97,10 @@ const Order = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
 
+  // Seller voluntary refund
+  const [sellerRefundOpen, setSellerRefundOpen] = useState(false);
+  const [sellerRefundLoading, setSellerRefundLoading] = useState(false);
+
   // Auto-release countdown (3 days from delivered_at)
   const [autoReleaseSecondsLeft, setAutoReleaseSecondsLeft] = useState<number | null>(null);
 
@@ -446,7 +450,7 @@ const Order = () => {
         await supabase.from("messages").insert({
           session_id: sessionId,
           sender_id: userId,
-          content: `⚠️ DISPUTE: ${disputeReason.trim()}`,
+          content: `⚠️ DISPUTE: ${disputeReason.trim()}\n\nBoth parties have 24 hours to reach an agreement. If no resolution is reached, an admin will step in to mediate.`,
         });
       }
 
@@ -460,6 +464,60 @@ const Order = () => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
     setDisputeLoading(false);
+  };
+
+  // Seller voluntarily refunds the buyer
+  const handleSellerRefund = async () => {
+    if (!jobId || !quote || !job) return;
+    setSellerRefundLoading(true);
+    try {
+      const totalRefund = Number(quote.price) * 1.05;
+
+      // Credit buyer's wallet
+      await supabase.from("transactions").insert({
+        user_id: job.buyer_id,
+        amount: totalRefund,
+        type: "refund" as const,
+        status: "completed" as const,
+        description: `Seller-initiated refund for "${job.title}"`,
+      });
+      const { data: profile } = await supabase.from("profiles").select("wallet_balance").eq("id", job.buyer_id).single();
+      if (profile) {
+        await supabase.from("profiles").update({
+          wallet_balance: (Number(profile.wallet_balance) || 0) + totalRefund,
+        }).eq("id", job.buyer_id);
+      }
+
+      // Cancel the order
+      await supabase.from("jobs").update({ status: "cancelled", escrow_status: "refunded" }).eq("id", jobId);
+
+      // System message in chat
+      if (sessionId && userId) {
+        await supabase.from("messages").insert({
+          session_id: sessionId,
+          sender_id: userId,
+          content: `🛡️ ADMIN: The seller has voluntarily issued a full refund of €${totalRefund.toFixed(2)} to the buyer's store balance. This order has been cancelled.`,
+        });
+      }
+
+      // Notify buyer
+      await supabase.from("notifications").insert({
+        user_id: job.buyer_id, type: "refund_issued",
+        title: "Refund issued by seller",
+        message: `The seller has refunded €${totalRefund.toFixed(2)} to your store balance for "${job.title}".`,
+        data: { job_id: jobId },
+      });
+
+      // Email buyer
+      sendOrderEmail("order_cancelled", { reason: "Seller issued a voluntary refund" });
+
+      toast({ title: "Refund issued ✅", description: `€${totalRefund.toFixed(2)} refunded to buyer's store balance.` });
+      setSellerRefundOpen(false);
+      setJob((prev: any) => prev ? { ...prev, status: "cancelled", escrow_status: "refunded" } : prev);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setSellerRefundLoading(false);
   };
 
   // Seller cancels delivery
@@ -734,9 +792,9 @@ const Order = () => {
             </Card>
 
             {/* Seller Actions */}
-            {isSeller && !isCompleted && !isDisputed && job.status !== "cancelled" && (
+            {isSeller && !isCompleted && job.status !== "cancelled" && (
               <div className="space-y-2">
-                {paymentStatus === "paid" && (
+                {!isDisputed && paymentStatus === "paid" && (
                   <>
                     <Button className="w-full gap-2" onClick={() => setDeliverConfirmOpen(true)}>
                       <Package className="h-4 w-4" /> Mark as Delivered
@@ -746,7 +804,7 @@ const Order = () => {
                     </Button>
                   </>
                 )}
-                {paymentStatus === "delivered" && (
+                {!isDisputed && paymentStatus === "delivered" && (
                   <>
                     <div className="rounded-lg border border-border bg-primary/[0.03] p-3 space-y-1">
                       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
@@ -763,6 +821,10 @@ const Order = () => {
                     </Button>
                   </>
                 )}
+                {/* Seller can always refund buyer */}
+                <Button variant="outline" className="w-full gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => setSellerRefundOpen(true)}>
+                  <Undo2 className="h-4 w-4" /> Refund Buyer
+                </Button>
               </div>
             )}
 
@@ -937,13 +999,13 @@ const Order = () => {
                                   </div>
                                   <div>
                                     <p className="text-sm font-semibold text-destructive">Dispute Raised</p>
-                                    <p className="text-[10px] text-muted-foreground">Under admin review</p>
+                                    <p className="text-[10px] text-muted-foreground">24h to reach agreement</p>
                                   </div>
                                 </div>
                                 <div className="px-4 py-3 space-y-2">
                                   <p className="text-xs text-muted-foreground whitespace-pre-wrap">{disputeText}</p>
                                   <p className="text-[10px] text-muted-foreground/70 font-medium">
-                                    Our team will review this case and reach out within 24–48 hours.
+                                    Both parties have 24 hours to reach an agreement. If no resolution is reached, an admin will step in. The seller may issue a refund at any time.
                                   </p>
                                   <p className="text-[10px] text-muted-foreground/60 text-right">
                                     {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
@@ -1374,6 +1436,37 @@ const Order = () => {
             >
               {cancelLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}
               {cancelLoading ? "Cancelling..." : "Confirm Cancellation"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Seller Refund Dialog */}
+      <Dialog open={sellerRefundOpen} onOpenChange={setSellerRefundOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Undo2 className="h-5 w-5 text-destructive" /> Refund Buyer
+            </DialogTitle>
+            <DialogDescription>
+              This will issue a full refund to the buyer's store balance and cancel the order. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-2 text-sm">
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+              <span>The full amount (including fees) will be credited to the buyer's store balance <strong className="text-foreground">instantly</strong>.</span>
+            </div>
+            <div className="flex items-start gap-2 text-muted-foreground">
+              <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              <span>This order will be <strong className="text-foreground">cancelled</strong> immediately.</span>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setSellerRefundOpen(false)} disabled={sellerRefundLoading}>Cancel</Button>
+            <Button variant="destructive" onClick={handleSellerRefund} disabled={sellerRefundLoading} className="gap-2">
+              {sellerRefundLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Undo2 className="h-4 w-4" />}
+              {sellerRefundLoading ? "Processing..." : "Confirm Refund"}
             </Button>
           </DialogFooter>
         </DialogContent>
