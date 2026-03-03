@@ -259,9 +259,9 @@ const ActiveRequest = () => {
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
 
-  // PayPal checkout state
-  const [paypalDialog, setPaypalDialog] = useState<QuoteWithProfile | null>(null);
-  const [paypalLoading, setPaypalLoading] = useState(false);
+  // Stripe checkout state
+  const [stripeDialog, setStripeDialog] = useState<QuoteWithProfile | null>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
   const { format } = useCurrency();
 
   const formatDeliveryTime = (minutes: number) => {
@@ -715,37 +715,44 @@ const ActiveRequest = () => {
   }, [chatMessages, selectedChatPartnerId]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  const handleAcceptQuote = (quote: QuoteWithProfile) => setPaypalDialog(quote);
+  const handleAcceptQuote = (quote: QuoteWithProfile) => setStripeDialog(quote);
 
-  const handlePayPalCheckout = async () => {
-    if (!paypalDialog || !jobId) return;
-    setPaypalLoading(true);
+  const handleStripeCheckout = async () => {
+    if (!stripeDialog || !jobId) return;
+    setStripeLoading(true);
     try {
-      const createRes = await supabase.functions.invoke("paypal-create-order", { body: { quoteId: paypalDialog.id, jobId } });
-      if (createRes.error) throw new Error(createRes.error.message);
-      if (createRes.data?.error) throw new Error(createRes.data.error);
-      const { paypalOrderId, approvalUrl } = createRes.data;
-      if (!approvalUrl) throw new Error("No PayPal approval URL received");
-      const paypalWindow = window.open(approvalUrl, "_blank", "width=500,height=700");
+      const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
+        body: { quoteId: stripeDialog.id, jobId },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      const { url, sessionId: stripeSessionId } = data;
+      if (!url) throw new Error("No checkout URL received");
+
+      // Open Stripe Checkout in a new tab
+      const stripeWindow = window.open(url, "_blank");
+
+      // Poll for completion
       const pollInterval = setInterval(async () => {
         try {
-          const captureRes = await supabase.functions.invoke("paypal-capture-order", { body: { paypalOrderId, quoteId: paypalDialog.id, jobId } });
-          if (captureRes.data?.success) {
+          const { data: webhookData } = await supabase.functions.invoke("stripe-checkout-webhook", {
+            body: { sessionId: stripeSessionId },
+          });
+          if (webhookData?.success) {
             clearInterval(pollInterval);
-            paypalWindow?.close();
-            toast({ title: "Payment successful! 🎉", description: `${paypalDialog.profile?.display_name || "The expert"} will start working now.` });
-            // Email seller: quote accepted (fire-and-forget)
+            stripeWindow?.close();
+            toast({ title: "Payment successful! 🎉", description: `${stripeDialog.profile?.display_name || "The expert"} will start working now.` });
             supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
-            setPaypalDialog(null);
-            setPaypalLoading(false);
+            setStripeDialog(null);
+            setStripeLoading(false);
             navigate(`/order/${jobId}`);
           }
         } catch { /* keep polling */ }
       }, 3000);
-      setTimeout(() => { clearInterval(pollInterval); setPaypalLoading(false); }, 300000);
+      setTimeout(() => { clearInterval(pollInterval); setStripeLoading(false); }, 300000);
     } catch (err: any) {
       toast({ title: "Checkout error", description: err.message, variant: "destructive" });
-      setPaypalLoading(false);
+      setStripeLoading(false);
     }
   };
 
@@ -1692,8 +1699,8 @@ const ActiveRequest = () => {
         </div>
       </div>
 
-      {/* PayPal Dialog */}
-      <Dialog open={!!paypalDialog} onOpenChange={() => { if (!paypalLoading) setPaypalDialog(null); }}>
+      {/* Stripe Checkout Dialog */}
+      <Dialog open={!!stripeDialog} onOpenChange={() => { if (!stripeLoading) setStripeDialog(null); }}>
         <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1701,24 +1708,20 @@ const ActiveRequest = () => {
             </DialogTitle>
             <DialogDescription>Funds will be held in escrow until you confirm delivery.</DialogDescription>
           </DialogHeader>
-          {paypalDialog && (
+          {stripeDialog && (
             <div className="space-y-4">
               <div className="rounded-lg border border-border bg-background/40 p-4 space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Service price</span>
-                  <span className="font-medium text-foreground">€{paypalDialog.price.toFixed(2)}</span>
+                  <span className="font-medium text-foreground">€{stripeDialog.price.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Buyer fee (5%)</span>
-                  <span className="font-medium text-foreground">€{(paypalDialog.price * 0.05).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">PayPal fee (3.49% + €0.35)</span>
-                  <span className="font-medium text-foreground">€{(paypalDialog.price * 1.05 * 0.0349 + 0.35).toFixed(2)}</span>
+                  <span className="text-muted-foreground">Platform fee (5%)</span>
+                  <span className="font-medium text-foreground">€{(stripeDialog.price * 0.05).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm border-t border-border pt-2">
                   <span className="font-semibold text-foreground">Total</span>
-                  <span className="font-bold text-primary">€{(paypalDialog.price * 1.05 * 1.0349 + 0.35).toFixed(2)}</span>
+                  <span className="font-bold text-primary">€{(stripeDialog.price * 1.05).toFixed(2)}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
@@ -1728,9 +1731,9 @@ const ActiveRequest = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setPaypalDialog(null)} disabled={paypalLoading}>Cancel</Button>
-            <Button onClick={handlePayPalCheckout} disabled={paypalLoading} className="gap-2">
-              {paypalLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : <><CreditCard className="h-4 w-4" /> Pay with PayPal</>}
+            <Button variant="ghost" onClick={() => setStripeDialog(null)} disabled={stripeLoading}>Cancel</Button>
+            <Button onClick={handleStripeCheckout} disabled={stripeLoading} className="gap-2">
+              {stripeLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : <><CreditCard className="h-4 w-4" /> Pay with Card</>}
             </Button>
           </DialogFooter>
         </DialogContent>

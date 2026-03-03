@@ -9,12 +9,6 @@ verify_jwt = false
 [functions.moderate-content]
 verify_jwt = false
 
-[functions.paypal-create-order]
-verify_jwt = false
-
-[functions.paypal-capture-order]
-verify_jwt = false
-
 [functions.auto-release-funds]
 verify_jwt = false
 
@@ -22,4 +16,19 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-order-email]
+verify_jwt = false
+
+[functions.stripe-onboard-seller]
+verify_jwt = false
+
+[functions.stripe-account-status]
+verify_jwt = false
+
+[functions.stripe-create-checkout]
+verify_jwt = false
+
+[functions.stripe-checkout-webhook]
+verify_jwt = false
+
+[functions.stripe-transfer-funds]
 verify_jwt = false

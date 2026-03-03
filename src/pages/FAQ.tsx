@@ -55,7 +55,7 @@ const faqSections = [
       },
       {
         q: "What payment methods are accepted?",
-        a: "We accept major credit/debit cards (Visa, Mastercard, Amex) via Stripe, as well as PayPal. Wallet top-ups can also be used for faster checkout.",
+        a: "We accept major credit/debit cards (Visa, Mastercard, Amex) via Stripe. All payments are processed securely through Stripe Checkout.",
       },
       {
         q: "What currencies does Druxio support?",
@@ -67,7 +67,7 @@ const faqSections = [
       },
       {
         q: "How do I withdraw my earnings?",
-        a: "Experts can withdraw via PayPal, bank transfer, or supported cryptocurrency networks. Go to Wallet → Withdraw. Withdrawals are typically processed within 1–3 business days.",
+        a: "Experts receive payouts directly to their bank account via Stripe Connect. Go to Wallet → Payouts to set up your Stripe account. Payouts are processed automatically — no manual withdrawals needed.",
       },
     ],
   },

@@ -146,7 +146,7 @@ const Wallet = () => {
   const infoCards = [
     { icon: CreditCard, title: "Pay When You Confirm", desc: "Charged only after accepting a quote." },
     { icon: ShieldCheck, title: "Escrow Protection", desc: "Funds held until delivery is confirmed." },
-    { icon: Receipt, title: "Transparent Fees", desc: "Buyers: 5% + processing. Sellers: 5% payout. PayPal: +2% (max €1)." },
+    { icon: Receipt, title: "Transparent Fees", desc: "Buyers: 5% platform fee. Sellers: 5% at payout. No withdrawal fees." },
   ];
 
   return (

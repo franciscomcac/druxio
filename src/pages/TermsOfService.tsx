@@ -60,7 +60,7 @@ const TermsOfService = () => {
         </Section>
 
         <Section title="6. Payments & Escrow">
-          <p>Clients fund Escrow via Stripe or PayPal at the time of quote acceptance. Druxio holds these funds until the Order is marked as delivered and confirmed by the Client, or until the auto-release window expires.</p>
+          <p>Clients fund Escrow via Stripe at the time of quote acceptance. Druxio holds these funds until the Order is marked as delivered and confirmed by the Client, or until the auto-release window expires.</p>
           <p><strong className="text-foreground">Auto-release:</strong> If a Client does not confirm or dispute delivery within 72 hours of the Expert marking the work as delivered, funds are automatically released to the Expert.</p>
           <p><strong className="text-foreground">Platform fee:</strong> Druxio deducts a service fee from Expert earnings on each completed Order. The fee percentage is displayed on your profile during onboarding and may change with 30 days' notice.</p>
           <p><strong className="text-foreground">Refunds:</strong> If a request expires with no accepted quote, funds are returned to the Client's wallet. If an Order is cancelled before delivery, refunds are subject to the dispute resolution outcome.</p>
@@ -77,7 +77,7 @@ const TermsOfService = () => {
         </Section>
 
         <Section title="9. Withdrawals">
-          <p>Experts may withdraw available wallet balances via supported methods (PayPal, bank transfer, or crypto). Minimum withdrawal amounts and processing times vary by method. Druxio reserves the right to delay withdrawals pending compliance checks.</p>
+          <p>Expert earnings are transferred directly to their bank account via Stripe Connect. Payouts are automatic after each completed order. Druxio reserves the right to delay transfers pending compliance checks.</p>
         </Section>
 
         <Section title="10. Prohibited Conduct">

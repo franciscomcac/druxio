@@ -47,7 +47,7 @@ const FLOW: Record<string, Record<string, string[]>> = {
       "My withdrawal wasn't processed",
       "I haven't received payment",
       "I have a tax question",
-      "I want to set up PayPal",
+      "I want to set up Stripe payouts",
     ],
     "Orders & Delivery": [
       "I can't access my active order",
@@ -75,11 +75,11 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
   "My payment didn't go through": [
     { q: "Did you check your card details?", a: "Please verify your card number, expiry and CVV are entered correctly." },
     { q: "Is your card 3D-Secure enabled?", a: "Some payments require 3D-Secure verification from your bank. Check your banking app for a pending confirmation." },
-    { q: "Try a different payment method", a: "You can also top up via PayPal or crypto from the Wallet page. If it still fails, contact live support below." },
+    { q: "Try a different payment method", a: "If your card payment fails, try a different card or contact your bank. If it still fails, contact live support below." },
   ],
   "I want to add funds to my wallet": [
-    { q: "How do I top up?", a: "Go to the Wallet page and click 'Add Funds'. You can pay via PayPal or crypto." },
-    { q: "What currencies are supported?", a: "The platform operates in EUR. PayPal converts automatically." },
+    { q: "How do I top up?", a: "Payments are processed at checkout via Stripe. There's no need to pre-fund your wallet." },
+    { q: "What currencies are supported?", a: "The platform operates in EUR. Stripe handles currency conversion automatically." },
   ],
   "I was charged incorrectly": [
     { q: "Check your transaction history", a: "Go to Wallet → Transaction History to see all charges. Each order charge is listed with the order ID." },
@@ -134,21 +134,21 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
 
   // ── Expert FAQs ──
   "My withdrawal wasn't processed": [
-    { q: "What's the processing time?", a: "Withdrawals are reviewed within 24 hours. PayPal arrives in 1-3 days, crypto in 30-60 minutes after approval." },
-    { q: "Is your wallet address correct?", a: "Double-check your PayPal email or crypto wallet address in Settings." },
-    { q: "Minimum withdrawal amount", a: "The minimum withdrawal is €5.00. Check that your balance meets this threshold." },
+    { q: "How do payouts work?", a: "Earnings are transferred directly to your bank account via Stripe Connect. Set up your Stripe account in Wallet → Payouts." },
+    { q: "Is your Stripe account fully set up?", a: "Go to Wallet → Payouts and check your Stripe connection status. You may need to complete onboarding." },
+    { q: "When do payouts arrive?", a: "Stripe typically transfers funds to your bank within 2-7 business days after the transfer is initiated." },
   ],
   "I haven't received payment": [
     { q: "Is the order marked as completed?", a: "Payment is released once the buyer marks the order as complete. If they're unresponsive past the deadline, open a dispute." },
-    { q: "Check your wallet balance", a: "Go to Wallet to see your current balance and transaction history. Earnings appear as 'Session Earning' entries." },
+    { q: "Check your transaction history", a: "Go to Wallet to see your current balance and transaction history. Earnings appear as 'Session Earning' entries." },
   ],
   "I have a tax question": [
     { q: "Does the platform provide tax documents?", a: "Currently the platform does not issue tax documents. You are responsible for declaring your earnings as per your local tax laws." },
     { q: "What's the platform fee?", a: "The platform retains a percentage of each order as a service fee. The exact rate is displayed when you submit a quote." },
   ],
-  "I want to set up PayPal": [
-    { q: "How do I add my PayPal?", a: "Go to Wallet → Withdraw and select PayPal. Enter your PayPal email address to register it for withdrawals." },
-    { q: "Is PayPal the only option?", a: "No. You can also withdraw via crypto (USDT, BTC, ETH) by selecting the Crypto option and providing your wallet address." },
+  "I want to set up Stripe payouts": [
+    { q: "How do I connect Stripe?", a: "Go to Wallet → Payouts and click 'Connect with Stripe'. You'll be guided through Stripe's onboarding to link your bank account." },
+    { q: "What if I already have a Stripe account?", a: "You can use your existing Stripe account. The onboarding process will connect it to Druxio for receiving payouts." },
   ],
   "I can't access my active order": [
     { q: "Check your Inbox or Dashboard", a: "Active orders are accessible from your Expert Dashboard under 'Active Orders', or directly from the Inbox." },
@@ -188,7 +188,7 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
   ],
   "What are the platform fees?": [
     { q: "How much does the platform charge?", a: "The platform charges a service fee on each completed order. The exact percentage is shown when you submit a quote." },
-    { q: "Are there any other fees?", a: "Withdrawal fees depend on the method chosen. PayPal and crypto networks may charge their own network fees." },
+    { q: "Are there any other fees?", a: "No withdrawal fees — Stripe handles payouts directly to your bank. The only fee is the 5% platform fee deducted from each order." },
   ],
   "What is allowed in orders?": [
     { q: "What services can I offer?", a: "You can offer any digital service that complies with our Terms of Service: tutoring, consulting, gaming help, tech support, and more." },

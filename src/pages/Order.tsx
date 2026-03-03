@@ -358,26 +358,13 @@ const Order = () => {
     if (!jobId || !quote) return;
     setConfirmLoading(true);
     try {
-      // Credit seller wallet
-      const servicePrice = Number(quote.price);
-      const sellerEarning = Math.round(servicePrice * 0.95 * 100) / 100;
-
-      // Update seller balance
-      const { data: sellerData } = await supabase
-        .from("profiles").select("wallet_balance").eq("id", quote.expert_id).single();
-      const currentBalance = Number(sellerData?.wallet_balance || 0);
-      await supabase.from("profiles").update({
-        wallet_balance: currentBalance + sellerEarning,
-      }).eq("id", quote.expert_id);
-
-      // Record seller earning transaction
-      await supabase.from("transactions").insert({
-        user_id: quote.expert_id,
-        amount: sellerEarning,
-        type: "session_earning",
-        status: "completed",
-        description: `Earning for job ${jobId}`,
+      // Transfer funds to seller via Stripe
+      const { data: transferResult, error: transferError } = await supabase.functions.invoke("stripe-transfer-funds", {
+        body: { jobId },
       });
+
+      if (transferError) throw new Error(transferError.message);
+      if (transferResult?.error) throw new Error(transferResult.error);
 
       // Mark job completed
       await supabase.from("jobs").update({ status: "completed", escrow_status: "completed" }).eq("id", jobId);
@@ -386,10 +373,12 @@ const Order = () => {
         await supabase.from("sessions").update({ status: "completed" }).eq("id", sessionId);
       }
 
+      const sellerEarning = transferResult?.amount || (Number(quote.price) * 0.95);
+
       // Notify seller
       await supabase.from("notifications").insert({
         user_id: quote.expert_id, type: "order_completed",
-        title: "Payment released! 💰", message: `€${sellerEarning.toFixed(2)} has been added to your wallet.`,
+        title: "Payment released! 💰", message: `€${Number(sellerEarning).toFixed(2)} has been transferred to your account.`,
         data: { job_id: jobId },
       });
 
