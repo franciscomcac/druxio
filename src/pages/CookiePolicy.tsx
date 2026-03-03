@@ -77,7 +77,6 @@ const CookiePolicy = () => {
         <Section title="3. Third-Party Cookies">
           <p>Druxio integrates with the following third-party services that may set their own cookies:</p>
           <p><strong className="text-foreground">Stripe</strong> — payment processing. See <a href="https://stripe.com/cookies-policy/legal" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">Stripe's Cookie Policy</a>.</p>
-          <p><strong className="text-foreground">PayPal</strong> — payment processing. See <a href="https://www.paypal.com/uk/webapps/mpp/ua/cookie-full" target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-4">PayPal's Cookie Policy</a>.</p>
           <p>We do not control these third-party cookies. Please review their policies for details.</p>
         </Section>
 
