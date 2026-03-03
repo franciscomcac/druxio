@@ -39,6 +39,7 @@ import { useGlobalSound } from "./hooks/use-global-sound";
 import ScrollToTop from "./components/ScrollToTop";
 import SellerTutorial from "./components/onboarding/SellerTutorial";
 import ClientTutorial from "./components/onboarding/ClientTutorial";
+import ComingSoon from "./pages/ComingSoon";
 
 // Registers the presence heartbeat inside the Router context
 const PresenceTracker = () => { usePresence(); return null; };
