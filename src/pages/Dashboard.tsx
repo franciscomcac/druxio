@@ -136,7 +136,7 @@ const Dashboard = () => {
     // Only listen for sign-out events (not initial load — that's handled above)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (!isMounted) return;
-      if (event === 'SIGNED_OUT') navigate("/auth");
+      if (event === 'SIGNED_OUT') navigate("/");
     });
 
     return () => {
