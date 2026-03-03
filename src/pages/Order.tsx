@@ -441,6 +441,15 @@ const Order = () => {
 
       await supabase.from("jobs").update({ status: "disputed" }).eq("id", jobId);
 
+      // Insert system message in the chat so both parties see it
+      if (sessionId && userId) {
+        await supabase.from("messages").insert({
+          session_id: sessionId,
+          sender_id: userId,
+          content: `⚠️ DISPUTE: ${disputeReason.trim()}`,
+        });
+      }
+
       // Email admins about dispute
       sendOrderEmail("dispute_raised", { reason: disputeReason.trim() });
 
