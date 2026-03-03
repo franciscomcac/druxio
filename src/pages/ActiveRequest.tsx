@@ -715,7 +715,7 @@ const ActiveRequest = () => {
   }, [chatMessages, selectedChatPartnerId]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  const handleAcceptQuote = (quote: QuoteWithProfile) => setPaypalDialog(quote);
+  const handleAcceptQuote = (quote: QuoteWithProfile) => setStripeDialog(quote);
 
   const handlePayPalCheckout = async () => {
     if (!paypalDialog || !jobId) return;
