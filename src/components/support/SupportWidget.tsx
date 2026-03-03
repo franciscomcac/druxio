@@ -78,8 +78,8 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
     { q: "Try a different payment method", a: "If your card payment fails, try a different card or contact your bank. If it still fails, contact live support below." },
   ],
   "I want to add funds to my wallet": [
-    { q: "How do I top up?", a: "Go to the Wallet page and click 'Add Funds'. You can pay via PayPal or crypto." },
-    { q: "What currencies are supported?", a: "The platform operates in EUR. PayPal converts automatically." },
+    { q: "How do I top up?", a: "Payments are processed at checkout via Stripe. There's no need to pre-fund your wallet." },
+    { q: "What currencies are supported?", a: "The platform operates in EUR. Stripe handles currency conversion automatically." },
   ],
   "I was charged incorrectly": [
     { q: "Check your transaction history", a: "Go to Wallet → Transaction History to see all charges. Each order charge is listed with the order ID." },
