@@ -837,6 +837,7 @@ const Order = () => {
                       const isMeetMsg = msg.content.startsWith("📹 Video Call:") || msg.content.includes("meet.google.com/");
                       const meetUrl = isMeetMsg ? (msg.content.match(/https?:\/\/[^\s]+/)?.[0] ?? null) : null;
                       const isDeliveryMsg = msg.content.startsWith("📦 DELIVERED:");
+                      const isAdminMsg = msg.content.startsWith("🛡️ ADMIN:");
 
                       // Delivery system message
                       if (isDeliveryMsg) {
