@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
             product_data: {
               name: job.title || "Service Payment",
               description: `Service: €${basePrice.toFixed(2)} + Platform fee: €${platformFee.toFixed(2)}`,
+              tax_code: "txcd_10103001",
             },
             unit_amount: totalCents,
           },
