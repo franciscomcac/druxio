@@ -1,63 +1,85 @@
 
 
-## Dispute Flow Overhaul
+## Transform the Requests Page into a Dedicated Seller Quotes Dashboard
 
-### Current State
-- **Buyer** can raise a dispute from the order page (sets job status to "disputed", notifies seller + admin email)
-- **Admin** can resolve disputes with two actions: "Refund" (adds a `refund` transaction to buyer's store balance, cancels order) or "Release" (releases funds to seller, completes order)
-- **No refund-to-source option** exists — all refunds go to store balance
-- **No system message** is posted in the order chat when a dispute is resolved
-- **Order page** shows a static "Dispute Raised — Under admin review" card but no resolution outcome
+### Goal
+Turn the current `/request/:jobId` page into a focused, fast **Quotes Terminal** for sellers. This is where sellers spend most of their time responding to new customer requests, making/updating offers, and managing pending quotes. Orders (paid work) will be handled separately via `/orders/sold` and `/order/:jobId`.
 
-### Plan
+---
 
-#### 1. Update Admin Dispute Resolution (Admin.tsx)
-- Change the refund action to present **two refund options**:
-  - **Refund to Store Balance** — instant, same as current behavior (insert `refund` transaction)
-  - **Refund to Original Payment Method** — calls a new edge function to process a Stripe refund; UI warns "takes up to 7 business days"
-- Release action stays the same (release funds to seller via Stripe Connect)
-- After resolution, **send an admin system message** into the order chat via the existing `admin-order-message` edge function, summarizing the outcome
-- Update notification messages to reflect the refund method chosen
+### What Changes
 
-#### 2. Create `stripe-refund` Edge Function
-- New function `supabase/functions/stripe-refund/index.ts`
-- Accepts `jobId` and verifies the caller is an admin
-- Looks up the job's `stripe_payment_intent_id`, calls `Stripe.refunds.create()` against it
-- Inserts a `refund` transaction with status `pending` and description noting "Refund to original payment method — up to 7 business days"
-- Returns success/error
-- Add to `config.toml` with `verify_jwt = false`
+**1. Remove the "Orders" tab from the seller sidebar**
 
-#### 3. Update Order Page Post-Dispute State (Order.tsx)
-- When the job status changes to `cancelled` (refund) or `completed` (release) after being disputed, show a **resolution card** in the chat area:
-  - Green card for "Payment Released to Seller"
-  - Blue card for "Refund Issued" with note about method (store balance = instant, source = up to 7 days)
-- The dispute system message and admin notice already render; this adds the final resolution state
-- Disable the chat input when the order is in a terminal state (completed/cancelled)
+The seller sidebar in `ActiveRequest.tsx` currently has two tabs: "Quotes" and "Orders". We'll remove the Orders tab entirely since those are already handled by the Sold Orders page (`/orders/sold`) and individual order pages (`/order/:jobId`). The sidebar becomes a flat list of all pending quote conversations -- no tabs needed.
 
-#### 4. Update Dispute Chat Message on Raise (Order.tsx)
-- When the buyer raises a dispute, also insert a system message in the chat (like the delivery message) so both parties see it inline
+**2. Redesign the sidebar as a Quotes Dashboard list**
 
-#### 5. Notification & Email Updates
-- Update dispute resolution notifications to specify refund method
-- The existing `send-order-email` edge function already handles `dispute_raised`; no changes needed there
+Each sidebar item will show:
+- Buyer name + avatar
+- Job title + category badge
+- Your quoted price + delivery time
+- Time since quote was sent (e.g., "2h ago")
+- Unread message indicator
+- Visual urgency indicator for quotes nearing the 5-day expiry
+
+The list will be sorted by: unread first, then most recent activity.
+
+**3. Enhance the right panel into a Quote Action Center**
+
+The right panel (currently just "Update Offer" + "Withdraw") becomes a compact, information-dense control panel:
+
+- **Request Summary**: Job title, category, buyer's budget range, deadline
+- **Your Current Offer**: Price + delivery time displayed prominently
+- **Quick Actions**:
+  - Update offer (price + delivery time form -- already exists, keep it)
+  - Withdraw quote (already exists, keep it)
+- **Quote Status**: Visual indicator showing "Pending", "Expired in Xd", etc.
+- **Buyer Info**: Name, avatar, rating (if available), total spend
+
+**4. Add quote expiry countdown**
+
+Each quote sidebar item and the right panel will show how many days remain before the 5-day auto-expiry. Color-coded: green (3+ days), yellow (1-2 days), red (less than 1 day).
+
+**5. Empty state improvements**
+
+When no pending quotes exist, show a motivational empty state: "No pending quotes -- browse open requests to start quoting" with a CTA to go to the dashboard's open requests feed.
+
+**6. Filter out non-pending quotes from the sidebar**
+
+Only show quotes where `quoteStatus === 'pending'` AND `jobStatus === 'open'`. Rejected, expired, and accepted quotes should not appear here (they're handled elsewhere).
+
+---
 
 ### Technical Details
 
-**Admin refund flow (Admin.tsx `handleDisputeResolve`):**
-- Add `refundMethod` state: `"balance" | "source"`
-- If `"balance"`: current flow (insert completed refund transaction)
-- If `"source"`: invoke `stripe-refund` edge function, insert pending refund transaction
-- Both: update job status to cancelled, notify both parties, send admin order message
+#### File: `src/pages/ActiveRequest.tsx`
 
-**stripe-refund edge function:**
-```
-POST { jobId }
-→ verify admin role
-→ fetch job.stripe_payment_intent_id
-→ Stripe.refunds.create({ payment_intent })
-→ insert transaction (type: refund, status: pending)
-→ return { success, refundId }
-```
+**Seller sidebar changes:**
+- Remove the `Tabs` component wrapping "Quotes" / "Orders"
+- Replace with a direct `ScrollArea` list of `quoteConvos` only
+- Remove `sellerTab` state and `orderConvos` filtering
+- Update sidebar header from "My Orders" to "Quotes"
+- Add expiry countdown per item using `differenceInDays(addDays(new Date(quote.created_at), 5), new Date())`
+- Sort sidebar: unread messages first, then by most recent `lastMessageAt`
 
-**No DB schema changes needed** — existing `transactions` table already supports refund type with pending/completed status, and `jobs` table has `stripe_payment_intent_id`.
+**Right panel enhancements:**
+- Add buyer's budget range display (`budget_min` - `budget_max`) from job data (need to fetch and store in `SellerConvo`)
+- Add expiry countdown prominently at the top
+- Add buyer rating/total spend if available
+- Keep existing Update Offer form and Withdraw button
+- Add a quick "Go to Dashboard" link in the header for browsing new requests
+
+**Sidebar item redesign:**
+- Add a small colored dot for expiry urgency (green/yellow/red)
+- Show quote age: "Quoted 2h ago"
+- Slightly larger touch targets for mobile-friendliness
+
+#### Data changes to `SellerConvo` interface:
+- Add `budgetMin: number` and `budgetMax: number` fields
+- Add `quoteCreatedAt: string` field (already available from quotes query, just need to store it)
+- These get populated from the existing `loadSellerConvos` function where we already fetch `budget_min` and `budget_max` from job data
+
+#### No database changes needed
+All data is already available. This is purely a frontend restructuring.
 
