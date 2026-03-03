@@ -55,7 +55,7 @@ const faqSections = [
       },
       {
         q: "What payment methods are accepted?",
-        a: "We accept major credit/debit cards (Visa, Mastercard, Amex) via Stripe, as well as PayPal. Wallet top-ups can also be used for faster checkout.",
+        a: "We accept major credit/debit cards (Visa, Mastercard, Amex) via Stripe. All payments are processed securely through Stripe Checkout.",
       },
       {
         q: "What currencies does Druxio support?",
