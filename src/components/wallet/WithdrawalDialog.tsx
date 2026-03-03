@@ -101,7 +101,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                   <li>• When a buyer confirms delivery, your earnings (minus 5% fee) are transferred instantly</li>
                   <li>• Stripe sends the money to your bank account on a rolling basis</li>
                   <li>• You can view payout details in your Stripe dashboard</li>
-                  <li>• No withdrawal fees — Stripe handles everything</li>
+                  <li>• Standard Stripe payout fees may apply</li>
                 </ul>
               </div>
 
