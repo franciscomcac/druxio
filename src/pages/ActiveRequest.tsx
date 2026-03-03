@@ -1741,6 +1741,14 @@ const ActiveRequest = () => {
                 <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                 Funds are held in escrow and released only after you confirm delivery.
               </div>
+              {/* Payment method logos — trust signals */}
+              <div className="flex items-center justify-center gap-3 pt-1 opacity-50">
+                <svg viewBox="0 0 38 24" className="h-6 w-auto" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#1A1F71"/><text x="19" y="15.5" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700" fontFamily="Arial,sans-serif">VISA</text></svg>
+                <svg viewBox="0 0 38 24" className="h-6 w-auto" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 6.8a7 7 0 010 10.4 7 7 0 010-10.4z" fill="#FF5F00"/></svg>
+                <svg viewBox="0 0 38 24" className="h-6 w-auto" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#016FD0"/><text x="19" y="15" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="700" fontFamily="Arial,sans-serif">AMEX</text></svg>
+                <svg viewBox="0 0 38 24" className="h-6 w-auto" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#f7f7f7" stroke="#e0e0e0" strokeWidth=".5"/><text x="19" y="15" textAnchor="middle" fill="#635BFF" fontSize="7" fontWeight="700" fontFamily="Arial,sans-serif">stripe</text></svg>
+              </div>
+              <p className="text-[10px] text-center text-muted-foreground/50">Secured by Stripe · 256-bit SSL encryption</p>
             </div>
           )}
           <DialogFooter>
