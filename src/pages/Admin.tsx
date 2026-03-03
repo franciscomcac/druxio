@@ -160,6 +160,10 @@ const Admin = () => {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [orderSearch, setOrderSearch] = useState("");
+  // Admin message to order chat
+  const [adminMsgOrderId, setAdminMsgOrderId] = useState<string | null>(null);
+  const [adminMsgText, setAdminMsgText] = useState("");
+  const [adminMsgSending, setAdminMsgSending] = useState(false);
   const [orderFilter, setOrderFilter] = useState("all");
 
   // Users
@@ -704,6 +708,24 @@ const Admin = () => {
     loadStats();
   };
 
+  const handleSendAdminOrderMessage = async () => {
+    if (!adminMsgOrderId || !adminMsgText.trim()) return;
+    setAdminMsgSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-order-message", {
+        body: { jobId: adminMsgOrderId, message: adminMsgText.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Message sent", description: "Both parties can now see your message in the order chat." });
+      setAdminMsgOrderId(null);
+      setAdminMsgText("");
+    } catch (err: any) {
+      toast({ title: "Failed to send", description: err.message, variant: "destructive" });
+    }
+    setAdminMsgSending(false);
+  };
+
   const handleAddRole = async (userId: string, role: string) => {
     if (!role) return;
     const { error } = await supabase.from("user_roles").insert({
@@ -1087,6 +1109,9 @@ const Admin = () => {
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="flex items-center justify-end gap-1">
+                                <Button size="sm" variant="ghost" onClick={() => { setAdminMsgOrderId(order.id); setAdminMsgText(""); }} title="Send admin message">
+                                  <MessageSquare className="h-3.5 w-3.5" />
+                                </Button>
                                 <Button size="sm" variant="ghost" onClick={() => navigate(`/order/${order.id}`)}>
                                   <Eye className="h-3.5 w-3.5" />
                                 </Button>
@@ -1936,6 +1961,34 @@ const Admin = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+      {/* ═══ ADMIN MESSAGE TO ORDER DIALOG ═══ */}
+      <Dialog open={!!adminMsgOrderId} onOpenChange={(open) => { if (!open) setAdminMsgOrderId(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              Send Admin Message
+            </DialogTitle>
+            <DialogDescription>
+              This message will appear as a system notification in the order chat, visible to both buyer and seller.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Type your message to both parties..."
+            value={adminMsgText}
+            onChange={(e) => setAdminMsgText(e.target.value)}
+            rows={4}
+            className="resize-none"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAdminMsgOrderId(null)}>Cancel</Button>
+            <Button onClick={handleSendAdminOrderMessage} disabled={adminMsgSending || !adminMsgText.trim()} className="gap-2">
+              {adminMsgSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Send Message
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

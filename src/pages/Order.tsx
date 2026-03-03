@@ -837,6 +837,7 @@ const Order = () => {
                       const isMeetMsg = msg.content.startsWith("📹 Video Call:") || msg.content.includes("meet.google.com/");
                       const meetUrl = isMeetMsg ? (msg.content.match(/https?:\/\/[^\s]+/)?.[0] ?? null) : null;
                       const isDeliveryMsg = msg.content.startsWith("📦 DELIVERED:");
+                      const isAdminMsg = msg.content.startsWith("🛡️ ADMIN:");
 
                       // Delivery system message
                       if (isDeliveryMsg) {
@@ -865,6 +866,39 @@ const Order = () => {
                                   <p className="text-[10px] text-muted-foreground/70 font-medium">
                                     ⏳ Payment auto-releases in 3 days if no action is taken.
                                   </p>
+                                  <p className="text-[10px] text-muted-foreground/60 text-right">
+                                    {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Admin system message
+                      if (isAdminMsg) {
+                        const adminText = msg.content.replace(/^🛡️ ADMIN:\s*/, "");
+                        return (
+                          <div key={msg.id} className="flex justify-center my-3">
+                            <div className="w-full max-w-sm">
+                              <div className="flex items-center gap-2 mb-2 justify-center">
+                                <div className="h-px flex-1 bg-border/60" />
+                                <span className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground/70 px-1">System</span>
+                                <div className="h-px flex-1 bg-border/60" />
+                              </div>
+                              <div className="rounded-xl border border-primary/25 bg-primary/5 overflow-hidden">
+                                <div className="flex items-center gap-2.5 px-4 py-3 border-b border-primary/15 bg-primary/8">
+                                  <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+                                    <ShieldCheck className="h-4 w-4 text-primary" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-foreground">Admin Notice</p>
+                                    <p className="text-[10px] text-muted-foreground">From the Druxio team</p>
+                                  </div>
+                                </div>
+                                <div className="px-4 py-3 space-y-2">
+                                  <p className="text-xs text-muted-foreground whitespace-pre-wrap">{adminText}</p>
                                   <p className="text-[10px] text-muted-foreground/60 text-right">
                                     {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
                                   </p>
