@@ -170,6 +170,7 @@ export type Database = {
           expires_at: string | null
           id: string
           status: string
+          stripe_payment_intent_id: string | null
           subcategory: string | null
           title: string
           updated_at: string | null
@@ -189,6 +190,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           status?: string
+          stripe_payment_intent_id?: string | null
           subcategory?: string | null
           title: string
           updated_at?: string | null
@@ -208,6 +210,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           status?: string
+          stripe_payment_intent_id?: string | null
           subcategory?: string | null
           title?: string
           updated_at?: string | null
