@@ -1074,6 +1074,13 @@ const Order = () => {
                   <div ref={chatEndRef} />
                 </div>
               </ScrollArea>
+              {(job.status === "completed" || job.status === "cancelled") ? (
+                <div className="border-t border-border p-3 shrink-0">
+                  <p className="text-sm text-muted-foreground text-center py-2">
+                    This order is {job.status === "completed" ? "completed" : "cancelled"}. Chat is now read-only.
+                  </p>
+                </div>
+              ) : (
               <div className="border-t border-border p-3 shrink-0">
                 {/* Pending image previews */}
                 {pendingImages.length > 0 && (
