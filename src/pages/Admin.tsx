@@ -638,6 +638,61 @@ const Admin = () => {
 
   // ─── Actions ────────────────────────────────────────────────────
 
+  const handleDisputeEscalate = async (dispute: Dispute) => {
+    try {
+      const escalateMsg = `📋 PROOF REQUEST: This dispute has been escalated by an admin. Both parties are required to submit evidence supporting their side within 48 hours.\n\n• Screenshots, files, or any relevant documentation\n• A clear summary of your position\n\nFailure to provide proof may result in a decision favoring the other party.`;
+      await supabase.functions.invoke("admin-order-message", {
+        body: { jobId: dispute.job_id, message: escalateMsg },
+      });
+      await Promise.all([
+        supabase.from("notifications").insert({
+          user_id: dispute.buyer_id, type: "dispute_escalated",
+          title: "Dispute escalated — proof required",
+          message: `Your dispute for "${dispute.job_title}" has been escalated. Please submit proof in the order chat within 48 hours.`,
+          data: { job_id: dispute.job_id },
+        }),
+        supabase.from("notifications").insert({
+          user_id: dispute.seller_id, type: "dispute_escalated",
+          title: "Dispute escalated — proof required",
+          message: `The dispute for "${dispute.job_title}" has been escalated. Please submit proof in the order chat within 48 hours.`,
+          data: { job_id: dispute.job_id },
+        }),
+      ]);
+      toast({ title: "Dispute escalated", description: "Both parties have been notified to submit proof." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleDisputeResume = async (dispute: Dispute) => {
+    try {
+      await supabase.from("jobs").update({ status: "in_progress" }).eq("id", dispute.job_id);
+      const resumeMsg = `Both parties have agreed to resume work on this order. The dispute has been closed and the order is back in progress.`;
+      await supabase.functions.invoke("admin-order-message", {
+        body: { jobId: dispute.job_id, message: resumeMsg },
+      });
+      await Promise.all([
+        supabase.from("notifications").insert({
+          user_id: dispute.buyer_id, type: "dispute_resolved",
+          title: "Dispute resolved — work resumed",
+          message: `Your dispute for "${dispute.job_title}" has been resolved. The order is back in progress.`,
+          data: { job_id: dispute.job_id },
+        }),
+        supabase.from("notifications").insert({
+          user_id: dispute.seller_id, type: "dispute_resolved",
+          title: "Dispute resolved — work resumed",
+          message: `The dispute for "${dispute.job_title}" has been resolved. The order is back in progress.`,
+          data: { job_id: dispute.job_id },
+        }),
+      ]);
+      toast({ title: "Order resumed", description: "Both parties notified. Dispute closed." });
+      loadDisputes();
+      loadStats();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  };
+
 
   const handleDisputeResolve = async (action: "refund" | "release") => {
     if (!selectedDispute) return;
