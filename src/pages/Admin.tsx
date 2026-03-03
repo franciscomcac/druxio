@@ -155,6 +155,7 @@ const Admin = () => {
   const [disputeAction, setDisputeAction] = useState<"refund" | "release" | null>(null);
   const [disputeNote, setDisputeNote] = useState("");
   const [disputeActionLoading, setDisputeActionLoading] = useState(false);
+  const [refundMethod, setRefundMethod] = useState<"balance" | "source">("balance");
 
   // Orders
   const [orders, setOrders] = useState<OrderRow[]>([]);
