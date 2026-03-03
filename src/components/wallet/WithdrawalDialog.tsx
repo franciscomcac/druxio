@@ -138,7 +138,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {stripeStatus?.connected
                       ? "Your Stripe account needs additional details before you can receive payouts."
-                      : "Set up your Stripe account to receive direct payouts from completed orders. No withdrawal fees!"}
+                      : "Set up your Stripe account to receive direct payouts from completed orders."}
                   </p>
                 </div>
               </div>
