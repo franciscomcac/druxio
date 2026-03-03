@@ -97,6 +97,10 @@ const Order = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
 
+  // Seller voluntary refund
+  const [sellerRefundOpen, setSellerRefundOpen] = useState(false);
+  const [sellerRefundLoading, setSellerRefundLoading] = useState(false);
+
   // Auto-release countdown (3 days from delivered_at)
   const [autoReleaseSecondsLeft, setAutoReleaseSecondsLeft] = useState<number | null>(null);
 
