@@ -78,8 +78,8 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-xl">
       <div className="flex h-14 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link to="/" className="flex items-center shrink-0">
-          <span className="text-lg font-bold text-foreground">Drux<Zap className="inline h-4 w-4 -mx-0.5" style={{ color: 'hsl(188 100% 48%)', fill: 'hsl(188 100% 48%)' }} />o</span>
+         <Link to="/" className="flex items-center shrink-0">
+           <img src="/logo.png" alt="Druxio" className="h-7" />
         </Link>
 
         {/* Desktop right actions */}
