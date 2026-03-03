@@ -847,6 +847,7 @@ const Order = () => {
                       const meetUrl = isMeetMsg ? (msg.content.match(/https?:\/\/[^\s]+/)?.[0] ?? null) : null;
                       const isDeliveryMsg = msg.content.startsWith("📦 DELIVERED:");
                       const isAdminMsg = msg.content.startsWith("🛡️ ADMIN:");
+                      const isDisputeMsg = msg.content.startsWith("⚠️ DISPUTE:");
 
                       // Delivery system message
                       if (isDeliveryMsg) {
