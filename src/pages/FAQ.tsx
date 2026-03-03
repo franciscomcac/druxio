@@ -67,7 +67,7 @@ const faqSections = [
       },
       {
         q: "How do I withdraw my earnings?",
-        a: "Experts can withdraw via PayPal, bank transfer, or supported cryptocurrency networks. Go to Wallet → Withdraw. Withdrawals are typically processed within 1–3 business days.",
+        a: "Experts receive payouts directly to their bank account via Stripe Connect. Go to Wallet → Payouts to set up your Stripe account. Payouts are processed automatically — no manual withdrawals needed.",
       },
     ],
   },
