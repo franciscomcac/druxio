@@ -71,8 +71,25 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 md:mt-16 flex flex-col items-center justify-between gap-3 md:gap-4 border-t border-border pt-6 md:pt-8 md:flex-row">
+        <div className="mt-8 md:mt-16 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 md:pt-8 md:flex-row">
           <p className="text-xs md:text-sm text-muted-foreground">© {new Date().getFullYear()} Druxio. All rights reserved.</p>
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 items-center justify-center rounded bg-[#1a1f71] px-2">
+                <svg width="36" height="12" viewBox="0 0 36 12" fill="none"><text x="0" y="11" fontFamily="Arial,sans-serif" fontWeight="bold" fontSize="12" fill="white" fontStyle="italic">VISA</text></svg>
+              </div>
+              <div className="flex h-7 items-center justify-center rounded bg-muted/60 px-2">
+                <svg width="28" height="18" viewBox="0 0 28 18"><circle cx="10" cy="9" r="8" fill="#eb001b"/><circle cx="18" cy="9" r="8" fill="#f79e1b"/><path d="M14 2.8a8 8 0 0 1 0 12.4 8 8 0 0 1 0-12.4z" fill="#ff5f00"/></svg>
+              </div>
+              <div className="flex h-7 items-center justify-center rounded bg-[#006fcf] px-2">
+                <span className="text-[9px] font-bold text-white tracking-tight">AMEX</span>
+              </div>
+              <div className="flex h-7 items-center justify-center rounded bg-[#635bff] px-2.5">
+                <span className="text-[10px] font-bold text-white">stripe</span>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground/50">Secured by Stripe · 256-bit SSL encryption</p>
+          </div>
           <span className="text-xs md:text-sm text-muted-foreground">🇪🇺 EUR payments via Stripe</span>
         </div>
       </div>
