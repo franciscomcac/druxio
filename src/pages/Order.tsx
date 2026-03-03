@@ -382,6 +382,13 @@ const Order = () => {
         data: { job_id: jobId },
       });
 
+      // Notify buyer (self)
+      await supabase.from("notifications").insert({
+        user_id: userId!, type: "order_completed",
+        title: "Order completed! 🎉", message: `You confirmed delivery for "${job?.title}". Payment has been released to the seller.`,
+        data: { job_id: jobId },
+      });
+
       // Email seller: payment released
       sendOrderEmail("payment_released");
 
