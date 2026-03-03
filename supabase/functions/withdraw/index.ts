@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { platformFee, paypalPayoutFee, totalFee, netAmount } = calcWithdrawalFees(amount, method);
+    const { withdrawalFee, paypalPayoutFee, totalFee, netAmount } = calcWithdrawalFees(amount, method);
 
     // Deduct full amount from wallet
     await adminClient
