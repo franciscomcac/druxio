@@ -160,6 +160,10 @@ const Admin = () => {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [orderSearch, setOrderSearch] = useState("");
+  // Admin message to order chat
+  const [adminMsgOrderId, setAdminMsgOrderId] = useState<string | null>(null);
+  const [adminMsgText, setAdminMsgText] = useState("");
+  const [adminMsgSending, setAdminMsgSending] = useState(false);
   const [orderFilter, setOrderFilter] = useState("all");
 
   // Users
