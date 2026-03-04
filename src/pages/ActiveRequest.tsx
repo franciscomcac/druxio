@@ -496,7 +496,7 @@ const ActiveRequest = () => {
 
       setSellerConvos(convos);
 
-      if (shouldOpenDemo) {
+      if (shouldOpenDemo && !convos.some(c => c.jobId === jobId)) {
         const latestDemoMessage = demoChatMessages.length > 0
           ? demoChatMessages[demoChatMessages.length - 1].content
           : "Welcome!";
