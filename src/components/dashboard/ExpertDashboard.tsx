@@ -143,7 +143,8 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const playNotificationSound = useNotificationSound();
   const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
   const tutorialStep = localStorage.getItem("seller_tutorial_step");
-  const showTutorialDemoJob = isTutorialActive && tutorialStep === "0";
+  // Always show demo job for sellers so they can practice quoting
+  const showTutorialDemoJob = true;
 
   useEffect(() => {
     const fetchJobs = async () => {
