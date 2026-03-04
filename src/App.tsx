@@ -59,9 +59,33 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <Routes>
-            {/* Pre-launch: all routes redirect to coming-soon */}
-            <Route path="/coming-soon" element={<ComingSoon />} />
-            <Route path="*" element={<ComingSoon />} />
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/how-it-works" element={<HowItWorksPage />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/post-request" element={<PostRequest />} />
+              <Route path="/active-request/:id" element={<ActiveRequest />} />
+              <Route path="/session/:id" element={<Session />} />
+              <Route path="/wallet" element={<Wallet />} />
+              <Route path="/mentor/:id" element={<MentorProfile />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/inbox" element={<Inbox />} />
+              <Route path="/order/:id" element={<Order />} />
+              <Route path="/orders/purchased" element={<PurchasedOrders />} />
+              <Route path="/orders/sold" element={<SoldOrders />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/category/:slug" element={<CategoryPage />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/cookies" element={<CookiePolicy />} />
+            </Route>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
           <PresenceTracker />
           <GlobalSoundListener />
