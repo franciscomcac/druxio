@@ -54,23 +54,25 @@ const Testimonials = () => {
         </div>
 
         <div className="relative reveal delay-200">
-          {/* Nav arrows — desktop only */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute -left-4 top-1/2 z-10 hidden -translate-y-1/2 lg:flex h-10 w-10 rounded-full border border-border hover:bg-card"
-            onClick={() => { setIsAutoPlaying(false); changeIndex((currentIndex - 1 + testimonials.length) % testimonials.length); }}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute -right-4 top-1/2 z-10 hidden -translate-y-1/2 lg:flex h-10 w-10 rounded-full border border-border hover:bg-card"
-            onClick={() => { setIsAutoPlaying(false); changeIndex((currentIndex + 1) % testimonials.length); }}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
+          {/* Nav arrows — desktop only, positioned outside the cards */}
+          <div className="hidden lg:flex justify-between absolute -left-14 -right-14 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="pointer-events-auto h-10 w-10 rounded-full border border-border hover:bg-card"
+              onClick={() => { setIsAutoPlaying(false); changeIndex((currentIndex - 1 + testimonials.length) % testimonials.length); }}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="pointer-events-auto h-10 w-10 rounded-full border border-border hover:bg-card"
+              onClick={() => { setIsAutoPlaying(false); changeIndex((currentIndex + 1) % testimonials.length); }}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          </div>
 
           {/* Mobile: show 1 card, tablet: 2, desktop: 3 */}
           <div className={`grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 transition-all duration-300 ${isTransitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
