@@ -82,6 +82,8 @@ const App = () => (
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiePolicy />} />
+              <Route path="/quotes" element={<ActiveRequest />} />
+              <Route path="/coming-soon" element={<ComingSoon />} />
             </Route>
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
