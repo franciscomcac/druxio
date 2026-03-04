@@ -372,7 +372,7 @@ const ActiveRequest = () => {
         .order("created_at", { ascending: false });
 
       const tutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
-      const shouldOpenDemo = tutorialActive && !jobId;
+      const shouldOpenDemo = !jobId;
 
       if (!myQuotes || myQuotes.length === 0) {
         setSellerConvos([]);
