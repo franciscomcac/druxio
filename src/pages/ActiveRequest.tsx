@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow, differenceInDays, differenceInHours, addDays } from "date-fns";
+import PayPalCheckoutButtons from "@/components/payment/PayPalCheckoutButtons";
 
 interface QuoteWithProfile {
   id: string;
@@ -259,9 +260,9 @@ const ActiveRequest = () => {
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
 
-  // Stripe checkout state
-  const [stripeDialog, setStripeDialog] = useState<QuoteWithProfile | null>(null);
-  const [stripeLoading, setStripeLoading] = useState(false);
+  // PayPal checkout state
+  const [paypalDialog, setPaypalDialog] = useState<QuoteWithProfile | null>(null);
+  const [paypalLoading, setPaypalLoading] = useState(false);
   const { format } = useCurrency();
 
   const formatDeliveryTime = (minutes: number) => {
@@ -715,44 +716,36 @@ const ActiveRequest = () => {
   }, [chatMessages, selectedChatPartnerId]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  const handleAcceptQuote = (quote: QuoteWithProfile) => setStripeDialog(quote);
+  const handleAcceptQuote = (quote: QuoteWithProfile) => setPaypalDialog(quote);
 
-  const handleStripeCheckout = async () => {
-    if (!stripeDialog || !jobId) return;
-    setStripeLoading(true);
+  const handlePayPalCreateOrder = async (): Promise<string> => {
+    if (!paypalDialog || !jobId) throw new Error("Missing data");
+    setPaypalLoading(true);
+    const { data, error } = await supabase.functions.invoke("paypal-create-order", {
+      body: { quoteId: paypalDialog.id, jobId },
+    });
+    if (error) { setPaypalLoading(false); throw new Error(error.message); }
+    if (data?.error) { setPaypalLoading(false); throw new Error(data.error); }
+    return data.orderId;
+  };
+
+  const handlePayPalApprove = async (data: { orderID: string }) => {
+    if (!paypalDialog || !jobId) return;
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
-        body: { quoteId: stripeDialog.id, jobId },
+      const { data: captureResult, error } = await supabase.functions.invoke("paypal-capture-order", {
+        body: { paypalOrderId: data.orderID, jobId, quoteId: paypalDialog.id },
       });
       if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
-      const { url, sessionId: stripeSessionId } = data;
-      if (!url) throw new Error("No checkout URL received");
+      if (captureResult?.error) throw new Error(captureResult.error);
 
-      // Open Stripe Checkout in a new tab
-      const stripeWindow = window.open(url, "_blank");
-
-      // Poll for completion
-      const pollInterval = setInterval(async () => {
-        try {
-          const { data: webhookData } = await supabase.functions.invoke("stripe-checkout-webhook", {
-            body: { sessionId: stripeSessionId },
-          });
-          if (webhookData?.success) {
-            clearInterval(pollInterval);
-            stripeWindow?.close();
-            toast({ title: "Payment successful! 🎉", description: `${stripeDialog.profile?.display_name || "The expert"} will start working now.` });
-            supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
-            setStripeDialog(null);
-            setStripeLoading(false);
-            navigate(`/order/${jobId}`);
-          }
-        } catch { /* keep polling */ }
-      }, 3000);
-      setTimeout(() => { clearInterval(pollInterval); setStripeLoading(false); }, 300000);
+      toast({ title: "Payment successful! 🎉", description: `${paypalDialog.profile?.display_name || "The expert"} will start working now.` });
+      supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
+      setPaypalDialog(null);
+      setPaypalLoading(false);
+      navigate(`/order/${jobId}`);
     } catch (err: any) {
-      toast({ title: "Checkout error", description: err.message, variant: "destructive" });
-      setStripeLoading(false);
+      toast({ title: "Payment failed", description: err.message, variant: "destructive" });
+      setPaypalLoading(false);
     }
   };
 
@@ -1699,8 +1692,8 @@ const ActiveRequest = () => {
         </div>
       </div>
 
-      {/* Stripe Checkout Dialog */}
-      <Dialog open={!!stripeDialog} onOpenChange={() => { if (!stripeLoading) setStripeDialog(null); }}>
+      {/* PayPal Checkout Dialog */}
+      <Dialog open={!!paypalDialog} onOpenChange={() => { if (!paypalLoading) setPaypalDialog(null); }}>
         <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1708,14 +1701,12 @@ const ActiveRequest = () => {
             </DialogTitle>
             <DialogDescription>Funds will be held in escrow until you confirm delivery.</DialogDescription>
           </DialogHeader>
-          {stripeDialog && (
+          {paypalDialog && (
             <div className="space-y-4">
               {(() => {
-                const base = stripeDialog.price;
+                const base = paypalDialog.price;
                 const platform = Math.round(base * 0.05 * 100) / 100;
-                const subtotal = base + platform;
-                const total = Math.round(((subtotal + 0.30) / (1 - 0.029)) * 100) / 100;
-                const stripe = Math.round((total - subtotal) * 100) / 100;
+                const total = Math.round((base + platform) * 100) / 100;
                 return (
                   <div className="rounded-lg border border-border bg-background/40 p-4 space-y-2">
                     <div className="flex justify-between text-sm">
@@ -1725,10 +1716,6 @@ const ActiveRequest = () => {
                     <div className="flex justify-between text-xs opacity-60">
                       <span className="text-muted-foreground">Platform fee (5%)</span>
                       <span className="text-muted-foreground">€{platform.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-xs opacity-60">
-                      <span className="text-muted-foreground">Processing fee</span>
-                      <span className="text-muted-foreground">€{stripe.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-sm border-t border-border pt-2">
                       <span className="font-semibold text-foreground">Total</span>
@@ -1741,21 +1728,20 @@ const ActiveRequest = () => {
                 <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
                 Funds are held in escrow and released only after you confirm delivery.
               </div>
-              {/* Payment method logos — trust signals */}
-              <div className="flex items-center justify-center gap-3 pt-1 opacity-50">
-                <svg viewBox="0 0 38 24" className="h-6 w-auto" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#1A1F71"/><text x="19" y="15.5" textAnchor="middle" fill="#fff" fontSize="8" fontWeight="700" fontFamily="Arial,sans-serif">VISA</text></svg>
-                <svg viewBox="0 0 38 24" className="h-6 w-auto" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#252525"/><circle cx="15" cy="12" r="7" fill="#EB001B"/><circle cx="23" cy="12" r="7" fill="#F79E1B"/><path d="M19 6.8a7 7 0 010 10.4 7 7 0 010-10.4z" fill="#FF5F00"/></svg>
-                <svg viewBox="0 0 38 24" className="h-6 w-auto" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#016FD0"/><text x="19" y="15" textAnchor="middle" fill="#fff" fontSize="6" fontWeight="700" fontFamily="Arial,sans-serif">AMEX</text></svg>
-                <svg viewBox="0 0 38 24" className="h-6 w-auto" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="24" rx="4" fill="#f7f7f7" stroke="#e0e0e0" strokeWidth=".5"/><text x="19" y="15" textAnchor="middle" fill="#635BFF" fontSize="7" fontWeight="700" fontFamily="Arial,sans-serif">stripe</text></svg>
-              </div>
-              <p className="text-[10px] text-center text-muted-foreground/50">Secured by Stripe · 256-bit SSL encryption</p>
+              {/* PayPal Buttons */}
+              <PayPalCheckoutButtons
+                createOrder={handlePayPalCreateOrder}
+                onApprove={handlePayPalApprove}
+                onError={() => {
+                  toast({ title: "Payment error", description: "Something went wrong with PayPal. Please try again.", variant: "destructive" });
+                  setPaypalLoading(false);
+                }}
+              />
+              <p className="text-[10px] text-center text-muted-foreground/50">Secured by PayPal · Buyer Protection</p>
             </div>
           )}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setStripeDialog(null)} disabled={stripeLoading}>Cancel</Button>
-            <Button onClick={handleStripeCheckout} disabled={stripeLoading} className="gap-2">
-              {stripeLoading ? <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</> : <><CreditCard className="h-4 w-4" /> Pay with Card</>}
-            </Button>
+            <Button variant="ghost" onClick={() => setPaypalDialog(null)} disabled={paypalLoading}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

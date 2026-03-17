@@ -1,20 +1,39 @@
-import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const PLATFORM_FEE_RATE = 0.05;
+
+async function getPayPalAccessToken(): Promise<string> {
+  const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
+  const secret = Deno.env.get("PAYPAL_SECRET");
+  if (!clientId || !secret) throw new Error("PayPal credentials not configured");
+
+  const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
+    ? "https://api-m.paypal.com"
+    : "https://api-m.sandbox.paypal.com";
+
+  const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
+
+  if (!res.ok) throw new Error(`PayPal auth failed: ${res.status}`);
+  const data = await res.json();
+  return data.access_token;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const stripe = stripeKey ? new Stripe(stripeKey, { apiVersion: "2025-04-30.basil" }) : null;
-
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -41,110 +60,123 @@ Deno.serve(async (req) => {
     for (const job of eligibleJobs) {
       try {
         const { data: quote } = await supabase
-          .from("quotes")
-          .select("*")
-          .eq("job_id", job.id)
-          .eq("status", "accepted")
-          .maybeSingle();
-
+          .from("quotes").select("*").eq("job_id", job.id).eq("status", "accepted").maybeSingle();
         if (!quote) continue;
 
         const servicePrice = Number(quote.price);
         const sellerEarning = Math.round(servicePrice * (1 - PLATFORM_FEE_RATE) * 100) / 100;
+        const platformFeeAmt = Math.round(servicePrice * PLATFORM_FEE_RATE * 100) / 100;
 
-        // Try Stripe transfer first
+        // Try PayPal payout to seller
         const { data: sellerProfile } = await supabase
-          .from("profiles")
-          .select("stripe_connect_id, wallet_balance")
-          .eq("id", quote.expert_id)
-          .single();
+          .from("profiles").select("wallet_balance, display_name").eq("id", quote.expert_id).single();
 
-        if (stripe && sellerProfile?.stripe_connect_id) {
-          // Transfer via Stripe
-          const transferAmountCents = Math.round(sellerEarning * 100);
-          const transfer = await stripe.transfers.create({
-            amount: transferAmountCents,
-            currency: "eur",
-            destination: sellerProfile.stripe_connect_id,
-            transfer_group: `job_${job.id}`,
-            metadata: { job_id: job.id, seller_id: quote.expert_id, auto_release: "true" },
-          });
+        const { data: latestWithdrawal } = await supabase
+          .from("withdrawals").select("paypal_email")
+          .eq("user_id", quote.expert_id).eq("method", "paypal")
+          .order("created_at", { ascending: false }).limit(1).maybeSingle();
 
-          const platformFeeAmt = Math.round(servicePrice * PLATFORM_FEE_RATE * 100) / 100;
-          await supabase.from("transactions").insert({
-            user_id: quote.expert_id,
-            amount: sellerEarning,
-            type: "session_earning",
-            status: "completed",
-            description: `Auto-released: job ${job.id} — €${servicePrice.toFixed(2)} minus 5% fee (€${platformFeeAmt.toFixed(2)})`,
-            stripe_payment_id: transfer.id,
-          });
-        } else {
-          // Fallback: credit wallet
+        const sellerPaypalEmail = latestWithdrawal?.paypal_email;
+        let payoutMethod = "wallet";
+
+        if (sellerPaypalEmail) {
+          try {
+            const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
+              ? "https://api-m.paypal.com"
+              : "https://api-m.sandbox.paypal.com";
+            const accessToken = await getPayPalAccessToken();
+            const batchId = `druxio_auto_${job.id}_${Date.now()}`;
+
+            const payoutRes = await fetch(`${baseUrl}/v1/payments/payouts`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                sender_batch_header: {
+                  sender_batch_id: batchId,
+                  email_subject: "Payment auto-released from Druxio!",
+                  email_message: `€${sellerEarning.toFixed(2)} for completing "${job.title}".`,
+                },
+                items: [{
+                  recipient_type: "EMAIL",
+                  amount: { value: sellerEarning.toFixed(2), currency: "EUR" },
+                  receiver: sellerPaypalEmail,
+                  note: `Auto-released earning for: ${job.title}`,
+                  sender_item_id: `auto_${job.id}`,
+                }],
+              }),
+            });
+
+            if (payoutRes.ok) {
+              const payoutData = await payoutRes.json();
+              payoutMethod = "paypal_payout";
+
+              await supabase.from("transactions").insert({
+                user_id: quote.expert_id,
+                amount: sellerEarning,
+                type: "session_earning",
+                status: "completed",
+                description: `Auto-released: "${job.title}" — €${servicePrice.toFixed(2)} minus 5% fee (€${platformFeeAmt.toFixed(2)}). Sent to PayPal.`,
+                stripe_payment_id: payoutData.batch_header?.payout_batch_id || batchId,
+              });
+            } else {
+              // Fallback to wallet
+              console.error("PayPal auto-payout failed, falling back to wallet");
+            }
+          } catch (paypalErr) {
+            console.error("PayPal auto-payout error:", paypalErr);
+          }
+        }
+
+        if (payoutMethod === "wallet") {
           const currentBalance = Number(sellerProfile?.wallet_balance || 0);
           await supabase.from("profiles").update({
             wallet_balance: currentBalance + sellerEarning,
           }).eq("id", quote.expert_id);
 
-          const platformFeeAmtWallet = Math.round(servicePrice * PLATFORM_FEE_RATE * 100) / 100;
           await supabase.from("transactions").insert({
             user_id: quote.expert_id,
             amount: sellerEarning,
             type: "session_earning",
             status: "completed",
-            description: `Auto-released: job ${job.id} — €${servicePrice.toFixed(2)} minus 5% fee (€${platformFeeAmtWallet.toFixed(2)})`,
+            description: `Auto-released: "${job.title}" — €${servicePrice.toFixed(2)} minus 5% fee (€${platformFeeAmt.toFixed(2)}). Credited to wallet.`,
           });
         }
 
         // Mark job completed
         await supabase.from("jobs").update({ status: "completed", escrow_status: "completed" }).eq("id", job.id);
 
-        // Mark session completed
+        // Mark session completed + auto-review
         const { data: session } = await supabase
-          .from("sessions")
-          .select("id")
-          .eq("mentee_id", job.buyer_id)
-          .eq("mentor_id", quote.expert_id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .from("sessions").select("id")
+          .eq("mentee_id", job.buyer_id).eq("mentor_id", quote.expert_id)
+          .order("created_at", { ascending: false }).limit(1).maybeSingle();
 
         if (session) {
           await supabase.from("sessions").update({ status: "completed" }).eq("id", session.id);
-
           const { data: existingReview } = await supabase
-            .from("reviews")
-            .select("id")
-            .eq("session_id", session.id)
-            .eq("reviewer_id", job.buyer_id)
-            .maybeSingle();
-
+            .from("reviews").select("id").eq("session_id", session.id).eq("reviewer_id", job.buyer_id).maybeSingle();
           if (!existingReview) {
             await supabase.from("reviews").insert({
-              session_id: session.id,
-              reviewer_id: job.buyer_id,
-              reviewee_id: quote.expert_id,
-              rating: 5,
-              comment: "Order auto-completed — buyer did not dispute within 3 days.",
+              session_id: session.id, reviewer_id: job.buyer_id, reviewee_id: quote.expert_id,
+              rating: 5, comment: "Order auto-completed — buyer did not dispute within 3 days.",
             });
           }
         }
 
-        // Notify seller
+        // Notifications
         await supabase.from("notifications").insert({
-          user_id: quote.expert_id,
-          type: "order_completed",
+          user_id: quote.expert_id, type: "order_completed",
           title: "Payment auto-released! 💰",
-          message: `Your order "${job.title}" was auto-completed after 3 days. €${sellerEarning.toFixed(2)} transferred.`,
+          message: `Your order "${job.title}" was auto-completed. €${sellerEarning.toFixed(2)} transferred.`,
           data: { job_id: job.id },
         });
-
-        // Notify buyer
         await supabase.from("notifications").insert({
-          user_id: job.buyer_id,
-          type: "order_completed",
+          user_id: job.buyer_id, type: "order_completed",
           title: "Order auto-completed",
-          message: `Your order "${job.title}" was automatically completed and payment released to the seller.`,
+          message: `Your order "${job.title}" was automatically completed and payment released.`,
           data: { job_id: job.id },
         });
 
@@ -160,8 +192,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("auto-release-funds error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

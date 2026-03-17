@@ -362,8 +362,8 @@ const Order = () => {
     if (!jobId || !quote) return;
     setConfirmLoading(true);
     try {
-      // Transfer funds to seller via Stripe
-      const { data: transferResult, error: transferError } = await supabase.functions.invoke("stripe-transfer-funds", {
+      // Transfer funds to seller via PayPal payout
+      const { data: transferResult, error: transferError } = await supabase.functions.invoke("paypal-payout", {
         body: { jobId },
       });
 
