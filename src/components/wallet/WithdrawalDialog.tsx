@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Wallet, ExternalLink, CheckCircle, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Loader2, Wallet, CheckCircle, ArrowUpRight, ShieldCheck } from "lucide-react";
 
 interface WithdrawalDialogProps {
   open: boolean;
@@ -14,161 +15,170 @@ interface WithdrawalDialogProps {
   onSuccess: () => void;
 }
 
+const WITHDRAWAL_FEE = 0.25;
+const PAYPAL_PAYOUT_RATE = 0.02;
+const PAYPAL_PAYOUT_CAP = 1.00;
+
 const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: WithdrawalDialogProps) => {
   const [loading, setLoading] = useState(false);
-  const [stripeStatus, setStripeStatus] = useState<{
-    connected: boolean;
-    charges_enabled: boolean;
-    payouts_enabled: boolean;
-    details_submitted?: boolean;
-  } | null>(null);
-  const [checkingStatus, setCheckingStatus] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [paypalEmail, setPaypalEmail] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [result, setResult] = useState<{ netAmount: number; paypalEmail: string } | null>(null);
   const { toast } = useToast();
   const { format } = useCurrency();
 
-  useEffect(() => {
-    if (open) checkStripeStatus();
-  }, [open]);
+  const numAmount = parseFloat(amount) || 0;
+  const paypalFee = Math.min(Math.round(numAmount * PAYPAL_PAYOUT_RATE * 100) / 100, PAYPAL_PAYOUT_CAP);
+  const totalFee = Math.round((WITHDRAWAL_FEE + paypalFee) * 100) / 100;
+  const netAmount = Math.round((numAmount - totalFee) * 100) / 100;
 
-  const checkStripeStatus = async () => {
-    setCheckingStatus(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("stripe-account-status");
-      if (error) throw error;
-      setStripeStatus(data);
-    } catch (err) {
-      console.error("Failed to check Stripe status:", err);
-      setStripeStatus(null);
-    }
-    setCheckingStatus(false);
-  };
+  const canSubmit = numAmount > 0 && numAmount <= balance && netAmount > 0 && paypalEmail.includes("@") && !loading;
 
-  const handleConnectStripe = async () => {
+  const handleWithdraw = async () => {
+    if (!canSubmit) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-onboard-seller", {
-        body: {
-          return_url: window.location.origin + "/wallet",
-          refresh_url: window.location.origin + "/wallet",
-        },
+      const { data, error } = await supabase.functions.invoke("paypal-withdraw", {
+        body: { amount: numAmount, paypal_email: paypalEmail },
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
-      if (data?.url) {
-        window.open(data.url, "_blank");
-        toast({ title: "Stripe onboarding opened", description: "Complete the setup in the new tab, then return here." });
-      }
+
+      setSuccess(true);
+      setResult({ netAmount: data.breakdown?.netAmount || netAmount, paypalEmail });
+      onSuccess();
     } catch (err: any) {
-      toast({ title: "Failed to start onboarding", description: err.message, variant: "destructive" });
+      toast({ title: "Withdrawal failed", description: err.message, variant: "destructive" });
     }
     setLoading(false);
   };
 
-  const isFullyConnected = stripeStatus?.connected && stripeStatus?.charges_enabled && stripeStatus?.payouts_enabled;
+  const handleClose = () => {
+    setAmount("");
+    setPaypalEmail("");
+    setSuccess(false);
+    setResult(null);
+    onOpenChange(false);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="bg-card/95 backdrop-blur-xl border-border sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-primary" /> Payouts
+            <Wallet className="h-5 w-5 text-primary" /> Withdraw Funds
           </DialogTitle>
           <DialogDescription>
-            Wallet balance: <span className="font-semibold text-foreground">{format(balance)}</span>
+            Available balance: <span className="font-semibold text-foreground">{format(balance)}</span>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          {checkingStatus ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        {success && result ? (
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col items-center gap-3 text-center">
+              <div className="p-3 rounded-full bg-chart-2/10">
+                <CheckCircle className="h-10 w-10 text-chart-2" />
+              </div>
+              <div>
+                <p className="text-lg font-bold text-foreground">Withdrawal sent! 🎉</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  €{result.netAmount.toFixed(2)} has been sent to <span className="font-medium text-foreground">{result.paypalEmail}</span>
+                </p>
+              </div>
             </div>
-          ) : isFullyConnected ? (
-            <>
-              <div className="flex items-center gap-3 rounded-lg border border-chart-2/30 bg-chart-2/10 p-4">
-                <CheckCircle className="h-5 w-5 text-chart-2 shrink-0" />
-                <div>
-                  <p className="font-semibold text-foreground text-sm">Stripe Connected ✓</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Your earnings are transferred directly to your bank account via Stripe. Payouts happen automatically.
-                  </p>
-                </div>
-              </div>
+            <div className="rounded-lg bg-muted/40 border border-border/40 p-3">
+              <p className="text-xs text-muted-foreground text-center">
+                PayPal payouts are typically instant. Check your PayPal account for the funds.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="paypal-email" className="text-sm font-medium">PayPal Email</Label>
+              <Input
+                id="paypal-email"
+                type="email"
+                placeholder="your@email.com"
+                value={paypalEmail}
+                onChange={(e) => setPaypalEmail(e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-              <div className="rounded-lg bg-muted/40 border border-border/40 p-4 space-y-2">
-                <p className="text-sm font-medium text-foreground">How payouts work</p>
-                <ul className="text-xs text-muted-foreground space-y-1.5">
-                  <li>• When a buyer confirms delivery, your earnings (minus 5% fee) are transferred instantly</li>
-                  <li>• Stripe sends the money to your bank account on a rolling basis</li>
-                  <li>• A €0.25 payout fee applies per withdrawal</li>
-                  <li>• You can view payout details in your Stripe dashboard</li>
-                </ul>
-              </div>
-
-              {balance > 0 && (
-                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="font-semibold text-foreground">{format(balance)}</span> in legacy wallet balance from previous orders.
-                    This will be transferred in your next completed order.
-                  </p>
-                </div>
-              )}
-
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-sm font-medium">Amount (€)</Label>
+              <Input
+                id="amount"
+                type="number"
+                placeholder="0.00"
+                min="1"
+                max={balance}
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                disabled={loading}
+              />
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="w-full gap-2 text-xs"
-                onClick={handleConnectStripe}
+                className="text-xs text-primary"
+                onClick={() => setAmount(balance.toFixed(2))}
                 disabled={loading}
               >
-                {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <ExternalLink className="h-3 w-3" />}
-                Manage Stripe Account
+                Withdraw all ({format(balance)})
               </Button>
-            </>
+            </div>
+
+            {numAmount > 0 && (
+              <div className="rounded-lg border border-border bg-background/40 p-4 space-y-2 animate-fade-in">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Withdrawal amount</span>
+                  <span className="font-medium text-foreground">€{numAmount.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xs opacity-60">
+                  <span className="text-muted-foreground">Platform fee</span>
+                  <span className="text-muted-foreground">−€{WITHDRAWAL_FEE.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-xs opacity-60">
+                  <span className="text-muted-foreground">PayPal fee (2%, max €1)</span>
+                  <span className="text-muted-foreground">−€{paypalFee.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm border-t border-border pt-2">
+                  <span className="font-semibold text-foreground">You receive</span>
+                  <span className={`font-bold ${netAmount > 0 ? "text-chart-2" : "text-destructive"}`}>
+                    €{Math.max(0, netAmount).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
+              <ShieldCheck className="h-4 w-4 text-primary shrink-0" />
+              Funds are sent instantly to your PayPal account. No waiting!
+            </div>
+
+            {/* PayPal trust signal */}
+            <div className="flex items-center justify-center gap-2 opacity-50">
+              <svg viewBox="0 0 100 26" className="h-5 w-auto" xmlns="http://www.w3.org/2000/svg">
+                <text x="50" y="18" textAnchor="middle" fill="#003087" fontSize="16" fontWeight="700" fontFamily="Arial,sans-serif">PayPal</text>
+              </svg>
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          {success ? (
+            <Button onClick={handleClose}>Done</Button>
           ) : (
             <>
-              <div className="flex items-center gap-3 rounded-lg border border-chart-4/30 bg-chart-4/10 p-4">
-                <AlertCircle className="h-5 w-5 text-chart-4 shrink-0" />
-                <div>
-                  <p className="font-semibold text-foreground text-sm">
-                    {stripeStatus?.connected && !stripeStatus?.details_submitted
-                      ? "Complete Stripe Setup"
-                      : "Connect Stripe to receive payouts"}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {stripeStatus?.connected
-                      ? "Your Stripe account needs additional details before you can receive payouts."
-                      : "Set up your Stripe account to receive direct payouts from completed orders."}
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-lg bg-muted/40 border border-border/40 p-4 space-y-2">
-                <p className="text-sm font-medium text-foreground">Benefits</p>
-                <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>✓ Direct bank transfers — no manual withdrawals</li>
-                  <li>✓ Low payout fees handled by Stripe</li>
-                  <li>✓ Automatic payouts on a rolling schedule</li>
-                  <li>✓ Secure, powered by Stripe</li>
-                </ul>
-              </div>
-
-              <Button
-                className="w-full gap-2"
-                onClick={handleConnectStripe}
-                disabled={loading}
-              >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-                {stripeStatus?.connected ? "Continue Stripe Setup" : "Connect with Stripe"}
+              <Button variant="ghost" onClick={handleClose} disabled={loading}>Cancel</Button>
+              <Button onClick={handleWithdraw} disabled={!canSubmit} className="gap-2">
+                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</> : <><ArrowUpRight className="h-4 w-4" /> Withdraw via PayPal</>}
               </Button>
             </>
           )}
-        </div>
-
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
