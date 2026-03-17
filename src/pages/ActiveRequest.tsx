@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatDistanceToNow, differenceInDays, differenceInHours, addDays } from "date-fns";
+import PayPalCheckoutButtons from "@/components/payment/PayPalCheckoutButtons";
 
 interface QuoteWithProfile {
   id: string;
