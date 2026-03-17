@@ -732,7 +732,7 @@ const Admin = () => {
       } else {
         // Release funds to seller
         try {
-          await supabase.functions.invoke("stripe-transfer-funds", {
+          await supabase.functions.invoke("paypal-payout", {
             body: { jobId: selectedDispute.job_id },
           });
         } catch {
