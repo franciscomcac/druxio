@@ -717,42 +717,34 @@ const ActiveRequest = () => {
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleAcceptQuote = (quote: QuoteWithProfile) => setPaypalDialog(quote);
 
-  const handleStripeCheckout = async () => {
-    if (!stripeDialog || !jobId) return;
-    setStripeLoading(true);
+  const handlePayPalCreateOrder = async (): Promise<string> => {
+    if (!paypalDialog || !jobId) throw new Error("Missing data");
+    setPaypalLoading(true);
+    const { data, error } = await supabase.functions.invoke("paypal-create-order", {
+      body: { quoteId: paypalDialog.id, jobId },
+    });
+    if (error) { setPaypalLoading(false); throw new Error(error.message); }
+    if (data?.error) { setPaypalLoading(false); throw new Error(data.error); }
+    return data.orderId;
+  };
+
+  const handlePayPalApprove = async (data: { orderID: string }) => {
+    if (!paypalDialog || !jobId) return;
     try {
-      const { data, error } = await supabase.functions.invoke("stripe-create-checkout", {
-        body: { quoteId: stripeDialog.id, jobId },
+      const { data: captureResult, error } = await supabase.functions.invoke("paypal-capture-order", {
+        body: { paypalOrderId: data.orderID, jobId, quoteId: paypalDialog.id },
       });
       if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
-      const { url, sessionId: stripeSessionId } = data;
-      if (!url) throw new Error("No checkout URL received");
+      if (captureResult?.error) throw new Error(captureResult.error);
 
-      // Open Stripe Checkout in a new tab
-      const stripeWindow = window.open(url, "_blank");
-
-      // Poll for completion
-      const pollInterval = setInterval(async () => {
-        try {
-          const { data: webhookData } = await supabase.functions.invoke("stripe-checkout-webhook", {
-            body: { sessionId: stripeSessionId },
-          });
-          if (webhookData?.success) {
-            clearInterval(pollInterval);
-            stripeWindow?.close();
-            toast({ title: "Payment successful! 🎉", description: `${stripeDialog.profile?.display_name || "The expert"} will start working now.` });
-            supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
-            setStripeDialog(null);
-            setStripeLoading(false);
-            navigate(`/order/${jobId}`);
-          }
-        } catch { /* keep polling */ }
-      }, 3000);
-      setTimeout(() => { clearInterval(pollInterval); setStripeLoading(false); }, 300000);
+      toast({ title: "Payment successful! 🎉", description: `${paypalDialog.profile?.display_name || "The expert"} will start working now.` });
+      supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
+      setPaypalDialog(null);
+      setPaypalLoading(false);
+      navigate(`/order/${jobId}`);
     } catch (err: any) {
-      toast({ title: "Checkout error", description: err.message, variant: "destructive" });
-      setStripeLoading(false);
+      toast({ title: "Payment failed", description: err.message, variant: "destructive" });
+      setPaypalLoading(false);
     }
   };
 
