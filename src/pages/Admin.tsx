@@ -703,13 +703,13 @@ const Admin = () => {
 
       if (action === "refund") {
         if (refundMethod === "source") {
-          // Refund to original payment method via Stripe
-          const { data, error } = await supabase.functions.invoke("stripe-refund", {
+          // Refund to original payment method via PayPal
+          const { data, error } = await supabase.functions.invoke("paypal-refund", {
             body: { jobId: selectedDispute.job_id },
           });
           if (error) throw error;
           if (data?.error) throw new Error(data.error);
-          toast({ title: "Dispute resolved — Refund to original payment", description: `Refund of €${totalRefund.toFixed(2)} initiated. Takes up to 7 business days.` });
+          toast({ title: "Dispute resolved — PayPal refund", description: `Refund initiated. The buyer will receive it in their PayPal account.` });
         } else {
           // Refund to store balance — instant
           await supabase.from("transactions").insert({
