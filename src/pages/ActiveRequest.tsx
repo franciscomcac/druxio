@@ -259,9 +259,9 @@ const ActiveRequest = () => {
   // Stats
   const [onlineCount, setOnlineCount] = useState(0);
 
-  // Stripe checkout state
-  const [stripeDialog, setStripeDialog] = useState<QuoteWithProfile | null>(null);
-  const [stripeLoading, setStripeLoading] = useState(false);
+  // PayPal checkout state
+  const [paypalDialog, setPaypalDialog] = useState<QuoteWithProfile | null>(null);
+  const [paypalLoading, setPaypalLoading] = useState(false);
   const { format } = useCurrency();
 
   const formatDeliveryTime = (minutes: number) => {
