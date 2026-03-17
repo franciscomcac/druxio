@@ -682,9 +682,15 @@ const PostRequest = () => {
       setAiResult(data);
     } catch (err: any) {
       console.error("AI refine error:", err);
+      const is402 = err?.message?.includes("402") || err?.context?.status === 402;
+      const is429 = err?.message?.includes("429") || err?.context?.status === 429;
       toast({
-        title: "AI couldn't process your request",
-        description: err?.message || "Please try again or pick a category manually.",
+        title: is429 ? "Too many requests" : "AI couldn't process your request",
+        description: is429
+          ? "Please wait a moment and try again."
+          : is402
+            ? "AI service is temporarily unavailable. Please pick a category manually."
+            : err?.message || "Please try again or pick a category manually.",
         variant: "destructive",
       });
     } finally {
