@@ -633,8 +633,9 @@ const PostRequest = () => {
       setAutoMatchResult(data);
     } catch (err: any) {
       console.error("Auto-match error:", err);
-      const is402 = err?.message?.includes("402") || err?.context?.status === 402;
-      const is429 = err?.message?.includes("429") || err?.context?.status === 429;
+      const status = err?._httpStatus ?? err?.context?.status;
+      const is402 = status === 402 || err?.message?.includes("402") || err?.message?.includes("credits depleted");
+      const is429 = status === 429 || err?.message?.includes("429");
       toast({
         title: is429 ? "Too many requests" : "AI couldn't auto-detect a category",
         description: is429
