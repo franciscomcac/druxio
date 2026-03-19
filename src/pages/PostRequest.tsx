@@ -167,6 +167,7 @@ const TITLE_PLACEHOLDERS: Record<string, string> = {
   "Gaming: World of Warcraft": 'e.g. "Boost my mythic+ rating"',
   "Gaming: Destiny 2": 'e.g. "Help me complete a raid or dungeon"',
   "Gaming: Dead by Daylight": 'e.g. "Coach me on killer strategy"',
+  "Gaming: Arc Raiders": 'e.g. "Help me survive ARC raids and gear up"',
   "Tech: Discord Bots": 'e.g. "Build a custom moderation bot"',
   "Tech: Web Dev": 'e.g. "Fix my React app login bug"',
   "Tech: SEO": 'e.g. "Audit and improve my site SEO"',
