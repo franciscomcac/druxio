@@ -52,7 +52,7 @@ const PrivacyPolicy = () => {
         <Section title="3. Sharing Your Information">
           <p>We do not sell your personal data. We share data only in the following circumstances:</p>
           <p><strong className="text-foreground">With other users:</strong> Your public profile (display name, rating, skills, response time) is visible to other Druxio users. Messages within an order are visible to both parties in that order.</p>
-          <p><strong className="text-foreground">With service providers:</strong> We use Stripe (payments), Supabase (database), and Resend (email) as processors. They access only what's necessary to deliver their service.</p>
+          <p><strong className="text-foreground">With service providers:</strong> We use PayPal (payments), Supabase (database), and Resend (email) as processors. They access only what's necessary to deliver their service.</p>
           <p><strong className="text-foreground">Legal requirements:</strong> We may disclose data when required by law, court order, or to protect Druxio's legal rights.</p>
         </Section>
 

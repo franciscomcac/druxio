@@ -34,7 +34,7 @@ const Pricing = () => {
               icon: <Clock className="h-7 w-7" />,
               title: "For Experts",
               desc: "Earn on your own terms",
-              features: ["Free to join & bid", "Set your own prices", "Real-time job notifications", "95% of each job you complete", "Weekly payouts via Stripe"],
+              features: ["Free to join & bid", "Set your own prices", "Real-time job notifications", "95% of each job you complete", "Payouts via PayPal"],
               highlight: false,
             },
           ].map((plan, i) => (

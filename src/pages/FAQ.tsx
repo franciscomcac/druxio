@@ -105,7 +105,7 @@ const faqSections = [
       },
       {
         q: "Is my payment information secure?",
-        a: "Yes. Druxio never stores your card details. All payment processing is handled by Stripe, a PCI-DSS Level 1 certified payment processor. Your data is encrypted in transit and at rest.",
+        a: "Yes. Druxio never stores your card details. All payment processing is handled by PayPal, a PCI-DSS Level 1 certified payment processor. Your data is encrypted in transit and at rest.",
       },
       {
         q: "How do I report a user or inappropriate content?",
