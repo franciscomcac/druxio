@@ -146,9 +146,9 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
     { q: "Does the platform provide tax documents?", a: "Currently the platform does not issue tax documents. You are responsible for declaring your earnings as per your local tax laws." },
     { q: "What's the platform fee?", a: "The platform retains a percentage of each order as a service fee. The exact rate is displayed when you submit a quote." },
   ],
-  "I want to set up Stripe payouts": [
-    { q: "How do I connect Stripe?", a: "Go to Wallet → Payouts and click 'Connect with Stripe'. You'll be guided through Stripe's onboarding to link your bank account." },
-    { q: "What if I already have a Stripe account?", a: "You can use your existing Stripe account. The onboarding process will connect it to Druxio for receiving payouts." },
+  "I want to set up PayPal payouts": [
+    { q: "How do I set up PayPal?", a: "Go to Wallet → Withdraw and enter your PayPal email. Payouts will be sent to this address." },
+    { q: "What if I don't have PayPal?", a: "You'll need a PayPal account to receive payouts. Sign up at paypal.com and link your bank account or card." },
   ],
   "I can't access my active order": [
     { q: "Check your Inbox or Dashboard", a: "Active orders are accessible from your Expert Dashboard under 'Active Orders', or directly from the Inbox." },
