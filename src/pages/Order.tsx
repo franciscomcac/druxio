@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { sendOrderEmail as sendOrderEmailHelper } from "@/lib/send-email";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { Button } from "@/components/ui/button";
