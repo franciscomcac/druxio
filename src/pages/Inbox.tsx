@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { sendOrderEmail } from "@/lib/send-email";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -409,12 +410,24 @@ const Inbox = () => {
       }
     }
 
+    const msgContent = inputText.trim() || (uploadedUrls.length > 0 ? "📎 Image" : "");
     await supabase.from("messages").insert({
       session_id: activeConv.sessionId,
       sender_id: userId,
-      content: inputText.trim() || (uploadedUrls.length > 0 ? "📎 Image" : ""),
+      content: msgContent,
       image_urls: uploadedUrls,
     });
+
+    // Email the other user about the new message
+    if (activeConv.otherUserId) {
+      const { data: myProfile } = await supabase.from("profiles").select("display_name").eq("id", userId).single();
+      sendOrderEmail("new_message", {
+        recipientId: activeConv.otherUserId,
+        senderName: myProfile?.display_name || "Someone",
+        messagePreview: msgContent,
+        sessionId: activeConv.sessionId,
+      });
+    }
 
     setInputText("");
     setImageFiles([]);

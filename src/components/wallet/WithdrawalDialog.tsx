@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { sendOrderEmail } from "@/lib/send-email";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,18 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
 
       setSuccess(true);
       setResult({ netAmount: data.breakdown?.netAmount || netAmount, paypalEmail });
+
+      // Email: withdrawal submitted
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        sendOrderEmail("withdrawal_submitted", {
+          userId: user.id,
+          amount: numAmount,
+          netAmount: data.breakdown?.netAmount || netAmount,
+          paypalEmail,
+        });
+      }
+
       onSuccess();
     } catch (err: any) {
       toast({ title: "Withdrawal failed", description: err.message, variant: "destructive" });

@@ -796,6 +796,20 @@ const PostRequest = () => {
         return;
       }
 
+      // Email subscribed experts about new request
+      if (data) {
+        supabase.functions.invoke("send-order-email", {
+          body: {
+            event: "new_request_posted",
+            jobId: data.id,
+            category,
+            subcategory: null,
+            title,
+            buyerId: currentUserId,
+          },
+        }).catch(console.error);
+      }
+
       // Fetch online sellers for this category
       const catForSearch = category.split(":")[0]?.trim() || category;
       const { data: expertCats } = await supabase

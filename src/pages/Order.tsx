@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { sendEmail, buildOrderDeliveredEmail, buildPaymentReleasedEmail, buildOrderCancelledEmail, buildDisputeAdminEmail } from "@/lib/send-email";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { Button } from "@/components/ui/button";
@@ -394,8 +393,9 @@ const Order = () => {
         data: { job_id: jobId },
       });
 
-      // Email seller: payment released
+      // Email seller: payment released + buyer: order completed
       sendOrderEmail("payment_released");
+      sendOrderEmail("order_completed");
 
       toast({ title: "Delivery confirmed! 🎉", description: "Payment released to the seller." });
       setConfirmOpen(false);
@@ -415,6 +415,17 @@ const Order = () => {
         session_id: sessionId, reviewer_id: userId, reviewee_id: quote.expert_id,
         rating: reviewRating, comment: reviewComment.trim() || null,
       });
+
+      // Email seller: review received
+      const { data: myProfile } = await supabase.from("profiles").select("display_name").eq("id", userId).single();
+      sendOrderEmail("review_received", {
+        revieweeId: quote.expert_id,
+        reviewerName: myProfile?.display_name || "A buyer",
+        rating: reviewRating,
+        comment: reviewComment.trim() || null,
+        jobTitle: job?.title,
+      });
+
       toast({ title: "Review submitted! ⭐" });
       setReviewOpen(false);
       setHasReviewed(true);
@@ -509,8 +520,9 @@ const Order = () => {
         data: { job_id: jobId },
       });
 
-      // Email buyer
+      // Email buyer: cancelled + refund
       sendOrderEmail("order_cancelled", { reason: "Seller issued a voluntary refund" });
+      sendOrderEmail("refund_issued", { refundAmount: totalRefund });
 
       toast({ title: "Refund issued ✅", description: `€${totalRefund.toFixed(2)} refunded to buyer's store balance.` });
       setSellerRefundOpen(false);
