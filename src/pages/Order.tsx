@@ -394,8 +394,9 @@ const Order = () => {
         data: { job_id: jobId },
       });
 
-      // Email seller: payment released
+      // Email seller: payment released + buyer: order completed
       sendOrderEmail("payment_released");
+      sendOrderEmail("order_completed");
 
       toast({ title: "Delivery confirmed! 🎉", description: "Payment released to the seller." });
       setConfirmOpen(false);
