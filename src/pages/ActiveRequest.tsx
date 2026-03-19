@@ -728,7 +728,9 @@ const ActiveRequest = () => {
     });
     if (error) { setPaypalLoading(false); throw new Error(error.message); }
     if (data?.error) { setPaypalLoading(false); throw new Error(data.error); }
-    return data.paypalOrderId;
+    const orderId = data?.paypalOrderId || data?.orderId;
+    if (!orderId) { setPaypalLoading(false); throw new Error("PayPal order ID missing"); }
+    return orderId;
   };
 
   const handlePayPalApprove = async (data: { orderID: string }) => {
