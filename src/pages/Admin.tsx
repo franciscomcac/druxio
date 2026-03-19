@@ -749,7 +749,7 @@ const Admin = () => {
         resolveMessage = disputeNote.trim();
       } else if (action === "refund") {
         const methodNote = refundMethod === "source"
-          ? "The refund has been issued to your original payment method. Please allow up to 7 business days for it to appear."
+          ? "The refund has been issued to your PayPal account."
           : `A refund of €${totalRefund.toFixed(2)} has been credited to the buyer's store balance instantly.`;
         resolveMessage = `Your dispute for "${selectedDispute.job_title}" has been resolved. ${methodNote}`;
       } else {
