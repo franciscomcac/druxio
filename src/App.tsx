@@ -85,6 +85,7 @@ const App = () => (
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/quotes" element={<ActiveRequest />} />
+              <Route path="/checkout" element={<Checkout />} />
               <Route path="/coming-soon" element={<ComingSoon />} />
             </Route>
             <Route path="/auth" element={<Auth />} />
