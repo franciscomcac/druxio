@@ -612,7 +612,14 @@ const PostRequest = () => {
       const { data, error } = await supabase.functions.invoke("ai-refine-request", {
         body: { userIdea: inputTitle },
       });
-      if (error) throw error;
+      if (error) {
+        // supabase SDK wraps non-2xx as FunctionsHttpError; extract actual status
+        const status = (error as any)?.context?.status ?? (error as any)?.status;
+        if (status === 402 || status === 429) {
+          throw Object.assign(error, { _httpStatus: status });
+        }
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
       if (data?.rejected) {
         toast({
