@@ -34,7 +34,7 @@ const PrivacyPolicy = () => {
 
         <Section title="1. Information We Collect">
           <p><strong className="text-foreground">Account data:</strong> When you register, we collect your email address, display name, and password (hashed). If you choose, you can also add a profile photo, bio, location, and skills.</p>
-          <p><strong className="text-foreground">Transaction data:</strong> We record details of requests, quotes, orders, payments, and withdrawals to operate the escrow system and resolve disputes. We do not store your full card number — payments are processed by Stripe.</p>
+          <p><strong className="text-foreground">Transaction data:</strong> We record details of requests, quotes, orders, payments, and withdrawals to operate the escrow system and resolve disputes. We do not store your full card number — payments are processed by PayPal.</p>
           <p><strong className="text-foreground">Communications:</strong> Messages sent through Druxio's in-app chat are stored to enable the service and support dispute resolution.</p>
           <p><strong className="text-foreground">Usage data:</strong> We collect standard web logs including IP address, browser type, pages visited, and timestamps. We use this data to improve the platform and detect fraud.</p>
           <p><strong className="text-foreground">Cookies:</strong> We use essential session cookies and optional analytics cookies. See our Cookie Policy for details.</p>
@@ -52,7 +52,7 @@ const PrivacyPolicy = () => {
         <Section title="3. Sharing Your Information">
           <p>We do not sell your personal data. We share data only in the following circumstances:</p>
           <p><strong className="text-foreground">With other users:</strong> Your public profile (display name, rating, skills, response time) is visible to other Druxio users. Messages within an order are visible to both parties in that order.</p>
-          <p><strong className="text-foreground">With service providers:</strong> We use Stripe (payments), Supabase (database), and Resend (email) as processors. They access only what's necessary to deliver their service.</p>
+          <p><strong className="text-foreground">With service providers:</strong> We use PayPal (payments), Supabase (database), and Resend (email) as processors. They access only what's necessary to deliver their service.</p>
           <p><strong className="text-foreground">Legal requirements:</strong> We may disclose data when required by law, court order, or to protect Druxio's legal rights.</p>
         </Section>
 

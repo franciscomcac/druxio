@@ -84,13 +84,13 @@ const Footer = () => {
               <div className="flex h-7 items-center justify-center rounded bg-[#006fcf] px-2">
                 <span className="text-[9px] font-bold text-white tracking-tight">AMEX</span>
               </div>
-              <div className="flex h-7 items-center justify-center rounded bg-[#635bff] px-2.5">
-                <span className="text-[10px] font-bold text-white">stripe</span>
+              <div className="flex h-7 items-center justify-center rounded bg-[#003087] px-2.5">
+                <span className="text-[10px] font-bold text-white">PayPal</span>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground/50">Secured by Stripe · 256-bit SSL encryption</p>
+            <p className="text-[10px] text-muted-foreground/50">Secured by PayPal · 256-bit SSL encryption</p>
           </div>
-          <span className="text-xs md:text-sm text-muted-foreground">🇪🇺 EUR payments via Stripe</span>
+          <span className="text-xs md:text-sm text-muted-foreground">🇪🇺 EUR payments via PayPal</span>
         </div>
       </div>
     </footer>

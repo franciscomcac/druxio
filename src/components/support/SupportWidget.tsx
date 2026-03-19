@@ -47,7 +47,7 @@ const FLOW: Record<string, Record<string, string[]>> = {
       "My withdrawal wasn't processed",
       "I haven't received payment",
       "I have a tax question",
-      "I want to set up Stripe payouts",
+      "I want to set up PayPal payouts",
     ],
     "Orders & Delivery": [
       "I can't access my active order",
@@ -78,8 +78,8 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
     { q: "Try a different payment method", a: "If your card payment fails, try a different card or contact your bank. If it still fails, contact live support below." },
   ],
   "I want to add funds to my wallet": [
-    { q: "How do I top up?", a: "Payments are processed at checkout via Stripe. There's no need to pre-fund your wallet." },
-    { q: "What currencies are supported?", a: "The platform operates in EUR. Stripe handles currency conversion automatically." },
+    { q: "How do I top up?", a: "Payments are processed at checkout via PayPal. There's no need to pre-fund your wallet." },
+    { q: "What currencies are supported?", a: "The platform operates in EUR. PayPal handles currency conversion automatically." },
   ],
   "I was charged incorrectly": [
     { q: "Check your transaction history", a: "Go to Wallet → Transaction History to see all charges. Each order charge is listed with the order ID." },
@@ -134,9 +134,9 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
 
   // ── Expert FAQs ──
   "My withdrawal wasn't processed": [
-    { q: "How do payouts work?", a: "Earnings are transferred directly to your bank account via Stripe Connect. Set up your Stripe account in Wallet → Payouts." },
-    { q: "Is your Stripe account fully set up?", a: "Go to Wallet → Payouts and check your Stripe connection status. You may need to complete onboarding." },
-    { q: "When do payouts arrive?", a: "Stripe typically transfers funds to your bank within 2-7 business days after the transfer is initiated." },
+    { q: "How do payouts work?", a: "Earnings are transferred directly to your PayPal account. Go to Wallet → Withdraw to request a payout." },
+    { q: "Is your PayPal email correct?", a: "Go to Wallet → Withdraw and verify your PayPal email is entered correctly." },
+    { q: "When do payouts arrive?", a: "PayPal payouts typically arrive within 1-3 business days after the request is processed." },
   ],
   "I haven't received payment": [
     { q: "Is the order marked as completed?", a: "Payment is released once the buyer marks the order as complete. If they're unresponsive past the deadline, open a dispute." },
@@ -146,9 +146,9 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
     { q: "Does the platform provide tax documents?", a: "Currently the platform does not issue tax documents. You are responsible for declaring your earnings as per your local tax laws." },
     { q: "What's the platform fee?", a: "The platform retains a percentage of each order as a service fee. The exact rate is displayed when you submit a quote." },
   ],
-  "I want to set up Stripe payouts": [
-    { q: "How do I connect Stripe?", a: "Go to Wallet → Payouts and click 'Connect with Stripe'. You'll be guided through Stripe's onboarding to link your bank account." },
-    { q: "What if I already have a Stripe account?", a: "You can use your existing Stripe account. The onboarding process will connect it to Druxio for receiving payouts." },
+  "I want to set up PayPal payouts": [
+    { q: "How do I set up PayPal?", a: "Go to Wallet → Withdraw and enter your PayPal email. Payouts will be sent to this address." },
+    { q: "What if I don't have PayPal?", a: "You'll need a PayPal account to receive payouts. Sign up at paypal.com and link your bank account or card." },
   ],
   "I can't access my active order": [
     { q: "Check your Inbox or Dashboard", a: "Active orders are accessible from your Expert Dashboard under 'Active Orders', or directly from the Inbox." },
@@ -188,7 +188,7 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
   ],
   "What are the platform fees?": [
     { q: "How much does the platform charge?", a: "The platform charges a service fee on each completed order. The exact percentage is shown when you submit a quote." },
-    { q: "Are there any other fees?", a: "Standard Stripe payout fees may apply when funds are transferred to your bank. The platform also charges a 5% fee deducted from each order." },
+    { q: "Are there any other fees?", a: "Standard PayPal payout fees may apply when funds are transferred. The platform also charges a 5% fee deducted from each order." },
   ],
   "What is allowed in orders?": [
     { q: "What services can I offer?", a: "You can offer any digital service that complies with our Terms of Service: tutoring, consulting, gaming help, tech support, and more." },

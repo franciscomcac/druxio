@@ -55,11 +55,11 @@ const faqSections = [
       },
       {
         q: "What payment methods are accepted?",
-        a: "We accept major credit/debit cards (Visa, Mastercard, Amex) via Stripe. All payments are processed securely through Stripe Checkout.",
+        a: "We accept payments via PayPal (credit/debit cards, PayPal balance, and bank transfers). All payments are processed securely through PayPal Checkout.",
       },
       {
         q: "What currencies does Druxio support?",
-        a: "Druxio supports EUR, USD, GBP, CAD, AUD, CHF, and more. Your display currency can be changed in Settings → Currency. All transactions are processed securely via Stripe.",
+        a: "Druxio supports EUR, USD, GBP, CAD, AUD, CHF, and more. Your display currency can be changed in Settings → Currency. All transactions are processed securely via PayPal.",
       },
       {
         q: "What is the platform fee?",
@@ -67,7 +67,7 @@ const faqSections = [
       },
       {
         q: "How do I withdraw my earnings?",
-        a: "Experts receive payouts directly to their bank account via Stripe Connect. Go to Wallet → Payouts to set up your Stripe account. Payouts are processed automatically — no manual withdrawals needed.",
+        a: "Experts receive payouts directly to their PayPal account. Go to Wallet → Withdraw and enter your PayPal email to request a payout.",
       },
     ],
   },
@@ -105,7 +105,7 @@ const faqSections = [
       },
       {
         q: "Is my payment information secure?",
-        a: "Yes. Druxio never stores your card details. All payment processing is handled by Stripe, a PCI-DSS Level 1 certified payment processor. Your data is encrypted in transit and at rest.",
+        a: "Yes. Druxio never stores your card details. All payment processing is handled by PayPal, a PCI-DSS Level 1 certified payment processor. Your data is encrypted in transit and at rest.",
       },
       {
         q: "How do I report a user or inappropriate content?",

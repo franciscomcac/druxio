@@ -36,7 +36,7 @@ const allRequests = [
   { title: "Fix React app deployment on Vercel", category: "Tech", budget: "€12", deadline: "20min" },
   { title: "Set up CI/CD pipeline with GitHub Actions", category: "Tech", budget: "€25", deadline: "60min" },
   { title: "Docker container not starting — debug", category: "Tech", budget: "€15", deadline: "30min" },
-  { title: "API integration with Stripe payments", category: "Tech", budget: "€30", deadline: "60min" },
+  { title: "API integration with PayPal payments", category: "Tech", budget: "€30", deadline: "60min" },
   { title: "MongoDB query optimization help", category: "Tech", budget: "€18", deadline: "30min" },
   { title: "Linux server SSH access issue", category: "Tech", budget: "€10", deadline: "15min" },
   { title: "Build a Telegram notification bot", category: "Tech", budget: "€22", deadline: "45min" },
