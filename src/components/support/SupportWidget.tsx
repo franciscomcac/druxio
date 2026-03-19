@@ -134,9 +134,9 @@ const FAQ: Record<string, { q: string; a: string }[]> = {
 
   // ── Expert FAQs ──
   "My withdrawal wasn't processed": [
-    { q: "How do payouts work?", a: "Earnings are transferred directly to your bank account via Stripe Connect. Set up your Stripe account in Wallet → Payouts." },
-    { q: "Is your Stripe account fully set up?", a: "Go to Wallet → Payouts and check your Stripe connection status. You may need to complete onboarding." },
-    { q: "When do payouts arrive?", a: "Stripe typically transfers funds to your bank within 2-7 business days after the transfer is initiated." },
+    { q: "How do payouts work?", a: "Earnings are transferred directly to your PayPal account. Go to Wallet → Withdraw to request a payout." },
+    { q: "Is your PayPal email correct?", a: "Go to Wallet → Withdraw and verify your PayPal email is entered correctly." },
+    { q: "When do payouts arrive?", a: "PayPal payouts typically arrive within 1-3 business days after the request is processed." },
   ],
   "I haven't received payment": [
     { q: "Is the order marked as completed?", a: "Payment is released once the buyer marks the order as complete. If they're unresponsive past the deadline, open a dispute." },
