@@ -612,7 +612,14 @@ const PostRequest = () => {
       const { data, error } = await supabase.functions.invoke("ai-refine-request", {
         body: { userIdea: inputTitle },
       });
-      if (error) throw error;
+      if (error) {
+        // supabase SDK wraps non-2xx as FunctionsHttpError; extract actual status
+        const status = (error as any)?.context?.status ?? (error as any)?.status;
+        if (status === 402 || status === 429) {
+          throw Object.assign(error, { _httpStatus: status });
+        }
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
       if (data?.rejected) {
         toast({
@@ -626,8 +633,9 @@ const PostRequest = () => {
       setAutoMatchResult(data);
     } catch (err: any) {
       console.error("Auto-match error:", err);
-      const is402 = err?.message?.includes("402") || err?.context?.status === 402;
-      const is429 = err?.message?.includes("429") || err?.context?.status === 429;
+      const status = err?._httpStatus ?? err?.context?.status;
+      const is402 = status === 402 || err?.message?.includes("402") || err?.message?.includes("credits depleted");
+      const is429 = status === 429 || err?.message?.includes("429");
       toast({
         title: is429 ? "Too many requests" : "AI couldn't auto-detect a category",
         description: is429
@@ -667,7 +675,13 @@ const PostRequest = () => {
         body: { userIdea: userIdea.trim() },
       });
 
-      if (error) throw error;
+      if (error) {
+        const status = (error as any)?.context?.status ?? (error as any)?.status;
+        if (status === 402 || status === 429) {
+          throw Object.assign(error, { _httpStatus: status });
+        }
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
 
       if (data?.rejected) {
@@ -682,8 +696,9 @@ const PostRequest = () => {
       setAiResult(data);
     } catch (err: any) {
       console.error("AI refine error:", err);
-      const is402 = err?.message?.includes("402") || err?.context?.status === 402;
-      const is429 = err?.message?.includes("429") || err?.context?.status === 429;
+      const status = err?._httpStatus ?? err?.context?.status;
+      const is402 = status === 402 || err?.message?.includes("402") || err?.message?.includes("credits depleted");
+      const is429 = status === 429 || err?.message?.includes("429");
       toast({
         title: is429 ? "Too many requests" : "AI couldn't process your request",
         description: is429
