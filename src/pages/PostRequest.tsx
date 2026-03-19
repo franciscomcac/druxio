@@ -675,7 +675,13 @@ const PostRequest = () => {
         body: { userIdea: userIdea.trim() },
       });
 
-      if (error) throw error;
+      if (error) {
+        const status = (error as any)?.context?.status ?? (error as any)?.status;
+        if (status === 402 || status === 429) {
+          throw Object.assign(error, { _httpStatus: status });
+        }
+        throw error;
+      }
       if (data?.error) throw new Error(data.error);
 
       if (data?.rejected) {
