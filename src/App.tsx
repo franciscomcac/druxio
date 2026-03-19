@@ -68,9 +68,9 @@ const App = () => (
               <Route path="/post-request" element={<PostRequest />} />
               <Route path="/active-request/:jobId" element={<ActiveRequest />} />
               <Route path="/request/:jobId" element={<ActiveRequest />} />
-              <Route path="/session/:id" element={<Session />} />
+              <Route path="/session/:sessionId" element={<Session />} />
               <Route path="/wallet" element={<Wallet />} />
-              <Route path="/mentor/:id" element={<MentorProfile />} />
+              <Route path="/mentor/:mentorId" element={<MentorProfile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/inbox" element={<Inbox />} />
               <Route path="/order/:id" element={<Order />} />
