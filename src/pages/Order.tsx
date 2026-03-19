@@ -416,6 +416,17 @@ const Order = () => {
         session_id: sessionId, reviewer_id: userId, reviewee_id: quote.expert_id,
         rating: reviewRating, comment: reviewComment.trim() || null,
       });
+
+      // Email seller: review received
+      const { data: myProfile } = await supabase.from("profiles").select("display_name").eq("id", userId).single();
+      sendOrderEmail("review_received", {
+        revieweeId: quote.expert_id,
+        reviewerName: myProfile?.display_name || "A buyer",
+        rating: reviewRating,
+        comment: reviewComment.trim() || null,
+        jobTitle: job?.title,
+      });
+
       toast({ title: "Review submitted! ⭐" });
       setReviewOpen(false);
       setHasReviewed(true);
