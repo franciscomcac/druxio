@@ -212,8 +212,9 @@ const Order = () => {
       setTimeLeft(null);
       return;
     }
-    const acceptedAt = new Date(quote.created_at);
-    const deadline = addMinutes(acceptedAt, quote.estimated_minutes);
+    // Use job.updated_at as the payment/assignment time (when status changed to in_progress)
+    const paymentCompletedAt = new Date(job.updated_at || quote.created_at);
+    const deadline = addMinutes(paymentCompletedAt, quote.estimated_minutes);
     const tick = () => {
       const remaining = differenceInSeconds(deadline, new Date());
       setTimeLeft(Math.max(0, remaining));
