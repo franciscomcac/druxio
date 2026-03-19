@@ -3,7 +3,6 @@ import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
