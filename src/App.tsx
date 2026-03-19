@@ -66,8 +66,8 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/post-request" element={<PostRequest />} />
-              <Route path="/active-request/:id" element={<ActiveRequest />} />
-              <Route path="/request/:id" element={<ActiveRequest />} />
+              <Route path="/active-request/:jobId" element={<ActiveRequest />} />
+              <Route path="/request/:jobId" element={<ActiveRequest />} />
               <Route path="/session/:id" element={<Session />} />
               <Route path="/wallet" element={<Wallet />} />
               <Route path="/mentor/:id" element={<MentorProfile />} />
