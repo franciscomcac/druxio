@@ -2,6 +2,7 @@ import heroBetaLaunch from "@/assets/blog/hero-beta-launch.jpg";
 import heroHowItWorks from "@/assets/blog/hero-how-it-works.jpg";
 import heroExpertiseBorders from "@/assets/blog/hero-expertise-borders.jpg";
 import heroAiAutoMatch from "@/assets/blog/hero-ai-auto-match.jpg";
+import heroPaypalPayments from "@/assets/blog/hero-paypal-payments.jpg";
 
 export interface BlogPost {
   slug: string;
