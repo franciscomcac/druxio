@@ -521,8 +521,9 @@ const Order = () => {
         data: { job_id: jobId },
       });
 
-      // Email buyer
+      // Email buyer: cancelled + refund
       sendOrderEmail("order_cancelled", { reason: "Seller issued a voluntary refund" });
+      sendOrderEmail("refund_issued", { refundAmount: totalRefund });
 
       toast({ title: "Refund issued ✅", description: `€${totalRefund.toFixed(2)} refunded to buyer's store balance.` });
       setSellerRefundOpen(false);
