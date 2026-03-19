@@ -59,6 +59,12 @@ const GAMING_TEMPLATES: Record<string, Field[]> = {
     { key: "main_champions", label: "Main Champion(s)", type: "text" },
     { key: "region", label: "Server", type: "select", options: ["NA", "EUW", "EUNE", "KR", "BR", "LAN", "LAS", "OCE", "Other"] },
   ],
+  "Arc Raiders": [
+    { key: "service_type", label: "What do you need?", type: "select", options: ["Raid Carry / Duo Partner", "Coaching / Survival Guide", "Loot Run Assistance", "Boss Strategy / Help", "Gear Optimization", "Base Building Help", "Other"] },
+    { key: "difficulty", label: "Raid Difficulty", type: "select", options: ["Easy", "Normal", "Hard", "Extreme"] },
+    { key: "platform", label: "Platform", type: "select", options: ["PC", "PlayStation", "Xbox"] },
+    { key: "region", label: "Region", type: "select", options: ["NA", "EU", "Asia", "OCE", "Other"] },
+  ],
 };
 
 const GAMING_DEFAULT: Field[] = [

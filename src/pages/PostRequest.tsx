@@ -60,6 +60,7 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Gaming: World of Warcraft", label: "World of Warcraft", icon: Swords },
     { id: "Gaming: Destiny 2", label: "Destiny 2", icon: Target },
     { id: "Gaming: Dead by Daylight", label: "Dead by Daylight", icon: Gamepad2 },
+    { id: "Gaming: Arc Raiders", label: "Arc Raiders", icon: Target },
     { id: "Gaming: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Tech: [
@@ -166,6 +167,7 @@ const TITLE_PLACEHOLDERS: Record<string, string> = {
   "Gaming: World of Warcraft": 'e.g. "Boost my mythic+ rating"',
   "Gaming: Destiny 2": 'e.g. "Help me complete a raid or dungeon"',
   "Gaming: Dead by Daylight": 'e.g. "Coach me on killer strategy"',
+  "Gaming: Arc Raiders": 'e.g. "Help me survive ARC raids and gear up"',
   "Tech: Discord Bots": 'e.g. "Build a custom moderation bot"',
   "Tech: Web Dev": 'e.g. "Fix my React app login bug"',
   "Tech: SEO": 'e.g. "Audit and improve my site SEO"',
