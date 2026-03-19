@@ -716,7 +716,9 @@ const ActiveRequest = () => {
   }, [chatMessages, selectedChatPartnerId]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  const handleAcceptQuote = (quote: QuoteWithProfile) => setPaypalDialog(quote);
+  const handleAcceptQuote = (quote: QuoteWithProfile) => {
+    navigate(`/checkout?jobId=${jobId}&quoteId=${quote.id}`);
+  };
 
   const handlePayPalCreateOrder = async (): Promise<string> => {
     if (!paypalDialog || !jobId) throw new Error("Missing data");
