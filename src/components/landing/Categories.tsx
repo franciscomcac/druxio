@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 const categories = [
-  { name: "Gaming", slug: "gaming", icon: <Gamepad2 className="h-6 w-6" />, subcategories: ["Minecraft", "Valorant", "Fortnite", "CS2", "Apex", "LoL", "Arc Raiders"], color: "from-primary/15 to-primary/5" },
+  { name: "Gaming", slug: "gaming", icon: <Gamepad2 className="h-6 w-6" />, subcategories: ["Valorant", "Arc Raiders", "Fortnite", "CS2", "Apex", "LoL"], color: "from-primary/15 to-primary/5" },
   { name: "Tech", slug: "tech", icon: <Code className="h-6 w-6" />, subcategories: ["Discord Bots", "Web Dev", "SEO", "Server Setup", "App Dev", "WordPress"], color: "from-primary/12 to-primary/5" },
   { name: "Business", slug: "business", icon: <Briefcase className="h-6 w-6" />, subcategories: ["Marketplace", "Dropshipping", "Accounting", "Legal", "Marketing", "Startup"], color: "from-primary/15 to-primary/5" },
   { name: "Creative", slug: "creative", icon: <Palette className="h-6 w-6" />, subcategories: ["Ad Copy", "Logo Design", "Video Editing", "Thumbnails", "UI/UX", "Branding"], color: "from-primary/12 to-primary/5" },
