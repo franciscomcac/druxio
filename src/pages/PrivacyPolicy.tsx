@@ -34,7 +34,7 @@ const PrivacyPolicy = () => {
 
         <Section title="1. Information We Collect">
           <p><strong className="text-foreground">Account data:</strong> When you register, we collect your email address, display name, and password (hashed). If you choose, you can also add a profile photo, bio, location, and skills.</p>
-          <p><strong className="text-foreground">Transaction data:</strong> We record details of requests, quotes, orders, payments, and withdrawals to operate the escrow system and resolve disputes. We do not store your full card number — payments are processed by Stripe.</p>
+          <p><strong className="text-foreground">Transaction data:</strong> We record details of requests, quotes, orders, payments, and withdrawals to operate the escrow system and resolve disputes. We do not store your full card number — payments are processed by PayPal.</p>
           <p><strong className="text-foreground">Communications:</strong> Messages sent through Druxio's in-app chat are stored to enable the service and support dispute resolution.</p>
           <p><strong className="text-foreground">Usage data:</strong> We collect standard web logs including IP address, browser type, pages visited, and timestamps. We use this data to improve the platform and detect fraud.</p>
           <p><strong className="text-foreground">Cookies:</strong> We use essential session cookies and optional analytics cookies. See our Cookie Policy for details.</p>
