@@ -1694,63 +1694,8 @@ const ActiveRequest = () => {
         </div>
       </div>
 
-      {/* PayPal Checkout Dialog */}
-      <Dialog open={!!paypalDialog} onOpenChange={() => { if (!paypalLoading) setPaypalDialog(null); }}>
-        <DialogContent className="bg-card border-border max-w-sm p-0 gap-0 overflow-hidden">
-          <div className="p-5 pb-4">
-            <DialogHeader className="mb-4 space-y-1">
-              <DialogTitle className="flex items-center gap-2 text-base">
-                <ShieldCheck className="h-4 w-4 text-primary" />Confirm & Pay
-              </DialogTitle>
-              <DialogDescription className="text-xs">Funds will be held in escrow until you confirm delivery.</DialogDescription>
-            </DialogHeader>
-            {paypalDialog && (
-              <div className="space-y-3">
-                {(() => {
-                  const base = paypalDialog.price;
-                  const platform = Math.round(base * 0.05 * 100) / 100;
-                  const total = Math.round((base + platform) * 100) / 100;
-                  return (
-                    <div className="rounded-md border border-border/50 bg-muted/20 p-3 space-y-1.5">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Service price</span>
-                        <span className="font-medium text-foreground">€{base.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-[11px] text-muted-foreground/60">
-                        <span>Platform fee (5%)</span>
-                        <span>€{platform.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm border-t border-border/40 pt-1.5">
-                        <span className="font-semibold text-foreground">Total</span>
-                        <span className="font-bold text-primary">€{total.toFixed(2)}</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-                <div className="flex items-start gap-2 text-[11px] text-muted-foreground/70 px-0.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary/60 shrink-0 mt-0.5" />
-                  <span>Funds are held in escrow and released only after you confirm delivery.</span>
-                </div>
-              </div>
-            )}
-          </div>
-          {/* PayPal Buttons */}
-          <div className="px-5 pb-2 paypal-container">
-            <PayPalCheckoutButtons
-              createOrder={handlePayPalCreateOrder}
-              onApprove={handlePayPalApprove}
-              onError={() => {
-                toast({ title: "Payment error", description: "Something went wrong with PayPal. Please try again.", variant: "destructive" });
-                setPaypalLoading(false);
-              }}
-            />
-          </div>
-          <div className="px-5 pb-4 flex items-center justify-between">
-            <p className="text-[10px] text-muted-foreground/40">Secured by PayPal · Buyer Protection</p>
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => setPaypalDialog(null)} disabled={paypalLoading}>Cancel</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+
+
     </div>
   );
 };
