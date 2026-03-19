@@ -73,7 +73,7 @@ const App = () => (
               <Route path="/mentor/:mentorId" element={<MentorProfile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/inbox" element={<Inbox />} />
-              <Route path="/order/:id" element={<Order />} />
+              <Route path="/order/:jobId" element={<Order />} />
               <Route path="/orders/purchased" element={<PurchasedOrders />} />
               <Route path="/orders/sold" element={<SoldOrders />} />
               <Route path="/admin" element={<Admin />} />
