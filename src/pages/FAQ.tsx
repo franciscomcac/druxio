@@ -59,7 +59,7 @@ const faqSections = [
       },
       {
         q: "What currencies does Druxio support?",
-        a: "Druxio supports EUR, USD, GBP, CAD, AUD, CHF, and more. Your display currency can be changed in Settings → Currency. All transactions are processed securely via Stripe.",
+        a: "Druxio supports EUR, USD, GBP, CAD, AUD, CHF, and more. Your display currency can be changed in Settings → Currency. All transactions are processed securely via PayPal.",
       },
       {
         q: "What is the platform fee?",
