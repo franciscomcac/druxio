@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import PostRequest from "./pages/PostRequest";
 import ActiveRequest from "./pages/ActiveRequest";
+import Checkout from "./pages/Checkout";
 
 import Session from "./pages/Session";
 import Wallet from "./pages/Wallet";
