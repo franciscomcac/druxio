@@ -15,6 +15,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import PostRequest from "./pages/PostRequest";
 import ActiveRequest from "./pages/ActiveRequest";
+import Checkout from "./pages/Checkout";
 
 import Session from "./pages/Session";
 import Wallet from "./pages/Wallet";
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/quotes" element={<ActiveRequest />} />
+              <Route path="/checkout" element={<Checkout />} />
               <Route path="/coming-soon" element={<ComingSoon />} />
             </Route>
             <Route path="/auth" element={<Auth />} />
