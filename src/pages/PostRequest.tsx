@@ -43,6 +43,7 @@ const BROAD_CATEGORIES = [
 const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> = {
   Gaming: [
     { id: "Gaming: Valorant", label: "Valorant", icon: Crosshair },
+    { id: "Gaming: Arc Raiders", label: "Arc Raiders", icon: Target },
     { id: "Gaming: Fortnite", label: "Fortnite", icon: Target },
     { id: "Gaming: Minecraft", label: "Minecraft", icon: Pickaxe },
     { id: "Gaming: CS2", label: "CS2", icon: Swords },
@@ -60,7 +61,6 @@ const SUBCATEGORIES: Record<string, { id: string; label: string; icon: any }[]> 
     { id: "Gaming: World of Warcraft", label: "World of Warcraft", icon: Swords },
     { id: "Gaming: Destiny 2", label: "Destiny 2", icon: Target },
     { id: "Gaming: Dead by Daylight", label: "Dead by Daylight", icon: Gamepad2 },
-    { id: "Gaming: Arc Raiders", label: "Arc Raiders", icon: Target },
     { id: "Gaming: Custom Request", label: "Custom Request", icon: Wand2 },
   ],
   Tech: [
