@@ -77,7 +77,7 @@ const TermsOfService = () => {
         </Section>
 
         <Section title="9. Withdrawals">
-          <p>Expert earnings are transferred directly to their bank account via Stripe Connect. Payouts are automatic after each completed order. Druxio reserves the right to delay transfers pending compliance checks.</p>
+          <p>Expert earnings are transferred directly to their PayPal account. Payouts are processed after each completed order. Druxio reserves the right to delay transfers pending compliance checks.</p>
         </Section>
 
         <Section title="10. Prohibited Conduct">

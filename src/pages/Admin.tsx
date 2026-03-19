@@ -1948,7 +1948,7 @@ const Admin = () => {
                     <CreditCard className={`h-5 w-5 mt-0.5 shrink-0 ${refundMethod === "source" ? "text-primary" : "text-muted-foreground"}`} />
                     <div>
                       <p className="text-sm font-medium text-foreground">Original Payment Method</p>
-                      <p className="text-xs text-muted-foreground">Via Stripe — takes up to 7 business days</p>
+                      <p className="text-xs text-muted-foreground">Via PayPal — takes up to 3 business days</p>
                     </div>
                   </button>
                 </div>
