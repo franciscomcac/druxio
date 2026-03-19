@@ -26,7 +26,7 @@ const CATEGORY_TREE = [
     id: "Gaming", label: "Gaming", icon: Gamepad2,
     subs: [
       { id: "Valorant", services: ["Boosting", "Coaching", "VOD Review", "Carry / Duo Partner", "Account Leveling", "Custom Request"] },
-      { id: "Arc Raiders", services: ["Raid Carry", "Coaching", "Loot Runs", "Boss Strategy", "Gear Optimization", "Base Building", "Custom Request"] },
+      { id: "Arc Raiders", services: ["Raid Carry", "Coaching", "Loot Runs", "Boss Strategy", "Gear Optimization", "Expedition", "Items", "Custom Request"] },
       { id: "Fortnite", services: ["Coaching", "Creative Builds", "Carry / Duo", "Account Leveling", "Custom Request"] },
       { id: "Minecraft", services: ["Custom Build", "Server Setup", "Modding", "Redstone Engineering", "Skin / Texture Art", "Custom Request"] },
       { id: "CS2", services: ["Boosting", "Coaching", "VOD Review", "Carry / Duo", "Custom Request"] },
