@@ -214,6 +214,15 @@
   animation: subtle-pulse 3s ease-in-out infinite;
 }
 
+/* ── PayPal buttons dark-theme blend ───────────────────────────── */
+.paypal-container [class*="paypal-button-container"],
+.paypal-container iframe {
+  border-radius: 8px !important;
+}
+.paypal-container .paypal-powered-by {
+  opacity: 0.4;
+}
+
 /* ── Start animated elements hidden so animation reveals them ── */
 .animate-fade-in,
 .animate-fade-in-left,
