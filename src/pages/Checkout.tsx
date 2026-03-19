@@ -88,7 +88,9 @@ const Checkout = () => {
     });
     if (error) { setPaying(false); throw new Error(error.message); }
     if (data?.error) { setPaying(false); throw new Error(data.error); }
-    return data.paypalOrderId;
+    const orderId = data?.paypalOrderId || data?.orderId;
+    if (!orderId) { setPaying(false); throw new Error("PayPal order ID missing"); }
+    return orderId;
   };
 
   const handleApprove = async (data: { orderID: string }) => {

@@ -6,27 +6,41 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-async function getPayPalAccessToken(): Promise<string> {
+type PayPalMode = "live" | "sandbox";
+
+async function getPayPalAuth() {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
   const secret = Deno.env.get("PAYPAL_SECRET");
   if (!clientId || !secret) throw new Error("PayPal credentials not configured");
 
-  const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com";
+  const preferredMode: PayPalMode = Deno.env.get("PAYPAL_MODE") === "live" ? "live" : "sandbox";
+  const modesToTry: PayPalMode[] = preferredMode === "live" ? ["live", "sandbox"] : ["sandbox", "live"];
 
-  const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "grant_type=client_credentials",
-  });
+  let lastError = "";
 
-  if (!res.ok) throw new Error(`PayPal auth failed: ${res.status}`);
-  const data = await res.json();
-  return data.access_token;
+  for (const mode of modesToTry) {
+    const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
+
+    const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { accessToken: data.access_token as string, baseUrl, mode };
+    }
+
+    const text = await res.text();
+    lastError = `PayPal auth failed in ${mode} mode: ${res.status} ${text}`;
+    console.error(lastError);
+  }
+
+  throw new Error(lastError || "PayPal auth failed");
 }
 
 const PLATFORM_FEE_RATE = 0.05; // 5% seller fee
@@ -64,13 +78,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
-      ? "https://api-m.paypal.com"
-      : "https://api-m.sandbox.paypal.com";
+    const { accessToken, baseUrl } = await getPayPalAuth();
 
-    const accessToken = await getPayPalAccessToken();
-
-    // Capture the PayPal order
     const captureRes = await fetch(`${baseUrl}/v2/checkout/orders/${paypalOrderId}/capture`, {
       method: "POST",
       headers: {
@@ -82,7 +91,7 @@ Deno.serve(async (req) => {
     if (!captureRes.ok) {
       const errText = await captureRes.text();
       console.error("PayPal capture error:", captureRes.status, errText);
-      throw new Error(`PayPal capture failed: ${captureRes.status}`);
+      throw new Error(`PayPal capture failed: ${captureRes.status} ${errText}`);
     }
 
     const captureData = await captureRes.json();
@@ -93,23 +102,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get capture ID for potential refunds
     const captureId = captureData.purchase_units?.[0]?.payments?.captures?.[0]?.id;
 
-    // Use service role to update job/quote status
     const serviceClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Get quote details
     const { data: quote } = await serviceClient
       .from("quotes").select("price, expert_id, estimated_minutes").eq("id", quoteId).single();
     if (!quote) throw new Error("Quote not found");
 
-    // Accept quote and update job
     await serviceClient.from("quotes").update({ status: "accepted" }).eq("id", quoteId);
-    // Reject other quotes for same job
     await serviceClient.from("quotes").update({ status: "rejected" })
       .eq("job_id", jobId).neq("id", quoteId).eq("status", "pending");
 
@@ -117,10 +121,9 @@ Deno.serve(async (req) => {
       status: "in_progress",
       accepted_quote_id: quoteId,
       escrow_status: "funded",
-      stripe_payment_intent_id: captureId, // Reusing this field for PayPal capture ID
+      stripe_payment_intent_id: captureId,
     }).eq("id", jobId);
 
-    // Record payment transaction for buyer
     const totalPaid = Number(captureData.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || quote.price);
     await serviceClient.from("transactions").insert({
       user_id: userId,
@@ -131,7 +134,6 @@ Deno.serve(async (req) => {
       stripe_payment_id: captureId,
     });
 
-    // Create session for chat
     const { data: existingSession } = await serviceClient
       .from("sessions").select("id")
       .eq("mentee_id", userId).eq("mentor_id", quote.expert_id)
@@ -148,19 +150,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Notify seller
     const { data: job } = await serviceClient.from("jobs").select("title").eq("id", jobId).single();
     await serviceClient.from("notifications").insert({
       user_id: quote.expert_id,
       type: "quote_accepted",
       title: "Quote accepted! 🎉",
-      message: `Your quote for "${job?.title || 'a request'}" has been accepted. Start working now!`,
+      message: `Your quote for "${job?.title || "a request"}" has been accepted. Start working now!`,
       data: { job_id: jobId, quote_id: quoteId },
     });
 
     return new Response(JSON.stringify({
       success: true,
       captureId,
+      sellerFeeRate: PLATFORM_FEE_RATE,
     }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

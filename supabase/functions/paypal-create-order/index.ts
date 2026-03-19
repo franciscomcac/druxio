@@ -8,31 +8,41 @@ const corsHeaders = {
 
 const PLATFORM_RATE = 0.05; // 5% buyer fee
 
-async function getPayPalAccessToken(): Promise<string> {
+type PayPalMode = "live" | "sandbox";
+
+async function getPayPalAuth() {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
   const secret = Deno.env.get("PAYPAL_SECRET");
   if (!clientId || !secret) throw new Error("PayPal credentials not configured");
 
-  const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com";
+  const preferredMode: PayPalMode = Deno.env.get("PAYPAL_MODE") === "live" ? "live" : "sandbox";
+  const modesToTry: PayPalMode[] = preferredMode === "live" ? ["live", "sandbox"] : ["sandbox", "live"];
 
-  const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "grant_type=client_credentials",
-  });
+  let lastError = "";
 
-  if (!res.ok) {
+  for (const mode of modesToTry) {
+    const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
+
+    const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { accessToken: data.access_token as string, baseUrl, mode };
+    }
+
     const text = await res.text();
-    throw new Error(`PayPal auth failed: ${res.status} ${text}`);
+    lastError = `PayPal auth failed in ${mode} mode: ${res.status} ${text}`;
+    console.error(lastError);
   }
 
-  const data = await res.json();
-  return data.access_token;
+  throw new Error(lastError || "PayPal auth failed");
 }
 
 Deno.serve(async (req) => {
@@ -42,7 +52,8 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -56,33 +67,44 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.getUser(token);
     if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const userId = userData.user.id;
 
+    const userId = userData.user.id;
     const { quoteId, jobId } = await req.json();
+
     if (!quoteId || !jobId) {
       return new Response(JSON.stringify({ error: "Missing quoteId or jobId" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Verify the job belongs to this buyer
     const { data: job } = await supabase
-      .from("jobs").select("id, buyer_id, status, title").eq("id", jobId).single();
+      .from("jobs")
+      .select("id, buyer_id, status, title")
+      .eq("id", jobId)
+      .single();
+
     if (!job || job.buyer_id !== userId) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Fetch quote
     const { data: quote } = await supabase
-      .from("quotes").select("price, expert_id").eq("id", quoteId).single();
+      .from("quotes")
+      .select("price, expert_id")
+      .eq("id", quoteId)
+      .single();
+
     if (!quote) {
       return new Response(JSON.stringify({ error: "Quote not found" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -90,13 +112,8 @@ Deno.serve(async (req) => {
     const platformFee = Math.round(basePrice * PLATFORM_RATE * 100) / 100;
     const total = Math.round((basePrice + platformFee) * 100) / 100;
 
-    const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
-      ? "https://api-m.paypal.com"
-      : "https://api-m.sandbox.paypal.com";
+    const { accessToken, baseUrl, mode } = await getPayPalAuth();
 
-    const accessToken = await getPayPalAccessToken();
-
-    // Create PayPal order
     const orderRes = await fetch(`${baseUrl}/v2/checkout/orders`, {
       method: "POST",
       headers: {
@@ -108,7 +125,12 @@ Deno.serve(async (req) => {
         purchase_units: [{
           reference_id: jobId,
           description: job.title || "Service Payment",
-          custom_id: JSON.stringify({ job_id: jobId, quote_id: quoteId, buyer_id: userId, seller_id: quote.expert_id }),
+          custom_id: JSON.stringify({
+            job_id: jobId,
+            quote_id: quoteId,
+            buyer_id: userId,
+            seller_id: quote.expert_id,
+          }),
           amount: {
             currency_code: "EUR",
             value: total.toFixed(2),
@@ -140,17 +162,23 @@ Deno.serve(async (req) => {
     if (!orderRes.ok) {
       const errText = await orderRes.text();
       console.error("PayPal create order error:", orderRes.status, errText);
-      throw new Error(`PayPal order creation failed: ${orderRes.status}`);
+      throw new Error(`PayPal order creation failed: ${orderRes.status} ${errText}`);
     }
 
     const orderData = await orderRes.json();
 
-    return new Response(JSON.stringify({
-      orderId: orderData.id,
-      breakdown: { basePrice, platformFee, total },
-    }), {
-      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        paypalOrderId: orderData.id,
+        orderId: orderData.id,
+        mode,
+        breakdown: { basePrice, platformFee, total },
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
     console.error("paypal-create-order error:", err);
     return new Response(
