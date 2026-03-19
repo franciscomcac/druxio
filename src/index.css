@@ -214,13 +214,16 @@
   animation: subtle-pulse 3s ease-in-out infinite;
 }
 
-/* ── PayPal buttons dark-theme blend ───────────────────────────── */
-.paypal-container [class*="paypal-button-container"],
-.paypal-container iframe {
-  border-radius: 8px !important;
+/* ── PayPal buttons clean styling ───────────────────────────── */
+.paypal-buttons-wrapper [class*="paypal-button-container"] {
+  margin-bottom: 0 !important;
+  min-height: unset !important;
 }
-.paypal-container .paypal-powered-by {
-  opacity: 0.4;
+.paypal-buttons-wrapper iframe {
+  border-radius: 10px !important;
+}
+.paypal-buttons-wrapper .paypal-powered-by {
+  display: none !important;
 }
 
 /* ── Start animated elements hidden so animation reveals them ── */
