@@ -47,7 +47,7 @@ const FLOW: Record<string, Record<string, string[]>> = {
       "My withdrawal wasn't processed",
       "I haven't received payment",
       "I have a tax question",
-      "I want to set up Stripe payouts",
+      "I want to set up PayPal payouts",
     ],
     "Orders & Delivery": [
       "I can't access my active order",
