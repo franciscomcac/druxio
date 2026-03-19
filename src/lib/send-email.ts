@@ -4,6 +4,11 @@ export async function sendEmail(params: { to: string; subject: string; html: str
   return supabase.functions.invoke("send-email", { body: params }).catch(console.error);
 }
 
+/** Fire-and-forget helper to invoke the send-order-email edge function */
+export function sendOrderEmail(event: string, extra?: Record<string, unknown>) {
+  supabase.functions.invoke("send-order-email", { body: { event, ...extra } }).catch(console.error);
+}
+
 // ─── Shared template wrapper ───────────────────────────────────────────────
 function emailTemplate(content: string) {
   return `
@@ -196,7 +201,7 @@ export function buildPaymentReleasedEmail(opts: {
   };
 }
 
-// ─── Dispute raised (admin alert - handled server-side, but exported for reference) ───
+// ─── Dispute raised (admin alert) ─────────────────────────────────────────
 export function buildDisputeAdminEmail(opts: {
   to: string;
   jobTitle: string;
