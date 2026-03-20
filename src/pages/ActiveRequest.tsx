@@ -541,13 +541,13 @@ const ActiveRequest = () => {
         setActiveConvoJobId(currentConvo.jobId);
         setActiveConvo(currentConvo);
       } else {
-        const latestPendingConvo = convos
-          .filter(c => c.jobStatus === "open" && c.quoteStatus === "pending")
+        const latestActiveConvo = convos
+          .filter(c => c.jobStatus === "open")
           .sort((a, b) => new Date(b.quoteCreatedAt).getTime() - new Date(a.quoteCreatedAt).getTime())[0];
 
-        if (latestPendingConvo) {
-          setActiveConvoJobId(latestPendingConvo.jobId);
-          setActiveConvo(latestPendingConvo);
+        if (latestActiveConvo) {
+          setActiveConvoJobId(latestActiveConvo.jobId);
+          setActiveConvo(latestActiveConvo);
         }
       }
     };
