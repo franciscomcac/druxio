@@ -364,6 +364,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       const needsProfileMenu = phase.openProfileMenu;
       const bridgeStep: DriveStep = {
         ...(phase.bridgeElement ? { element: phase.bridgeElement } : {}),
+        ...(needsProfileMenu ? { disableActiveInteraction: false } : {}),
         popover: {
           title: phase.bridgeTitle || "Continue the tour",
           description: phase.bridgeDescription || "Navigate to the next page to continue.",
@@ -372,7 +373,10 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
           onPopoverRender: needsProfileMenu ? () => {
             // Open the profile dropdown so the menu item is visible
             const profileBtn = document.querySelector("#tour-profile-menu") as HTMLElement;
-            if (profileBtn) profileBtn.click();
+            if (profileBtn) {
+              // Small delay to let driver.js finish rendering
+              setTimeout(() => profileBtn.click(), 100);
+            }
           } : undefined,
         },
       };
