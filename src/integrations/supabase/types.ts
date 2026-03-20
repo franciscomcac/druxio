@@ -805,7 +805,69 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          ban_reason: string | null
+          banned_at: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          goals: Json | null
+          hourly_rate: number | null
+          id: string | null
+          is_banned: boolean | null
+          is_online: boolean | null
+          location: string | null
+          rating_avg: number | null
+          response_time_minutes: number | null
+          skills: string[] | null
+          timezone: string | null
+          total_sessions: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          goals?: Json | null
+          hourly_rate?: number | null
+          id?: string | null
+          is_banned?: boolean | null
+          is_online?: boolean | null
+          location?: string | null
+          rating_avg?: number | null
+          response_time_minutes?: number | null
+          skills?: string[] | null
+          timezone?: string | null
+          total_sessions?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          ban_reason?: string | null
+          banned_at?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          goals?: Json | null
+          hourly_rate?: number | null
+          id?: string | null
+          is_banned?: boolean | null
+          is_online?: boolean | null
+          location?: string | null
+          rating_avg?: number | null
+          response_time_minutes?: number | null
+          skills?: string[] | null
+          timezone?: string | null
+          total_sessions?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_quoted_on_job: {
