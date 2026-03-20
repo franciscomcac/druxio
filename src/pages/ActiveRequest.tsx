@@ -1694,17 +1694,29 @@ const ActiveRequest = () => {
                   ))}
                 </div>
               )}
-              <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex gap-2">
+              <form onSubmit={(e) => { e.preventDefault(); handleSendChat(); }} className="flex gap-2 items-end">
                 <Button type="button" variant="ghost" size="icon" className="shrink-0 h-9 w-9" onClick={() => buyerFileInputRef.current?.click()}>
                   <ImageIcon className="h-4 w-4 text-muted-foreground" />
                 </Button>
-                <Input
+                <textarea
                   value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
+                  onChange={(e) => {
+                    setChatInput(e.target.value);
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 72) + 'px';
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendChat();
+                    }
+                  }}
                   placeholder="Type a message..."
-                  className="bg-background/60 border-border/40 focus:border-primary/40"
+                  rows={1}
+                  className="flex-1 resize-none overflow-y-auto rounded-md border px-3 py-2 text-sm bg-background/60 border-border/40 focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-ring"
+                  style={{ maxHeight: '72px' }}
                 />
-                <Button type="submit" size="icon" disabled={(!chatInput.trim() && buyerImageFiles.length === 0) || sendingChat}>
+                <Button type="submit" size="icon" className="shrink-0" disabled={(!chatInput.trim() && buyerImageFiles.length === 0) || sendingChat}>
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
