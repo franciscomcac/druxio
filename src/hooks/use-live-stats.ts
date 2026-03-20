@@ -69,17 +69,24 @@ function computeStats() {
   };
 }
 
+let lastPaidOut = computeStats().paidOut;
+let lastPaidUpdate = Date.now();
 let sharedStats = computeStats();
 let listeners: Set<() => void> = new Set();
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 function tick() {
   const base = computeStats();
-  // Add small random jitter on each tick for liveliness
+  const now = Date.now();
+  // Only bump paidOut every ~5 minutes
+  if (now - lastPaidUpdate >= 300_000) {
+    lastPaidOut = base.paidOut + Math.floor(Math.random() * 15) + 3;
+    lastPaidUpdate = now;
+  }
   sharedStats = {
     expertsOnline: base.expertsOnline + Math.floor(Math.random() * 11) - 5,
     requestsToday: base.requestsToday + Math.floor(Math.random() * 5) - 1,
-    paidOut: base.paidOut + Math.floor(Math.random() * 30),
+    paidOut: lastPaidOut,
     avgResponse: Math.max(35, Math.min(99, base.avgResponse + Math.floor(Math.random() * 7) - 3)),
   };
   listeners.forEach((l) => l());
