@@ -1058,8 +1058,7 @@ const ActiveRequest = () => {
     // Show pending quotes on open jobs
     return c.jobStatus === "open" && c.quoteStatus === "pending";
   });
-  const showDemo = isTutorialActive || jobId === "demo-tutorial-quote";
-  const quoteConvos = showDemo ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
+  const quoteConvos = isTutorialActive ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
