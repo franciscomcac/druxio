@@ -96,6 +96,8 @@ const Footer = () => {
       </div>
     </footer>
     <div className="md:hidden" style={{ height: 'env(safe-area-inset-bottom)' }} />
+    </>
+  );
   );
 };
 
