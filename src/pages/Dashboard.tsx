@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSEO } from "@/hooks/use-seo";
 import RankBadge from "@/components/RankBadge";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,7 @@ const Dashboard = () => {
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
   const fetchData = async (userId: string) => {
@@ -145,6 +146,15 @@ const Dashboard = () => {
       if (realtimeChannel) supabase.removeChannel(realtimeChannel);
     };
   }, []);
+
+  // Auto-open seller consent when redirected from "Join as Expert"
+  useEffect(() => {
+    if (searchParams.get("become_expert") === "1" && !loading && profile && !roles.some(r => r.role === "mentor")) {
+      setShowSellerConsent(true);
+      searchParams.delete("become_expert");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [loading, profile, roles, searchParams]);
 
   const handleBecomeSeller = () => setShowSellerConsent(true);
 

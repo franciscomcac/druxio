@@ -4,7 +4,7 @@ import { Zap, Twitter, Instagram } from "lucide-react";
 const footerLinks = {
   Product: [
     { label: "Post a Task", href: "/post-request" },
-    { label: "Become an Expert", href: "/auth" },
+    { label: "Become an Expert", href: "/auth", becomeExpert: true },
     { label: "Pricing", href: "/#pricing" },
     { label: "Categories", href: "/#categories" },
   ],
@@ -61,7 +61,7 @@ const Footer = () => {
                       ) : link.href.startsWith("/#") ? (
                         <a href={link.href} className="text-xs md:text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</a>
                       ) : (
-                        <Link to={link.href} className="text-xs md:text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</Link>
+                        <Link to={link.href} onClick={() => { if ((link as any).becomeExpert) localStorage.setItem("auth_redirect", "/dashboard?become_expert=1"); }} className="text-xs md:text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground">{link.label}</Link>
                       )}
                     </li>
                   ))}
