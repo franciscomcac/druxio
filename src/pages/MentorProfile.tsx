@@ -105,7 +105,7 @@ const MentorProfile = () => {
     try {
       // Fetch profile, reviews, categories, and completed orders in parallel
       const [profileRes, reviewsRes, categoriesRes, ordersRes] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", mentorId).single(),
+        supabase.from("profiles").select("id, display_name, bio, avatar_url, location, timezone, skills, rating_avg, total_sessions, is_online, hourly_rate, response_time_minutes, is_banned, created_at, updated_at, goals").eq("id", mentorId).single(),
         supabase.from("reviews").select("*").eq("reviewee_id", mentorId).order("created_at", { ascending: false }),
         supabase.from("expert_categories").select("category").eq("user_id", mentorId!),
         supabase.from("quotes").select("id, job_id, status").eq("expert_id", mentorId!).eq("status", "accepted"),
