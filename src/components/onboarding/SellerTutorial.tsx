@@ -261,9 +261,10 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
-    bridgeElement: "#tour-profile-menu",
+    bridgeElement: "#tour-settings-link",
     bridgeTitle: "Next: Settings ⚙️",
-    bridgeDescription: "Click your <strong>profile avatar</strong> to open the menu, then click <strong>Settings</strong> to continue the tour!",
+    bridgeDescription: "Click <strong>Settings</strong> in the menu to continue the tour!",
+    openProfileMenu: true,
   },
   // Phase 5 — Settings
   {
