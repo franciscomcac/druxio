@@ -1156,7 +1156,7 @@ const Order = () => {
                   </p>
                 </div>
               ) : (
-              <div className="border-t border-border p-3 shrink-0">
+              <div className="border-t border-border p-3 shrink-0" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
                 {/* Pending image previews */}
                 {pendingImages.length > 0 && (
                   <div className="flex gap-2 mb-2 flex-wrap">
