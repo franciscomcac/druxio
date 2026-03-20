@@ -89,7 +89,7 @@ export function buildWelcomeEmail(userEmail: string) {
       ${heading("Welcome aboard! 🎉")}
       ${paragraph("You've just joined Druxio — the fastest way to get expert help on demand.")}
       ${paragraph("Post a request, receive quotes from vetted experts in minutes, and get your work done — all within a safe, escrow-protected environment.")}
-      ${ctaButton("Go to Dashboard", "https://druxio.lovable.app/dashboard")}
+      ${ctaButton("Go to Dashboard", "https://duxio.store/dashboard")}
     `),
   };
 }
@@ -122,7 +122,7 @@ export function buildNewQuoteEmail(opts: {
         ${infoRow("Delivery time", delivery)}
       `)}
       ${paragraph("Review the quote and chat with the expert before accepting.")}
-      ${ctaButton("View Quotes", `https://druxio.lovable.app/active-request/${opts.jobId}`)}
+      ${ctaButton("View Quotes", `https://duxio.store/active-request/${opts.jobId}`)}
     `),
   };
 }
@@ -148,7 +148,7 @@ export function buildQuoteAcceptedEmail(opts: {
         ${infoRow("Your earning", `€${(opts.price * 0.95).toFixed(2)}`)}
       `)}
       ${paragraph("Head to the order page to start working and communicate with the buyer.")}
-      ${ctaButton("Go to Order", `https://druxio.lovable.app/order/${opts.jobId}`)}
+      ${ctaButton("Go to Order", `https://duxio.store/order/${opts.jobId}`)}
     `),
   };
 }
@@ -173,7 +173,7 @@ export function buildOrderDeliveredEmail(opts: {
         ${infoRow("Auto-release in", "3 days (if no action taken)")}
       `)}
       ${paragraph("Please review the delivered work and either confirm delivery to release payment, or raise a dispute if there is an issue.")}
-      ${ctaButton("Review Delivery", `https://druxio.lovable.app/order/${opts.jobId}`)}
+      ${ctaButton("Review Delivery", `https://duxio.store/order/${opts.jobId}`)}
     `),
   };
 }
@@ -196,7 +196,7 @@ export function buildPaymentReleasedEmail(opts: {
         ${infoRow("Amount credited", `€${opts.earning.toFixed(2)}`)}
       `)}
       ${paragraph("The funds are now in your wallet and available for withdrawal.")}
-      ${ctaButton("View Wallet", "https://druxio.lovable.app/wallet")}
+      ${ctaButton("View Wallet", "https://duxio.store/wallet")}
     `),
   };
 }
@@ -223,7 +223,7 @@ export function buildDisputeAdminEmail(opts: {
         ${infoRow("Seller ID", opts.sellerId)}
         ${infoRow("Reason", opts.reason)}
       `)}
-      ${ctaButton("View in Admin", "https://druxio.lovable.app/admin")}
+      ${ctaButton("View in Admin", "https://duxio.store/admin")}
     `),
   };
 }
@@ -247,7 +247,7 @@ export function buildOrderCancelledEmail(opts: {
         ${infoRow("Reason", opts.reason)}
       `)}
       ${paragraph("A refund will be processed to your original payment method. If you have any questions, please contact our support team.")}
-      ${ctaButton("Contact Support", "https://druxio.lovable.app/dashboard")}
+      ${ctaButton("Contact Support", "https://duxio.store/dashboard")}
     `),
   };
 }
