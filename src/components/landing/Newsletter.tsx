@@ -76,7 +76,7 @@ const Newsletter = () => {
                 </li>
               ))}
             </ul>
-            <Link to="/auth">
+            <Link to="/auth" onClick={() => localStorage.setItem("auth_redirect", "/dashboard?become_expert=1")}>
               <Button className="w-full gap-2 h-10 md:h-12 rounded-lg text-sm md:text-base font-semibold">
                 Join as Expert <ArrowRight className="h-4 w-4" />
               </Button>
