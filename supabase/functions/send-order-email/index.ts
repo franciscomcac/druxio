@@ -14,19 +14,30 @@ const BASE = "https://duxio.store";
 // ─── Template helpers ────────────────────────────────────────────
 function emailTemplate(content: string) {
   return `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:32px 16px;">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<!--[if mso]><style>table,td{font-family:Arial,sans-serif!important;}</style><![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#0d0f17;font-family:'Segoe UI',Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0d0f17;padding:40px 16px;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-        <tr><td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);padding:28px 32px;text-align:center;">
-          <span style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Drux&#x26A1;o</span>
+      <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">Druxio — Expert help on demand</div>
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#161827;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);">
+        <tr><td style="padding:32px 40px 24px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+            <tr>
+              <td style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">Drux</td>
+              <td style="font-size:28px;font-weight:800;color:#00c8e0;letter-spacing:-0.5px;">&#x26A1;</td>
+              <td style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">o</td>
+            </tr>
+          </table>
+          <p style="margin:8px 0 0;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:1.5px;">Expert Help On Demand</p>
         </td></tr>
-        <tr><td style="padding:32px 32px 24px;">${content}</td></tr>
-        <tr><td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;">
-          <p style="margin:0;font-size:12px;color:#9ca3af;">You're receiving this because you have an account on Druxio.<br/>
-          <a href="${BASE}" style="color:#7c3aed;text-decoration:none;">Visit Druxio</a></p>
+        <tr><td style="padding:36px 40px 32px;">${content}</td></tr>
+        <tr><td style="border-top:1px solid rgba(255,255,255,0.06);padding:24px 40px;text-align:center;">
+          <p style="margin:0 0 8px;font-size:12px;color:#4b5563;">You're receiving this because you have an account on Druxio.</p>
+          <p style="margin:0;font-size:12px;"><a href="${BASE}" style="color:#00c8e0;text-decoration:none;">duxio.store</a><span style="color:#374151;margin:0 8px;">·</span><a href="mailto:support@druxio.net" style="color:#00c8e0;text-decoration:none;">Support</a></p>
+          <p style="margin:16px 0 0;font-size:11px;color:#374151;">© ${new Date().getFullYear()} Druxio. All rights reserved.</p>
         </td></tr>
       </table>
     </td></tr>
@@ -35,12 +46,16 @@ function emailTemplate(content: string) {
 }
 
 function cta(text: string, url: string) {
-  return `<a href="${url}" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px;">${text}</a>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:24px 0 8px;">
+    <tr><td style="background-color:#1d4ed8;border-radius:8px;padding:14px 32px;">
+      <a href="${url}" style="display:inline-block;color:#fff;text-decoration:none;font-weight:600;font-size:15px;font-family:'Segoe UI',Arial,sans-serif;">${text}</a>
+    </td></tr>
+  </table>`;
 }
-function h2(t: string) { return `<h2 style="margin:0 0 12px;font-size:22px;font-weight:700;color:#111827;">${t}</h2>`; }
-function p(t: string) { return `<p style="margin:0 0 10px;font-size:15px;color:#374151;line-height:1.6;">${t}</p>`; }
-function row(l: string, v: string) { return `<tr><td style="padding:8px 12px;font-size:14px;color:#6b7280;font-weight:500;">${l}</td><td style="padding:8px 12px;font-size:14px;color:#111827;font-weight:600;">${v}</td></tr>`; }
-function table(rows: string) { return `<table width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">${rows}</table>`; }
+function h2(t: string) { return `<h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#f3f4f6;line-height:1.3;">${t}</h2>`; }
+function p(t: string) { return `<p style="margin:0 0 14px;font-size:15px;color:#d1d5db;line-height:1.65;">${t}</p>`; }
+function row(l: string, v: string) { return `<tr><td style="padding:10px 16px;font-size:13px;color:#9ca3af;font-weight:500;border-bottom:1px solid rgba(255,255,255,0.04);">${l}</td><td style="padding:10px 16px;font-size:13px;color:#e5e7eb;font-weight:600;text-align:right;border-bottom:1px solid rgba(255,255,255,0.04);">${v}</td></tr>`; }
+function table(rows: string) { return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;background-color:rgba(255,255,255,0.03);border-radius:10px;border:1px solid rgba(255,255,255,0.06);">${rows}</table>`; }
 
 function formatMins(m: number) {
   if (m >= 1440) return `${Math.round(m / 1440)} day(s)`;
