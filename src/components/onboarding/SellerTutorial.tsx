@@ -26,6 +26,8 @@ interface TourPhase {
   /** Text for the bridge step telling the user where to navigate */
   bridgeTitle?: string;
   bridgeDescription?: string;
+  /** If true, programmatically open the profile dropdown before showing the bridge step */
+  openProfileMenu?: boolean;
 }
 
 /** Check if current path matches the phase route or any alt routes */
@@ -208,9 +210,10 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
-    bridgeElement: "#tour-profile-menu",
+    bridgeElement: "#tour-sold-orders-link",
     bridgeTitle: "Next: Sold Orders 📦",
-    bridgeDescription: "Click your <strong>profile avatar</strong> to open the menu, then click <strong>Sold Orders</strong> to continue the tour!",
+    bridgeDescription: "Click <strong>Sold Orders</strong> in the menu to continue the tour!",
+    openProfileMenu: true,
   },
   // Phase 3 — Sold Orders
   {
@@ -258,9 +261,10 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
-    bridgeElement: "#tour-profile-menu",
+    bridgeElement: "#tour-settings-link",
     bridgeTitle: "Next: Settings ⚙️",
-    bridgeDescription: "Click your <strong>profile avatar</strong> to open the menu, then click <strong>Settings</strong> to continue the tour!",
+    bridgeDescription: "Click <strong>Settings</strong> in the menu to continue the tour!",
+    openProfileMenu: true,
   },
   // Phase 5 — Settings
   {
@@ -357,13 +361,23 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     const allSteps = [...phase.steps];
 
     if (hasBridge) {
+      const needsProfileMenu = phase.openProfileMenu;
       const bridgeStep: DriveStep = {
         ...(phase.bridgeElement ? { element: phase.bridgeElement } : {}),
+        ...(needsProfileMenu ? { disableActiveInteraction: false } : {}),
         popover: {
           title: phase.bridgeTitle || "Continue the tour",
           description: phase.bridgeDescription || "Navigate to the next page to continue.",
           side: "bottom" as const,
           align: "center" as const,
+          onPopoverRender: needsProfileMenu ? () => {
+            // Open the profile dropdown so the menu item is visible
+            const profileBtn = document.querySelector("#tour-profile-menu") as HTMLElement;
+            if (profileBtn) {
+              // Small delay to let driver.js finish rendering
+              setTimeout(() => profileBtn.click(), 100);
+            }
+          } : undefined,
         },
       };
       allSteps.push(bridgeStep);
