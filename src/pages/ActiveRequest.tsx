@@ -1050,9 +1050,14 @@ const ActiveRequest = () => {
 
   const isDemo = (convo: SellerConvo) => convo.jobId === "demo-tutorial-quote";
 
-  // Filter to pending quotes only + show demo quote only when tutorial is active
+  // Show all seller convos (not just pending) so active quotes always appear in sidebar
   const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
-  const realQuoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
+  const realQuoteConvos = sellerConvos.filter(c => {
+    // Always show the currently viewed job's convo
+    if (c.jobId === jobId) return true;
+    // Show pending quotes on open jobs
+    return c.jobStatus === "open" && c.quoteStatus === "pending";
+  });
   const quoteConvos = !jobId && isTutorialActive ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
   // Helper: get expiry info for a quote
