@@ -80,7 +80,7 @@ serve(async (req) => {
     });
   }
 
-  const fromAddress = from ?? "Druxio <noreply@druxio.lovable.app>";
+  const fromAddress = from ?? "Druxio <noreply@duxio.store>";
 
   const res = await fetch(RESEND_API_URL, {
     method: "POST",

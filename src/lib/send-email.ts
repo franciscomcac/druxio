@@ -41,7 +41,7 @@ function emailTemplate(content: string) {
             <td style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;text-align:center;">
               <p style="margin:0;font-size:12px;color:#9ca3af;">
                 You're receiving this because you have an account on Druxio.<br/>
-                <a href="https://druxio.lovable.app" style="color:#7c3aed;text-decoration:none;">Visit Druxio</a>
+                <a href="https://duxio.store" style="color:#7c3aed;text-decoration:none;">Visit Druxio</a>
               </p>
             </td>
           </tr>
