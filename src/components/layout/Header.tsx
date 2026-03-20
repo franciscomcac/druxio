@@ -159,7 +159,7 @@ const Header = () => {
                   )}
                   <DropdownMenuSeparator className="bg-border/30" />
                   <DropdownMenuItem onClick={() => navigate("/wallet")} className="hover:bg-primary/[0.06]"><Wallet className="mr-2 h-4 w-4" /> Balance & Wallet</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
+                  <DropdownMenuItem id="tour-settings-link" onClick={() => navigate("/settings")} className="hover:bg-primary/[0.06]"><Settings className="mr-2 h-4 w-4" /> Settings</DropdownMenuItem>
                   {isAdminUser && (
                     <>
                       <DropdownMenuSeparator className="bg-border/30" />
