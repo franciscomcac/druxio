@@ -1552,11 +1552,19 @@ const ActiveRequest = () => {
           {quotes.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
-                  <Zap className="h-6 w-6 text-primary" />
+                <div className="relative h-12 w-12 flex items-center justify-center mb-3">
+                  <div className="absolute inset-0 rounded-2xl bg-primary/20 animate-ping" style={{ animationDuration: '2s' }} />
+                  <div className="absolute inset-0 rounded-2xl bg-primary/10 animate-pulse" />
+                  <div className="relative h-12 w-12 rounded-2xl bg-primary/15 flex items-center justify-center" style={{ boxShadow: '0 0 18px hsl(var(--primary) / 0.35), 0 0 6px hsl(var(--primary) / 0.2)' }}>
+                    <Zap className="h-6 w-6 text-primary drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]" />
+                  </div>
                 </div>
                 <p className="font-medium text-foreground mb-1">Waiting for offers</p>
                 <p className="text-sm text-muted-foreground">Experts are reviewing your request</p>
+                <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1.5">
+                  <Clock className="h-3 w-3" />
+                  Usually takes up to 5 minutes for the first offer
+                </p>
               </CardContent>
             </Card>
           ) : (
