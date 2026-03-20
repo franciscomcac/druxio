@@ -1287,7 +1287,11 @@ const Admin = () => {
                         filteredUsers.map((user) => (
                           <TableRow key={user.id}>
                             <TableCell>
-                              <div className="flex items-center gap-3">
+                              <div
+                                className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={() => navigate(`/mentor/${user.id}`)}
+                                title="View profile"
+                              >
                                 <Avatar className="h-8 w-8">
                                   <AvatarImage src={user.avatar_url || undefined} />
                                   <AvatarFallback className="bg-primary/10 text-primary text-xs">
@@ -1295,7 +1299,7 @@ const Admin = () => {
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                  <p className="font-medium text-sm text-foreground">{user.display_name || "Unnamed"}</p>
+                                  <p className="font-medium text-sm text-foreground hover:text-primary transition-colors">{user.display_name || "Unnamed"}</p>
                                   <p className="text-xs text-muted-foreground">{user.is_online ? "Online" : "Offline"}</p>
                                 </div>
                               </div>
