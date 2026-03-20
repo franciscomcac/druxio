@@ -41,6 +41,7 @@ const Dashboard = () => {
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
 
   const fetchData = async (userId: string) => {
