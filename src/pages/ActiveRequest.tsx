@@ -1258,7 +1258,7 @@ const ActiveRequest = () => {
               </Button>
               <div>
                 <p className="text-sm font-semibold text-foreground">Quotes</p>
-                <p className="text-[10px] text-muted-foreground">{quoteConvos.length} pending</p>
+                <p className="text-[10px] text-muted-foreground">{quoteConvos.length} active</p>
               </div>
             </div>
           </div>
@@ -1269,7 +1269,7 @@ const ActiveRequest = () => {
                 <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
                   <Zap className="h-7 w-7 text-primary/50" />
                 </div>
-                <p className="text-sm font-medium text-foreground mb-1">No pending quotes</p>
+                <p className="text-sm font-medium text-foreground mb-1">No active quotes</p>
                 <p className="text-xs text-muted-foreground mb-4">Browse open requests to start quoting</p>
                 <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
                   <Search className="h-3 w-3 mr-1" />
