@@ -86,6 +86,8 @@ const App = () => (
                 <Route path="/wallet" element={<Wallet />} />
                 <Route path="/mentor/:mentorId" element={<MentorProfile />} />
                 <Route path="/settings" element={<Settings />} />
+              </Route>
+              <Route element={<AppLayout showFooter={false} />}>
                 <Route path="/inbox" element={<Inbox />} />
                 <Route path="/order/:jobId" element={<Order />} />
                 <Route path="/orders/purchased" element={<PurchasedOrders />} />
