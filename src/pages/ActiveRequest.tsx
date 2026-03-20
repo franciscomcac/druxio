@@ -373,7 +373,7 @@ const ActiveRequest = () => {
         .order("created_at", { ascending: false });
 
       const tutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
-      const shouldOpenDemo = !jobId && tutorialActive;
+      const shouldOpenDemo = tutorialActive && (!jobId || jobId === "demo-tutorial-quote");
 
       if (!myQuotes || myQuotes.length === 0) {
         setSellerConvos([]);
@@ -1058,7 +1058,8 @@ const ActiveRequest = () => {
     // Show pending quotes on open jobs
     return c.jobStatus === "open" && c.quoteStatus === "pending";
   });
-  const quoteConvos = !jobId && isTutorialActive ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
+  const showDemo = isTutorialActive || jobId === "demo-tutorial-quote";
+  const quoteConvos = showDemo ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
