@@ -26,6 +26,8 @@ interface TourPhase {
   /** Text for the bridge step telling the user where to navigate */
   bridgeTitle?: string;
   bridgeDescription?: string;
+  /** If true, programmatically open the profile dropdown before showing the bridge step */
+  openProfileMenu?: boolean;
 }
 
 /** Check if current path matches the phase route or any alt routes */
