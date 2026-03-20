@@ -226,6 +226,37 @@
   display: none !important;
 }
 
+/* ── Mobile: safe-area insets & chat optimizations ──────────── */
+html {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* Use dynamic viewport height for chat containers */
+.h-dvh { height: 100dvh; }
+
+/* Prevent rubber-band overscroll on chat pages */
+.overscroll-none { overscroll-behavior: none; }
+
+/* Mobile: always show image remove buttons (no hover on touch) */
+@media (hover: none) {
+  .group .opacity-0.group-hover\:opacity-100 {
+    opacity: 1 !important;
+  }
+}
+
+/* Smoother mobile scrolling */
+.scroll-smooth-touch {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Mobile tap highlight removal for custom buttons */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 /* ── Start animated elements hidden so animation reveals them ── */
 .animate-fade-in,
 .animate-fade-in-left,

@@ -745,7 +745,7 @@ const Inbox = () => {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-background overflow-hidden">
+    <div className="flex h-[calc(100dvh-56px)] bg-background overflow-hidden overscroll-none">
       {/* ── SIDEBAR ─────────────────────────────────────────────────────── */}
       <aside className={cn(
         "flex flex-col border-r border-border bg-card/30 w-full md:w-80 lg:w-96 shrink-0",
@@ -967,7 +967,7 @@ const Inbox = () => {
                     <img src={url} alt="" className="h-16 w-16 object-cover rounded-lg" />
                     <button
                       onClick={() => removeImage(i)}
-                      className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center md:opacity-0 md:group-hover:opacity-100 transition-opacity"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -977,7 +977,7 @@ const Inbox = () => {
             )}
 
             {/* Input bar */}
-            <div className="px-4 py-3 border-t border-border bg-card/20 shrink-0">
+            <div className="px-4 py-3 border-t border-border bg-card/20 shrink-0" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
               <div className="flex items-end gap-2">
                 <input
                   ref={fileInputRef}

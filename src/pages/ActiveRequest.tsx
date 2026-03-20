@@ -1335,7 +1335,7 @@ const ActiveRequest = () => {
               </ScrollArea>
 
               {activeConvo && isDemo(activeConvo) ? (
-                <div className="border-t border-border p-2.5 md:p-3 shrink-0 bg-card/20">
+                <div className="border-t border-border p-2.5 md:p-3 shrink-0 bg-card/20" style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}>
                   <div className="flex items-center gap-1.5 mb-2">
                     <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 border-primary/30 text-primary">DEMO</Badge>
                     <span className="text-[10px] text-muted-foreground">
@@ -1356,7 +1356,7 @@ const ActiveRequest = () => {
                   </form>
                 </div>
               ) : (
-              <div className="border-t border-border p-2.5 md:p-3 shrink-0 bg-card/20">
+              <div className="border-t border-border p-2.5 md:p-3 shrink-0 bg-card/20" style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}>
                 <input type="file" accept="image/*" multiple ref={sellerFileInputRef} className="hidden" onChange={handleSellerImageSelect} />
                 {sellerImagePreviews.length > 0 && (
                   <div className="flex gap-2 mb-2 flex-wrap">
@@ -1668,7 +1668,7 @@ const ActiveRequest = () => {
                 <div ref={chatEndRef} />
               </div>
             </ScrollArea>
-            <div className="border-t border-border p-3 shrink-0 bg-card/20">
+            <div className="border-t border-border p-3 shrink-0 bg-card/20" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
               <input type="file" accept="image/*" multiple ref={buyerFileInputRef} className="hidden" onChange={handleBuyerImageSelect} />
               {buyerImagePreviews.length > 0 && (
                 <div className="flex gap-2 mb-2 flex-wrap">

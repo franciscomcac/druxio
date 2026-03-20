@@ -26,6 +26,7 @@ const footerLinks = {
 
 const Footer = () => {
   return (
+    <>
     <footer className="border-t border-border bg-card/30">
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-6">
@@ -94,6 +95,8 @@ const Footer = () => {
         </div>
       </div>
     </footer>
+    <div className="md:hidden" style={{ height: 'env(safe-area-inset-bottom)' }} />
+    </>
   );
 };
 
