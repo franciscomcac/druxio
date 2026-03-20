@@ -745,7 +745,7 @@ const Inbox = () => {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-[calc(100vh-64px)] bg-background overflow-hidden">
+    <div className="flex h-[calc(100dvh-56px)] bg-background overflow-hidden overscroll-none">
       {/* ── SIDEBAR ─────────────────────────────────────────────────────── */}
       <aside className={cn(
         "flex flex-col border-r border-border bg-card/30 w-full md:w-80 lg:w-96 shrink-0",
