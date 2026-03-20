@@ -70,6 +70,7 @@ function computeStats() {
 }
 
 let lastPaidOut = computeStats().paidOut;
+let lastRequests = computeStats().requestsToday;
 let lastPaidUpdate = Date.now();
 let sharedStats = computeStats();
 let listeners: Set<() => void> = new Set();
@@ -78,14 +79,15 @@ let intervalId: ReturnType<typeof setInterval> | null = null;
 function tick() {
   const base = computeStats();
   const now = Date.now();
-  // Only bump paidOut every ~5 minutes
+  // Only bump paidOut and requests every ~5 minutes
   if (now - lastPaidUpdate >= 300_000) {
-    lastPaidOut = base.paidOut + Math.floor(Math.random() * 15) + 3;
+    lastPaidOut = lastPaidOut + Math.floor(Math.random() * 15) + 3;
+    lastRequests = lastRequests + 1;
     lastPaidUpdate = now;
   }
   sharedStats = {
     expertsOnline: base.expertsOnline + Math.floor(Math.random() * 11) - 5,
-    requestsToday: base.requestsToday + Math.floor(Math.random() * 5) - 1,
+    requestsToday: lastRequests,
     paidOut: lastPaidOut,
     avgResponse: Math.max(35, Math.min(99, base.avgResponse + Math.floor(Math.random() * 7) - 3)),
   };
