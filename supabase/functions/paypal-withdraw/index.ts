@@ -217,7 +217,7 @@ Deno.serve(async (req) => {
             method: "POST",
             headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
-              from: "Druxio <noreply@druxio.lovable.app>",
+              from: "Druxio <noreply@duxio.store>",
               to: userEmail,
               subject: `€${netAmount.toFixed(2)} sent to your PayPal ✅`,
               html,

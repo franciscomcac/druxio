@@ -118,8 +118,8 @@ Deno.serve(async (req) => {
         buyer_id: userId,
         seller_id: quote.expert_id,
       },
-      success_url: `https://druxio.lovable.app/order/${jobId}?payment=success`,
-      cancel_url: `https://druxio.lovable.app/request/${jobId}?payment=cancelled`,
+      success_url: `https://duxio.store/order/${jobId}?payment=success`,
+      cancel_url: `https://duxio.store/request/${jobId}?payment=cancelled`,
     });
 
     return new Response(
