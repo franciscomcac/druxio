@@ -1,29 +1,93 @@
 import { useEffect, useState } from "react";
 
-const initialStats = {
-  expertsOnline: 312,
-  requestsToday: 1842,
-  paidOut: 24000,
-  avgResponse: 87,
-};
+// Deterministic seed based on date so stats reset daily but are consistent per day
+function daysSinceEpoch() {
+  return Math.floor(Date.now() / 86400000);
+}
 
-let sharedStats = { ...initialStats };
+function hourOfDay() {
+  return new Date().getHours();
+}
+
+function minuteOfDay() {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+// Paid out grows indefinitely — base grows each day
+function basePaidOut() {
+  const startDay = 20200; // ~March 2025
+  const dayNum = daysSinceEpoch() - startDay;
+  // Grows ~€350-500/day on average
+  return Math.max(0, dayNum * 420 + 1200);
+}
+
+// Requests today: resets daily, grows through the day toward ~1600
+function baseRequestsToday() {
+  const min = minuteOfDay(); // 0-1439
+  const dayProgress = min / 1440; // 0-1
+  // S-curve: slow start, fast middle, plateau at end
+  const curve = 1 / (1 + Math.exp(-10 * (dayProgress - 0.45)));
+  return Math.floor(curve * 1620 + dayProgress * 30);
+}
+
+// Experts online: fluctuates by hour, peak during 14-22 UTC
+function baseExpertsOnline() {
+  const h = hourOfDay();
+  // Peak hours 14-22, low hours 3-8
+  const hourCurve: Record<number, number> = {
+    0: 180, 1: 150, 2: 130, 3: 110, 4: 105, 5: 110, 6: 130, 7: 160,
+    8: 200, 9: 240, 10: 280, 11: 310, 12: 330, 13: 345, 14: 360,
+    15: 380, 16: 390, 17: 400, 18: 395, 19: 385, 20: 360, 21: 330,
+    22: 280, 23: 230,
+  };
+  return hourCurve[h] ?? 250;
+}
+
+function computeStats() {
+  const min = minuteOfDay();
+  const dayProgress = min / 1440;
+
+  // Paid out: base + intraday progress (adds ~€350-500 through the day)
+  const paidToday = Math.floor(dayProgress * (380 + (min % 7) * 8));
+  const paidOut = basePaidOut() + paidToday;
+
+  // Requests today with small jitter
+  const requests = baseRequestsToday();
+
+  // Experts online with jitter
+  const experts = baseExpertsOnline();
+
+  // Avg response: 45-95s, fluctuates
+  const avgResponse = 55 + Math.floor(Math.sin(min * 0.07) * 18 + Math.cos(min * 0.13) * 12);
+
+  return {
+    expertsOnline: experts,
+    requestsToday: requests,
+    paidOut,
+    avgResponse: Math.max(38, Math.min(97, avgResponse)),
+  };
+}
+
+let sharedStats = computeStats();
 let listeners: Set<() => void> = new Set();
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 function tick() {
+  const base = computeStats();
+  // Add small random jitter on each tick for liveliness
   sharedStats = {
-    expertsOnline: Math.max(200, sharedStats.expertsOnline + Math.floor(Math.random() * 3) - 1),
-    requestsToday: sharedStats.requestsToday + Math.floor(Math.random() * 3),
-    paidOut: sharedStats.paidOut + Math.floor(Math.random() * 50),
-    avgResponse: Math.max(60, Math.min(120, sharedStats.avgResponse + Math.floor(Math.random() * 5) - 2)),
+    expertsOnline: base.expertsOnline + Math.floor(Math.random() * 11) - 5,
+    requestsToday: base.requestsToday + Math.floor(Math.random() * 5) - 1,
+    paidOut: base.paidOut + Math.floor(Math.random() * 30),
+    avgResponse: Math.max(35, Math.min(99, base.avgResponse + Math.floor(Math.random() * 7) - 3)),
   };
   listeners.forEach((l) => l());
 }
 
 function subscribe(listener: () => void) {
   if (listeners.size === 0) {
-    intervalId = setInterval(tick, 5000);
+    intervalId = setInterval(tick, 4000);
   }
   listeners.add(listener);
   return () => {
