@@ -323,8 +323,8 @@ serve(async (req) => {
         const html = emailTemplate(`
           ${h2("New message received 💬")}
           ${p(`<strong>${senderName || "Someone"}</strong> sent you a message:`)}
-          <div style="margin:16px 0;padding:16px;background:#f3f4f6;border-radius:8px;border-left:4px solid #7c3aed;">
-            <p style="margin:0;font-size:14px;color:#374151;font-style:italic;">"${preview}${preview.length >= 100 ? "..." : ""}"</p>
+          <div style="margin:16px 0;padding:16px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:4px solid #1d4ed8;">
+            <p style="margin:0;font-size:14px;color:#d1d5db;font-style:italic;">"${preview}${preview.length >= 100 ? "..." : ""}"</p>
           </div>
           ${p("Reply now to keep the conversation going.")}
           ${cta("Open Inbox", `${BASE}/inbox?session=${sessionId || ""}`)}
