@@ -373,7 +373,7 @@ const ActiveRequest = () => {
         .order("created_at", { ascending: false });
 
       const tutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
-      const shouldOpenDemo = !jobId;
+      const shouldOpenDemo = !jobId && tutorialActive;
 
       if (!myQuotes || myQuotes.length === 0) {
         setSellerConvos([]);
@@ -1050,11 +1050,10 @@ const ActiveRequest = () => {
 
   const isDemo = (convo: SellerConvo) => convo.jobId === "demo-tutorial-quote";
 
-  // Filter to pending quotes only + always include demo quote for sellers
+  // Filter to pending quotes only + show demo quote only when tutorial is active
   const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
   const realQuoteConvos = sellerConvos.filter(c => c.jobStatus === "open" && c.quoteStatus === "pending");
-  // Always show demo convo for sellers (permanent practice sandbox)
-  const quoteConvos = !jobId ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
+  const quoteConvos = !jobId && isTutorialActive ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
   // Helper: get expiry info for a quote
   const getExpiryInfo = (quoteCreatedAt: string) => {
