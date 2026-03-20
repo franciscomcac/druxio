@@ -208,9 +208,10 @@ const TOUR_PHASES: TourPhase[] = [
         },
       },
     ],
-    bridgeElement: "#tour-profile-menu",
+    bridgeElement: "#tour-sold-orders-link",
     bridgeTitle: "Next: Sold Orders 📦",
-    bridgeDescription: "Click your <strong>profile avatar</strong> to open the menu, then click <strong>Sold Orders</strong> to continue the tour!",
+    bridgeDescription: "Click <strong>Sold Orders</strong> in the menu to continue the tour!",
+    openProfileMenu: true,
   },
   // Phase 3 — Sold Orders
   {
