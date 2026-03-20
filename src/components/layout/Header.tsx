@@ -31,27 +31,35 @@ const Header = () => {
   const location = useLocation();
 
   useEffect(() => {
+    const fetchProfile = async (userId: string) => {
+      const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", userId).single();
+      setProfile(data);
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+      setIsAdminUser(roles?.some(r => r.role === "admin") || false);
+      setIsMentorUser(roles?.some(r => r.role === "mentor") || false);
+    };
+
+    // Subscribe to auth changes FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("[Header] onAuthStateChange:", event, !!session);
       if (event === 'TOKEN_REFRESHED' && !session) return;
       setUser(session?.user || null);
       if (session?.user) {
         setAuthOpen(false);
-        setTimeout(async () => {
-          const { data } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single();
-          setProfile(data);
-          const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
-          setIsAdminUser(roles?.some(r => r.role === "admin") || false);
-          setIsMentorUser(roles?.some(r => r.role === "mentor") || false);
-        }, 0);
+        fetchProfile(session.user.id);
       } else if (event === 'SIGNED_OUT') {
         setProfile(null);
+        setIsAdminUser(false);
+        setIsMentorUser(false);
       }
     });
 
+    // Then check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("[Header] getSession:", !!session);
       if (session?.user) {
         setUser(session.user);
-        supabase.from("profiles").select("display_name, avatar_url").eq("id", session.user.id).single().then(({ data }) => setProfile(data));
+        fetchProfile(session.user.id);
       }
     });
 
