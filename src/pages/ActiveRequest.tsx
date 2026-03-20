@@ -290,24 +290,29 @@ const ActiveRequest = () => {
           navigate("/dashboard", { replace: true });
           return;
         }
-        const { data: firstQuote } = await supabase
+        const { data: candidateQuotes } = await supabase
           .from("quotes")
-          .select("job_id, status")
+          .select("job_id, status, created_at")
           .eq("expert_id", user.id)
-          .eq("status", "pending")
           .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        if (firstQuote) {
-          // Check the job is still open
-          const { data: jd } = await supabase.from("jobs").select("status").eq("id", firstQuote.job_id).single();
-          if (jd?.status === "open") {
-            navigate(`/request/${firstQuote.job_id}`, { replace: true });
+          .limit(50);
+
+        if (candidateQuotes && candidateQuotes.length > 0) {
+          const jobIds = Array.from(new Set(candidateQuotes.map((q) => q.job_id)));
+          const { data: jobsData } = await supabase
+            .from("jobs")
+            .select("id, status")
+            .in("id", jobIds);
+
+          const jobStatusMap = new Map((jobsData || []).map((j) => [j.id, j.status]));
+          const firstActiveQuote = candidateQuotes.find((q) => jobStatusMap.get(q.job_id) === "open");
+
+          if (firstActiveQuote) {
+            navigate(`/request/${firstActiveQuote.job_id}`, { replace: true });
             return;
           }
         }
-        // No pending quotes — show empty state
+        // No active quotes — show empty state
         setIsBuyer(false);
         setLoading(false);
         return;
@@ -536,13 +541,13 @@ const ActiveRequest = () => {
         setActiveConvoJobId(currentConvo.jobId);
         setActiveConvo(currentConvo);
       } else {
-        const latestPendingConvo = convos
-          .filter(c => c.jobStatus === "open" && c.quoteStatus === "pending")
+        const latestActiveConvo = convos
+          .filter(c => c.jobStatus === "open")
           .sort((a, b) => new Date(b.quoteCreatedAt).getTime() - new Date(a.quoteCreatedAt).getTime())[0];
 
-        if (latestPendingConvo) {
-          setActiveConvoJobId(latestPendingConvo.jobId);
-          setActiveConvo(latestPendingConvo);
+        if (latestActiveConvo) {
+          setActiveConvoJobId(latestActiveConvo.jobId);
+          setActiveConvo(latestActiveConvo);
         }
       }
     };
@@ -1055,8 +1060,8 @@ const ActiveRequest = () => {
   const realQuoteConvos = sellerConvos.filter(c => {
     // Always show the currently viewed job's convo
     if (c.jobId === jobId) return true;
-    // Show pending quotes on open jobs
-    return c.jobStatus === "open" && c.quoteStatus === "pending";
+    // Show all quotes tied to open jobs
+    return c.jobStatus === "open";
   });
   const quoteConvos = isTutorialActive ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
@@ -1253,7 +1258,7 @@ const ActiveRequest = () => {
               </Button>
               <div>
                 <p className="text-sm font-semibold text-foreground">Quotes</p>
-                <p className="text-[10px] text-muted-foreground">{quoteConvos.length} pending</p>
+                <p className="text-[10px] text-muted-foreground">{quoteConvos.length} active</p>
               </div>
             </div>
           </div>
@@ -1264,7 +1269,7 @@ const ActiveRequest = () => {
                 <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mb-4">
                   <Zap className="h-7 w-7 text-primary/50" />
                 </div>
-                <p className="text-sm font-medium text-foreground mb-1">No pending quotes</p>
+                <p className="text-sm font-medium text-foreground mb-1">No active quotes</p>
                 <p className="text-xs text-muted-foreground mb-4">Browse open requests to start quoting</p>
                 <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
                   <Search className="h-3 w-3 mr-1" />
@@ -1485,7 +1490,7 @@ const ActiveRequest = () => {
               <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mx-auto mb-4">
                 <Zap className="h-7 w-7 text-primary/50" />
               </div>
-              <p className="text-sm font-medium text-foreground mb-1">{quoteConvos.length > 0 ? "Select a quote" : "No pending quotes"}</p>
+              <p className="text-sm font-medium text-foreground mb-1">{quoteConvos.length > 0 ? "Select a quote" : "No active quotes"}</p>
               <p className="text-xs text-muted-foreground mb-4">{quoteConvos.length > 0 ? "Pick a conversation from the list" : "Browse open requests to start quoting"}</p>
               {quoteConvos.length === 0 && (
                 <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
