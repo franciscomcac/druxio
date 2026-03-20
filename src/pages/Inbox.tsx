@@ -977,7 +977,7 @@ const Inbox = () => {
             )}
 
             {/* Input bar */}
-            <div className="px-4 py-3 border-t border-border bg-card/20 shrink-0">
+            <div className="px-4 py-3 border-t border-border bg-card/20 shrink-0" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
               <div className="flex items-end gap-2">
                 <input
                   ref={fileInputRef}
