@@ -420,6 +420,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
       progressText: `Step {{current}} of {{total}}`,
       steps: allSteps,
       onDestroyStarted: () => {
+        const isFinished = d.isLastStep();
         d.destroy();
         driverRef.current = null;
 
@@ -429,12 +430,17 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
           return;
         }
 
+        // If user clicked X (closed early without finishing), fully exit tutorial
+        if (!isFinished) {
+          completeAll();
+          return;
+        }
+
         // Move to next phase — but DON'T navigate, wait for user to click
         const next = phaseIndex + 1;
         if (next < TOUR_PHASES.length) {
           localStorage.setItem(ACTIVE_KEY, "true");
           localStorage.setItem(STEP_KEY, String(next));
-          // Don't navigate — user clicks the link themselves
         } else {
           completeAll();
         }
