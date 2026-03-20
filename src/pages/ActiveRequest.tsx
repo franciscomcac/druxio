@@ -1676,7 +1676,7 @@ const ActiveRequest = () => {
                 <div ref={chatEndRef} />
               </div>
             </ScrollArea>
-            <div className="border-t border-border p-3 shrink-0 bg-card/20 mb-16 md:mb-0" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+            <div className="border-t border-border p-3 shrink-0 bg-card/20" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
               <input type="file" accept="image/*" multiple ref={buyerFileInputRef} className="hidden" onChange={handleBuyerImageSelect} />
               {buyerImagePreviews.length > 0 && (
                 <div className="flex gap-2 mb-2 flex-wrap">
@@ -1712,6 +1712,7 @@ const ActiveRequest = () => {
           </div>
         </div>
       </div>
+      <div className="h-20 md:h-0 shrink-0" />
 
 
 
