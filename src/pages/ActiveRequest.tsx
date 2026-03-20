@@ -290,24 +290,29 @@ const ActiveRequest = () => {
           navigate("/dashboard", { replace: true });
           return;
         }
-        const { data: firstQuote } = await supabase
+        const { data: candidateQuotes } = await supabase
           .from("quotes")
-          .select("job_id, status")
+          .select("job_id, status, created_at")
           .eq("expert_id", user.id)
-          .eq("status", "pending")
           .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        
-        if (firstQuote) {
-          // Check the job is still open
-          const { data: jd } = await supabase.from("jobs").select("status").eq("id", firstQuote.job_id).single();
-          if (jd?.status === "open") {
-            navigate(`/request/${firstQuote.job_id}`, { replace: true });
+          .limit(50);
+
+        if (candidateQuotes && candidateQuotes.length > 0) {
+          const jobIds = Array.from(new Set(candidateQuotes.map((q) => q.job_id)));
+          const { data: jobsData } = await supabase
+            .from("jobs")
+            .select("id, status")
+            .in("id", jobIds);
+
+          const jobStatusMap = new Map((jobsData || []).map((j) => [j.id, j.status]));
+          const firstActiveQuote = candidateQuotes.find((q) => jobStatusMap.get(q.job_id) === "open");
+
+          if (firstActiveQuote) {
+            navigate(`/request/${firstActiveQuote.job_id}`, { replace: true });
             return;
           }
         }
-        // No pending quotes — show empty state
+        // No active quotes — show empty state
         setIsBuyer(false);
         setLoading(false);
         return;
