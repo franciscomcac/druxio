@@ -1060,8 +1060,8 @@ const ActiveRequest = () => {
   const realQuoteConvos = sellerConvos.filter(c => {
     // Always show the currently viewed job's convo
     if (c.jobId === jobId) return true;
-    // Show pending quotes on open jobs
-    return c.jobStatus === "open" && c.quoteStatus === "pending";
+    // Show all quotes tied to open jobs
+    return c.jobStatus === "open";
   });
   const quoteConvos = isTutorialActive ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
