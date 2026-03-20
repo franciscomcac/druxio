@@ -4,7 +4,7 @@ import { Zap, Twitter, Instagram } from "lucide-react";
 const footerLinks = {
   Product: [
     { label: "Post a Task", href: "/post-request" },
-    { label: "Become an Expert", href: "/auth" },
+    { label: "Become an Expert", href: "/auth", becomeExpert: true },
     { label: "Pricing", href: "/#pricing" },
     { label: "Categories", href: "/#categories" },
   ],
