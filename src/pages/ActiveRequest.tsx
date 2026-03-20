@@ -1490,7 +1490,7 @@ const ActiveRequest = () => {
               <div className="h-14 w-14 rounded-2xl bg-primary/[0.08] flex items-center justify-center mx-auto mb-4">
                 <Zap className="h-7 w-7 text-primary/50" />
               </div>
-              <p className="text-sm font-medium text-foreground mb-1">{quoteConvos.length > 0 ? "Select a quote" : "No pending quotes"}</p>
+              <p className="text-sm font-medium text-foreground mb-1">{quoteConvos.length > 0 ? "Select a quote" : "No active quotes"}</p>
               <p className="text-xs text-muted-foreground mb-4">{quoteConvos.length > 0 ? "Pick a conversation from the list" : "Browse open requests to start quoting"}</p>
               {quoteConvos.length === 0 && (
                 <Button variant="outline" size="sm" className="text-xs" onClick={() => navigate("/dashboard")}>
