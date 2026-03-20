@@ -141,9 +141,17 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const { toast } = useToast();
   const { format } = useCurrency();
   const playNotificationSound = useNotificationSound();
-  const isTutorialActive = localStorage.getItem("seller_tutorial_active") === "true";
-  const tutorialStep = localStorage.getItem("seller_tutorial_step");
-  // Only show demo job when tutorial is actively running
+  const [isTutorialActive, setIsTutorialActive] = useState(() => localStorage.getItem("seller_tutorial_active") === "true");
+
+  // Listen for tutorial state changes (localStorage is not reactive by default)
+  useEffect(() => {
+    const check = () => setIsTutorialActive(localStorage.getItem("seller_tutorial_active") === "true");
+    window.addEventListener("storage", check);
+    // Also poll briefly since same-tab localStorage writes don't fire "storage"
+    const interval = setInterval(check, 500);
+    return () => { window.removeEventListener("storage", check); clearInterval(interval); };
+  }, []);
+
   const showTutorialDemoJob = isTutorialActive;
 
   useEffect(() => {
