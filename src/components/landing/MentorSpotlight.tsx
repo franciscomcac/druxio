@@ -129,7 +129,7 @@ const MentorSpotlight = () => {
         </div>
 
         {/* Horizontal scroll on mobile, grid on larger screens */}
-        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:overflow-x-visible md:pb-0">
+        <div className="flex gap-3 overflow-x-auto pb-0 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:overflow-x-visible scrollbar-none">
           {visible.map((req, i) => (
             <Card
               key={`${req.title}-${i}`}
