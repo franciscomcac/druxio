@@ -16,10 +16,10 @@ function minuteOfDay() {
 
 // Paid out grows indefinitely — base grows each day
 function basePaidOut() {
-  const startDay = 20200; // ~March 2025
+  const startDay = daysSinceEpoch(); // starts "today" at ~$100
   const dayNum = daysSinceEpoch() - startDay;
-  // Grows ~€350-500/day on average
-  return Math.max(0, dayNum * 420 + 1200);
+  // Day 0 = $100 base, grows ~$350-500/day after that
+  return 100 + Math.max(0, dayNum * 420);
 }
 
 // Requests today: resets daily, grows through the day toward ~1600
