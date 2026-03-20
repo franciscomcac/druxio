@@ -361,6 +361,7 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
     const allSteps = [...phase.steps];
 
     if (hasBridge) {
+      const needsProfileMenu = phase.openProfileMenu;
       const bridgeStep: DriveStep = {
         ...(phase.bridgeElement ? { element: phase.bridgeElement } : {}),
         popover: {
@@ -368,6 +369,11 @@ const SellerTutorial = ({ userId: propUserId, autoStart = false, onComplete }: S
           description: phase.bridgeDescription || "Navigate to the next page to continue.",
           side: "bottom" as const,
           align: "center" as const,
+          onPopoverRender: needsProfileMenu ? () => {
+            // Open the profile dropdown so the menu item is visible
+            const profileBtn = document.querySelector("#tour-profile-menu") as HTMLElement;
+            if (profileBtn) profileBtn.click();
+          } : undefined,
         },
       };
       allSteps.push(bridgeStep);
