@@ -147,6 +147,15 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Auto-open seller consent when redirected from "Join as Expert"
+  useEffect(() => {
+    if (searchParams.get("become_expert") === "1" && !loading && profile && !roles.some(r => r.role === "mentor")) {
+      setShowSellerConsent(true);
+      searchParams.delete("become_expert");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [loading, profile, roles, searchParams]);
+
   const handleBecomeSeller = () => setShowSellerConsent(true);
 
   const handleSellerConsentAccept = async () => {
