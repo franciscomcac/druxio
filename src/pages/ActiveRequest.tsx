@@ -1356,7 +1356,7 @@ const ActiveRequest = () => {
                   </form>
                 </div>
               ) : (
-              <div className="border-t border-border p-2.5 md:p-3 shrink-0 bg-card/20">
+              <div className="border-t border-border p-2.5 md:p-3 shrink-0 bg-card/20" style={{ paddingBottom: 'max(0.625rem, env(safe-area-inset-bottom))' }}>
                 <input type="file" accept="image/*" multiple ref={sellerFileInputRef} className="hidden" onChange={handleSellerImageSelect} />
                 {sellerImagePreviews.length > 0 && (
                   <div className="flex gap-2 mb-2 flex-wrap">
