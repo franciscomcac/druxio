@@ -1,24 +1,49 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const BROAD_CATEGORIES = [
-  "Gaming", "Tech", "Business", "Creative", "Music", "Fitness", "Languages", "Content"
-];
+// Fallback broad categories in case DB is empty
+const FALLBACK_BROAD = ["Gaming", "Tech", "Business", "Creative", "Music", "Fitness", "Languages", "Content"];
 
-const SUBCATEGORIES: Record<string, string[]> = {
-  Gaming: ["Valorant", "Fortnite", "Minecraft", "CS2", "Apex Legends", "League of Legends", "Roblox", "GTA V / Online", "Overwatch 2", "Rocket League", "Dota 2", "EA FC / FIFA", "Call of Duty", "Rust", "Escape from Tarkov", "World of Warcraft", "Destiny 2", "Dead by Daylight", "Custom Request"],
-  Tech: ["Discord Bots", "Web Development", "SEO", "Server Setup", "App Development", "WordPress", "AI & Automation", "Cybersecurity", "Database & SQL", "Networking & WiFi", "Cloud & DevOps", "Custom Request"],
-  Business: ["Marketing", "Startup Advice", "E-commerce", "Accounting", "Analytics & Data", "Sales & Outreach", "Investing & Crypto", "HR & Hiring", "Custom Request"],
-  Creative: ["Graphic Design", "Video Editing", "Ad Copy", "Thumbnails", "Photography", "UI/UX Design", "Illustration", "Copywriting", "Custom Request"],
-  Music: ["Production", "Mixing & Mastering", "Guitar Lessons", "Piano Lessons", "Vocal Coaching", "Beat Making", "Songwriting", "Custom Request"],
-  Fitness: ["Personal Training", "Nutrition Plans", "Yoga & Mobility", "Weight Loss", "Sports Coaching", "Injury Rehab", "Custom Request"],
-  Languages: ["English", "Spanish", "French", "German", "Portuguese", "Arabic", "Chinese", "Japanese", "Korean", "Italian", "Russian", "Hindi", "Dutch", "Turkish", "Translation", "Custom Request"],
-  Content: ["Streaming", "YouTube", "TikTok", "Instagram", "Podcasting", "Blogging & SEO Writing", "Community Management", "Custom Request"],
-};
+async function fetchCategoriesFromDB(): Promise<{ broadCategories: string[]; allCategories: string[] }> {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const sb = createClient(supabaseUrl, supabaseKey);
+
+  const { data, error } = await sb
+    .from("expert_categories")
+    .select("category");
+
+  if (error || !data || data.length === 0) {
+    console.warn("Could not fetch categories from DB, using fallback", error);
+    return { broadCategories: FALLBACK_BROAD, allCategories: [] };
+  }
+
+  const uniqueCats = [...new Set(data.map((r: any) => r.category as string))];
+
+  // Extract broad categories (first segment before ":")
+  const broadSet = new Set<string>();
+  // Extract "Broad: Sub" level categories for matching
+  const subSet = new Set<string>();
+
+  for (const cat of uniqueCats) {
+    const parts = cat.split(":").map((p: string) => p.trim());
+    if (parts[0]) broadSet.add(parts[0]);
+    if (parts.length >= 2) subSet.add(`${parts[0]}: ${parts[1]}`);
+  }
+
+  // Also add fallback broads in case some aren't represented yet
+  for (const b of FALLBACK_BROAD) broadSet.add(b);
+
+  return {
+    broadCategories: [...broadSet].sort(),
+    allCategories: [...subSet].sort(),
+  };
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -31,16 +56,19 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const allCategories = Object.entries(SUBCATEGORIES).flatMap(([broad, subs]) =>
-      subs.map(s => `${broad}: ${s}`)
-    );
+    // Dynamically fetch categories from the database
+    const { broadCategories, allCategories } = await fetchCategoriesFromDB();
+
+    const categoryList = allCategories.length > 0
+      ? allCategories.join(", ")
+      : "Gaming: Valorant, Gaming: Arc Raiders, Gaming: Fortnite, Tech: Web Dev, Tech: Discord Bots, Business: Marketing, Creative: Graphic Design, Music: Production, Fitness: Personal Training, Languages: English, Content: YouTube";
 
     const systemPrompt = `You are an assistant for Druxio, a marketplace where people post requests and experts respond with quotes.
 
 Your job: Take the user's raw idea/need and determine if it fits any of the services offered on Druxio, then refine it into a clear request.
 
-Available categories: ${allCategories.join(", ")}
-Broad categories: ${BROAD_CATEGORIES.join(", ")}
+Available categories (dynamically loaded from platform): ${categoryList}
+Broad categories: ${broadCategories.join(", ")}
 
 CRITICAL: REJECTION LOGIC
 - First, evaluate whether the request makes sense for ANY category on the platform.
@@ -52,9 +80,9 @@ IF NOT REJECTED:
 1. Suggest a clear, concise title (max 80 chars)
 2. Write a refined description (max 300 chars) that clarifies their need
 3. Pick the best matching category from the available list
-4. If no specific subcategory fits, use "Custom Request" under the most relevant broad category
+4. If no specific subcategory fits, use "Custom Request" under the most relevant broad category (e.g. "Gaming: Custom Request")
 5. The category format must always be "Broad: Subcategory" exactly as listed above
-6. NEVER invent categories not in the list.
+6. NEVER invent categories not in the list — pick the closest match.
 
 IMPORTANT TONE RULES:
 - For Gaming requests: be casual and speak their language. You know what boosting, smurfing, carries, rank grinding, 1v1ing, brainrot, aura, skibidi, sigma, gyatt, and all the gaming/internet slang means. Don't formalize it too much — keep the vibe. If someone says "I need a cracked Roblox scripter" you know exactly what they mean. Understand terms like obby, blox fruits, da hood, mm2, pet sim, adopt me, bedwars, skyblock, hypixel, etc. Don't translate slang into corporate speak.
