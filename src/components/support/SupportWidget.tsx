@@ -204,7 +204,7 @@ const DEFAULT_FAQ = [
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
-type Step = "bubble" | "role" | "category" | "problem" | "faq" | "live";
+type Step = "bubble" | "role" | "category" | "problem" | "faq" | "connecting" | "live";
 
 interface SupportMessage {
   id: string;
