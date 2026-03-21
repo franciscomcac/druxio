@@ -81,11 +81,14 @@ Deno.serve(async (req) => {
       if (quoteUpdateErr) throw quoteUpdateErr;
 
       // 5. Notify buyers
+      const noQuoteIds = new Set((staleOpenJobsNoQuotes || []).map(j => j.id));
       const notifications = allStaleJobs.map((job) => ({
         user_id: job.buyer_id,
         type: "job_expired",
         title: "Request Expired",
-        message: `Your request "${job.title}" was closed after 5 days without payment.`,
+        message: noQuoteIds.has(job.id)
+          ? `Your request "${job.title}" was closed after 24 hours with no quotes.`
+          : `Your request "${job.title}" was closed after 5 days without payment.`,
         data: { job_id: job.id },
       }));
 
