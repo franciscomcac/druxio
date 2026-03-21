@@ -204,7 +204,7 @@ const DEFAULT_FAQ = [
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
-type Step = "bubble" | "role" | "category" | "problem" | "faq" | "live";
+type Step = "bubble" | "role" | "category" | "problem" | "faq" | "connecting" | "live";
 
 interface SupportMessage {
   id: string;
@@ -290,6 +290,7 @@ export default function SupportWidget() {
   const handleRequestLive = async () => {
     if (!user || !role || !category || !problem) return;
     setCreatingTicket(true);
+    setStep("connecting");
     try {
       const { data: ticket, error } = await supabase
         .from("support_tickets")
@@ -314,15 +315,39 @@ export default function SupportWidget() {
         content: `Hi! You're now connected to live support. An admin will be with you shortly.\n\n**Your issue:** ${problem}\n**Category:** ${category}`,
       });
 
+      // Send email notification to admin
+      const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", user.id).single();
+      const userName = profile?.display_name || user.email || "A user";
+      supabase.functions.invoke("send-email", {
+        body: {
+          to: "support@duxio.store",
+          subject: `🎧 New Live Support Ticket — ${category}`,
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;background:#0d0f17;border-radius:12px;color:#e4e4e7">
+              <h2 style="color:#3b82f6;margin:0 0 16px">New Support Ticket</h2>
+              <p style="margin:0 0 8px"><strong>User:</strong> ${userName}</p>
+              <p style="margin:0 0 8px"><strong>Role:</strong> ${role}</p>
+              <p style="margin:0 0 8px"><strong>Category:</strong> ${category}</p>
+              <p style="margin:0 0 16px"><strong>Issue:</strong> ${problem}</p>
+              <a href="https://druxio.lovable.app/admin" style="display:inline-block;padding:10px 20px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Open Admin Dashboard</a>
+            </div>
+          `,
+        },
+      }).catch(() => {}); // fire-and-forget
+
       const { data: msgs } = await supabase
         .from("support_messages")
         .select("*")
         .eq("ticket_id", ticket.id)
         .order("created_at");
       setMessages((msgs || []).map(m => ({ ...m, sender_type: m.sender_type as "user" | "admin" | "bot" })));
+
+      // Show connecting animation for at least 2.5s
+      await new Promise(r => setTimeout(r, 2500));
       setStep("live");
     } catch (e: any) {
       console.error(e);
+      setStep("faq");
     }
     setCreatingTicket(false);
   };
@@ -368,7 +393,7 @@ export default function SupportWidget() {
           {/* Header */}
           <div className="bg-primary px-4 py-3.5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              {step !== "role" && step !== "live" && (
+              {step !== "role" && step !== "live" && step !== "connecting" && (
                 <button
                   onClick={() => {
                     if (step === "category") setStep("role");
@@ -382,6 +407,11 @@ export default function SupportWidget() {
               )}
               <Headphones className="h-4.5 w-4.5 text-primary-foreground" />
               <span className="text-sm font-bold text-primary-foreground tracking-wide">Support</span>
+              {step === "connecting" && (
+                <Badge variant="secondary" className="text-[10px] px-2 py-0.5 ml-1 animate-pulse">
+                  Connecting...
+                </Badge>
+              )}
               {step === "live" && (
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 ml-1 animate-in fade-in duration-300">
                   Live
@@ -549,6 +579,34 @@ export default function SupportWidget() {
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ── STEP: Connecting ── */}
+            {step === "connecting" && (
+              <div className="h-full flex flex-col items-center justify-center text-center gap-5 px-6 animate-in fade-in zoom-in-95 duration-300">
+                <div className="relative">
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Headphones className="h-8 w-8 text-primary animate-pulse" />
+                  </div>
+                  <span className="absolute inset-0 rounded-full border-2 border-primary/30 animate-ping" style={{ animationDuration: "2s" }} />
+                  <span className="absolute inset-[-4px] rounded-full border-2 border-primary/15 animate-ping" style={{ animationDuration: "2.5s", animationDelay: "0.3s" }} />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-bold text-foreground animate-pulse">Connecting you to live support...</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[260px]">
+                    This may take a moment — all our support agents could be busy helping others. Hang tight!
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1">
+                  {[0, 1, 2].map(i => (
+                    <span
+                      key={i}
+                      className="h-2 w-2 rounded-full bg-primary animate-bounce"
+                      style={{ animationDelay: `${i * 200}ms`, animationDuration: "1s" }}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 
