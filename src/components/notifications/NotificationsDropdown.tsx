@@ -167,6 +167,10 @@ const NotificationsDropdown = () => {
         return <DollarSign className="h-4 w-4 text-green-500" />;
       case "order_cancelled":
         return <Package className="h-4 w-4 text-destructive" />;
+      case "offer_taken":
+        return <UserCheck className="h-4 w-4 text-amber-500" />;
+      case "offer_cancelled":
+        return <XCircle className="h-4 w-4 text-muted-foreground" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground" />;
     }
