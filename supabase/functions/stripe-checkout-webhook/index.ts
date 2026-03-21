@@ -117,6 +117,22 @@ Deno.serve(async (req) => {
       data: { job_id: jobId, quote_id: quoteId },
     });
 
+    // Notify other sellers who quoted on this job that it's been taken
+    const { data: jobData } = await serviceClient.from("jobs").select("title").eq("id", jobId).single();
+    const { data: otherQuotes } = await serviceClient.from("quotes").select("expert_id").eq("job_id", jobId).neq("expert_id", sellerId);
+    if (otherQuotes?.length) {
+      const jobTitle = jobData?.title || "Untitled request";
+      await Promise.all(otherQuotes.map((q: any) =>
+        serviceClient.from("notifications").insert({
+          user_id: q.expert_id,
+          type: "offer_taken",
+          title: `"${jobTitle}" has been taken`,
+          message: "Another expert was selected for this request. Keep quoting to win the next one!",
+          data: { job_id: jobId },
+        })
+      ));
+    }
+
     return new Response(
       JSON.stringify({ success: true }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

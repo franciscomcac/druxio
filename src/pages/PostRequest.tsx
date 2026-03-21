@@ -877,6 +877,21 @@ const PostRequest = () => {
     if (jobError || quoteError) { toast({ title: "Error accepting quote", variant: "destructive" }); return; }
     toast({ title: "Expert hired! 🎉", description: `${quote.expert_profile?.display_name || "Expert"} is on the job.` });
 
+    // Notify other sellers who quoted on this job that it's been taken
+    const { data: otherQuotes } = await supabase.from("quotes").select("expert_id").eq("job_id", jobId).neq("expert_id", quote.expert_id);
+    if (otherQuotes?.length) {
+      const jobTitle = title || "Untitled request";
+      await Promise.all(otherQuotes.map((q) =>
+        supabase.from("notifications").insert({
+          user_id: q.expert_id,
+          type: "offer_taken",
+          title: `"${jobTitle}" has been taken`,
+          message: "Another expert was selected for this request. Keep quoting to win the next one!",
+          data: { job_id: jobId },
+        })
+      ));
+    }
+
     // Email seller: quote accepted (fire-and-forget)
     supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
 

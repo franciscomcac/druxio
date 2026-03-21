@@ -760,6 +760,22 @@ const ActiveRequest = () => {
 
   const handleCancelRequest = async () => {
     if (!jobId) return;
+
+    // Notify all sellers who quoted on this job that it's been cancelled
+    const { data: quotesOnJob } = await supabase.from("quotes").select("expert_id").eq("job_id", jobId);
+    const jobTitle = job?.title || "Untitled request";
+    if (quotesOnJob?.length) {
+      await Promise.all(quotesOnJob.map((q) =>
+        supabase.from("notifications").insert({
+          user_id: q.expert_id,
+          type: "offer_cancelled",
+          title: `"${jobTitle}" has been cancelled`,
+          message: "The buyer cancelled this request. Keep an eye out for new opportunities!",
+          data: { job_id: jobId },
+        })
+      ));
+    }
+
     await supabase.from("jobs").update({ status: "cancelled" }).eq("id", jobId);
     toast({ title: "Request cancelled" });
     navigate("/dashboard");

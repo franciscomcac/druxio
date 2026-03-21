@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, MessageSquare, UserPlus, CheckCircle, Clock, Loader2, Wallet, ArrowRight, AlertTriangle, RefreshCw, Package, DollarSign } from "lucide-react";
+import { Bell, MessageSquare, UserPlus, CheckCircle, Clock, Loader2, Wallet, ArrowRight, AlertTriangle, RefreshCw, Package, DollarSign, XCircle, UserCheck } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
@@ -167,6 +167,10 @@ const NotificationsDropdown = () => {
         return <DollarSign className="h-4 w-4 text-green-500" />;
       case "order_cancelled":
         return <Package className="h-4 w-4 text-destructive" />;
+      case "offer_taken":
+        return <UserCheck className="h-4 w-4 text-amber-500" />;
+      case "offer_cancelled":
+        return <XCircle className="h-4 w-4 text-muted-foreground" />;
       default:
         return <Bell className="h-4 w-4 text-muted-foreground" />;
     }
