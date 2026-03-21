@@ -285,6 +285,11 @@ const Admin = () => {
     }
   }, [ticketMessages]);
 
+  // Reload orders when filter changes
+  useEffect(() => {
+    if (isAdmin && activeTab === "orders") loadOrders();
+  }, [orderFilter]);
+
   // Reload withdrawals when filter changes
   useEffect(() => {
     if (isAdmin && activeTab === "withdrawals") loadWithdrawals();
@@ -1154,9 +1159,11 @@ const Admin = () => {
                   <SelectItem value="all">All</SelectItem>
                   <SelectItem value="open">Open</SelectItem>
                   <SelectItem value="accepted">Accepted</SelectItem>
+                  <SelectItem value="delivered">Delivered</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="disputed">Disputed</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon" onClick={loadOrders}>
