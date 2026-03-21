@@ -96,7 +96,7 @@ function tick() {
 
 function subscribe(listener: () => void) {
   if (listeners.size === 0) {
-    intervalId = setInterval(tick, 4000);
+    intervalId = setInterval(tick, 8000);
   }
   listeners.add(listener);
   return () => {

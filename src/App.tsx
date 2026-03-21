@@ -54,7 +54,16 @@ const PresenceTracker = () => { usePresence(); return null; };
 // Plays chime on any incoming notification, message, or quote — app-wide
 const GlobalSoundListener = () => { useGlobalSound(); return null; };
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,   // 5 min — avoid redundant refetches
+      gcTime: 10 * 60 * 1000,     // 10 min garbage collection
+      refetchOnWindowFocus: false, // don't refetch just because user tabs back
+      retry: 1,                    // single retry on failure
+    },
+  },
+});
 
 const PageLoader = () => (
   <div className="min-h-[60vh] flex items-center justify-center">

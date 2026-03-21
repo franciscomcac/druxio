@@ -1,10 +1,13 @@
+import { lazy, Suspense } from "react";
 import Hero from "@/components/landing/Hero";
 import LiveStats from "@/components/landing/LiveStats";
 import HowItWorks from "@/components/landing/HowItWorks";
-import MentorSpotlight from "@/components/landing/MentorSpotlight";
-import Testimonials from "@/components/landing/Testimonials";
-import Newsletter from "@/components/landing/Newsletter";
 import { useSEO } from "@/hooks/use-seo";
+
+// Below-fold sections — lazy loaded
+const MentorSpotlight = lazy(() => import("@/components/landing/MentorSpotlight"));
+const Testimonials = lazy(() => import("@/components/landing/Testimonials"));
+const Newsletter = lazy(() => import("@/components/landing/Newsletter"));
 
 const Index = () => {
   useSEO({
@@ -44,9 +47,11 @@ const Index = () => {
       <Hero />
       <LiveStats />
       <HowItWorks />
-      <MentorSpotlight />
-      <Testimonials />
-      <Newsletter />
+      <Suspense fallback={null}>
+        <MentorSpotlight />
+        <Testimonials />
+        <Newsletter />
+      </Suspense>
     </main>
   );
 };
