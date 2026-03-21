@@ -407,6 +407,11 @@ export default function SupportWidget() {
               )}
               <Headphones className="h-4.5 w-4.5 text-primary-foreground" />
               <span className="text-sm font-bold text-primary-foreground tracking-wide">Support</span>
+              {step === "connecting" && (
+                <Badge variant="secondary" className="text-[10px] px-2 py-0.5 ml-1 animate-pulse">
+                  Connecting...
+                </Badge>
+              )}
               {step === "live" && (
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 ml-1 animate-in fade-in duration-300">
                   Live
