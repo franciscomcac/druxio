@@ -290,6 +290,7 @@ export default function SupportWidget() {
   const handleRequestLive = async () => {
     if (!user || !role || !category || !problem) return;
     setCreatingTicket(true);
+    setStep("connecting");
     try {
       const { data: ticket, error } = await supabase
         .from("support_tickets")
@@ -314,15 +315,39 @@ export default function SupportWidget() {
         content: `Hi! You're now connected to live support. An admin will be with you shortly.\n\n**Your issue:** ${problem}\n**Category:** ${category}`,
       });
 
+      // Send email notification to admin
+      const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", user.id).single();
+      const userName = profile?.display_name || user.email || "A user";
+      supabase.functions.invoke("send-email", {
+        body: {
+          to: "support@duxio.store",
+          subject: `🎧 New Live Support Ticket — ${category}`,
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;background:#0d0f17;border-radius:12px;color:#e4e4e7">
+              <h2 style="color:#3b82f6;margin:0 0 16px">New Support Ticket</h2>
+              <p style="margin:0 0 8px"><strong>User:</strong> ${userName}</p>
+              <p style="margin:0 0 8px"><strong>Role:</strong> ${role}</p>
+              <p style="margin:0 0 8px"><strong>Category:</strong> ${category}</p>
+              <p style="margin:0 0 16px"><strong>Issue:</strong> ${problem}</p>
+              <a href="https://druxio.lovable.app/admin" style="display:inline-block;padding:10px 20px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Open Admin Dashboard</a>
+            </div>
+          `,
+        },
+      }).catch(() => {}); // fire-and-forget
+
       const { data: msgs } = await supabase
         .from("support_messages")
         .select("*")
         .eq("ticket_id", ticket.id)
         .order("created_at");
       setMessages((msgs || []).map(m => ({ ...m, sender_type: m.sender_type as "user" | "admin" | "bot" })));
+
+      // Show connecting animation for at least 2.5s
+      await new Promise(r => setTimeout(r, 2500));
       setStep("live");
     } catch (e: any) {
       console.error(e);
+      setStep("faq");
     }
     setCreatingTicket(false);
   };
