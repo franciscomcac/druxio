@@ -577,6 +577,34 @@ export default function SupportWidget() {
               </div>
             )}
 
+            {/* ── STEP: Connecting ── */}
+            {step === "connecting" && (
+              <div className="h-full flex flex-col items-center justify-center text-center gap-5 px-6 animate-in fade-in zoom-in-95 duration-300">
+                <div className="relative">
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Headphones className="h-8 w-8 text-primary animate-pulse" />
+                  </div>
+                  <span className="absolute inset-0 rounded-full border-2 border-primary/30 animate-ping" style={{ animationDuration: "2s" }} />
+                  <span className="absolute inset-[-4px] rounded-full border-2 border-primary/15 animate-ping" style={{ animationDuration: "2.5s", animationDelay: "0.3s" }} />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-bold text-foreground animate-pulse">Connecting you to live support...</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed max-w-[260px]">
+                    This may take a moment — all our support agents could be busy helping others. Hang tight!
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 mt-1">
+                  {[0, 1, 2].map(i => (
+                    <span
+                      key={i}
+                      className="h-2 w-2 rounded-full bg-primary animate-bounce"
+                      style={{ animationDelay: `${i * 200}ms`, animationDuration: "1s" }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ── STEP: Live Chat ── */}
             {step === "live" && (
               <div className="h-full flex flex-col animate-in fade-in duration-300">
