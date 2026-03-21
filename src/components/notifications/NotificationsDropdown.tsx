@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, MessageSquare, UserPlus, CheckCircle, Clock, Loader2, Wallet, ArrowRight, AlertTriangle, RefreshCw, Package, DollarSign } from "lucide-react";
+import { Bell, MessageSquare, UserPlus, CheckCircle, Clock, Loader2, Wallet, ArrowRight, AlertTriangle, RefreshCw, Package, DollarSign, XCircle, UserCheck } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface Notification {
