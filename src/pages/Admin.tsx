@@ -285,6 +285,11 @@ const Admin = () => {
     }
   }, [ticketMessages]);
 
+  // Reload orders when filter changes
+  useEffect(() => {
+    if (isAdmin && activeTab === "orders") loadOrders();
+  }, [orderFilter]);
+
   // Reload withdrawals when filter changes
   useEffect(() => {
     if (isAdmin && activeTab === "withdrawals") loadWithdrawals();
