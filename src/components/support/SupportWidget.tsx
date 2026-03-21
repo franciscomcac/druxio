@@ -393,7 +393,7 @@ export default function SupportWidget() {
           {/* Header */}
           <div className="bg-primary px-4 py-3.5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              {step !== "role" && step !== "live" && (
+              {step !== "role" && step !== "live" && step !== "connecting" && (
                 <button
                   onClick={() => {
                     if (step === "category") setStep("role");
