@@ -15,16 +15,37 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+    const oneDayAgo = new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString();
     const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
 
-    // 1. Find open jobs older than 5 days
-    const { data: staleOpenJobs, error: openErr } = await supabase
+    // 1a. Find open jobs older than 24h that have NO quotes (close quickly)
+    const { data: allOpenJobs, error: openErr } = await supabase
       .from("jobs")
-      .select("id, buyer_id, title")
+      .select("id, buyer_id, title, created_at")
       .eq("status", "open")
-      .lt("created_at", fiveDaysAgo);
+      .lt("created_at", oneDayAgo);
 
     if (openErr) throw openErr;
+
+    // Check which of these jobs have quotes
+    const openJobIds = (allOpenJobs || []).map(j => j.id);
+    let staleOpenJobsNoQuotes: typeof allOpenJobs = [];
+    let staleOpenJobsWithQuotes: typeof allOpenJobs = [];
+
+    if (openJobIds.length > 0) {
+      const { data: quotedJobRows } = await supabase
+        .from("quotes")
+        .select("job_id")
+        .in("job_id", openJobIds);
+
+      const quotedJobIds = new Set((quotedJobRows || []).map(q => q.job_id));
+      staleOpenJobsNoQuotes = (allOpenJobs || []).filter(j => !quotedJobIds.has(j.id));
+      // Jobs with quotes only expire after 5 days
+      const fiveDayThreshold = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000);
+      staleOpenJobsWithQuotes = (allOpenJobs || []).filter(j => quotedJobIds.has(j.id) && new Date(j.created_at) < fiveDayThreshold);
+    }
+
+    const staleOpenJobs = [...(staleOpenJobsNoQuotes || []), ...(staleOpenJobsWithQuotes || [])];
 
     // 2. Find accepted jobs (quote accepted but no payment/escrow) older than 5 days
     const { data: staleAcceptedJobs, error: acceptedErr } = await supabase
@@ -60,11 +81,14 @@ Deno.serve(async (req) => {
       if (quoteUpdateErr) throw quoteUpdateErr;
 
       // 5. Notify buyers
+      const noQuoteIds = new Set((staleOpenJobsNoQuotes || []).map(j => j.id));
       const notifications = allStaleJobs.map((job) => ({
         user_id: job.buyer_id,
         type: "job_expired",
         title: "Request Expired",
-        message: `Your request "${job.title}" was closed after 5 days without payment.`,
+        message: noQuoteIds.has(job.id)
+          ? `Your request "${job.title}" was closed after 24 hours with no quotes.`
+          : `Your request "${job.title}" was closed after 5 days without payment.`,
         data: { job_id: job.id },
       }));
 
