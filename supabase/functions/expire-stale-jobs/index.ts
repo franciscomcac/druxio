@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     // 1a. Find open jobs older than 24h that have NO quotes (close quickly)
     const { data: allOpenJobs, error: openErr } = await supabase
       .from("jobs")
-      .select("id, buyer_id, title")
+      .select("id, buyer_id, title, created_at")
       .eq("status", "open")
       .lt("created_at", oneDayAgo);
 
