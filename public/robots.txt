@@ -11,4 +11,4 @@ Disallow: /session/
 Disallow: /orders/
 Disallow: /notifications
 
-Sitemap: https://druxio.lovable.app/sitemap.xml
+Sitemap: https://druxio.net/sitemap.xml
