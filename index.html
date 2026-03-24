@@ -145,15 +145,18 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- BEGIN PLERDY CODE -->
-    <script type="text/javascript" defer data-plerdy_code='1'>
-        var _protocol="https:"==document.location.protocol?"https://":"http://";
-        _site_hash_code = "ef26c3aae4c8c02386792bac710f1880",_suid=73320, plerdyScript=document.createElement("script");
-        plerdyScript.setAttribute("defer",""),plerdyScript.dataset.plerdymainscript="plerdymainscript",
-        plerdyScript.src="https://a.plerdy.com/public/js/click/main.js?v="+Math.random();
-        var plerdymainscript=document.querySelector("[data-plerdymainscript='plerdymainscript']");
-        plerdymainscript&&plerdymainscript.parentNode.removeChild(plerdymainscript);
-        try{document.head.appendChild(plerdyScript)}catch(t){console.log(t,"unable add script tag")}
+    <!-- BEGIN PLERDY CODE — deferred until after page is interactive -->
+    <script>
+        window.addEventListener('load', function(){
+            var _site_hash_code = "ef26c3aae4c8c02386792bac710f1880", _suid=73320;
+            var s=document.createElement("script");
+            s.async=true;
+            s.src="https://a.plerdy.com/public/js/click/main.js?v="+Math.random();
+            s.dataset.plerdymainscript="plerdymainscript";
+            var old=document.querySelector("[data-plerdymainscript='plerdymainscript']");
+            if(old) old.parentNode.removeChild(old);
+            try{document.head.appendChild(s)}catch(t){}
+        });
     </script>
     <!-- END PLERDY CODE -->
   </body>
