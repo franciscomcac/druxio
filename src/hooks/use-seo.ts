@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const BASE_URL = "https://druxio.lovable.app";
+const BASE_URL = "https://druxio.net";
 const SITE_NAME = "Druxio";
 const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/G0936umxfkP8XUxHjCHkuY6oOfS2/social-images/social-1771596374263-Screenshot_2026-02-20_140526.webp";
 
@@ -49,11 +49,12 @@ export function useSEO({ title, description, canonical, ogImage, ogType = "websi
       setMeta("twitter:description", description);
     }
 
-    if (canonical) {
-      const url = canonical.startsWith("http") ? canonical : `${BASE_URL}${canonical}`;
-      setLink("canonical", url);
-      setMeta("og:url", url, "property");
-    }
+    // Always set canonical — derive from current path if not explicitly provided
+    const canonicalUrl = canonical
+      ? (canonical.startsWith("http") ? canonical : `${BASE_URL}${canonical}`)
+      : `${BASE_URL}${window.location.pathname}`;
+    setLink("canonical", canonicalUrl);
+    setMeta("og:url", canonicalUrl, "property");
 
     setMeta("og:title", truncatedTitle, "property");
     setMeta("twitter:title", truncatedTitle);
