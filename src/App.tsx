@@ -10,6 +10,8 @@ import AppLayout from "./components/layout/AppLayout";
 import { usePresence } from "./hooks/use-presence";
 import { useGlobalSound } from "./hooks/use-global-sound";
 import ScrollToTop from "./components/ScrollToTop";
+import ErrorBoundary from "./components/ErrorBoundary";
+import CookieConsent from "./components/CookieConsent";
 
 // Eagerly loaded (landing + auth — critical path)
 import Index from "./pages/Index";
@@ -72,6 +74,7 @@ const PageLoader = () => (
 );
 
 const App = () => (
+  <ErrorBoundary>
   <CurrencyProvider>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark" disableTransitionOnChange>
@@ -125,11 +128,13 @@ const App = () => (
             <SupportWidget />
             <FeedbackWidget />
           </Suspense>
+          <CookieConsent />
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
   </CurrencyProvider>
+  </ErrorBoundary>
 );
 
 export default App;
