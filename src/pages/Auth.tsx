@@ -85,6 +85,8 @@ const Auth = () => {
     }
   };
 
+  const [signupDone, setSignupDone] = useState(false);
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -96,7 +98,7 @@ const Auth = () => {
       if (error) throw error;
       // Send welcome email (fire-and-forget)
       sendEmail(buildWelcomeEmail(email)).catch(console.error);
-      toast({ title: "Account created!", description: "Check your email to verify your account." });
+      setSignupDone(true);
     } catch (error: any) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
     } finally {
@@ -119,6 +121,37 @@ const Auth = () => {
       setForgotLoading(false);
     }
   };
+
+  // ── Email verification screen after signup ──
+  if (signupDone) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="pt-8 pb-6 space-y-4">
+            <div className="text-5xl">📬</div>
+            <h2 className="text-2xl font-bold text-foreground">Check your email</h2>
+            <p className="text-sm text-muted-foreground">
+              We sent a verification link to <strong className="text-foreground">{email}</strong>.
+              <br />Click the link to activate your account.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Didn't get it? Check your spam folder or{" "}
+              <button
+                type="button"
+                onClick={() => { setSignupDone(false); setActiveTab("signup"); }}
+                className="text-primary underline underline-offset-2"
+              >
+                try again
+              </button>.
+            </p>
+            <Button variant="outline" className="w-full mt-2" onClick={() => { setSignupDone(false); setActiveTab("login"); }}>
+              Back to sign in
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

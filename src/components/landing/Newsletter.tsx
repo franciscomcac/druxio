@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useThrottle } from "@/hooks/use-throttle";
 import { Input } from "@/components/ui/input";
 import { Mail, ArrowRight, CheckCircle, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -9,10 +10,11 @@ const Newsletter = () => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const ref = useScrollReveal<HTMLElement>();
+  const throttle = useThrottle(5000);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) setSubmitted(true);
+    if (email.trim() && throttle()) setSubmitted(true);
   };
 
   return (
