@@ -12,3 +12,4 @@ Disallow: /orders/
 Disallow: /notifications
 
 Sitemap: https://druxio.net/sitemap.xml
+Sitemap: https://fgpzlmomrzcpefqcstdn.supabase.co/functions/v1/sitemap

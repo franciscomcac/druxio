@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -117,6 +117,7 @@ export default function FeedbackWidget() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const lastSubmitRef = useRef(0);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUserId(data.user?.id || null));
@@ -147,6 +148,8 @@ export default function FeedbackWidget() {
     if (step === "rating") return setStep("category");
     if (step === "category") return setStep("message");
     if (step === "message") {
+      if (Date.now() - lastSubmitRef.current < 10000) return;
+      lastSubmitRef.current = Date.now();
       setSubmitting(true);
       try {
         await supabase.from("feedback").insert({

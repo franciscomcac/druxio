@@ -9,9 +9,9 @@ interface AppLayoutProps {
 const AppLayout = ({ showFooter = true }: AppLayoutProps) => (
   <div className="min-h-screen bg-background flex flex-col">
     <Header />
-    <div className="flex-1 flex flex-col">
+    <main id="main-content" className="flex-1 flex flex-col">
       <Outlet />
-    </div>
+    </main>
     {showFooter && <Footer />}
   </div>
 );
