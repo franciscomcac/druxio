@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ShieldCheck, Lock, Clock, CheckCircle2, CreditCard, Star, Zap } from "lucide-react";
+import { useBalance } from "@/hooks/use-balance";
+import { ArrowLeft, ShieldCheck, Lock, Clock, CheckCircle2, Star, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import PayPalCheckoutButtons from "@/components/payment/PayPalCheckoutButtons";
 
 interface QuoteData {
@@ -43,6 +45,7 @@ const Checkout = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { balance, loading: balanceLoading } = useBalance();
 
   const jobId = searchParams.get("jobId");
   const quoteId = searchParams.get("quoteId");
@@ -51,6 +54,7 @@ const Checkout = () => {
   const [job, setJob] = useState<JobData | null>(null);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
+  const [useWallet, setUseWallet] = useState(true); // default ON if balance > 0
 
   useEffect(() => {
     if (!jobId || !quoteId) {
@@ -92,24 +96,58 @@ const Checkout = () => {
     fetchData();
   }, [jobId, quoteId]);
 
+  const base = quote?.price ?? 0;
+  const platformFee = Math.round(base * 0.05 * 100) / 100;
+  const total = Math.round((base + platformFee) * 100) / 100;
+  const walletBalance = Math.max(0, balance);
+  const walletDeduction = useWallet ? Math.round(Math.min(walletBalance, total) * 100) / 100 : 0;
+  const paypalTotal = Math.round((total - walletDeduction) * 100) / 100;
+  const isWalletOnly = paypalTotal <= 0;
+
   const handleCreateOrder = async (): Promise<string> => {
     if (!quote || !jobId) throw new Error("Missing data");
     setPaying(true);
     const { data, error } = await supabase.functions.invoke("paypal-create-order", {
-      body: { quoteId: quote.id, jobId },
+      body: { quoteId: quote.id, jobId, walletDeduction },
     });
     if (error) { setPaying(false); throw new Error(error.message); }
     if (data?.error) { setPaying(false); throw new Error(data.error); }
+
+    // If wallet covers everything, handle directly
+    if (data?.walletOnly) {
+      await handleWalletOnlyPayment();
+      return "__wallet_only__";
+    }
+
     const orderId = data?.paypalOrderId || data?.orderId;
     if (!orderId) { setPaying(false); throw new Error("PayPal order ID missing"); }
     return orderId;
+  };
+
+  const handleWalletOnlyPayment = async () => {
+    if (!quote || !jobId) return;
+    try {
+      setPaying(true);
+      const { data: captureResult, error } = await supabase.functions.invoke("paypal-capture-order", {
+        body: { jobId, quoteId: quote.id, walletDeduction, walletOnly: true },
+      });
+      if (error) throw new Error(error.message);
+      if (captureResult?.error) throw new Error(captureResult.error);
+
+      toast({ title: "Payment successful! 🎉", description: `Paid entirely from your wallet balance.` });
+      supabase.functions.invoke("send-order-email", { body: { event: "quote_accepted", jobId } }).catch(console.error);
+      navigate(`/order/${jobId}`);
+    } catch (err: any) {
+      toast({ title: "Payment failed", description: err.message, variant: "destructive" });
+      setPaying(false);
+    }
   };
 
   const handleApprove = async (data: { orderID: string }) => {
     if (!quote || !jobId) return;
     try {
       const { data: captureResult, error } = await supabase.functions.invoke("paypal-capture-order", {
-        body: { paypalOrderId: data.orderID, jobId, quoteId: quote.id },
+        body: { paypalOrderId: data.orderID, jobId, quoteId: quote.id, walletDeduction },
       });
       if (error) throw new Error(error.message);
       if (captureResult?.error) throw new Error(captureResult.error);
@@ -136,9 +174,6 @@ const Checkout = () => {
 
   if (!quote || !job) return null;
 
-  const base = quote.price;
-  const platformFee = Math.round(base * 0.05 * 100) / 100;
-  const total = Math.round((base + platformFee) * 100) / 100;
   const subcategoryLabel = job.subcategory
     ? job.subcategory.split(":").pop()?.trim() || job.subcategory
     : job.category;
@@ -251,6 +286,35 @@ const Checkout = () => {
           <div className="rounded-xl border border-border/50 bg-card p-6 lg:sticky lg:top-24 space-y-5">
             <h2 className="text-base font-semibold text-foreground">Payment</h2>
 
+            {/* Wallet balance toggle */}
+            {walletBalance > 0 && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
+                      <Wallet className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Use wallet balance</p>
+                      <p className="text-xs text-muted-foreground">
+                        Available: €{walletBalance.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={useWallet}
+                    onCheckedChange={setUseWallet}
+                    disabled={paying}
+                  />
+                </div>
+                {useWallet && walletDeduction > 0 && (
+                  <p className="text-xs text-primary mt-2.5 font-medium">
+                    −€{walletDeduction.toFixed(2)} will be deducted from your wallet
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Price breakdown */}
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
@@ -261,22 +325,58 @@ const Checkout = () => {
                 <span className="text-muted-foreground">Platform fee (5%)</span>
                 <span className="text-foreground">€{platformFee.toFixed(2)}</span>
               </div>
+              {walletDeduction > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-primary font-medium">Wallet credit</span>
+                  <span className="text-primary font-medium">−€{walletDeduction.toFixed(2)}</span>
+                </div>
+              )}
               <div className="border-t border-border/40 pt-3 flex justify-between items-baseline">
-                <span className="text-sm font-semibold text-foreground">Total</span>
-                <span className="text-2xl font-bold text-primary">€{total.toFixed(2)}</span>
+                <span className="text-sm font-semibold text-foreground">
+                  {isWalletOnly ? "Total" : "Pay via PayPal"}
+                </span>
+                <span className="text-2xl font-bold text-primary">
+                  €{paypalTotal.toFixed(2)}
+                </span>
               </div>
+              {walletDeduction > 0 && !isWalletOnly && (
+                <p className="text-[11px] text-muted-foreground/50">
+                  Total: €{total.toFixed(2)} (€{walletDeduction.toFixed(2)} from wallet + €{paypalTotal.toFixed(2)} via PayPal)
+                </p>
+              )}
             </div>
 
-            {/* PayPal buttons */}
+            {/* Payment buttons */}
             <div className="pt-2">
-              <PayPalCheckoutButtons
-                createOrder={handleCreateOrder}
-                onApprove={handleApprove}
-                onError={() => {
-                  toast({ title: "Payment error", description: "Something went wrong with PayPal. Please try again.", variant: "destructive" });
-                  setPaying(false);
-                }}
-              />
+              {isWalletOnly ? (
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={handleWalletOnlyPayment}
+                  disabled={paying}
+                >
+                  {paying ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin" />
+                      Processing…
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      Pay with Wallet Balance
+                    </div>
+                  )}
+                </Button>
+              ) : (
+                <PayPalCheckoutButtons
+                  createOrder={handleCreateOrder}
+                  onApprove={handleApprove}
+                  onError={() => {
+                    toast({ title: "Payment error", description: "Something went wrong with PayPal. Please try again.", variant: "destructive" });
+                    setPaying(false);
+                  }}
+                />
+              )}
             </div>
 
             {/* Trust signals */}
