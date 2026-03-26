@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     // Get job with capture ID (stored in stripe_payment_intent_id field)
     const { data: job } = await serviceClient
-      .from("jobs").select("id, stripe_payment_intent_id, buyer_id, title").eq("id", jobId).single();
+      .from("jobs").select("id, stripe_payment_intent_id, buyer_id, title, accepted_quote_id").eq("id", jobId).single();
     if (!job) {
       return new Response(JSON.stringify({ error: "Job not found" }), {
         status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -56,25 +56,52 @@ Deno.serve(async (req) => {
 
     const captureId = job.stripe_payment_intent_id;
     if (!captureId) {
-      return new Response(JSON.stringify({ error: "No PayPal capture found for this order" }), {
+      return new Response(JSON.stringify({ error: "No payment capture found for this order" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Get quote price to calculate total refund
+    const { data: quote } = await serviceClient
+      .from("quotes").select("price").eq("id", job.accepted_quote_id).single();
+    const totalRefund = quote ? Number(quote.price) * 1.05 : 0;
+
+    // Check if this was a wallet-only payment (no PayPal capture to refund)
+    const isWalletOnly = captureId.startsWith("wallet_only_") || captureId.startsWith("wallet_");
+
+    if (isWalletOnly) {
+      // Refund entirely to wallet balance
+      await serviceClient.from("transactions").insert({
+        user_id: job.buyer_id,
+        amount: totalRefund,
+        type: "refund",
+        status: "completed",
+        description: `Refund to store balance for "${job.title}"`,
+        stripe_payment_id: `refund_wallet_${jobId}`,
+      });
+
+      return new Response(JSON.stringify({
+        success: true,
+        refundId: `refund_wallet_${jobId}`,
+        amount: totalRefund,
+        method: "wallet",
+      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // PayPal refund for the PayPal-paid portion
     const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
       ? "https://api-m.paypal.com"
       : "https://api-m.sandbox.paypal.com";
 
     const accessToken = await getPayPalAccessToken();
 
-    // Refund the capture
     const refundRes = await fetch(`${baseUrl}/v2/payments/captures/${captureId}/refund`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({}), // Full refund
+      body: JSON.stringify({}), // Full refund of the PayPal capture
     });
 
     if (!refundRes.ok) {
@@ -84,22 +111,48 @@ Deno.serve(async (req) => {
     }
 
     const refundData = await refundRes.json();
+    const paypalRefundAmount = Number(refundData.amount?.value || 0);
 
-    // Record refund transaction
-    const refundAmount = Number(refundData.amount?.value || 0);
+    // Record PayPal refund transaction
     await serviceClient.from("transactions").insert({
       user_id: job.buyer_id,
-      amount: refundAmount,
+      amount: paypalRefundAmount,
       type: "refund",
       status: "completed",
       description: `PayPal refund for "${job.title}"`,
       stripe_payment_id: refundData.id,
     });
 
+    // Also check if there was a wallet deduction for this order and refund that too
+    const { data: walletTxns } = await serviceClient
+      .from("transactions")
+      .select("id, amount")
+      .eq("user_id", job.buyer_id)
+      .eq("status", "completed")
+      .eq("type", "session_payment")
+      .eq("stripe_payment_id", `wallet_${jobId}`);
+
+    let walletRefundAmount = 0;
+    if (walletTxns && walletTxns.length > 0) {
+      walletRefundAmount = walletTxns.reduce((sum, t) => sum + Number(t.amount), 0);
+      // Refund the wallet portion back to balance
+      await serviceClient.from("transactions").insert({
+        user_id: job.buyer_id,
+        amount: walletRefundAmount,
+        type: "refund",
+        status: "completed",
+        description: `Wallet credit refund for "${job.title}"`,
+        stripe_payment_id: `refund_wallet_${jobId}`,
+      });
+    }
+
     return new Response(JSON.stringify({
       success: true,
       refundId: refundData.id,
-      amount: refundAmount,
+      amount: paypalRefundAmount + walletRefundAmount,
+      paypalRefund: paypalRefundAmount,
+      walletRefund: walletRefundAmount,
+      method: walletRefundAmount > 0 ? "mixed" : "paypal",
     }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("paypal-refund error:", err);
