@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useDraft } from "@/hooks/use-draft";
 import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CategoryTemplateFields from "@/components/post-request/CategoryTemplateFields";
@@ -263,6 +264,7 @@ const PostRequest = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { checkContent } = useModeration();
+  const { hasDraft, saveDraft, loadDraft, clearDraft } = useDraft();
 
   const [wizardStep, setWizardStep] = useState<"choose-method" | "auto-match" | "category" | "subcategory" | "ai-refine" | "details" | "waiting" | "matching">("choose-method");
   const [autoMatchLoading, setAutoMatchLoading] = useState(false);
