@@ -114,7 +114,6 @@ const Dashboard = () => {
       if (!isMounted) return;
       setAuthUserId(session?.user?.id ?? null);
       setAuthReady(true);
-      if (!session?.user) navigate("/auth");
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
