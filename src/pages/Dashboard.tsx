@@ -210,6 +210,9 @@ const Dashboard = () => {
         <OnboardingWizard userId={profile.id} onComplete={handleOnboardingComplete} />
       )}
       <SellerConsentDialog open={showSellerConsent} onOpenChange={setShowSellerConsent} onAccept={handleSellerConsentAccept} />
+      {showSellerSetup && profile && (
+        <SellerSetupWizard userId={profile.id} onComplete={handleSellerSetupComplete} />
+      )}
 
 
 
