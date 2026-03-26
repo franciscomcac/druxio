@@ -456,7 +456,7 @@ const Settings = () => {
     try {
       const { error } = await supabase.from("profiles").update({
         display_name: profile.display_name, bio: profile.bio, location: profile.location,
-        timezone: profile.timezone, hourly_rate: profile.hourly_rate,
+        timezone: profile.timezone, hourly_rate: profile.hourly_rate, skills: profile.skills || [],
       }).eq("id", profile.id);
       if (error) throw error;
       toast({ title: "Settings saved", description: "Your profile has been updated." });
@@ -550,7 +550,47 @@ const Settings = () => {
 
                 <div className="space-y-2"><Label>Bio</Label><Textarea placeholder="Tell others about yourself..." className="min-h-32" value={profile?.bio || ""} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} /></div>
 
-                {/* Online status toggle moved to profile dropdown menu */}
+                {isMentor && (
+                  <div className="space-y-2">
+                    <Label>Skills</Label>
+                    <p className="text-xs text-muted-foreground">Add skills that describe your expertise. Press Enter or click Add.</p>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="e.g. React, Video Editing, Coaching..."
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const val = (e.target as HTMLInputElement).value.trim();
+                            if (val && !(profile?.skills || []).includes(val)) {
+                              setProfile({ ...profile, skills: [...(profile?.skills || []), val] });
+                              (e.target as HTMLInputElement).value = "";
+                            }
+                          }
+                        }}
+                      />
+                      <Button type="button" size="sm" className="shrink-0" onClick={() => {
+                        const input = document.querySelector<HTMLInputElement>('input[placeholder*="React"]');
+                        if (input) {
+                          const val = input.value.trim();
+                          if (val && !(profile?.skills || []).includes(val)) {
+                            setProfile({ ...profile, skills: [...(profile?.skills || []), val] });
+                            input.value = "";
+                          }
+                        }
+                      }}>Add</Button>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(profile?.skills || []).map((skill: string) => (
+                        <Badge key={skill} variant="secondary" className="gap-1 text-sm">
+                          {skill}
+                          <button onClick={() => setProfile({ ...profile, skills: (profile?.skills || []).filter((s: string) => s !== skill) })} className="ml-0.5 hover:text-destructive">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <Button onClick={handleSaveProfile} disabled={saving} className="gap-2">
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Changes
