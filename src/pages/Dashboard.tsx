@@ -48,8 +48,7 @@ const Dashboard = () => {
 
   const fetchData = async (userId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/auth"); return; }
+      console.log("[Dashboard] fetchData called for user:", userId);
 
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
@@ -63,10 +62,11 @@ const Dashboard = () => {
 
       // Ensure profile exists (fallback for accounts created before trigger was set up)
       if (!resolvedProfile) {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         const displayName =
-          session.user?.user_metadata?.display_name ||
-          session.user?.user_metadata?.full_name ||
-          session.user?.email?.split("@")[0] ||
+          currentSession?.user?.user_metadata?.display_name ||
+          currentSession?.user?.user_metadata?.full_name ||
+          currentSession?.user?.email?.split("@")[0] ||
           "User";
         const { data: upserted } = await supabase
           .from("profiles")
@@ -131,6 +131,7 @@ const Dashboard = () => {
     };
 
     const initWithSession = (userId: string) => {
+      console.log("[Dashboard] initWithSession:", { userId, currentUserId, isMounted });
       if (!isMounted || userId === currentUserId) return;
       currentUserId = userId;
       fetchData(userId);
