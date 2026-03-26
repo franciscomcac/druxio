@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import SellerConsentDialog from "@/components/onboarding/SellerConsentDialog";
+import SellerSetupWizard from "@/components/onboarding/SellerSetupWizard";
 import { startSellerTutorial } from "@/components/onboarding/SellerTutorial";
 import ClientDashboard from "@/components/dashboard/ClientDashboard";
 import ExpertDashboard from "@/components/dashboard/ExpertDashboard";
