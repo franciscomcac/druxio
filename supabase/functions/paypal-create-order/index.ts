@@ -206,12 +206,6 @@ Deno.serve(async (req) => {
             currency_code: "EUR",
             value: paypalTotal.toFixed(2),
           },
-          items: [{
-            name: job.title || "Service Payment",
-            quantity: "1",
-            unit_amount: { currency_code: "EUR", value: paypalTotal.toFixed(2) },
-            category: "DIGITAL_GOODS",
-          }],
         }],
         payment_source: {
           paypal: {
