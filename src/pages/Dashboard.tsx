@@ -161,6 +161,12 @@ const Dashboard = () => {
     };
   }, [authReady, authUserId]);
 
+  useEffect(() => {
+    if (!authReady || authUserId) return;
+    const redirectTimer = setTimeout(() => navigate("/auth"), 1200);
+    return () => clearTimeout(redirectTimer);
+  }, [authReady, authUserId, navigate]);
+
   // Auto-open seller consent when redirected from "Join as Expert"
   useEffect(() => {
     if (searchParams.get("become_expert") === "1" && !loading && profile && !roles.some(r => r.role === "mentor")) {
