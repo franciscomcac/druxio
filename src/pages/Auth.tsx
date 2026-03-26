@@ -91,11 +91,30 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      // Capture referral param
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get("ref");
+
+      const { data: signupData, error } = await supabase.auth.signUp({
         email, password,
-        options: { emailRedirectTo: window.location.origin },
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: ref ? { referred_by: ref } : undefined,
+        },
       });
       if (error) throw error;
+
+      // Store referral in profile if user was created
+      if (ref && signupData.user?.id) {
+        await supabase.from("profiles").update({ referred_by: ref }).eq("id", signupData.user.id);
+        await supabase.from("referrals").insert({
+          referrer_id: ref,
+          referred_email: email,
+          referred_user_id: signupData.user.id,
+          status: "registered",
+        }).then(() => {}).catch(() => {});
+      }
+
       // Send welcome email (fire-and-forget)
       sendEmail(buildWelcomeEmail(email)).catch(console.error);
       setSignupDone(true);
