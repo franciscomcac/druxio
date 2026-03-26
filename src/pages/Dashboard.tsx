@@ -131,6 +131,7 @@ const Dashboard = () => {
     };
 
     const initWithSession = (userId: string) => {
+      console.log("[Dashboard] initWithSession:", { userId, currentUserId, isMounted });
       if (!isMounted || userId === currentUserId) return;
       currentUserId = userId;
       fetchData(userId);
