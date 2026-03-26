@@ -2,7 +2,7 @@ import { useState, useEffect, useLayoutEffect } from "react";
 import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import SimilarExperts from "@/components/experts/SimilarExperts";
+
 import PortfolioSection from "@/components/experts/PortfolioSection";
 import AvailabilityBadge from "@/components/experts/AvailabilityBadge";
 import ReportUserDialog from "@/components/reports/ReportUserDialog";
