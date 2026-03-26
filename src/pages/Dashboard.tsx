@@ -167,8 +167,15 @@ const Dashboard = () => {
     if (error) throw error;
     setRoles([...roles, { role: "mentor" }]);
     setActiveView("expert");
+    // Show the setup wizard instead of jumping straight to the tutorial
+    setShowSellerSetup(true);
+  };
+
+  const handleSellerSetupComplete = () => {
+    setShowSellerSetup(false);
+    fetchData(profile?.id);
     setTimeout(() => startSellerTutorial(), 500);
-    toast({ title: "Welcome, Expert! 🎉", description: "Subscribe to categories and start receiving requests." });
+    toast({ title: "Welcome, Expert! 🎉", description: "Your expert profile is ready. Let's take a quick tour!" });
   };
 
   const handleOnboardingComplete = async () => {
