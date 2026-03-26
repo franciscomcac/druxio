@@ -38,6 +38,7 @@ const Dashboard = () => {
   const [activeView, setActiveView] = useState<"client" | "expert">("client");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSellerConsent, setShowSellerConsent] = useState(false);
+  const [showSellerSetup, setShowSellerSetup] = useState(false);
   
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
