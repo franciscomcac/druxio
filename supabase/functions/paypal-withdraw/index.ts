@@ -189,7 +189,14 @@ Deno.serve(async (req) => {
       status: "completed",
     });
 
-    // Send confirmation email (fire-and-forget)
+    // In-app notification for successful withdrawal
+    await adminClient.from("notifications").insert({
+      user_id: userId,
+      type: "withdrawal_completed",
+      title: "Withdrawal successful! 💸",
+      message: `€${netAmount.toFixed(2)} has been sent to your PayPal (${paypal_email}).`,
+      data: { amount, netAmount, method: "paypal" },
+    });
     const resendKey = Deno.env.get("RESEND_API_KEY");
     if (resendKey) {
       try {
