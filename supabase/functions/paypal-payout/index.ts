@@ -8,18 +8,15 @@ const corsHeaders = {
 
 const PLATFORM_FEE_RATE = 0.05; // 5% seller fee
 
-const stripWrappingQuotes = (v: string) => v.replace(/^['"]+|['"]+$/g, "");
+async function getPayPalAccessToken(): Promise<string> {
+  const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
+  const secret = Deno.env.get("PAYPAL_SECRET");
+  if (!clientId || !secret) throw new Error("PayPal credentials not configured");
 
-type PayPalMode = "live" | "sandbox";
+  const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
+    ? "https://api-m.paypal.com"
+    : "https://api-m.sandbox.paypal.com";
 
-function resolveMode(): { mode: PayPalMode; baseUrl: string } {
-  const raw = Deno.env.get("PAYPAL_MODE");
-  const mode: PayPalMode = raw?.trim().toLowerCase() === "live" ? "live" : "sandbox";
-  const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
-  return { mode, baseUrl };
-}
-
-async function fetchToken(baseUrl: string, clientId: string, secret: string): Promise<string> {
   const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
     method: "POST",
     headers: {
@@ -28,29 +25,10 @@ async function fetchToken(baseUrl: string, clientId: string, secret: string): Pr
     },
     body: "grant_type=client_credentials",
   });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`${res.status} ${text}`);
-  }
-  return (await res.json()).access_token;
-}
 
-async function getPayPalAuth(): Promise<{ accessToken: string; baseUrl: string }> {
-  const clientId = stripWrappingQuotes(Deno.env.get("PAYPAL_CLIENT_ID")?.trim() || "");
-  const secret = stripWrappingQuotes(Deno.env.get("PAYPAL_SECRET")?.trim() || "");
-  if (!clientId || !secret) throw new Error("PayPal credentials not configured");
-
-  const { mode, baseUrl } = resolveMode();
-  try {
-    const accessToken = await fetchToken(baseUrl, clientId, secret);
-    return { accessToken, baseUrl };
-  } catch {
-    // Fallback: try opposite mode
-    const fallbackUrl = mode === "live" ? "https://api-m.sandbox.paypal.com" : "https://api-m.paypal.com";
-    const accessToken = await fetchToken(fallbackUrl, clientId, secret);
-    console.warn(`PAYPAL_MODE='${mode}' failed auth; falling back to ${mode === "live" ? "sandbox" : "live"}`);
-    return { accessToken, baseUrl: fallbackUrl };
-  }
+  if (!res.ok) throw new Error(`PayPal auth failed: ${res.status}`);
+  const data = await res.json();
+  return data.access_token;
 }
 
 Deno.serve(async (req) => {
@@ -106,7 +84,11 @@ Deno.serve(async (req) => {
 
     if (sellerPaypalEmail) {
       // Send instant PayPal payout
-      const { accessToken, baseUrl } = await getPayPalAuth();
+      const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
+        ? "https://api-m.paypal.com"
+        : "https://api-m.sandbox.paypal.com";
+
+      const accessToken = await getPayPalAccessToken();
 
       const batchId = `druxio_${jobId}_${Date.now()}`;
       const payoutRes = await fetch(`${baseUrl}/v1/payments/payouts`, {

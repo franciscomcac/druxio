@@ -322,7 +322,7 @@ const Checkout = () => {
                 <span className="text-foreground">€{base.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Flat fee (5%)</span>
+                <span className="text-muted-foreground">Platform fee (5%)</span>
                 <span className="text-foreground">€{platformFee.toFixed(2)}</span>
               </div>
               {walletDeduction > 0 && (
