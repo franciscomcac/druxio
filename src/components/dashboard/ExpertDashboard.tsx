@@ -134,6 +134,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const [sendingQuote, setSendingQuote] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [previewJob, setPreviewJob] = useState<Job | null>(null);
+  const [previewLowestPrice, setPreviewLowestPrice] = useState<number | null>(null);
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
