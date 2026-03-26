@@ -1167,6 +1167,9 @@ const Admin = () => {
                              <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
                              <h3 className="font-semibold text-foreground text-sm">{d.job_title}</h3>
                              <Badge variant="outline" className="text-[10px]">{d.job_category}</Badge>
+                             <Badge variant={d.dispute_status === "escalated" ? "destructive" : "secondary"} className="text-[10px] capitalize">
+                               {d.dispute_status.replace("_", " ")}
+                             </Badge>
                            </div>
                            <p className="text-xs sm:text-sm text-muted-foreground mb-2">{d.reason}</p>
                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -1175,6 +1178,22 @@ const Admin = () => {
                              <span>€{d.quote_price.toFixed(2)}</span>
                              <span>{formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}</span>
                            </div>
+                           {/* Evidence counts */}
+                           {(d.evidence_buyer.length > 0 || d.evidence_seller.length > 0) && (
+                             <div className="flex gap-3 mt-1.5 text-[10px] text-muted-foreground">
+                               {d.evidence_buyer.length > 0 && (
+                                 <span>📄 Buyer evidence: {d.evidence_buyer.length}</span>
+                               )}
+                               {d.evidence_seller.length > 0 && (
+                                 <span>📄 Seller evidence: {d.evidence_seller.length}</span>
+                               )}
+                             </div>
+                           )}
+                           {d.negotiation_deadline && d.dispute_status === "negotiation" && (
+                             <p className="text-[10px] text-muted-foreground mt-1">
+                               ⏰ Negotiation {isPast(new Date(d.negotiation_deadline)) ? "expired" : `expires ${formatDistanceToNow(new Date(d.negotiation_deadline), { addSuffix: true })}`}
+                             </p>
+                           )}
                          </div>
                          <div className="flex flex-wrap gap-2">
                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => navigate(`/order/${d.job_id}`)}>
@@ -1183,9 +1202,11 @@ const Admin = () => {
                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => handleDisputeResume(d)}>
                              <RefreshCw className="h-3 w-3" /> Resume
                            </Button>
-                           <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-chart-2 hover:bg-chart-2/10" onClick={() => handleDisputeEscalate(d)}>
-                             <AlertTriangle className="h-3 w-3" /> Escalate
-                           </Button>
+                           {d.dispute_status === "negotiation" && (
+                             <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-chart-2 hover:bg-chart-2/10" onClick={() => handleDisputeEscalate(d)}>
+                               <AlertTriangle className="h-3 w-3" /> Escalate
+                             </Button>
+                           )}
                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-destructive hover:bg-destructive/10" onClick={() => { setSelectedDispute(d); setDisputeAction("refund"); }}>
                              <DollarSign className="h-3 w-3" /> Refund
                            </Button>
