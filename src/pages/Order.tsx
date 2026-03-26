@@ -896,6 +896,17 @@ const Order = () => {
               </Button>
             )}
 
+            {/* Dispute Panel */}
+            {isDisputed && userId && jobId && (
+              <DisputePanel
+                jobId={jobId}
+                userId={userId}
+                isBuyer={isBuyer}
+                isSeller={isSeller}
+                sessionId={sessionId}
+              />
+            )}
+
             {/* Post-completion follow-up */}
             {isBuyer && isCompleted && (
               <OrderFollowUp
