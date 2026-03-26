@@ -713,6 +713,45 @@ const Order = () => {
     <div className="min-h-screen bg-background">
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-5xl">
+
+      {/* Lightbox */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backdropFilter: "blur(12px)", background: "rgba(0,0,0,0.85)" }}
+          onClick={() => setLightboxImage(null)}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-10 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 rounded-full"
+            onClick={() => setLightboxImage(null)}
+          >
+            <X className="h-6 w-6" />
+          </Button>
+          {lightboxImages.length > 1 && lightboxIndex > 0 && (
+            <Button variant="ghost" size="icon"
+              className="absolute left-4 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 rounded-full"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => i - 1); setLightboxImage(lightboxImages[lightboxIndex - 1]); }}>
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
+          )}
+          <ZoomableImage src={lightboxImage} />
+          {lightboxImages.length > 1 && lightboxIndex < lightboxImages.length - 1 && (
+            <Button variant="ghost" size="icon"
+              className="absolute right-14 text-primary-foreground/80 hover:text-primary-foreground hover:bg-white/10 rounded-full"
+              onClick={(e) => { e.stopPropagation(); setLightboxIndex(i => i + 1); setLightboxImage(lightboxImages[lightboxIndex + 1]); }}>
+              <ArrowLeft className="h-6 w-6 rotate-180" />
+            </Button>
+          )}
+          {lightboxImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-primary-foreground/70 text-sm bg-black/40 px-3 py-1 rounded-full">
+              {lightboxIndex + 1} / {lightboxImages.length}
+            </div>
+          )}
+        </div>
+      )}
+
         {/* Back button & title */}
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
           <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigate(fromPath ?? (isBuyer ? "/orders/purchased" : "/orders/sold"))}>
