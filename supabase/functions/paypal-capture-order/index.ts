@@ -76,17 +76,9 @@ async function finalizeOrder(serviceClient: any, userId: string, jobId: string, 
     updated_at: new Date().toISOString(),
   }).eq("id", jobId);
 
-  // Record PayPal payment transaction (if any PayPal amount was charged)
-  if (totalPaid > 0) {
-    await serviceClient.from("transactions").insert({
-      user_id: userId,
-      amount: totalPaid,
-      type: "session_payment",
-      status: "completed",
-      description: `Payment for service via PayPal`,
-      stripe_payment_id: captureId,
-    });
-  }
+  // NOTE: PayPal payments are external money — do NOT record as session_payment
+  // which would incorrectly deduct from wallet balance. Only wallet deductions
+  // should create session_payment transactions.
 
   // Record wallet deduction transaction
   await processWalletDeduction(serviceClient, userId, walletDeduction, jobId);
@@ -116,7 +108,6 @@ async function finalizeOrder(serviceClient: any, userId: string, jobId: string, 
     ]);
   }
 
-  const { data: job } = await serviceClient.from("jobs").select("title").eq("id", jobId).single();
   await serviceClient.from("notifications").insert({
     user_id: quote.expert_id,
     type: "quote_accepted",
