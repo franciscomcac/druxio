@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow, differenceInSeconds, addMinutes, addDays, isPast } from "date-fns";
 import OrderFollowUp from "@/components/order/OrderFollowUp";
+import ZoomableImage from "@/components/chat/ZoomableImage";
 import DisputePanel from "@/components/order/DisputePanel";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -652,14 +653,8 @@ const Order = () => {
             </Button>
           )}
 
-          {/* Image */}
-          <img
-            src={lightboxImage}
-            alt="Full size"
-            className="max-h-[88vh] max-w-[88vw] object-contain rounded-xl shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-            style={{ boxShadow: "0 25px 60px rgba(0,0,0,0.6)" }}
-          />
+          {/* Zoomable Image */}
+          <ZoomableImage src={lightboxImage} />
 
           {/* Next */}
           {lightboxImages.length > 1 && lightboxIndex < lightboxImages.length - 1 && (
