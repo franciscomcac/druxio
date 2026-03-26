@@ -276,7 +276,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
                   <span className="font-medium text-foreground">€{numAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xs opacity-60">
-                  <span className="text-muted-foreground">Platform fee</span>
+                  <span className="text-muted-foreground">Flat fee</span>
                   <span className="text-muted-foreground">−€{WITHDRAWAL_FEE.toFixed(2)}</span>
                 </div>
                 {method === "paypal" && (
