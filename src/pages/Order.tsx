@@ -686,7 +686,7 @@ const Order = () => {
   const isOverdue = timeLeft === 0 && !isCompleted;
   const isBuyer = userId === job.buyer_id;
   const isSeller = userId === quote.expert_id;
-  const paymentStatus = job.escrow_status || "paid";
+  const paymentStatus = job.escrow_status === "funded" ? "paid" : (job.escrow_status || "paid");
   const otherPartyProfile = isBuyer ? sellerProfile : buyerProfile;
   const otherPartyLabel = isBuyer ? "Seller" : "Buyer";
 
