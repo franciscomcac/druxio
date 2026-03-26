@@ -508,9 +508,13 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             {/* Key specs grid */}
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-lg border border-border bg-background/40 p-3 space-y-0.5">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Budget</p>
-                <p className="text-lg font-bold text-primary">{previewJob ? `€${previewJob.budget_max}` : "—"}</p>
-                <p className="text-[10px] text-muted-foreground">Maximum offered</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Lowest Price</p>
+                <p className="text-lg font-bold text-primary">
+                  {previewLowestPrice !== null ? `€${previewLowestPrice.toFixed(2)}` : "—"}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {previewLowestPrice !== null ? "Current lowest quote" : "No quotes yet"}
+                </p>
               </div>
               <div className="rounded-lg border border-border bg-background/40 p-3 space-y-0.5">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Max Delivery</p>
