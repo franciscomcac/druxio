@@ -57,8 +57,22 @@ async function getPayPalAuth() {
       error: message,
     });
 
+    let modeHint = "";
+    if (message.includes("invalid_client")) {
+      const oppositeMode: PayPalMode = mode === "live" ? "sandbox" : "live";
+      const oppositeBaseUrl =
+        oppositeMode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
+
+      try {
+        await fetchPayPalAccessToken(oppositeBaseUrl, clientId, secret);
+        modeHint = ` Credentials are valid in ${oppositeMode} mode. Set PAYPAL_MODE=${oppositeMode}.`;
+      } catch {
+        // Keep default guidance when credentials are invalid in both modes.
+      }
+    }
+
     throw new Error(
-      `PayPal auth failed in ${mode} mode: ${message}. Ensure PAYPAL_CLIENT_ID and PAYPAL_SECRET belong to the same ${mode} app and PAYPAL_MODE matches that app environment.`,
+      `PayPal auth failed in ${mode} mode: ${message}. Ensure PAYPAL_CLIENT_ID and PAYPAL_SECRET belong to the same ${mode} app.${modeHint}`,
     );
   }
 }
