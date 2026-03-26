@@ -98,7 +98,11 @@ const Checkout = () => {
 
   const base = quote?.price ?? 0;
   const platformFee = Math.round(base * 0.05 * 100) / 100;
-  const total = Math.round((base + platformFee) * 100) / 100;
+  const subtotal = Math.round((base + platformFee) * 100) / 100;
+  const PAYPAL_RATE = 0.0349;
+  const PAYPAL_FIXED = 0.49;
+  const paypalFee = Math.round((subtotal * PAYPAL_RATE + PAYPAL_FIXED) * 100) / 100;
+  const total = Math.round((subtotal + paypalFee) * 100) / 100;
   const walletBalance = Math.max(0, balance);
   const walletDeduction = useWallet ? Math.round(Math.min(walletBalance, total) * 100) / 100 : 0;
   const paypalTotal = Math.round((total - walletDeduction) * 100) / 100;
@@ -325,6 +329,12 @@ const Checkout = () => {
                 <span className="text-muted-foreground">Platform fee (5%)</span>
                 <span className="text-foreground">€{platformFee.toFixed(2)}</span>
               </div>
+              {!isWalletOnly && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">PayPal fee (3.49% + €0.49)</span>
+                  <span className="text-foreground">€{paypalFee.toFixed(2)}</span>
+                </div>
+              )}
               {walletDeduction > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-primary font-medium">Wallet credit</span>
