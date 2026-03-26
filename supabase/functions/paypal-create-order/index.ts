@@ -15,34 +15,27 @@ async function getPayPalAuth() {
   const secret = Deno.env.get("PAYPAL_SECRET");
   if (!clientId || !secret) throw new Error("PayPal credentials not configured");
 
-  const preferredMode: PayPalMode = Deno.env.get("PAYPAL_MODE") === "live" ? "live" : "sandbox";
-  const modesToTry: PayPalMode[] = preferredMode === "live" ? ["live", "sandbox"] : ["sandbox", "live"];
+  const mode: PayPalMode = Deno.env.get("PAYPAL_MODE") === "live" ? "live" : "sandbox";
+  const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
 
-  let lastError = "";
+  const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
 
-  for (const mode of modesToTry) {
-    const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
-
-    const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: "grant_type=client_credentials",
-    });
-
-    if (res.ok) {
-      const data = await res.json();
-      return { accessToken: data.access_token as string, baseUrl, mode };
-    }
-
+  if (!res.ok) {
     const text = await res.text();
-    lastError = `PayPal auth failed in ${mode} mode: ${res.status} ${text}`;
-    console.error(lastError);
+    const authError = `PayPal auth failed in ${mode} mode: ${res.status} ${text}`;
+    console.error(authError);
+    throw new Error(authError);
   }
 
-  throw new Error(lastError || "PayPal auth failed");
+  const data = await res.json();
+  return { accessToken: data.access_token as string, baseUrl, mode };
 }
 
 Deno.serve(async (req) => {
