@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import SellerConsentDialog from "@/components/onboarding/SellerConsentDialog";
+import SellerSetupWizard from "@/components/onboarding/SellerSetupWizard";
 import { startSellerTutorial } from "@/components/onboarding/SellerTutorial";
 import ClientDashboard from "@/components/dashboard/ClientDashboard";
 import ExpertDashboard from "@/components/dashboard/ExpertDashboard";
@@ -37,6 +38,7 @@ const Dashboard = () => {
   const [activeView, setActiveView] = useState<"client" | "expert">("client");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSellerConsent, setShowSellerConsent] = useState(false);
+  const [showSellerSetup, setShowSellerSetup] = useState(false);
   
   const [myJobs, setMyJobs] = useState<Job[]>([]);
   const [subscribedCategories, setSubscribedCategories] = useState<string[]>([]);
@@ -165,8 +167,15 @@ const Dashboard = () => {
     if (error) throw error;
     setRoles([...roles, { role: "mentor" }]);
     setActiveView("expert");
+    // Show the setup wizard instead of jumping straight to the tutorial
+    setShowSellerSetup(true);
+  };
+
+  const handleSellerSetupComplete = () => {
+    setShowSellerSetup(false);
+    fetchData(profile?.id);
     setTimeout(() => startSellerTutorial(), 500);
-    toast({ title: "Welcome, Expert! 🎉", description: "Subscribe to categories and start receiving requests." });
+    toast({ title: "Welcome, Expert! 🎉", description: "Your expert profile is ready. Let's take a quick tour!" });
   };
 
   const handleOnboardingComplete = async () => {
@@ -201,6 +210,9 @@ const Dashboard = () => {
         <OnboardingWizard userId={profile.id} onComplete={handleOnboardingComplete} />
       )}
       <SellerConsentDialog open={showSellerConsent} onOpenChange={setShowSellerConsent} onAccept={handleSellerConsentAccept} />
+      {showSellerSetup && profile && (
+        <SellerSetupWizard userId={profile.id} onComplete={handleSellerSetupComplete} />
+      )}
 
 
 
