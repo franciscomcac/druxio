@@ -678,6 +678,13 @@ const Admin = () => {
 
   const handleDisputeEscalate = async (dispute: Dispute) => {
     try {
+      // Update disputes table
+      if (dispute.dispute_id) {
+        await (supabase.from("disputes" as any) as any)
+          .update({ status: "escalated", escalated_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .eq("id", dispute.dispute_id);
+      }
+
       const escalateMsg = `📋 PROOF REQUEST: This dispute has been escalated by an admin. Both parties are required to submit evidence supporting their side within 48 hours.\n\n• Screenshots, files, or any relevant documentation\n• A clear summary of your position\n\nFailure to provide proof may result in a decision favoring the other party.`;
       await supabase.functions.invoke("admin-order-message", {
         body: { jobId: dispute.job_id, message: escalateMsg },
@@ -697,6 +704,7 @@ const Admin = () => {
         }),
       ]);
       toast({ title: "Dispute escalated", description: "Both parties have been notified to submit proof." });
+      loadDisputes();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -704,6 +712,13 @@ const Admin = () => {
 
   const handleDisputeResume = async (dispute: Dispute) => {
     try {
+      // Update disputes table
+      if (dispute.dispute_id) {
+        await (supabase.from("disputes" as any) as any)
+          .update({ status: "resolved_resumed", resolved_at: new Date().toISOString(), resolution_summary: "Both parties agreed to resume work.", updated_at: new Date().toISOString() })
+          .eq("id", dispute.dispute_id);
+      }
+
       await supabase.from("jobs").update({ status: "in_progress" }).eq("id", dispute.job_id);
       const resumeMsg = `Both parties have agreed to resume work on this order. The dispute has been closed and the order is back in progress.`;
       await supabase.functions.invoke("admin-order-message", {
