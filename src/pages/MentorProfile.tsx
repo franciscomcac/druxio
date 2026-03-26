@@ -302,25 +302,25 @@ const MentorProfile = () => {
                   <AvailabilityBadge isOnline={mentor.is_online} responseTimeMinutes={(mentor as any).response_time_minutes} />
                 </div>
 
-                {/* Categories */}
-                {categories.length > 0 && (
+                {/* Skills */}
+                {mentor.skills && mentor.skills.length > 0 && (
                   <div className="mb-6">
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Categories</p>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Skills</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {categories.map(cat => (
-                        <Badge key={cat} variant="outline" className="text-xs">{cat}</Badge>
+                      {mentor.skills.map(skill => (
+                        <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Skills */}
-                {mentor.skills && mentor.skills.length > 0 && (
+                {/* Categories */}
+                {categories.length > 0 && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-2 font-medium">Skills</p>
+                    <p className="text-xs text-muted-foreground mb-2 font-medium">Categories</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {mentor.skills.map(skill => (
-                        <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
+                      {categories.map(cat => (
+                        <Badge key={cat} variant="outline" className="text-xs">{cat}</Badge>
                       ))}
                     </div>
                   </div>

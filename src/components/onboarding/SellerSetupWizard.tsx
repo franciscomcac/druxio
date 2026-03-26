@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Tag, Briefcase, Image, DollarSign,
   ArrowRight, ArrowLeft, Check, Loader2,
-  ChevronDown, ChevronUp, Plus, Trash2, ExternalLink,
+  ChevronDown, ChevronUp, Plus, Trash2, ExternalLink, X, Sparkles,
   Gamepad2, Code, Palette, Music, Dumbbell, Globe, Video,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -303,7 +303,59 @@ const PortfolioStep = ({
   );
 };
 
-/* ─── Step 3: Rate & Bio ─── */
+/* ─── Step 3: Skills ─── */
+const SkillsStep = ({
+  skills,
+  setSkills,
+}: {
+  skills: string[];
+  setSkills: React.Dispatch<React.SetStateAction<string[]>>;
+}) => {
+  const [input, setInput] = useState("");
+
+  const addSkill = () => {
+    const trimmed = input.trim();
+    if (!trimmed || skills.includes(trimmed)) return;
+    setSkills((prev) => [...prev, trimmed]);
+    setInput("");
+  };
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Add skills that describe what you're good at. These will appear on your profile.
+      </p>
+      <div className="flex gap-2">
+        <Input
+          placeholder="e.g. React, Video Editing, Coaching..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }}
+        />
+        <Button type="button" size="sm" onClick={addSkill} disabled={!input.trim()} className="gap-1 shrink-0">
+          <Plus className="h-3.5 w-3.5" /> Add
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {skills.map((skill) => (
+          <Badge key={skill} variant="secondary" className="gap-1 text-sm">
+            {skill}
+            <button onClick={() => setSkills((prev) => prev.filter((s) => s !== skill))} className="ml-0.5 hover:text-destructive">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+      {skills.length === 0 && (
+        <p className="text-xs text-muted-foreground text-center py-2">
+          You can always add skills later in Settings
+        </p>
+      )}
+    </div>
+  );
+};
+
+/* ─── Step 4: Rate & Bio ─── */
 const ProfileStep = ({
   hourlyRate,
   setHourlyRate,
@@ -351,17 +403,20 @@ const SellerSetupWizard = ({ userId, onComplete }: SellerSetupWizardProps) => {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
-  // Step 1 state
+   // Step 1 state
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // Step 2 state
   const [portfolioItems, setPortfolioItems] = useState<PortfolioEntry[]>([]);
 
   // Step 3 state
+  const [skills, setSkills] = useState<string[]>([]);
+
+  // Step 4 state
   const [hourlyRate, setHourlyRate] = useState("");
   const [bio, setBio] = useState("");
 
-  const totalSteps = 3;
+  const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
 
   const toggleCategory = (key: string) => {
@@ -394,6 +449,7 @@ const SellerSetupWizard = ({ userId, onComplete }: SellerSetupWizardProps) => {
       const updates: Record<string, any> = {};
       if (hourlyRate) updates.hourly_rate = parseFloat(hourlyRate);
       if (bio.trim()) updates.bio = bio.trim();
+      if (skills.length > 0) updates.skills = skills;
       if (Object.keys(updates).length > 0) {
         await supabase.from("profiles").update(updates).eq("id", userId);
       }
@@ -407,11 +463,12 @@ const SellerSetupWizard = ({ userId, onComplete }: SellerSetupWizardProps) => {
     }
   };
 
-  const stepIcons = [Tag, Image, DollarSign];
-  const stepTitles = ["Choose your services", "Showcase your work", "Set your rate"];
+  const stepIcons = [Tag, Image, Sparkles, DollarSign];
+  const stepTitles = ["Choose your services", "Showcase your work", "Add your skills", "Set your rate"];
   const stepDescs = [
     `Select the services you can offer (${selectedCategories.length} selected)`,
     "Add portfolio items to build trust (optional)",
+    `Tag your skills so buyers can find you (${skills.length} added)`,
     "Set your pricing and write an expert bio (optional)",
   ];
 
@@ -450,7 +507,8 @@ const SellerSetupWizard = ({ userId, onComplete }: SellerSetupWizardProps) => {
             >
               {step === 1 && <CategoryStep selected={selectedCategories} onToggle={toggleCategory} />}
               {step === 2 && <PortfolioStep items={portfolioItems} setItems={setPortfolioItems} />}
-              {step === 3 && <ProfileStep hourlyRate={hourlyRate} setHourlyRate={setHourlyRate} bio={bio} setBio={setBio} />}
+              {step === 3 && <SkillsStep skills={skills} setSkills={setSkills} />}
+              {step === 4 && <ProfileStep hourlyRate={hourlyRate} setHourlyRate={setHourlyRate} bio={bio} setBio={setBio} />}
             </motion.div>
           </AnimatePresence>
 
