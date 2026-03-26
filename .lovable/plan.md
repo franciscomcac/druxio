@@ -1,85 +1,96 @@
 
 
-## Transform the Requests Page into a Dedicated Seller Quotes Dashboard
+## Plan: Implement 5 Features (Reviews Enhancement, Verification Badges, Order Follow-up, Referral Program, Saved Drafts)
 
-### Goal
-Turn the current `/request/:jobId` page into a focused, fast **Quotes Terminal** for sellers. This is where sellers spend most of their time responding to new customer requests, making/updating offers, and managing pending quotes. Orders (paid work) will be handled separately via `/orders/sold` and `/order/:jobId`.
+Based on the user's selection of items 3, 4, 5, 6, and 8 from the previous suggestions.
 
 ---
 
-### What Changes
+### 1. Enhanced Review/Rating System
+**What**: Add verified purchase badges on reviews, helpful vote counts, and seller response capability.
 
-**1. Remove the "Orders" tab from the seller sidebar**
+- Add a `verified_purchase` boolean display on reviews (derived from checking if a completed session exists between reviewer and reviewee)
+- Add a "Helpful" button on each review in `MentorProfile.tsx` (store in a new `review_votes` table)
+- Show a "Verified Purchase" badge next to reviews where the reviewer had a completed order with that expert
+- Allow experts to reply to reviews (add `reply` and `replied_at` columns to `reviews` table)
 
-The seller sidebar in `ActiveRequest.tsx` currently has two tabs: "Quotes" and "Orders". We'll remove the Orders tab entirely since those are already handled by the Sold Orders page (`/orders/sold`) and individual order pages (`/order/:jobId`). The sidebar becomes a flat list of all pending quote conversations -- no tabs needed.
+**DB changes**: 
+- New `review_votes` table (id, review_id, user_id, created_at) with RLS
+- Add `reply` (text, nullable) and `replied_at` (timestamptz, nullable) columns to `reviews`
 
-**2. Redesign the sidebar as a Quotes Dashboard list**
+---
 
-Each sidebar item will show:
-- Buyer name + avatar
-- Job title + category badge
-- Your quoted price + delivery time
-- Time since quote was sent (e.g., "2h ago")
-- Unread message indicator
-- Visual urgency indicator for quotes nearing the 5-day expiry
+### 2. Expert Verification Badges
+**What**: Visual trust indicators on expert profiles showing milestones.
 
-The list will be sorted by: unread first, then most recent activity.
+- Create a `getVerificationBadges()` utility that computes badges from profile data:
+  - "Verified Expert" — completed 10+ orders
+  - "Top Rated" — rating_avg >= 4.8 with 5+ reviews
+  - "Fast Responder" — response_time_minutes <= 10
+  - "Rising Star" — 5+ completed orders, joined < 30 days ago
+- Display badges on `MentorProfile.tsx`, expert cards in `ActiveRequest.tsx`, and `SimilarExperts.tsx`
+- No DB changes needed — computed from existing profile data
 
-**3. Enhance the right panel into a Quote Action Center**
+---
 
-The right panel (currently just "Update Offer" + "Withdraw") becomes a compact, information-dense control panel:
+### 3. Order Completion Follow-up Flow
+**What**: After an order is marked completed, prompt the buyer for a review and suggest related experts.
 
-- **Request Summary**: Job title, category, buyer's budget range, deadline
-- **Your Current Offer**: Price + delivery time displayed prominently
-- **Quick Actions**:
-  - Update offer (price + delivery time form -- already exists, keep it)
-  - Withdraw quote (already exists, keep it)
-- **Quote Status**: Visual indicator showing "Pending", "Expired in Xd", etc.
-- **Buyer Info**: Name, avatar, rating (if available), total spend
+- In `Order.tsx`, after status changes to "completed", show a follow-up card:
+  - Review prompt (already exists as dialog — auto-open it)
+  - "Need more help?" CTA linking to `/post-request` pre-filled with same category
+  - "Similar Experts" section using the `SimilarExperts` component
+- Add a "Was this helpful?" satisfaction survey (thumbs up/down) stored in the session's `notes` field
 
-**4. Add quote expiry countdown**
+---
 
-Each quote sidebar item and the right panel will show how many days remain before the 5-day auto-expiry. Color-coded: green (3+ days), yellow (1-2 days), red (less than 1 day).
+### 4. Referral/Invite Program
+**What**: Users get a unique referral link; both referrer and invitee earn wallet credit on first completed order.
 
-**5. Empty state improvements**
+**DB changes**:
+- New `referrals` table: id, referrer_id (uuid), referred_email (text), referred_user_id (uuid, nullable), status (pending/registered/rewarded), reward_amount (numeric, default 2.00), created_at
+- Add `referred_by` column to `profiles` table (uuid, nullable)
+- RLS: users can view/create their own referrals; system updates status
 
-When no pending quotes exist, show a motivational empty state: "No pending quotes -- browse open requests to start quoting" with a CTA to go to the dashboard's open requests feed.
+**Implementation**:
+- New `/settings` tab or section: "Invite Friends" with unique link (`druxio.lovable.app/?ref=USER_ID`)
+- On signup, detect `ref` param from URL, store in `profiles.referred_by` and create referral record
+- Edge function or DB trigger: when referred user completes first order, credit both wallets with bonus (e.g. $2.00)
+- Dashboard widget showing referral stats (invited, registered, earned)
 
-**6. Filter out non-pending quotes from the sidebar**
+---
 
-Only show quotes where `quoteStatus === 'pending'` AND `jobStatus === 'open'`. Rejected, expired, and accepted quotes should not appear here (they're handled elsewhere).
+### 5. Saved Drafts for Task Posting
+**What**: Auto-save PostRequest form state so users don't lose progress.
+
+- In `PostRequest.tsx`, debounce-save form state to `localStorage` every 3 seconds
+- On page load, check for saved draft and show a "Resume draft?" banner
+- Clear draft on successful submission
+- Store: category, subcategory, title, description, budget, deadline, template fields
+- No DB changes — purely client-side with localStorage
 
 ---
 
 ### Technical Details
 
-#### File: `src/pages/ActiveRequest.tsx`
+**Files to create**:
+- `src/lib/verification-badges.ts` — badge computation logic
+- `src/components/experts/VerificationBadges.tsx` — badge display component
+- `src/components/order/OrderFollowUp.tsx` — post-completion follow-up card
+- `src/components/referral/ReferralSection.tsx` — invite UI for settings
+- `src/hooks/use-draft.ts` — localStorage draft auto-save hook
 
-**Seller sidebar changes:**
-- Remove the `Tabs` component wrapping "Quotes" / "Orders"
-- Replace with a direct `ScrollArea` list of `quoteConvos` only
-- Remove `sellerTab` state and `orderConvos` filtering
-- Update sidebar header from "My Orders" to "Quotes"
-- Add expiry countdown per item using `differenceInDays(addDays(new Date(quote.created_at), 5), new Date())`
-- Sort sidebar: unread messages first, then by most recent `lastMessageAt`
+**Files to modify**:
+- `src/pages/MentorProfile.tsx` — verified badges, review replies, helpful votes
+- `src/pages/Order.tsx` — follow-up flow after completion
+- `src/pages/PostRequest.tsx` — draft auto-save/restore
+- `src/pages/Settings.tsx` — referral tab
+- `src/pages/Auth.tsx` — capture `ref` param on signup
+- `src/components/experts/SimilarExperts.tsx` — add verification badges
 
-**Right panel enhancements:**
-- Add buyer's budget range display (`budget_min` - `budget_max`) from job data (need to fetch and store in `SellerConvo`)
-- Add expiry countdown prominently at the top
-- Add buyer rating/total spend if available
-- Keep existing Update Offer form and Withdraw button
-- Add a quick "Go to Dashboard" link in the header for browsing new requests
-
-**Sidebar item redesign:**
-- Add a small colored dot for expiry urgency (green/yellow/red)
-- Show quote age: "Quoted 2h ago"
-- Slightly larger touch targets for mobile-friendliness
-
-#### Data changes to `SellerConvo` interface:
-- Add `budgetMin: number` and `budgetMax: number` fields
-- Add `quoteCreatedAt: string` field (already available from quotes query, just need to store it)
-- These get populated from the existing `loadSellerConvos` function where we already fetch `budget_min` and `budget_max` from job data
-
-#### No database changes needed
-All data is already available. This is purely a frontend restructuring.
+**Database migrations**:
+1. `review_votes` table + RLS
+2. `reviews` table: add `reply`, `replied_at` columns
+3. `referrals` table + RLS
+4. `profiles` table: add `referred_by` column
 
