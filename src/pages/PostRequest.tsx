@@ -314,6 +314,29 @@ const PostRequest = () => {
     return () => clearInterval(interval);
   }, []);
   const [templateData, setTemplateData] = useState<Record<string, string>>({});
+
+  // Auto-save draft
+  useEffect(() => {
+    if (wizardStep === "waiting" || wizardStep === "matching") return;
+    if (title || description) {
+      saveDraft({ broadCategory, category, title, description, deadlineValue, deadlineUnit: deadlineUnit, templateData });
+    }
+  }, [title, description, category, broadCategory, deadlineValue, deadlineUnit, templateData]);
+
+  // Restore draft handler
+  const handleResumeDraft = () => {
+    const draft = loadDraft();
+    if (!draft) return;
+    if (draft.broadCategory) setBroadCategory(draft.broadCategory);
+    if (draft.category) setCategory(draft.category);
+    if (draft.title) setTitle(draft.title);
+    if (draft.description) setDescription(draft.description);
+    if (draft.deadlineValue) setDeadlineValue(draft.deadlineValue);
+    if (draft.deadlineUnit) setDeadlineUnit(draft.deadlineUnit as any);
+    if (draft.templateData) setTemplateData(draft.templateData);
+    setWizardStep("details");
+    clearDraft();
+  };
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<{
     title: string;
