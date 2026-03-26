@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useDraft } from "@/hooks/use-draft";
 import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CategoryTemplateFields from "@/components/post-request/CategoryTemplateFields";
@@ -263,6 +264,7 @@ const PostRequest = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { checkContent } = useModeration();
+  const { hasDraft, saveDraft, loadDraft, clearDraft } = useDraft();
 
   const [wizardStep, setWizardStep] = useState<"choose-method" | "auto-match" | "category" | "subcategory" | "ai-refine" | "details" | "waiting" | "matching">("choose-method");
   const [autoMatchLoading, setAutoMatchLoading] = useState(false);
@@ -312,6 +314,29 @@ const PostRequest = () => {
     return () => clearInterval(interval);
   }, []);
   const [templateData, setTemplateData] = useState<Record<string, string>>({});
+
+  // Auto-save draft
+  useEffect(() => {
+    if (wizardStep === "waiting" || wizardStep === "matching") return;
+    if (title || description) {
+      saveDraft({ broadCategory, category, title, description, deadlineValue, deadlineUnit: deadlineUnit, templateData });
+    }
+  }, [title, description, category, broadCategory, deadlineValue, deadlineUnit, templateData]);
+
+  // Restore draft handler
+  const handleResumeDraft = () => {
+    const draft = loadDraft();
+    if (!draft) return;
+    if (draft.broadCategory) setBroadCategory(draft.broadCategory);
+    if (draft.category) setCategory(draft.category);
+    if (draft.title) setTitle(draft.title);
+    if (draft.description) setDescription(draft.description);
+    if (draft.deadlineValue) setDeadlineValue(draft.deadlineValue);
+    if (draft.deadlineUnit) setDeadlineUnit(draft.deadlineUnit as any);
+    if (draft.templateData) setTemplateData(draft.templateData);
+    setWizardStep("details");
+    clearDraft();
+  };
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState<{
     title: string;
@@ -837,6 +862,7 @@ const PostRequest = () => {
 
       setOnlineCount(onlineSellers);
       setJobId(data.id);
+      clearDraft();
       setMatchingData({ onlineSellers, avgResponseMin });
       setWizardStep("matching");
       setLoading(false);
@@ -940,6 +966,17 @@ const PostRequest = () => {
             <Button variant="ghost" className="mb-4 md:mb-6 gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/[0.06] text-sm" onClick={() => navigate("/")}>
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
+
+            {/* Draft banner */}
+            {hasDraft && (
+              <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/[0.04] px-4 py-3">
+                <p className="text-sm text-foreground">📝 You have an unfinished draft</p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={clearDraft}>Discard</Button>
+                  <Button size="sm" onClick={handleResumeDraft}>Resume</Button>
+                </div>
+              </div>
+            )}
 
             <div className="mb-6 md:mb-10 text-center">
               <h1 className="mb-2 md:mb-3 text-2xl md:text-3xl font-bold text-foreground">How would you like to start?</h1>

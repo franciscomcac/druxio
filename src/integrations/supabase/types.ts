@@ -366,6 +366,7 @@ export type Database = {
           is_online: boolean | null
           location: string | null
           rating_avg: number | null
+          referred_by: string | null
           response_time_minutes: number | null
           skills: string[] | null
           stripe_connect_id: string | null
@@ -390,6 +391,7 @@ export type Database = {
           is_online?: boolean | null
           location?: string | null
           rating_avg?: number | null
+          referred_by?: string | null
           response_time_minutes?: number | null
           skills?: string[] | null
           stripe_connect_id?: string | null
@@ -414,6 +416,7 @@ export type Database = {
           is_online?: boolean | null
           location?: string | null
           rating_avg?: number | null
+          referred_by?: string | null
           response_time_minutes?: number | null
           skills?: string[] | null
           stripe_connect_id?: string | null
@@ -467,12 +470,73 @@ export type Database = {
           },
         ]
       }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_email: string | null
+          referred_user_id: string | null
+          referrer_id: string
+          reward_amount: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_id: string
+          reward_amount?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_email?: string | null
+          referred_user_id?: string | null
+          referrer_id?: string
+          reward_amount?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      review_votes: {
+        Row: {
+          created_at: string
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           comment: string | null
           created_at: string | null
           id: string
           rating: number
+          replied_at: string | null
+          reply: string | null
           reviewee_id: string
           reviewer_id: string
           session_id: string
@@ -482,6 +546,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           rating: number
+          replied_at?: string | null
+          reply?: string | null
           reviewee_id: string
           reviewer_id: string
           session_id: string
@@ -491,6 +557,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           rating?: number
+          replied_at?: string | null
+          reply?: string | null
           reviewee_id?: string
           reviewer_id?: string
           session_id?: string

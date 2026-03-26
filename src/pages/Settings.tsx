@@ -16,10 +16,11 @@ import TimezoneSelect from "@/components/settings/TimezoneSelect";
 import PortfolioSection from "@/components/experts/PortfolioSection";
 import {
   User, Bell, Shield, Loader2, Save, Camera, Clock, Tag, X,
-  ChevronDown, ChevronUp, Wifi, WifiOff, Image,
+  ChevronDown, ChevronUp, Wifi, WifiOff, Image, Gift,
   Gamepad2, Code, Briefcase, Palette, Music, Dumbbell, Globe, Video, MessageSquarePlus,
   Eye, EyeOff, Mail, Lock,
 } from "lucide-react";
+import ReferralSection from "@/components/referral/ReferralSection";
 
 const CATEGORY_TREE = [
   {
@@ -513,6 +514,7 @@ const Settings = () => {
                 <TabsTrigger value="categories" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Tag className="h-4 w-4" /> Categories</TabsTrigger>
               </>
             )}
+            <TabsTrigger value="referral" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Gift className="h-4 w-4" /> Referral</TabsTrigger>
             <TabsTrigger value="notifications" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Bell className="h-4 w-4" /> Notifications</TabsTrigger>
             <TabsTrigger value="security" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"><Shield className="h-4 w-4" /> Security</TabsTrigger>
             
@@ -587,6 +589,10 @@ const Settings = () => {
             </TabsContent>
           )}
 
+
+          <TabsContent value="referral">
+            {profile?.id && <ReferralSection userId={profile.id} />}
+          </TabsContent>
 
           <TabsContent value="notifications">
             <Card>
