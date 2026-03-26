@@ -133,16 +133,25 @@ const Order = () => {
         .eq("id", jobData.buyer_id).single();
       setBuyerProfile(bp);
 
+      // Find session linked to this specific job
       const { data: sessionData } = await supabase
         .from("sessions").select("id")
         .eq("mentee_id", jobData.buyer_id)
         .eq("mentor_id", quoteData.expert_id)
+        .contains("categories", [jobId])
         .order("created_at", { ascending: false }).limit(1).maybeSingle();
 
-      if (sessionData) {
-        setSessionId(sessionData.id);
+      // Fallback: find any session between the two users if job-specific not found
+      const finalSession = sessionData || (await supabase
+        .from("sessions").select("id")
+        .eq("mentee_id", jobData.buyer_id)
+        .eq("mentor_id", quoteData.expert_id)
+        .order("created_at", { ascending: false }).limit(1).maybeSingle()).data;
+
+      if (finalSession) {
+        setSessionId(finalSession.id);
         const { data: existingReview } = await supabase
-          .from("reviews").select("id").eq("session_id", sessionData.id)
+          .from("reviews").select("id").eq("session_id", finalSession.id)
           .eq("reviewer_id", user.id).maybeSingle();
         if (existingReview) setHasReviewed(true);
       }
