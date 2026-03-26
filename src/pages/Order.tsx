@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow, differenceInSeconds, addMinutes, addDays, isPast } from "date-fns";
 import OrderFollowUp from "@/components/order/OrderFollowUp";
+import DisputePanel from "@/components/order/DisputePanel";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -440,6 +441,13 @@ const Order = () => {
     if (!disputeReason.trim() || !jobId) return;
     setDisputeLoading(true);
     try {
+      // Insert into disputes table
+      await (supabase.from("disputes" as any) as any).insert({
+        job_id: jobId,
+        raised_by: userId!,
+        reason: disputeReason.trim(),
+      });
+
       // Store dispute notification for the buyer (record)
       await supabase.from("notifications").insert({
         user_id: userId!, type: "dispute", title: "Dispute raised",
@@ -470,7 +478,7 @@ const Order = () => {
       // Email admins about dispute
       sendOrderEmail("dispute_raised", { reason: disputeReason.trim() });
 
-      toast({ title: "Dispute raised", description: "Our team will review your case shortly." });
+      toast({ title: "Dispute raised", description: "You have 24 hours to negotiate with the seller before admin steps in." });
       setDisputeOpen(false);
       setJob((prev: any) => prev ? { ...prev, status: "disputed" } : prev);
     } catch (err: any) {
