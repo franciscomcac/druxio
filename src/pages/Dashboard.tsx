@@ -115,31 +115,52 @@ const Dashboard = () => {
   useEffect(() => {
     let isMounted = true;
     let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
+    let currentUserId: string | null = null;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      fetchData(session.user.id);
-
-      // Realtime: update dashboard when jobs or quotes change
+    const setupRealtime = (userId: string) => {
+      if (realtimeChannel) supabase.removeChannel(realtimeChannel);
       realtimeChannel = supabase
         .channel("dashboard-realtime")
-        .on("postgres_changes", { event: "*", schema: "public", table: "jobs", filter: `buyer_id=eq.${session.user.id}` }, () => {
-          if (isMounted) fetchData(session.user.id);
+        .on("postgres_changes", { event: "*", schema: "public", table: "jobs", filter: `buyer_id=eq.${userId}` }, () => {
+          if (isMounted) fetchData(userId);
         })
         .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
-          if (isMounted) fetchData(session.user.id);
+          if (isMounted) fetchData(userId);
         })
         .subscribe();
+    };
+
+    const initWithSession = (userId: string) => {
+      if (!isMounted || userId === currentUserId) return;
+      currentUserId = userId;
+      fetchData(userId);
+      setupRealtime(userId);
+    };
+
+    // Listen to auth state changes — handles both existing sessions and fresh logins
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!isMounted) return;
+      if (event === 'SIGNED_OUT') {
+        navigate("/");
+        return;
+      }
+      if (session?.user) {
+        initWithSession(session.user.id);
+      }
     });
 
-    // Only listen for sign-out events (not initial load — that's handled above)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    // Also check for existing session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (!isMounted) return;
-      if (event === 'SIGNED_OUT') navigate("/");
+      if (session?.user) {
+        initWithSession(session.user.id);
+      } else {
+        // Give onAuthStateChange a moment to fire (fresh signup race condition)
+        setTimeout(() => {
+          if (!isMounted || currentUserId) return;
+          navigate("/auth");
+        }, 1500);
+      }
     });
 
     return () => {
