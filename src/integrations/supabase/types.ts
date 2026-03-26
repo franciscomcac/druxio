@@ -79,6 +79,65 @@ export type Database = {
           },
         ]
       }
+      disputes: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          escalated_at: string | null
+          evidence_buyer: string[] | null
+          evidence_seller: string[] | null
+          id: string
+          job_id: string
+          negotiation_deadline: string
+          raised_by: string
+          reason: string
+          resolution_summary: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["dispute_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          escalated_at?: string | null
+          evidence_buyer?: string[] | null
+          evidence_seller?: string[] | null
+          id?: string
+          job_id: string
+          negotiation_deadline?: string
+          raised_by: string
+          reason: string
+          resolution_summary?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          escalated_at?: string | null
+          evidence_buyer?: string[] | null
+          evidence_seller?: string[] | null
+          id?: string
+          job_id?: string
+          negotiation_deadline?: string
+          raised_by?: string
+          reason?: string
+          resolution_summary?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       expert_categories: {
         Row: {
           category: string
@@ -962,6 +1021,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "mentor" | "mentee"
+      dispute_status:
+        | "negotiation"
+        | "escalated"
+        | "resolved_refund"
+        | "resolved_release"
+        | "resolved_resumed"
       match_status: "pending" | "accepted" | "declined" | "expired"
       session_status:
         | "pending"
@@ -1104,6 +1169,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "mentor", "mentee"],
+      dispute_status: [
+        "negotiation",
+        "escalated",
+        "resolved_refund",
+        "resolved_release",
+        "resolved_resumed",
+      ],
       match_status: ["pending", "accepted", "declined", "expired"],
       session_status: ["pending", "accepted", "live", "completed", "cancelled"],
       transaction_status: ["pending", "completed", "failed"],

@@ -30,7 +30,7 @@ import {
   Headphones, Send, Bot, User, MessageSquarePlus, Star, Trash2,
   Flag, ShieldAlert, CreditCard,
 } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow, format, isPast } from "date-fns";
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -46,6 +46,11 @@ interface Dispute {
   created_at: string;
   quote_price: number;
   notification_id: string;
+  dispute_id: string;
+  dispute_status: string;
+  evidence_buyer: string[];
+  evidence_seller: string[];
+  negotiation_deadline: string;
 }
 
 interface OrderRow {
@@ -336,46 +341,74 @@ const Admin = () => {
 
   const loadDisputes = async () => {
     setDisputesLoading(true);
+
+    // Load from disputes table first, fall back to jobs for legacy
+    const { data: disputeRecords } = await (supabase.from("disputes" as any) as any)
+      .select("*")
+      .not("status", "in", '("resolved_refund","resolved_release","resolved_resumed")')
+      .order("created_at", { ascending: false });
+
+    // Also load disputed jobs without a disputes record (legacy)
     const { data: disputedJobs } = await supabase
       .from("jobs")
       .select("*")
       .eq("status", "disputed")
       .order("updated_at", { ascending: false });
 
-    if (!disputedJobs) { setDisputesLoading(false); return; }
+    if (!disputedJobs && !disputeRecords) { setDisputesLoading(false); return; }
+
+    // Build a set of job IDs that have dispute records
+    const disputeJobIds = new Set((disputeRecords || []).map((d: any) => d.job_id));
+
+    // Merge: dispute records + legacy disputed jobs without records
+    const allJobIds = new Set([
+      ...(disputeRecords || []).map((d: any) => d.job_id),
+      ...(disputedJobs || []).filter(j => !disputeJobIds.has(j.id)).map(j => j.id),
+    ]);
 
     const enriched: Dispute[] = await Promise.all(
-      disputedJobs.map(async (job) => {
+      Array.from(allJobIds).map(async (jobId) => {
+        const disputeRecord = (disputeRecords || []).find((d: any) => d.job_id === jobId);
+        const job = (disputedJobs || []).find(j => j.id === jobId);
+
+        // Load job if not in disputedJobs
+        const jobData = job || (await supabase.from("jobs").select("*").eq("id", jobId).single()).data;
+        if (!jobData) return null;
+
         const { data: quote } = await supabase
           .from("quotes")
           .select("expert_id, price")
-          .eq("job_id", job.id)
+          .eq("job_id", jobId)
           .eq("status", "accepted")
           .maybeSingle();
 
-        const [buyerProfile, sellerProfile, disputeNotif] = await Promise.all([
-          supabase.from("profiles").select("display_name").eq("id", job.buyer_id).single(),
+        const [buyerProfile, sellerProfile] = await Promise.all([
+          supabase.from("profiles").select("display_name").eq("id", jobData.buyer_id).single(),
           quote ? supabase.from("profiles").select("display_name").eq("id", quote.expert_id).single() : Promise.resolve({ data: null }),
-          supabase.from("notifications").select("id, message, created_at").eq("type", "dispute").eq("user_id", job.buyer_id).contains("data", { job_id: job.id }).order("created_at", { ascending: false }).limit(1).maybeSingle(),
         ]);
 
         return {
-          job_id: job.id,
-          job_title: job.title,
-          job_category: job.category,
-          buyer_id: job.buyer_id,
+          job_id: jobId,
+          job_title: jobData.title,
+          job_category: jobData.category,
+          buyer_id: jobData.buyer_id,
           buyer_name: buyerProfile.data?.display_name || "Unknown",
           seller_id: quote?.expert_id || "",
           seller_name: sellerProfile.data?.display_name || "Unknown",
-          reason: disputeNotif.data?.message || "No reason provided",
-          created_at: job.updated_at || job.created_at || "",
+          reason: disputeRecord?.reason || "No reason provided",
+          created_at: disputeRecord?.created_at || jobData.updated_at || jobData.created_at || "",
           quote_price: quote?.price || 0,
-          notification_id: disputeNotif.data?.id || "",
-        };
+          notification_id: "",
+          dispute_id: disputeRecord?.id || "",
+          dispute_status: disputeRecord?.status || "negotiation",
+          evidence_buyer: disputeRecord?.evidence_buyer || [],
+          evidence_seller: disputeRecord?.evidence_seller || [],
+          negotiation_deadline: disputeRecord?.negotiation_deadline || "",
+        } as Dispute;
       })
     );
 
-    setDisputes(enriched);
+    setDisputes(enriched.filter(Boolean) as Dispute[]);
     setDisputesLoading(false);
   };
 
@@ -645,6 +678,13 @@ const Admin = () => {
 
   const handleDisputeEscalate = async (dispute: Dispute) => {
     try {
+      // Update disputes table
+      if (dispute.dispute_id) {
+        await (supabase.from("disputes" as any) as any)
+          .update({ status: "escalated", escalated_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .eq("id", dispute.dispute_id);
+      }
+
       const escalateMsg = `📋 PROOF REQUEST: This dispute has been escalated by an admin. Both parties are required to submit evidence supporting their side within 48 hours.\n\n• Screenshots, files, or any relevant documentation\n• A clear summary of your position\n\nFailure to provide proof may result in a decision favoring the other party.`;
       await supabase.functions.invoke("admin-order-message", {
         body: { jobId: dispute.job_id, message: escalateMsg },
@@ -664,6 +704,7 @@ const Admin = () => {
         }),
       ]);
       toast({ title: "Dispute escalated", description: "Both parties have been notified to submit proof." });
+      loadDisputes();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
@@ -671,6 +712,13 @@ const Admin = () => {
 
   const handleDisputeResume = async (dispute: Dispute) => {
     try {
+      // Update disputes table
+      if (dispute.dispute_id) {
+        await (supabase.from("disputes" as any) as any)
+          .update({ status: "resolved_resumed", resolved_at: new Date().toISOString(), resolution_summary: "Both parties agreed to resume work.", updated_at: new Date().toISOString() })
+          .eq("id", dispute.dispute_id);
+      }
+
       await supabase.from("jobs").update({ status: "in_progress" }).eq("id", dispute.job_id);
       const resumeMsg = `Both parties have agreed to resume work on this order. The dispute has been closed and the order is back in progress.`;
       await supabase.functions.invoke("admin-order-message", {
@@ -787,6 +835,20 @@ const Admin = () => {
       supabase.functions.invoke("admin-order-message", {
         body: { jobId: selectedDispute.job_id, message: adminMsg },
       }).catch(console.error);
+
+      // Update disputes table
+      if (selectedDispute.dispute_id) {
+        const resolvedStatus = action === "refund" ? "resolved_refund" : "resolved_release";
+        await (supabase.from("disputes" as any) as any)
+          .update({
+            status: resolvedStatus,
+            resolved_at: new Date().toISOString(),
+            resolution_summary: disputeNote.trim() || (action === "refund" ? "Refund issued to buyer" : "Payment released to seller"),
+            admin_notes: disputeNote.trim() || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", selectedDispute.dispute_id);
+      }
 
       setSelectedDispute(null);
       setDisputeNote("");
@@ -1105,6 +1167,9 @@ const Admin = () => {
                              <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
                              <h3 className="font-semibold text-foreground text-sm">{d.job_title}</h3>
                              <Badge variant="outline" className="text-[10px]">{d.job_category}</Badge>
+                             <Badge variant={d.dispute_status === "escalated" ? "destructive" : "secondary"} className="text-[10px] capitalize">
+                               {d.dispute_status.replace("_", " ")}
+                             </Badge>
                            </div>
                            <p className="text-xs sm:text-sm text-muted-foreground mb-2">{d.reason}</p>
                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
@@ -1113,6 +1178,22 @@ const Admin = () => {
                              <span>€{d.quote_price.toFixed(2)}</span>
                              <span>{formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}</span>
                            </div>
+                           {/* Evidence counts */}
+                           {(d.evidence_buyer.length > 0 || d.evidence_seller.length > 0) && (
+                             <div className="flex gap-3 mt-1.5 text-[10px] text-muted-foreground">
+                               {d.evidence_buyer.length > 0 && (
+                                 <span>📄 Buyer evidence: {d.evidence_buyer.length}</span>
+                               )}
+                               {d.evidence_seller.length > 0 && (
+                                 <span>📄 Seller evidence: {d.evidence_seller.length}</span>
+                               )}
+                             </div>
+                           )}
+                           {d.negotiation_deadline && d.dispute_status === "negotiation" && (
+                             <p className="text-[10px] text-muted-foreground mt-1">
+                               ⏰ Negotiation {isPast(new Date(d.negotiation_deadline)) ? "expired" : `expires ${formatDistanceToNow(new Date(d.negotiation_deadline), { addSuffix: true })}`}
+                             </p>
+                           )}
                          </div>
                          <div className="flex flex-wrap gap-2">
                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => navigate(`/order/${d.job_id}`)}>
@@ -1121,9 +1202,11 @@ const Admin = () => {
                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => handleDisputeResume(d)}>
                              <RefreshCw className="h-3 w-3" /> Resume
                            </Button>
-                           <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-chart-2 hover:bg-chart-2/10" onClick={() => handleDisputeEscalate(d)}>
-                             <AlertTriangle className="h-3 w-3" /> Escalate
-                           </Button>
+                           {d.dispute_status === "negotiation" && (
+                             <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-chart-2 hover:bg-chart-2/10" onClick={() => handleDisputeEscalate(d)}>
+                               <AlertTriangle className="h-3 w-3" /> Escalate
+                             </Button>
+                           )}
                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8 text-destructive hover:bg-destructive/10" onClick={() => { setSelectedDispute(d); setDisputeAction("refund"); }}>
                              <DollarSign className="h-3 w-3" /> Refund
                            </Button>
