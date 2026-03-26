@@ -134,6 +134,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const [sendingQuote, setSendingQuote] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [previewJob, setPreviewJob] = useState<Job | null>(null);
+  const [previewLowestPrice, setPreviewLowestPrice] = useState<number | null>(null);
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
@@ -153,6 +154,21 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   }, []);
 
   const showTutorialDemoJob = isTutorialActive;
+
+  useEffect(() => {
+    if (!previewJob) { setPreviewLowestPrice(null); return; }
+    const fetchLowest = async () => {
+      const { data } = await supabase
+        .from("quotes")
+        .select("price")
+        .eq("job_id", previewJob.id)
+        .eq("status", "pending")
+        .order("price", { ascending: true })
+        .limit(1);
+      setPreviewLowestPrice(data && data.length > 0 ? Number(data[0].price) : null);
+    };
+    fetchLowest();
+  }, [previewJob?.id]);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -492,9 +508,13 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             {/* Key specs grid */}
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-lg border border-border bg-background/40 p-3 space-y-0.5">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Budget</p>
-                <p className="text-lg font-bold text-primary">{previewJob ? `€${previewJob.budget_max}` : "—"}</p>
-                <p className="text-[10px] text-muted-foreground">Maximum offered</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Lowest Price</p>
+                <p className="text-lg font-bold text-primary">
+                  {previewLowestPrice !== null ? `€${previewLowestPrice.toFixed(2)}` : "—"}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {previewLowestPrice !== null ? "Current lowest quote" : "No quotes yet"}
+                </p>
               </div>
               <div className="rounded-lg border border-border bg-background/40 p-3 space-y-0.5">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Max Delivery</p>
