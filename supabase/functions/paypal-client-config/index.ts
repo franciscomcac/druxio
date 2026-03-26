@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const clientId = Deno.env.get("PAYPAL_CLIENT_ID") || Deno.env.get("VITE_PAYPAL_CLIENT_ID");
+    const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
 
     if (!clientId) {
       return new Response(JSON.stringify({ error: "PAYPAL_CLIENT_ID is not configured" }), {

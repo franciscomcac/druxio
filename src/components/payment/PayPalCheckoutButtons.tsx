@@ -8,7 +8,7 @@ interface PayPalCheckoutButtonsProps {
   onError: () => void;
 }
 
-const initialClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID || "";
+const initialClientId = "";
 
 const PayPalCheckoutButtons = ({ createOrder, onApprove, onError }: PayPalCheckoutButtonsProps) => {
   const [clientId, setClientId] = useState(initialClientId);
