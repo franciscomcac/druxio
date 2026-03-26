@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
     }
 
     const userId = userData.user.id;
-    const { quoteId, jobId } = await req.json();
+    const { quoteId, jobId, walletDeduction } = await req.json();
 
     if (!quoteId || !jobId) {
       return new Response(JSON.stringify({ error: "Missing quoteId or jobId" }), {
@@ -132,7 +132,55 @@ Deno.serve(async (req) => {
 
     const basePrice = Number(quote.price);
     const platformFee = Math.round(basePrice * PLATFORM_RATE * 100) / 100;
-    const total = Math.round((basePrice + platformFee) * 100) / 100;
+    const totalBeforeWallet = Math.round((basePrice + platformFee) * 100) / 100;
+
+    // Validate wallet deduction
+    const walletAmount = Math.max(0, Math.min(Number(walletDeduction) || 0, totalBeforeWallet));
+
+    // Verify user actually has this balance
+    if (walletAmount > 0) {
+      const serviceClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      const { data: txns } = await serviceClient
+        .from("transactions")
+        .select("type, amount, status")
+        .eq("user_id", userId)
+        .eq("status", "completed");
+
+      if (txns) {
+        const deposited = txns.filter(t => t.type === "deposit").reduce((s, t) => s + Number(t.amount), 0);
+        const earned = txns.filter(t => t.type === "session_earning").reduce((s, t) => s + Number(t.amount), 0);
+        const refunded = txns.filter(t => t.type === "refund").reduce((s, t) => s + Number(t.amount), 0);
+        const spent = txns.filter(t => t.type === "session_payment").reduce((s, t) => s + Number(t.amount), 0);
+        const withdrawn = txns.filter(t => t.type === "withdrawal").reduce((s, t) => s + Number(t.amount), 0);
+        const actualBalance = Math.round((deposited + earned + refunded - spent - withdrawn) * 100) / 100;
+
+        if (walletAmount > actualBalance + 0.01) {
+          return new Response(JSON.stringify({ error: "Insufficient wallet balance" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+    }
+
+    const paypalTotal = Math.round((totalBeforeWallet - walletAmount) * 100) / 100;
+
+    // If wallet covers everything, skip PayPal entirely
+    if (paypalTotal <= 0) {
+      return new Response(
+        JSON.stringify({
+          paypalOrderId: null,
+          orderId: null,
+          walletOnly: true,
+          mode: "wallet",
+          breakdown: { basePrice, platformFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal: 0 },
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     const { accessToken, baseUrl, mode } = await getPayPalAuth();
 
@@ -152,19 +200,16 @@ Deno.serve(async (req) => {
             quote_id: quoteId,
             buyer_id: userId,
             seller_id: quote.expert_id,
+            wallet_deduction: walletAmount,
           }),
           amount: {
             currency_code: "EUR",
-            value: total.toFixed(2),
-            breakdown: {
-              item_total: { currency_code: "EUR", value: basePrice.toFixed(2) },
-              handling: { currency_code: "EUR", value: platformFee.toFixed(2) },
-            },
+            value: paypalTotal.toFixed(2),
           },
           items: [{
             name: job.title || "Service Payment",
             quantity: "1",
-            unit_amount: { currency_code: "EUR", value: basePrice.toFixed(2) },
+            unit_amount: { currency_code: "EUR", value: paypalTotal.toFixed(2) },
             category: "DIGITAL_GOODS",
           }],
         }],
@@ -194,7 +239,7 @@ Deno.serve(async (req) => {
         paypalOrderId: orderData.id,
         orderId: orderData.id,
         mode,
-        breakdown: { basePrice, platformFee, total },
+        breakdown: { basePrice, platformFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal },
       }),
       {
         status: 200,
