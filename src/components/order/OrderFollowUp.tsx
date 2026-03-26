@@ -88,7 +88,7 @@ const OrderFollowUp = ({
         </CardContent>
       </Card>
 
-      <SimilarExperts currentExpertId={expertId} skills={expertSkills} />
+      
     </div>
   );
 };
