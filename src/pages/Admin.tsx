@@ -836,6 +836,20 @@ const Admin = () => {
         body: { jobId: selectedDispute.job_id, message: adminMsg },
       }).catch(console.error);
 
+      // Update disputes table
+      if (selectedDispute.dispute_id) {
+        const resolvedStatus = action === "refund" ? "resolved_refund" : "resolved_release";
+        await (supabase.from("disputes" as any) as any)
+          .update({
+            status: resolvedStatus,
+            resolved_at: new Date().toISOString(),
+            resolution_summary: disputeNote.trim() || (action === "refund" ? "Refund issued to buyer" : "Payment released to seller"),
+            admin_notes: disputeNote.trim() || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", selectedDispute.dispute_id);
+      }
+
       setSelectedDispute(null);
       setDisputeNote("");
       setDisputeAction(null);
