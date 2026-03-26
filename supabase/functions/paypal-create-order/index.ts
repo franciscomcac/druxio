@@ -199,7 +199,7 @@ Deno.serve(async (req) => {
           orderId: null,
           walletOnly: true,
           mode: "wallet",
-          breakdown: { basePrice, platformFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal: 0 },
+          breakdown: { basePrice, platformFee, paypalFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal: 0 },
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -256,7 +256,7 @@ Deno.serve(async (req) => {
         paypalOrderId: orderData.id,
         orderId: orderData.id,
         mode,
-        breakdown: { basePrice, platformFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal },
+        breakdown: { basePrice, platformFee, paypalFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal },
       }),
       {
         status: 200,
