@@ -159,6 +159,8 @@ const NotificationsDropdown = () => {
       case "dispute":
       case "dispute_raised":
         return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+      case "dispute_escalated":
+        return <AlertTriangle className="h-4 w-4 text-destructive" />;
       case "dispute_resolved":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "refund_issued":
