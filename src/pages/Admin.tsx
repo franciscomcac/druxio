@@ -30,7 +30,7 @@ import {
   Headphones, Send, Bot, User, MessageSquarePlus, Star, Trash2,
   Flag, ShieldAlert, CreditCard,
 } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+import { formatDistanceToNow, format, isPast } from "date-fns";
 
 // ─── Types ───────────────────────────────────────────────────────
 
