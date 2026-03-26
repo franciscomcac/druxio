@@ -403,17 +403,20 @@ const SellerSetupWizard = ({ userId, onComplete }: SellerSetupWizardProps) => {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
-  // Step 1 state
+   // Step 1 state
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // Step 2 state
   const [portfolioItems, setPortfolioItems] = useState<PortfolioEntry[]>([]);
 
   // Step 3 state
+  const [skills, setSkills] = useState<string[]>([]);
+
+  // Step 4 state
   const [hourlyRate, setHourlyRate] = useState("");
   const [bio, setBio] = useState("");
 
-  const totalSteps = 3;
+  const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
 
   const toggleCategory = (key: string) => {
