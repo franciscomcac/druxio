@@ -193,7 +193,7 @@ const NotificationsDropdown = () => {
       <DropdownMenuContent align="end" className="w-80">
         <div className="flex items-center justify-between px-3 py-2">
           <h3 className="font-semibold text-foreground">Notifications</h3>
-          {notifications.length > 0 && (
+          {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
@@ -211,25 +211,23 @@ const NotificationsDropdown = () => {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
-          ) : notifications.length === 0 ? (
+          ) : notifications.filter(n => !n.is_read).length === 0 ? (
             <div className="py-8 text-center">
               <Bell className="mx-auto h-8 w-8 text-muted-foreground/50" />
-              <p className="mt-2 text-sm text-muted-foreground">No notifications yet</p>
+              <p className="mt-2 text-sm text-muted-foreground">No new notifications</p>
             </div>
           ) : (
-            notifications.map((notification) => (
+            notifications.filter(n => !n.is_read).map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className={`flex cursor-pointer gap-3 p-3 ${
-                  !notification.is_read ? "bg-accent/50" : ""
-                }`}
+                className="flex cursor-pointer gap-3 p-3 bg-accent/50"
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
                   {getNotificationIcon(notification.type)}
                 </div>
                 <div className="flex-1 space-y-1">
-                  <p className={`text-sm leading-tight ${!notification.is_read ? "font-medium" : ""}`}>
+                  <p className="text-sm leading-tight font-medium">
                     {notification.title}
                   </p>
                   {notification.message && (
@@ -241,9 +239,7 @@ const NotificationsDropdown = () => {
                     {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                   </p>
                 </div>
-                {!notification.is_read && (
-                  <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-                )}
+                <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
               </DropdownMenuItem>
             ))
           )}
