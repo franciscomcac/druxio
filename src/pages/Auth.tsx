@@ -112,7 +112,7 @@ const Auth = () => {
           referred_email: email,
           referred_user_id: signupData.user.id,
           status: "registered",
-        }).then(() => {}).catch(() => {});
+        });
       }
 
       // Send welcome email (fire-and-forget)
