@@ -28,6 +28,18 @@ interface JobData {
 }
 
 const Checkout = () => {
+  const formatDeliveryTime = (minutes: number): string => {
+    if (minutes < 60) return `${minutes} min`;
+    if (minutes < 1440) {
+      const h = Math.floor(minutes / 60);
+      const m = minutes % 60;
+      return m > 0 ? `${h}h ${m}min` : `${h}h`;
+    }
+    const d = Math.floor(minutes / 1440);
+    const remainH = Math.floor((minutes % 1440) / 60);
+    return remainH > 0 ? `${d}d ${remainH}h` : `${d}d`;
+  };
+
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -205,7 +217,7 @@ const Checkout = () => {
                     ) : null}
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      {quote.estimated_minutes} min delivery
+                      {formatDeliveryTime(quote.estimated_minutes)} delivery
                     </span>
                   </div>
                 </div>
