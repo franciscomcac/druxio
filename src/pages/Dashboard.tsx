@@ -50,8 +50,6 @@ const Dashboard = () => {
 
   const fetchData = async (userId: string) => {
     try {
-      console.log("[Dashboard] fetchData called for user:", userId);
-
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
         supabase.from("user_roles").select("role").eq("user_id", userId),
