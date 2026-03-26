@@ -10,27 +10,41 @@ const WITHDRAWAL_FEE = 0.25; // €0.25 flat fee
 const PAYPAL_PAYOUT_RATE = 0.02;
 const PAYPAL_PAYOUT_CAP = 1.00;
 
-async function getPayPalAccessToken(): Promise<string> {
+type PayPalMode = "live" | "sandbox";
+
+async function getPayPalAuth(): Promise<{ accessToken: string; baseUrl: string; mode: PayPalMode }> {
   const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
   const secret = Deno.env.get("PAYPAL_SECRET");
   if (!clientId || !secret) throw new Error("PayPal credentials not configured");
 
-  const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com";
+  const configuredMode = (Deno.env.get("PAYPAL_MODE") || "sandbox").trim().toLowerCase();
+  const preferredMode: PayPalMode = configuredMode === "live" ? "live" : "sandbox";
+  const modesToTry: PayPalMode[] = preferredMode === "live" ? ["live", "sandbox"] : ["sandbox", "live"];
 
-  const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "grant_type=client_credentials",
-  });
+  const failures: string[] = [];
 
-  if (!res.ok) throw new Error(`PayPal auth failed: ${res.status}`);
-  const data = await res.json();
-  return data.access_token;
+  for (const mode of modesToTry) {
+    const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
+
+    const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${btoa(`${clientId}:${secret}`)}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { accessToken: data.access_token as string, baseUrl, mode };
+    }
+
+    const bodyText = await res.text();
+    failures.push(`${mode}:${res.status}:${bodyText}`);
+  }
+
+  throw new Error(`PayPal auth failed in both environments. Verify PAYPAL_CLIENT_ID/PAYPAL_SECRET and PAYPAL_MODE. Details: ${failures.join(" | ")}`);
 }
 
 Deno.serve(async (req) => {
