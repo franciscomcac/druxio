@@ -862,6 +862,7 @@ const PostRequest = () => {
 
       setOnlineCount(onlineSellers);
       setJobId(data.id);
+      clearDraft();
       setMatchingData({ onlineSellers, avgResponseMin });
       setWizardStep("matching");
       setLoading(false);
