@@ -29,7 +29,10 @@ import {
   Flag,
   ShieldCheck,
   TrendingUp,
+  ThumbsUp,
 } from "lucide-react";
+import VerificationBadges from "@/components/experts/VerificationBadges";
+import { getVerificationBadges } from "@/lib/verification-badges";
 
 interface MentorProfileData {
   id: string;
@@ -53,6 +56,10 @@ interface Review {
   reviewer_id: string;
   reviewer_name?: string;
   reviewer_avatar?: string;
+  reply?: string | null;
+  replied_at?: string | null;
+  vote_count?: number;
+  user_voted?: boolean;
 }
 
 const MentorProfile = () => {
@@ -67,6 +74,11 @@ const MentorProfile = () => {
   const [completedOrders, setCompletedOrders] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [reportOpen, setReportOpen] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setCurrentUserId(user?.id || null));
+  }, []);
 
   useSEO({
     title: mentor ? mentor.display_name : "Expert Profile",
@@ -114,20 +126,30 @@ const MentorProfile = () => {
       if (profileRes.error) throw profileRes.error;
       setMentor(profileRes.data);
 
-      // Enrich reviews with reviewer names
+      // Enrich reviews with reviewer names and vote counts
       if (reviewsRes.data) {
         const reviewerIds = [...new Set(reviewsRes.data.map(r => r.reviewer_id))];
-        const { data: reviewerProfiles } = await supabase
-          .from("profiles")
-          .select("id, display_name, avatar_url")
-          .in("id", reviewerIds);
+        const reviewIds = reviewsRes.data.map(r => r.id);
+        
+        const [{ data: reviewerProfiles }, { data: votesData }, { data: userVotes }] = await Promise.all([
+          supabase.from("profiles").select("id, display_name, avatar_url").in("id", reviewerIds),
+          supabase.from("review_votes").select("review_id").in("review_id", reviewIds),
+          currentUserId
+            ? supabase.from("review_votes").select("review_id").in("review_id", reviewIds).eq("user_id", currentUserId)
+            : Promise.resolve({ data: [] }),
+        ]);
         
         const profileMap = new Map(reviewerProfiles?.map(p => [p.id, p]) || []);
+        const voteCountMap = new Map<string, number>();
+        votesData?.forEach(v => voteCountMap.set(v.review_id, (voteCountMap.get(v.review_id) || 0) + 1));
+        const userVoteSet = new Set(userVotes?.map(v => v.review_id) || []);
         
         setReviews(reviewsRes.data.map(r => ({
           ...r,
           reviewer_name: profileMap.get(r.reviewer_id)?.display_name || "Anonymous",
           reviewer_avatar: profileMap.get(r.reviewer_id)?.avatar_url || undefined,
+          vote_count: voteCountMap.get(r.id) || 0,
+          user_voted: userVoteSet.has(r.id),
         })));
       }
 
@@ -176,6 +198,24 @@ const MentorProfile = () => {
     ? Math.round((reviews.filter(r => r.rating >= 4).length / totalReviews) * 100)
     : 0;
 
+  const badges = mentor ? getVerificationBadges(
+    { ...mentor, response_time_minutes: (mentor as any).response_time_minutes, created_at: (mentor as any).created_at },
+    totalReviews,
+    completedOrders
+  ) : [];
+
+  const handleVote = async (reviewId: string, hasVoted: boolean) => {
+    if (!currentUserId) return;
+    if (hasVoted) {
+      await supabase.from("review_votes").delete().eq("review_id", reviewId).eq("user_id", currentUserId);
+    } else {
+      await supabase.from("review_votes").insert({ review_id: reviewId, user_id: currentUserId });
+    }
+    setReviews(prev => prev.map(r =>
+      r.id === reviewId ? { ...r, vote_count: (r.vote_count || 0) + (hasVoted ? -1 : 1), user_voted: !hasVoted } : r
+    ));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       
@@ -218,6 +258,11 @@ const MentorProfile = () => {
                     )}
                   </div>
                   <h1 className="mt-4 text-2xl font-bold text-foreground">{mentor.display_name}</h1>
+                  {badges.length > 0 && (
+                    <div className="mt-2">
+                      <VerificationBadges badges={badges} />
+                    </div>
+                  )}
                   <p className="text-muted-foreground mt-1 flex items-center justify-center gap-1">
                     <MapPin className="h-4 w-4" /> {mentor.location || "Remote"}
                   </p>
@@ -373,6 +418,25 @@ const MentorProfile = () => {
                             </div>
                             {review.comment && (
                               <p className="text-sm text-muted-foreground">{review.comment}</p>
+                            )}
+                            {/* Helpful vote */}
+                            <div className="flex items-center gap-2 mt-2">
+                              <button
+                                onClick={() => handleVote(review.id, !!review.user_voted)}
+                                className={`flex items-center gap-1 text-xs transition-colors ${
+                                  review.user_voted ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"
+                                }`}
+                              >
+                                <ThumbsUp className={`h-3.5 w-3.5 ${review.user_voted ? "fill-primary" : ""}`} />
+                                Helpful{(review.vote_count || 0) > 0 && ` (${review.vote_count})`}
+                              </button>
+                            </div>
+                            {/* Expert reply */}
+                            {review.reply && (
+                              <div className="mt-3 ml-2 pl-3 border-l-2 border-primary/30">
+                                <p className="text-xs font-medium text-foreground mb-0.5">Seller's Reply</p>
+                                <p className="text-sm text-muted-foreground">{review.reply}</p>
+                              </div>
                             )}
                           </div>
                         </div>

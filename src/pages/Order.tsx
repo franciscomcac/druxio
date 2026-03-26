@@ -18,6 +18,7 @@ import {
   Paperclip, X, Image as ImageIcon, Video, ExternalLink, Hourglass,
 } from "lucide-react";
 import { formatDistanceToNow, differenceInSeconds, addMinutes, addDays, isPast } from "date-fns";
+import OrderFollowUp from "@/components/order/OrderFollowUp";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -887,16 +888,16 @@ const Order = () => {
               </Button>
             )}
 
-            {/* Post-completion actions */}
-            {isBuyer && isCompleted && !hasReviewed && (
-              <Button className="w-full gap-2" onClick={() => setReviewOpen(true)}>
-                <Star className="h-4 w-4" /> Leave a Review
-              </Button>
-            )}
-            {isBuyer && isCompleted && hasReviewed && (
-              <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-chart-3" /> Review submitted
-              </div>
+            {/* Post-completion follow-up */}
+            {isBuyer && isCompleted && (
+              <OrderFollowUp
+                jobCategory={job.category}
+                expertId={quote.expert_id}
+                expertSkills={sellerProfile?.skills}
+                sessionId={sessionId}
+                hasReviewed={hasReviewed}
+                onOpenReview={() => setReviewOpen(true)}
+              />
             )}
           </div>
 
