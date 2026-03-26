@@ -141,6 +141,16 @@
     @apply bg-background text-foreground;
     scroll-behavior: smooth;
   }
+
+  /* Apply display font to headings globally */
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    letter-spacing: -0.03em;
+  }
 }
 
 /* ── Hide scrollbar utility ───────────────────────────────────── */
