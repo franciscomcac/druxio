@@ -196,27 +196,27 @@ const PurchasedOrders = () => {
           <Tabs defaultValue="active" className="space-y-4">
             <TabsList className="bg-background/60 border border-border">
               <TabsTrigger value="active" className="gap-1.5">
-                <Clock className="h-3.5 w-3.5" /> Active & Open ({activeOrders.length})
+                <Clock className="h-3.5 w-3.5" /> Active ({activeOrders.length})
+              </TabsTrigger>
+              <TabsTrigger value="delivered" className="gap-1.5">
+                <Package className="h-3.5 w-3.5" /> Delivered ({deliveredOrders.length})
               </TabsTrigger>
               <TabsTrigger value="completed" className="gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Completed ({completedOrders.length})
               </TabsTrigger>
-              <TabsTrigger value="disputed" className="gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5" /> Disputed ({disputedOrders.length})
-              </TabsTrigger>
               <TabsTrigger value="other" className="gap-1.5">
-                Open & Other ({otherOrders.length})
+                Other ({otherOrders.length})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="active" className="space-y-3">
               {activeOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No active orders</p> : activeOrders.map(renderOrder)}
             </TabsContent>
+            <TabsContent value="delivered" className="space-y-3">
+              {deliveredOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No delivered orders</p> : deliveredOrders.map(renderOrder)}
+            </TabsContent>
             <TabsContent value="completed" className="space-y-3">
               {completedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No completed orders</p> : completedOrders.map(renderOrder)}
-            </TabsContent>
-            <TabsContent value="disputed" className="space-y-3">
-              {disputedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No disputed orders</p> : disputedOrders.map(renderOrder)}
             </TabsContent>
             <TabsContent value="other" className="space-y-3">
               {otherOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No other orders</p> : otherOrders.map(renderOrder)}
