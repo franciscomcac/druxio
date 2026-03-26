@@ -184,25 +184,31 @@ const Inbox = () => {
       let linkedJob: (typeof allJobs)[0] | undefined;
       let myPrice: number | null = null;
 
-      if (iAmSeller) {
-        // Find a quoted job where buyer_id = mentee_id
-        linkedJob = allJobs.find(j =>
-          j.buyer_id === session.mentee_id &&
-          quoteByJobId.has(j.id)
-        );
-        if (linkedJob) {
-          myPrice = quoteByJobId.get(linkedJob.id)?.price ?? null;
+      // First try to find job via session.categories (stores [jobId])
+      const sessionJobId = session.categories?.[0];
+      if (sessionJobId) {
+        linkedJob = jobMap.get(sessionJobId);
+      }
+
+      if (!linkedJob) {
+        if (iAmSeller) {
+          linkedJob = allJobs.find(j =>
+            j.buyer_id === session.mentee_id &&
+            quoteByJobId.has(j.id)
+          );
+        } else {
+          linkedJob = allJobs.find(j =>
+            j.buyer_id === uid &&
+            (myQuotes || []).some(q => q.job_id === j.id && q.expert_id === session.mentor_id)
+          );
+          if (!linkedJob) {
+            linkedJob = allJobs.find(j => j.buyer_id === uid);
+          }
         }
-      } else {
-        // Find my job where the mentor quoted
-        linkedJob = allJobs.find(j =>
-          j.buyer_id === uid &&
-          (myQuotes || []).some(q => q.job_id === j.id && q.expert_id === session.mentor_id)
-        );
-        // Or just any job I own linked to this session partner
-        if (!linkedJob) {
-          linkedJob = allJobs.find(j => j.buyer_id === uid);
-        }
+      }
+
+      if (linkedJob && iAmSeller) {
+        myPrice = quoteByJobId.get(linkedJob.id)?.price ?? null;
       }
 
       // Determine conversation type — skip pure quotes (no accepted order)
