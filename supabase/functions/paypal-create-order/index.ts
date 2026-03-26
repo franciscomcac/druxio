@@ -10,14 +10,7 @@ const PLATFORM_RATE = 0.05; // 5% buyer fee
 
 type PayPalMode = "live" | "sandbox";
 
-async function getPayPalAuth() {
-  const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
-  const secret = Deno.env.get("PAYPAL_SECRET");
-  if (!clientId || !secret) throw new Error("PayPal credentials not configured");
-
-  const mode: PayPalMode = Deno.env.get("PAYPAL_MODE") === "live" ? "live" : "sandbox";
-  const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
-
+async function fetchPayPalAccessToken(baseUrl: string, clientId: string, secret: string) {
   const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
     method: "POST",
     headers: {
@@ -29,13 +22,49 @@ async function getPayPalAuth() {
 
   if (!res.ok) {
     const text = await res.text();
-    const authError = `PayPal auth failed in ${mode} mode: ${res.status} ${text}`;
-    console.error(authError);
-    throw new Error(authError);
+    throw new Error(`${res.status} ${text}`);
   }
 
   const data = await res.json();
-  return { accessToken: data.access_token as string, baseUrl, mode };
+  return data.access_token as string;
+}
+
+async function getPayPalAuth() {
+  const configuredClientId = Deno.env.get("PAYPAL_CLIENT_ID")?.trim();
+  const fallbackClientId = Deno.env.get("VITE_PAYPAL_CLIENT_ID")?.trim();
+  const secret = Deno.env.get("PAYPAL_SECRET")?.trim();
+
+  if (!secret) throw new Error("PayPal secret not configured");
+
+  const candidateClientIds = Array.from(
+    new Set([configuredClientId, fallbackClientId].filter((value): value is string => Boolean(value))),
+  );
+
+  if (candidateClientIds.length === 0) {
+    throw new Error("PayPal client ID not configured");
+  }
+
+  const mode: PayPalMode = Deno.env.get("PAYPAL_MODE") === "live" ? "live" : "sandbox";
+  const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
+
+  let lastAuthError = "";
+
+  for (const clientId of candidateClientIds) {
+    try {
+      const accessToken = await fetchPayPalAccessToken(baseUrl, clientId, secret);
+      return { accessToken, baseUrl, mode };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      lastAuthError = message;
+      console.error(
+        `PayPal auth attempt failed in ${mode} mode for client ${clientId.slice(0, 8)}***: ${message}`,
+      );
+    }
+  }
+
+  throw new Error(
+    `PayPal auth failed in ${mode} mode: ${lastAuthError}. Ensure PAYPAL_CLIENT_ID/VITE_PAYPAL_CLIENT_ID and PAYPAL_SECRET belong to the same ${mode} app.`,
+  );
 }
 
 Deno.serve(async (req) => {
