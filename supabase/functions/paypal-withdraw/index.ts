@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
     }
 
     // Send instant PayPal payout
-    const { accessToken, baseUrl, mode: resolvedMode } = await getPayPalAuth();
+    const { accessToken, baseUrl } = await getPayPalAuth();
     const batchId = `druxio_wd_${userId.slice(0, 8)}_${Date.now()}`;
 
     const payoutRes = await fetch(`${baseUrl}/v1/payments/payouts`, {
