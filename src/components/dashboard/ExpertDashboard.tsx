@@ -156,6 +156,21 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
   const showTutorialDemoJob = isTutorialActive;
 
   useEffect(() => {
+    if (!previewJob) { setPreviewLowestPrice(null); return; }
+    const fetchLowest = async () => {
+      const { data } = await supabase
+        .from("quotes")
+        .select("price")
+        .eq("job_id", previewJob.id)
+        .eq("status", "pending")
+        .order("price", { ascending: true })
+        .limit(1);
+      setPreviewLowestPrice(data && data.length > 0 ? Number(data[0].price) : null);
+    };
+    fetchLowest();
+  }, [previewJob?.id]);
+
+  useEffect(() => {
     const fetchJobs = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       const { data: jobs } = await supabase
