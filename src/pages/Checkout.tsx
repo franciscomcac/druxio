@@ -325,12 +325,6 @@ const Checkout = () => {
                 <span className="text-muted-foreground">Platform fee (5%)</span>
                 <span className="text-foreground">€{platformFee.toFixed(2)}</span>
               </div>
-              {!isWalletOnly && (
-                <div className="flex justify-between text-xs opacity-60">
-                  <span className="text-muted-foreground">PayPal processing fee</span>
-                  <span className="text-muted-foreground">charged by PayPal</span>
-                </div>
-              )}
               {walletDeduction > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-primary font-medium">Wallet credit</span>
