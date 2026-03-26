@@ -961,13 +961,14 @@ const Admin = () => {
           }).eq("id", selectedWithdrawal.transaction_id);
         }
 
-        // Refund wallet balance
-        const { data: profile } = await supabase.from("profiles").select("wallet_balance").eq("id", selectedWithdrawal.user_id).single();
-        if (profile) {
-          await supabase.from("profiles").update({
-            wallet_balance: (Number(profile.wallet_balance) || 0) + selectedWithdrawal.amount,
-          }).eq("id", selectedWithdrawal.user_id);
-        }
+        // Refund wallet balance by creating a refund transaction
+        await supabase.from("transactions").insert({
+          user_id: selectedWithdrawal.user_id,
+          amount: selectedWithdrawal.amount,
+          type: "refund" as const,
+          status: "completed" as const,
+          description: `Withdrawal rejected — funds returned to wallet`,
+        });
 
         // Notify user
         await supabase.from("notifications").insert({
