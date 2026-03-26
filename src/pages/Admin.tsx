@@ -46,6 +46,11 @@ interface Dispute {
   created_at: string;
   quote_price: number;
   notification_id: string;
+  dispute_id: string;
+  dispute_status: string;
+  evidence_buyer: string[];
+  evidence_seller: string[];
+  negotiation_deadline: string;
 }
 
 interface OrderRow {
@@ -336,46 +341,74 @@ const Admin = () => {
 
   const loadDisputes = async () => {
     setDisputesLoading(true);
+
+    // Load from disputes table first, fall back to jobs for legacy
+    const { data: disputeRecords } = await (supabase.from("disputes" as any) as any)
+      .select("*")
+      .not("status", "in", '("resolved_refund","resolved_release","resolved_resumed")')
+      .order("created_at", { ascending: false });
+
+    // Also load disputed jobs without a disputes record (legacy)
     const { data: disputedJobs } = await supabase
       .from("jobs")
       .select("*")
       .eq("status", "disputed")
       .order("updated_at", { ascending: false });
 
-    if (!disputedJobs) { setDisputesLoading(false); return; }
+    if (!disputedJobs && !disputeRecords) { setDisputesLoading(false); return; }
+
+    // Build a set of job IDs that have dispute records
+    const disputeJobIds = new Set((disputeRecords || []).map((d: any) => d.job_id));
+
+    // Merge: dispute records + legacy disputed jobs without records
+    const allJobIds = new Set([
+      ...(disputeRecords || []).map((d: any) => d.job_id),
+      ...(disputedJobs || []).filter(j => !disputeJobIds.has(j.id)).map(j => j.id),
+    ]);
 
     const enriched: Dispute[] = await Promise.all(
-      disputedJobs.map(async (job) => {
+      Array.from(allJobIds).map(async (jobId) => {
+        const disputeRecord = (disputeRecords || []).find((d: any) => d.job_id === jobId);
+        const job = (disputedJobs || []).find(j => j.id === jobId);
+
+        // Load job if not in disputedJobs
+        const jobData = job || (await supabase.from("jobs").select("*").eq("id", jobId).single()).data;
+        if (!jobData) return null;
+
         const { data: quote } = await supabase
           .from("quotes")
           .select("expert_id, price")
-          .eq("job_id", job.id)
+          .eq("job_id", jobId)
           .eq("status", "accepted")
           .maybeSingle();
 
-        const [buyerProfile, sellerProfile, disputeNotif] = await Promise.all([
-          supabase.from("profiles").select("display_name").eq("id", job.buyer_id).single(),
+        const [buyerProfile, sellerProfile] = await Promise.all([
+          supabase.from("profiles").select("display_name").eq("id", jobData.buyer_id).single(),
           quote ? supabase.from("profiles").select("display_name").eq("id", quote.expert_id).single() : Promise.resolve({ data: null }),
-          supabase.from("notifications").select("id, message, created_at").eq("type", "dispute").eq("user_id", job.buyer_id).contains("data", { job_id: job.id }).order("created_at", { ascending: false }).limit(1).maybeSingle(),
         ]);
 
         return {
-          job_id: job.id,
-          job_title: job.title,
-          job_category: job.category,
-          buyer_id: job.buyer_id,
+          job_id: jobId,
+          job_title: jobData.title,
+          job_category: jobData.category,
+          buyer_id: jobData.buyer_id,
           buyer_name: buyerProfile.data?.display_name || "Unknown",
           seller_id: quote?.expert_id || "",
           seller_name: sellerProfile.data?.display_name || "Unknown",
-          reason: disputeNotif.data?.message || "No reason provided",
-          created_at: job.updated_at || job.created_at || "",
+          reason: disputeRecord?.reason || "No reason provided",
+          created_at: disputeRecord?.created_at || jobData.updated_at || jobData.created_at || "",
           quote_price: quote?.price || 0,
-          notification_id: disputeNotif.data?.id || "",
-        };
+          notification_id: "",
+          dispute_id: disputeRecord?.id || "",
+          dispute_status: disputeRecord?.status || "negotiation",
+          evidence_buyer: disputeRecord?.evidence_buyer || [],
+          evidence_seller: disputeRecord?.evidence_seller || [],
+          negotiation_deadline: disputeRecord?.negotiation_deadline || "",
+        } as Dispute;
       })
     );
 
-    setDisputes(enriched);
+    setDisputes(enriched.filter(Boolean) as Dispute[]);
     setDisputesLoading(false);
   };
 
