@@ -35,6 +35,8 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<any>(null);
   const [roles, setRoles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<"client" | "expert">("client");
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showSellerConsent, setShowSellerConsent] = useState(false);
