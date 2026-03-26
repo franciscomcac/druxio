@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, MessageSquarePlus, ThumbsUp, ThumbsDown } from "lucide-react";
-import SimilarExperts from "@/components/experts/SimilarExperts";
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -88,7 +88,7 @@ const OrderFollowUp = ({
         </CardContent>
       </Card>
 
-      <SimilarExperts currentExpertId={expertId} skills={expertSkills} />
+      
     </div>
   );
 };
