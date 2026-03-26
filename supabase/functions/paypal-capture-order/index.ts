@@ -45,6 +45,79 @@ async function getPayPalAuth() {
 
 const PLATFORM_FEE_RATE = 0.05; // 5% seller fee
 
+async function processWalletDeduction(serviceClient: any, userId: string, walletDeduction: number, jobId: string) {
+  if (walletDeduction <= 0) return;
+
+  // Create a session_payment transaction for the wallet portion
+  await serviceClient.from("transactions").insert({
+    user_id: userId,
+    amount: walletDeduction,
+    type: "session_payment",
+    status: "completed",
+    description: `Wallet balance applied to order`,
+    stripe_payment_id: `wallet_${jobId}`,
+  });
+}
+
+async function finalizeOrder(serviceClient: any, userId: string, jobId: string, quoteId: string, totalPaid: number, captureId: string | null, walletDeduction: number) {
+  const { data: quote } = await serviceClient
+    .from("quotes").select("price, expert_id, estimated_minutes").eq("id", quoteId).single();
+  if (!quote) throw new Error("Quote not found");
+
+  await serviceClient.from("quotes").update({ status: "accepted" }).eq("id", quoteId);
+  await serviceClient.from("quotes").update({ status: "rejected" })
+    .eq("job_id", jobId).neq("id", quoteId).eq("status", "pending");
+
+  await serviceClient.from("jobs").update({
+    status: "in_progress",
+    accepted_quote_id: quoteId,
+    escrow_status: "funded",
+    stripe_payment_intent_id: captureId || `wallet_only_${jobId}`,
+  }).eq("id", jobId);
+
+  // Record PayPal payment transaction (if any PayPal amount was charged)
+  if (totalPaid > 0) {
+    await serviceClient.from("transactions").insert({
+      user_id: userId,
+      amount: totalPaid,
+      type: "session_payment",
+      status: "completed",
+      description: `Payment for service via PayPal`,
+      stripe_payment_id: captureId,
+    });
+  }
+
+  // Record wallet deduction transaction
+  await processWalletDeduction(serviceClient, userId, walletDeduction, jobId);
+
+  const { data: existingSession } = await serviceClient
+    .from("sessions").select("id")
+    .eq("mentee_id", userId).eq("mentor_id", quote.expert_id)
+    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+
+  if (!existingSession) {
+    await serviceClient.from("sessions").insert({
+      mentee_id: userId,
+      mentor_id: quote.expert_id,
+      status: "accepted",
+      duration_minutes: quote.estimated_minutes,
+      price: Number(quote.price),
+      session_type: "chat",
+    });
+  }
+
+  const { data: job } = await serviceClient.from("jobs").select("title").eq("id", jobId).single();
+  await serviceClient.from("notifications").insert({
+    user_id: quote.expert_id,
+    type: "quote_accepted",
+    title: "Quote accepted! 🎉",
+    message: `Your quote for "${job?.title || "a request"}" has been accepted. Start working now!`,
+    data: { job_id: jobId, quote_id: quoteId },
+  });
+
+  return quote;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -71,9 +144,59 @@ Deno.serve(async (req) => {
     }
     const userId = userData.user.id;
 
-    const { paypalOrderId, jobId, quoteId } = await req.json();
-    if (!paypalOrderId || !jobId || !quoteId) {
-      return new Response(JSON.stringify({ error: "Missing paypalOrderId, jobId, or quoteId" }), {
+    const { paypalOrderId, jobId, quoteId, walletDeduction: walletDeductionInput, walletOnly } = await req.json();
+    if (!jobId || !quoteId) {
+      return new Response(JSON.stringify({ error: "Missing jobId or quoteId" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const serviceClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const walletDeduction = Math.max(0, Number(walletDeductionInput) || 0);
+
+    // Wallet-only payment (no PayPal needed)
+    if (walletOnly && !paypalOrderId) {
+      // Verify balance again server-side
+      const { data: txns } = await serviceClient
+        .from("transactions")
+        .select("type, amount, status")
+        .eq("user_id", userId)
+        .eq("status", "completed");
+
+      if (txns) {
+        const deposited = txns.filter(t => t.type === "deposit").reduce((s, t) => s + Number(t.amount), 0);
+        const earned = txns.filter(t => t.type === "session_earning").reduce((s, t) => s + Number(t.amount), 0);
+        const refunded = txns.filter(t => t.type === "refund").reduce((s, t) => s + Number(t.amount), 0);
+        const spent = txns.filter(t => t.type === "session_payment").reduce((s, t) => s + Number(t.amount), 0);
+        const withdrawn = txns.filter(t => t.type === "withdrawal").reduce((s, t) => s + Number(t.amount), 0);
+        const actualBalance = Math.round((deposited + earned + refunded - spent - withdrawn) * 100) / 100;
+
+        if (walletDeduction > actualBalance + 0.01) {
+          return new Response(JSON.stringify({ error: "Insufficient wallet balance" }), {
+            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
+      await finalizeOrder(serviceClient, userId, jobId, quoteId, 0, null, walletDeduction);
+
+      return new Response(JSON.stringify({
+        success: true,
+        captureId: `wallet_only_${jobId}`,
+        sellerFeeRate: PLATFORM_FEE_RATE,
+        walletDeduction,
+      }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // PayPal + optional wallet deduction
+    if (!paypalOrderId) {
+      return new Response(JSON.stringify({ error: "Missing paypalOrderId" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -103,66 +226,15 @@ Deno.serve(async (req) => {
     }
 
     const captureId = captureData.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+    const totalPaid = Number(captureData.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || 0);
 
-    const serviceClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
-
-    const { data: quote } = await serviceClient
-      .from("quotes").select("price, expert_id, estimated_minutes").eq("id", quoteId).single();
-    if (!quote) throw new Error("Quote not found");
-
-    await serviceClient.from("quotes").update({ status: "accepted" }).eq("id", quoteId);
-    await serviceClient.from("quotes").update({ status: "rejected" })
-      .eq("job_id", jobId).neq("id", quoteId).eq("status", "pending");
-
-    await serviceClient.from("jobs").update({
-      status: "in_progress",
-      accepted_quote_id: quoteId,
-      escrow_status: "funded",
-      stripe_payment_intent_id: captureId,
-    }).eq("id", jobId);
-
-    const totalPaid = Number(captureData.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || quote.price);
-    await serviceClient.from("transactions").insert({
-      user_id: userId,
-      amount: totalPaid,
-      type: "session_payment",
-      status: "completed",
-      description: `Payment for service via PayPal`,
-      stripe_payment_id: captureId,
-    });
-
-    const { data: existingSession } = await serviceClient
-      .from("sessions").select("id")
-      .eq("mentee_id", userId).eq("mentor_id", quote.expert_id)
-      .order("created_at", { ascending: false }).limit(1).maybeSingle();
-
-    if (!existingSession) {
-      await serviceClient.from("sessions").insert({
-        mentee_id: userId,
-        mentor_id: quote.expert_id,
-        status: "accepted",
-        duration_minutes: quote.estimated_minutes,
-        price: Number(quote.price),
-        session_type: "chat",
-      });
-    }
-
-    const { data: job } = await serviceClient.from("jobs").select("title").eq("id", jobId).single();
-    await serviceClient.from("notifications").insert({
-      user_id: quote.expert_id,
-      type: "quote_accepted",
-      title: "Quote accepted! 🎉",
-      message: `Your quote for "${job?.title || "a request"}" has been accepted. Start working now!`,
-      data: { job_id: jobId, quote_id: quoteId },
-    });
+    await finalizeOrder(serviceClient, userId, jobId, quoteId, totalPaid, captureId, walletDeduction);
 
     return new Response(JSON.stringify({
       success: true,
       captureId,
       sellerFeeRate: PLATFORM_FEE_RATE,
+      walletDeduction,
     }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
