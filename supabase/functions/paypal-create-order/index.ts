@@ -66,10 +66,17 @@ async function getPayPalAuth() {
         oppositeMode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
 
       try {
-        await fetchPayPalAccessToken(oppositeBaseUrl, clientId, secret);
+        const fallbackAccessToken = await fetchPayPalAccessToken(oppositeBaseUrl, clientId, secret);
+        console.warn(
+          `PAYPAL_MODE resolved to '${mode}' but credentials authenticated in '${oppositeMode}'. Using '${oppositeMode}' for this request.`,
+        );
+        return { accessToken: fallbackAccessToken, baseUrl: oppositeBaseUrl, mode: oppositeMode };
+      } catch (fallbackError) {
+        console.error("PayPal fallback auth failed", {
+          attemptedMode: oppositeMode,
+          error: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
+        });
         modeHint = ` Credentials are valid in ${oppositeMode} mode. Set PAYPAL_MODE=${oppositeMode}.`;
-      } catch {
-        // Keep default guidance when credentials are invalid in both modes.
       }
     }
 
