@@ -48,8 +48,7 @@ const Dashboard = () => {
 
   const fetchData = async (userId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { navigate("/auth"); return; }
+      console.log("[Dashboard] fetchData called for user:", userId);
 
       const [profileRes, rolesRes, categoriesRes, myJobsRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
