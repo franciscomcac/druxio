@@ -19,7 +19,9 @@ interface OrderData {
 }
 
 const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; icon: any }> = {
-  accepted: { label: "Active", variant: "default", icon: Clock },
+  accepted: { label: "In Progress", variant: "default", icon: Clock },
+  in_progress: { label: "In Progress", variant: "default", icon: Clock },
+  delivered: { label: "Delivered", variant: "secondary", icon: Package },
   completed: { label: "Completed", variant: "secondary", icon: CheckCircle2 },
   cancelled: { label: "Cancelled", variant: "destructive", icon: AlertTriangle },
   disputed: { label: "Disputed", variant: "destructive", icon: AlertTriangle },
@@ -104,10 +106,10 @@ const PurchasedOrders = () => {
     return () => { supabase.removeChannel(channel); };
   }, [userId]);
 
-  const activeOrders = orders.filter(o => o.job.status === "accepted" || o.job.status === "open");
+  const activeOrders = orders.filter(o => ["accepted", "in_progress", "open"].includes(o.job.status));
+  const deliveredOrders = orders.filter(o => o.job.status === "delivered");
   const completedOrders = orders.filter(o => o.job.status === "completed");
-  const disputedOrders = orders.filter(o => o.job.status === "disputed");
-  const otherOrders = orders.filter(o => !["accepted", "open", "completed", "disputed"].includes(o.job.status));
+  const otherOrders = orders.filter(o => !["accepted", "in_progress", "open", "delivered", "completed"].includes(o.job.status));
 
   const renderOrder = (order: OrderData) => {
     const config = statusConfig[order.job.status] || statusConfig.open;
@@ -118,7 +120,7 @@ const PurchasedOrders = () => {
         key={order.job.id}
         className="cursor-pointer border-border bg-background/40 hover:border-primary/20 hover:bg-primary/[0.03] transition-all duration-300"
         onClick={() => {
-          if (order.job.status === "accepted" || order.job.status === "completed" || order.job.status === "disputed") {
+          if (["accepted", "in_progress", "delivered", "completed", "disputed", "cancelled"].includes(order.job.status)) {
             navigate(`/order/${order.job.id}`, { state: { from: "/orders/purchased" } });
           } else if (order.job.status === "open") {
             navigate(`/request/${order.job.id}`);
@@ -160,9 +162,7 @@ const PurchasedOrders = () => {
                   </div>
                 </>
               )}
-              {["accepted", "open", "completed", "disputed"].includes(order.job.status) && (
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              )}
+              <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </div>
           </div>
         </CardContent>
@@ -196,27 +196,27 @@ const PurchasedOrders = () => {
           <Tabs defaultValue="active" className="space-y-4">
             <TabsList className="bg-background/60 border border-border">
               <TabsTrigger value="active" className="gap-1.5">
-                <Clock className="h-3.5 w-3.5" /> Active & Open ({activeOrders.length})
+                <Clock className="h-3.5 w-3.5" /> Active ({activeOrders.length})
+              </TabsTrigger>
+              <TabsTrigger value="delivered" className="gap-1.5">
+                <Package className="h-3.5 w-3.5" /> Delivered ({deliveredOrders.length})
               </TabsTrigger>
               <TabsTrigger value="completed" className="gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Completed ({completedOrders.length})
               </TabsTrigger>
-              <TabsTrigger value="disputed" className="gap-1.5">
-                <AlertTriangle className="h-3.5 w-3.5" /> Disputed ({disputedOrders.length})
-              </TabsTrigger>
               <TabsTrigger value="other" className="gap-1.5">
-                Open & Other ({otherOrders.length})
+                Other ({otherOrders.length})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="active" className="space-y-3">
               {activeOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No active orders</p> : activeOrders.map(renderOrder)}
             </TabsContent>
+            <TabsContent value="delivered" className="space-y-3">
+              {deliveredOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No delivered orders</p> : deliveredOrders.map(renderOrder)}
+            </TabsContent>
             <TabsContent value="completed" className="space-y-3">
               {completedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No completed orders</p> : completedOrders.map(renderOrder)}
-            </TabsContent>
-            <TabsContent value="disputed" className="space-y-3">
-              {disputedOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No disputed orders</p> : disputedOrders.map(renderOrder)}
             </TabsContent>
             <TabsContent value="other" className="space-y-3">
               {otherOrders.length === 0 ? <p className="text-sm text-muted-foreground py-8 text-center">No other orders</p> : otherOrders.map(renderOrder)}

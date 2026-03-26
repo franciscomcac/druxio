@@ -69,10 +69,11 @@ async function finalizeOrder(serviceClient: any, userId: string, jobId: string, 
     .eq("job_id", jobId).neq("id", quoteId).eq("status", "pending");
 
   await serviceClient.from("jobs").update({
-    status: "in_progress",
+    status: "accepted",
     accepted_quote_id: quoteId,
     escrow_status: "funded",
     stripe_payment_intent_id: captureId || `wallet_only_${jobId}`,
+    updated_at: new Date().toISOString(),
   }).eq("id", jobId);
 
   // Record PayPal payment transaction (if any PayPal amount was charged)
@@ -90,20 +91,29 @@ async function finalizeOrder(serviceClient: any, userId: string, jobId: string, 
   // Record wallet deduction transaction
   await processWalletDeduction(serviceClient, userId, walletDeduction, jobId);
 
-  const { data: existingSession } = await serviceClient
-    .from("sessions").select("id")
-    .eq("mentee_id", userId).eq("mentor_id", quote.expert_id)
-    .order("created_at", { ascending: false }).limit(1).maybeSingle();
+  // Always create a new session for this specific job/order
+  const { data: newSession } = await serviceClient.from("sessions").insert({
+    mentee_id: userId,
+    mentor_id: quote.expert_id,
+    status: "accepted",
+    duration_minutes: quote.estimated_minutes,
+    price: Number(quote.price),
+    session_type: "chat",
+    issue_description: jobId,
+    categories: [jobId],
+  }).select("id").single();
 
-  if (!existingSession) {
-    await serviceClient.from("sessions").insert({
-      mentee_id: userId,
-      mentor_id: quote.expert_id,
-      status: "accepted",
-      duration_minutes: quote.estimated_minutes,
-      price: Number(quote.price),
-      session_type: "chat",
-    });
+  // Send auto-messages to seed the order chat
+  const { data: job } = await serviceClient.from("jobs").select("title, description, category, subcategory, deadline_minutes").eq("id", jobId).single();
+
+  if (newSession && job) {
+    const orderDetailsMsg = `📋 **Order Details**\n\n**${job.title}**\n${job.description || ""}\n\n📂 ${job.category}${job.subcategory ? ` › ${job.subcategory}` : ""}\n💰 €${Number(quote.price).toFixed(2)}\n⏱️ ${quote.estimated_minutes} min delivery`;
+    const sellerMsg = `✅ I've accepted this order and will start working on it right away!`;
+
+    await serviceClient.from("messages").insert([
+      { session_id: newSession.id, sender_id: userId, content: orderDetailsMsg },
+      { session_id: newSession.id, sender_id: quote.expert_id, content: sellerMsg },
+    ]);
   }
 
   const { data: job } = await serviceClient.from("jobs").select("title").eq("id", jobId).single();
