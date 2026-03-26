@@ -109,62 +109,58 @@ const Dashboard = () => {
 
   useEffect(() => {
     let isMounted = true;
-    let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
-    let currentUserId: string | null = null;
 
-    const setupRealtime = (userId: string) => {
-      if (realtimeChannel) supabase.removeChannel(realtimeChannel);
-      realtimeChannel = supabase
-        .channel("dashboard-realtime")
-        .on("postgres_changes", { event: "*", schema: "public", table: "jobs", filter: `buyer_id=eq.${userId}` }, () => {
-          if (isMounted) fetchData(userId);
-        })
-        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
-          if (isMounted) fetchData(userId);
-        })
-        .subscribe();
-    };
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) return;
+      setAuthUserId(session?.user?.id ?? null);
+      setAuthReady(true);
+      if (!session?.user) navigate("/auth");
+    });
 
-    const initWithSession = (userId: string) => {
-      console.log("[Dashboard] initWithSession:", { userId, currentUserId, isMounted });
-      if (!isMounted || userId === currentUserId) return;
-      currentUserId = userId;
-      fetchData(userId);
-      setupRealtime(userId);
-    };
-
-    // Listen to auth state changes — handles both existing sessions and fresh logins
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMounted) return;
-      if (event === 'SIGNED_OUT') {
+      if (event === "SIGNED_OUT") {
+        setAuthUserId(null);
+        setAuthReady(true);
         navigate("/");
         return;
       }
-      if (session?.user) {
-        initWithSession(session.user.id);
-      }
-    });
-
-    // Also check for existing session immediately
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) return;
-      if (session?.user) {
-        initWithSession(session.user.id);
-      } else {
-        // Give onAuthStateChange a moment to fire (fresh signup race condition)
-        setTimeout(() => {
-          if (!isMounted || currentUserId) return;
-          navigate("/auth");
-        }, 1500);
-      }
+      setAuthUserId(session?.user?.id ?? null);
+      setAuthReady(true);
     });
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
-      if (realtimeChannel) supabase.removeChannel(realtimeChannel);
     };
-  }, []);
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!authReady) return;
+    if (!authUserId) {
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setLoading(true);
+    fetchData(authUserId);
+
+    const realtimeChannel = supabase
+      .channel("dashboard-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "jobs", filter: `buyer_id=eq.${authUserId}` }, () => {
+        if (isMounted) fetchData(authUserId);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "quotes" }, () => {
+        if (isMounted) fetchData(authUserId);
+      })
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(realtimeChannel);
+    };
+  }, [authReady, authUserId]);
 
   // Auto-open seller consent when redirected from "Join as Expert"
   useEffect(() => {
