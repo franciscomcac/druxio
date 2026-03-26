@@ -125,7 +125,7 @@ const NotificationsDropdown = () => {
 
     if (notification.type === "withdrawal_completed" || notification.type === "withdrawal_rejected") {
       navigate("/wallet");
-    } else if (notification.data?.job_id && ["dispute", "dispute_raised", "dispute_resolved", "refund_issued", "order_completed", "order_cancelled"].includes(notification.type)) {
+    } else if (notification.data?.job_id && ["dispute", "dispute_raised", "dispute_escalated", "dispute_resolved", "refund_issued", "order_completed", "order_cancelled"].includes(notification.type)) {
       navigate(`/order/${notification.data.job_id}`);
     } else if (notification.type === "new_request" && notification.data?.job_id) {
       navigate(`/request/${notification.data.job_id}`);
@@ -159,6 +159,8 @@ const NotificationsDropdown = () => {
       case "dispute":
       case "dispute_raised":
         return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+      case "dispute_escalated":
+        return <AlertTriangle className="h-4 w-4 text-destructive" />;
       case "dispute_resolved":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "refund_issued":
