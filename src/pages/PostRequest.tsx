@@ -967,6 +967,17 @@ const PostRequest = () => {
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
 
+            {/* Draft banner */}
+            {hasDraft && (
+              <div className="mb-4 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/[0.04] px-4 py-3">
+                <p className="text-sm text-foreground">📝 You have an unfinished draft</p>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={clearDraft}>Discard</Button>
+                  <Button size="sm" onClick={handleResumeDraft}>Resume</Button>
+                </div>
+              </div>
+            )}
+
             <div className="mb-6 md:mb-10 text-center">
               <h1 className="mb-2 md:mb-3 text-2xl md:text-3xl font-bold text-foreground">How would you like to start?</h1>
               <p className="text-sm md:text-lg text-muted-foreground">Choose your preferred way to post a task.</p>
