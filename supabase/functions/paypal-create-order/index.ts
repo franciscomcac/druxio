@@ -41,7 +41,9 @@ async function getPayPalAuth() {
   const clientId = getRequiredEnv("PAYPAL_CLIENT_ID");
   const secret = getRequiredEnv("PAYPAL_SECRET");
 
-  const mode: PayPalMode = Deno.env.get("PAYPAL_MODE") === "live" ? "live" : "sandbox";
+  const rawMode = Deno.env.get("PAYPAL_MODE");
+  console.log("paypal-create-order PAYPAL_MODE raw:", JSON.stringify(rawMode));
+  const mode: PayPalMode = rawMode?.trim().toLowerCase() === "live" ? "live" : "sandbox";
   const baseUrl = mode === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
 
   try {
