@@ -19,7 +19,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const mode = Deno.env.get("PAYPAL_MODE") === "live" ? "live" : "sandbox";
+    const rawMode = Deno.env.get("PAYPAL_MODE");
+    console.log("PAYPAL_MODE raw value:", JSON.stringify(rawMode));
+    const mode = rawMode?.trim().toLowerCase() === "live" ? "live" : "sandbox";
 
     return new Response(JSON.stringify({ clientId, mode }), {
       status: 200,
