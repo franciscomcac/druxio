@@ -7,6 +7,8 @@ const corsHeaders = {
 };
 
 const PLATFORM_RATE = 0.05; // 5% buyer fee
+const PAYPAL_RATE = 0.0349; // 3.49%
+const PAYPAL_FIXED = 0.49; // €0.49
 
 type PayPalMode = "live" | "sandbox";
 
@@ -151,7 +153,9 @@ Deno.serve(async (req) => {
 
     const basePrice = Number(quote.price);
     const platformFee = Math.round(basePrice * PLATFORM_RATE * 100) / 100;
-    const totalBeforeWallet = Math.round((basePrice + platformFee) * 100) / 100;
+    const subtotal = Math.round((basePrice + platformFee) * 100) / 100;
+    const paypalFee = Math.round((subtotal * PAYPAL_RATE + PAYPAL_FIXED) * 100) / 100;
+    const totalBeforeWallet = Math.round((subtotal + paypalFee) * 100) / 100;
 
     // Validate wallet deduction
     const walletAmount = Math.max(0, Math.min(Number(walletDeduction) || 0, totalBeforeWallet));
@@ -195,7 +199,7 @@ Deno.serve(async (req) => {
           orderId: null,
           walletOnly: true,
           mode: "wallet",
-          breakdown: { basePrice, platformFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal: 0 },
+          breakdown: { basePrice, platformFee, paypalFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal: 0 },
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
@@ -252,7 +256,7 @@ Deno.serve(async (req) => {
         paypalOrderId: orderData.id,
         orderId: orderData.id,
         mode,
-        breakdown: { basePrice, platformFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal },
+        breakdown: { basePrice, platformFee, paypalFee, total: totalBeforeWallet, walletDeduction: walletAmount, paypalTotal },
       }),
       {
         status: 200,
