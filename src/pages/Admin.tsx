@@ -1259,75 +1259,75 @@ const Admin = () => {
               <Skeleton className="h-64 w-full" />
             ) : (
               <Card>
-                <ScrollArea className="max-h-[600px]">
-                 <div className="overflow-x-auto">
-                   <Table className="min-w-[700px]">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order</TableHead>
-                        <TableHead>Buyer</TableHead>
-                        <TableHead>Seller</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredOrders.length === 0 ? (
+                <div className="max-h-[600px] overflow-auto">
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[700px]">
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                            No orders found
-                          </TableCell>
+                          <TableHead>Order</TableHead>
+                          <TableHead>Buyer</TableHead>
+                          <TableHead>Seller</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ) : (
-                        filteredOrders.map((order) => (
-                          <TableRow key={order.id}>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium text-foreground text-sm">{order.title}</p>
-                                <p className="text-xs text-muted-foreground">{order.category}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-sm">{order.buyer_name}</TableCell>
-                            <TableCell className="text-sm">{order.seller_name || "—"}</TableCell>
-                            <TableCell className="text-sm font-medium">{order.price ? `€${order.price.toFixed(2)}` : "—"}</TableCell>
-                            <TableCell>
-                              <Badge variant={statusVariant(order.status)}>{order.status}</Badge>
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">
-                              {order.created_at ? format(new Date(order.created_at), "MMM d, yyyy") : "—"}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <Button size="sm" variant="ghost" onClick={() => { setAdminMsgOrderId(order.id); setAdminMsgText(""); }} title="Send admin message">
-                                  <MessageSquare className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button size="sm" variant="ghost" onClick={() => navigate(`/order/${order.id}`)}>
-                                  <Eye className="h-3.5 w-3.5" />
-                                </Button>
-                                {order.status !== "completed" && order.status !== "cancelled" && (
-                                  <Select onValueChange={(v) => handleUpdateJobStatus(order.id, v)}>
-                                    <SelectTrigger className="h-8 w-28 text-xs">
-                                      <SelectValue placeholder="Change..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="open">Open</SelectItem>
-                                      <SelectItem value="accepted">Accepted</SelectItem>
-                                      <SelectItem value="completed">Completed</SelectItem>
-                                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                )}
-                              </div>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredOrders.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                              No orders found
                             </TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                   </Table>
-                 </div>
-                </ScrollArea>
+                        ) : (
+                          filteredOrders.map((order) => (
+                            <TableRow key={order.id}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium text-foreground text-sm">{order.title}</p>
+                                  <p className="text-xs text-muted-foreground">{order.category}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-sm">{order.buyer_name}</TableCell>
+                              <TableCell className="text-sm">{order.seller_name || "—"}</TableCell>
+                              <TableCell className="text-sm font-medium">{order.price ? `€${order.price.toFixed(2)}` : "—"}</TableCell>
+                              <TableCell>
+                                <Badge variant={statusVariant(order.status)}>{order.status}</Badge>
+                              </TableCell>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {order.created_at ? format(new Date(order.created_at), "MMM d, yyyy") : "—"}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-1">
+                                  <Button size="sm" variant="ghost" onClick={() => { setAdminMsgOrderId(order.id); setAdminMsgText(""); }} title="Send admin message">
+                                    <MessageSquare className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" onClick={() => navigate(`/order/${order.id}`)}>
+                                    <Eye className="h-3.5 w-3.5" />
+                                  </Button>
+                                  {order.status !== "completed" && order.status !== "cancelled" && (
+                                    <Select onValueChange={(v) => handleUpdateJobStatus(order.id, v)}>
+                                      <SelectTrigger className="h-8 w-28 text-xs">
+                                        <SelectValue placeholder="Change..." />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="open">Open</SelectItem>
+                                        <SelectItem value="accepted">Accepted</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
+                                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
               </Card>
             )}
           </TabsContent>
@@ -1353,75 +1353,75 @@ const Admin = () => {
               <Skeleton className="h-64 w-full" />
             ) : (
               <Card>
-                <ScrollArea className="h-[600px]">
+                <div className="max-h-[600px] overflow-auto">
                   <div className="overflow-x-auto">
-                   <Table className="min-w-[700px]">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Roles</TableHead>
-                        <TableHead>Wallet</TableHead>
-                        <TableHead>Sessions</TableHead>
-                        <TableHead>Rating</TableHead>
-                        <TableHead>Joined</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredUsers.length === 0 ? (
+                    <Table className="min-w-[700px]">
+                      <TableHeader>
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                            No users found
-                          </TableCell>
+                          <TableHead>User</TableHead>
+                          <TableHead>Roles</TableHead>
+                          <TableHead>Wallet</TableHead>
+                          <TableHead>Sessions</TableHead>
+                          <TableHead>Rating</TableHead>
+                          <TableHead>Joined</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                      ) : (
-                        filteredUsers.map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell>
-                              <div
-                                className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-                                onClick={() => navigate(`/mentor/${user.id}`)}
-                                title="View profile"
-                              >
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={user.avatar_url || undefined} />
-                                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                    {(user.display_name || "U").charAt(0).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="font-medium text-sm text-foreground hover:text-primary transition-colors">{user.display_name || "Unnamed"}</p>
-                                  <p className="text-xs text-muted-foreground">{user.is_online ? "Online" : "Offline"}</p>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1">
-                                {user.roles.map(r => (
-                                  <Badge key={r} variant={r === "admin" ? "default" : "secondary"} className="text-xs">
-                                    {r}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-sm">€{user.wallet_balance.toFixed(2)}</TableCell>
-                            <TableCell className="text-sm">{user.total_sessions}</TableCell>
-                            <TableCell className="text-sm">{user.rating_avg > 0 ? user.rating_avg.toFixed(1) : "—"}</TableCell>
-                            <TableCell className="text-xs text-muted-foreground">
-                              {format(new Date(user.created_at), "MMM d, yyyy")}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button size="sm" variant="ghost" onClick={() => setSelectedUser(user)}>
-                                Manage
-                              </Button>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredUsers.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                              No users found
                             </TableCell>
                           </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                   </Table>
+                        ) : (
+                          filteredUsers.map((user) => (
+                            <TableRow key={user.id}>
+                              <TableCell>
+                                <div
+                                  className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+                                  onClick={() => navigate(`/mentor/${user.id}`)}
+                                  title="View profile"
+                                >
+                                  <Avatar className="h-8 w-8">
+                                    <AvatarImage src={user.avatar_url || undefined} />
+                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                      {(user.display_name || "U").charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium text-sm text-foreground hover:text-primary transition-colors">{user.display_name || "Unnamed"}</p>
+                                    <p className="text-xs text-muted-foreground">{user.is_online ? "Online" : "Offline"}</p>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex flex-wrap gap-1">
+                                  {user.roles.map(r => (
+                                    <Badge key={r} variant={r === "admin" ? "default" : "secondary"} className="text-xs">
+                                      {r}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-sm">€{user.wallet_balance.toFixed(2)}</TableCell>
+                              <TableCell className="text-sm">{user.total_sessions}</TableCell>
+                              <TableCell className="text-sm">{user.rating_avg > 0 ? user.rating_avg.toFixed(1) : "—"}</TableCell>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {format(new Date(user.created_at), "MMM d, yyyy")}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button size="sm" variant="ghost" onClick={() => setSelectedUser(user)}>
+                                  Manage
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
                   </div>
-                </ScrollArea>
+                </div>
               </Card>
             )}
           </TabsContent>
