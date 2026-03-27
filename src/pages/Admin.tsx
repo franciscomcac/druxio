@@ -1353,7 +1353,7 @@ const Admin = () => {
               <Skeleton className="h-64 w-full" />
             ) : (
               <Card>
-                <ScrollArea className="max-h-[600px]">
+                <ScrollArea className="h-[600px]">
                   <div className="overflow-x-auto">
                    <Table className="min-w-[700px]">
                     <TableHeader>
