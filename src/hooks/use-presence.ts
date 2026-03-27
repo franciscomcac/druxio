@@ -2,25 +2,47 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const APPEAR_OFFLINE_KEY = "appear_offline_override";
+const HEARTBEAT_INTERVAL_MS = 60_000; // 1 minute
 
 /**
  * Automatically marks an expert as online while they have the site open
  * and offline when they close/navigate away.
+ * Sends a heartbeat every 60s so stale sessions are detected.
  * Supports a manual "appear offline" override.
  * Only activates for users who have the "mentor" role.
  */
 export function usePresence() {
   const userIdRef = useRef<string | null>(null);
   const isMentorRef = useRef(false);
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [appearOffline, setAppearOfflineState] = useState(false);
   const [isMentor, setIsMentor] = useState(false);
 
-  const setOnline = async (userId: string) => {
-    await supabase.from("profiles").update({ is_online: true }).eq("id", userId);
+  const heartbeat = async (userId: string) => {
+    await supabase
+      .from("profiles")
+      .update({ is_online: true, last_seen_at: new Date().toISOString() } as any)
+      .eq("id", userId);
   };
 
   const setOffline = async (userId: string) => {
-    await supabase.from("profiles").update({ is_online: false }).eq("id", userId);
+    await supabase
+      .from("profiles")
+      .update({ is_online: false, last_seen_at: new Date().toISOString() } as any)
+      .eq("id", userId);
+  };
+
+  const startHeartbeat = (userId: string) => {
+    stopHeartbeat();
+    heartbeat(userId); // immediate first beat
+    heartbeatRef.current = setInterval(() => heartbeat(userId), HEARTBEAT_INTERVAL_MS);
+  };
+
+  const stopHeartbeat = () => {
+    if (heartbeatRef.current) {
+      clearInterval(heartbeatRef.current);
+      heartbeatRef.current = null;
+    }
   };
 
   const setAppearOffline = useCallback(async (offline: boolean) => {
@@ -30,16 +52,16 @@ export function usePresence() {
     if (!userIdRef.current || !isMentorRef.current) return;
 
     if (offline) {
+      stopHeartbeat();
       await setOffline(userIdRef.current);
     } else {
-      await setOnline(userIdRef.current);
+      startHeartbeat(userIdRef.current);
     }
   }, []);
 
   useEffect(() => {
     let mounted = true;
 
-    // Load override from localStorage
     const saved = localStorage.getItem(APPEAR_OFFLINE_KEY);
     const isOverrideOffline = saved === "true";
     setAppearOfflineState(isOverrideOffline);
@@ -64,9 +86,8 @@ export function usePresence() {
         isMentorRef.current = true;
         userIdRef.current = userId;
 
-        // Only set online if not manually overridden to offline
         if (!isOverrideOffline) {
-          await setOnline(userId);
+          startHeartbeat(userId);
         } else {
           await setOffline(userId);
         }
@@ -75,30 +96,41 @@ export function usePresence() {
 
     init();
 
+    // Use sendBeacon with proper headers for tab close
     const handleBeforeUnload = () => {
       if (userIdRef.current && isMentorRef.current) {
+        stopHeartbeat();
         const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/profiles?id=eq.${userIdRef.current}`;
-        const body = JSON.stringify({ is_online: false });
-        navigator.sendBeacon(
-          url,
-          new Blob([body], { type: "application/json" })
-        );
+        const headers = {
+          "Content-Type": "application/json",
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          "Prefer": "return=minimal",
+        };
+        // sendBeacon doesn't support custom headers, so use fetch keepalive instead
+        fetch(url, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify({ is_online: false, last_seen_at: new Date().toISOString() }),
+          keepalive: true,
+        }).catch(() => {});
       }
     };
 
     const handleVisibilityChange = () => {
       if (!userIdRef.current || !isMentorRef.current) return;
-      // Check current override state from localStorage (most up to date)
       const currentOverride = localStorage.getItem(APPEAR_OFFLINE_KEY) === "true";
       if (document.visibilityState === "visible" && !currentOverride) {
-        setOnline(userIdRef.current);
+        startHeartbeat(userIdRef.current);
+      } else if (document.visibilityState === "hidden") {
+        stopHeartbeat();
+        // Don't set offline immediately — the cleanup function handles stale users
       }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Listen for override changes from the Header toggle
     const handleOverrideChanged = (e: Event) => {
       const { offline } = (e as CustomEvent).detail;
       setAppearOfflineState(offline);
@@ -107,6 +139,7 @@ export function usePresence() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === "SIGNED_OUT" && userIdRef.current && isMentorRef.current) {
+        stopHeartbeat();
         await setOffline(userIdRef.current);
         userIdRef.current = null;
         isMentorRef.current = false;
@@ -119,6 +152,7 @@ export function usePresence() {
 
     return () => {
       mounted = false;
+      stopHeartbeat();
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("presence-override-changed", handleOverrideChanged);

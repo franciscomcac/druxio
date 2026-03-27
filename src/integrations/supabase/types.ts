@@ -423,6 +423,7 @@ export type Database = {
           id: string
           is_banned: boolean | null
           is_online: boolean | null
+          last_seen_at: string | null
           location: string | null
           rating_avg: number | null
           referred_by: string | null
@@ -448,6 +449,7 @@ export type Database = {
           id: string
           is_banned?: boolean | null
           is_online?: boolean | null
+          last_seen_at?: string | null
           location?: string | null
           rating_avg?: number | null
           referred_by?: string | null
@@ -473,6 +475,7 @@ export type Database = {
           id?: string
           is_banned?: boolean | null
           is_online?: boolean | null
+          last_seen_at?: string | null
           location?: string | null
           rating_avg?: number | null
           referred_by?: string | null
@@ -1018,6 +1021,7 @@ export type Database = {
         Args: { _session_id: string; _user_id: string }
         Returns: boolean
       }
+      mark_stale_users_offline: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "mentor" | "mentee"
