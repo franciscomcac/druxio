@@ -7,6 +7,7 @@ import { useModeration } from "@/hooks/use-moderation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -1124,12 +1125,7 @@ const ActiveRequest = () => {
             <div className="flex flex-col items-center gap-1 pt-1">
               <span className={`h-2 w-2 rounded-full shrink-0 ${expiry.color}`} />
             </div>
-            <Avatar className="h-9 w-9 border border-border shrink-0">
-              <AvatarImage src={convo.buyerAvatar || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
-                {convo.buyerName?.[0] || "B"}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar src={convo.buyerAvatar || undefined} className="h-9 w-9 border border-border shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-1">
                 <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
@@ -1309,12 +1305,7 @@ const ActiveRequest = () => {
                     <ArrowLeft className="h-3.5 w-3.5" />
                   </Button>
                 )}
-                <Avatar className="h-8 w-8 md:h-9 md:w-9 border border-border shrink-0">
-                  <AvatarImage src={activeConvo.buyerAvatar || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs md:text-sm">
-                    {activeConvo.buyerName?.[0] || "B"}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar src={activeConvo.buyerAvatar || undefined} className="h-8 w-8 md:h-9 md:w-9 border border-border shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-xs md:text-sm text-foreground truncate">{activeConvo.buyerName || "Buyer"}</p>
                   <p className="text-[10px] md:text-xs text-muted-foreground truncate">{activeConvo.jobTitle}</p>
@@ -1440,10 +1431,7 @@ const ActiveRequest = () => {
               <div className="p-4 border-b border-border">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Buyer</p>
                 <div className="flex items-center gap-2.5">
-                  <Avatar className="h-8 w-8 border border-border">
-                    <AvatarImage src={activeConvo.buyerAvatar || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{activeConvo.buyerName?.[0] || "B"}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar src={activeConvo.buyerAvatar || undefined} className="h-8 w-8 border border-border" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-foreground truncate">{activeConvo.buyerName || "Buyer"}</p>
                     <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
@@ -1607,10 +1595,7 @@ const ActiveRequest = () => {
                     >
                       <div className="flex items-start gap-3">
                         <div className="relative shrink-0">
-                          <Avatar className="h-10 w-10 border border-border">
-                            <AvatarImage src={quote.profile?.avatar_url || undefined} />
-                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">{quote.profile?.display_name?.[0] || "E"}</AvatarFallback>
-                          </Avatar>
+                          <UserAvatar src={quote.profile?.avatar_url || undefined} className="h-10 w-10 border border-border" />
                           <span className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-background border border-border flex items-center justify-center text-[10px] font-bold text-muted-foreground">{i + 1}</span>
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1669,10 +1654,7 @@ const ActiveRequest = () => {
           <div className="rounded-xl border border-border bg-card/40 overflow-hidden flex flex-col" style={{ height: isMobile ? "calc(100vh - 420px)" : "560px", minHeight: "300px" }}>
             {selectedQuote && (
               <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-card/60 shrink-0">
-                <Avatar className="h-7 w-7 border border-border">
-                  <AvatarImage src={selectedQuote.profile?.avatar_url || undefined} />
-                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{chatPartnerName[0] || "?"}</AvatarFallback>
-                </Avatar>
+                <UserAvatar src={selectedQuote.profile?.avatar_url || undefined} className="h-7 w-7 border border-border" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">{chatPartnerName}</p>
                   <p className="text-xs text-muted-foreground">{format(selectedQuote.price)} · {formatDeliveryTime(selectedQuote.estimated_minutes)} delivery</p>

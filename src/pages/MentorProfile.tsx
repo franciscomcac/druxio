@@ -9,6 +9,7 @@ import ReportUserDialog from "@/components/reports/ReportUserDialog";
 import { useFavorites } from "@/hooks/use-favorites";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -247,12 +248,7 @@ const MentorProfile = () => {
               <CardContent className="p-6">
                 <div className="text-center mb-6">
                   <div className="relative inline-block">
-                    <Avatar className="h-24 w-24 ring-4 ring-border">
-                      <AvatarImage src={mentor.avatar_url} />
-                      <AvatarFallback className="bg-primary/10 text-2xl text-primary">
-                        {mentor.display_name?.split(" ").map(n => n[0]).join("") || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar src={mentor.avatar_url} className="h-24 w-24 ring-4 ring-border" />
                     {mentor.is_online && (
                       <span className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-chart-2 ring-4 ring-background" />
                     )}
@@ -394,12 +390,7 @@ const MentorProfile = () => {
                     <Card key={review.id}>
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
-                          <Avatar className="h-9 w-9 border border-border">
-                            <AvatarImage src={review.reviewer_avatar} />
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                              {review.reviewer_name?.charAt(0) || "A"}
-                            </AvatarFallback>
-                          </Avatar>
+                          <UserAvatar src={review.reviewer_avatar} className="h-9 w-9 border border-border" />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">

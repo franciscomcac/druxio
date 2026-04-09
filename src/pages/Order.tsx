@@ -6,6 +6,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -842,12 +843,7 @@ const Order = () => {
               onClick={() => navigate(isBuyer ? `/mentor/${quote.expert_id}` : `/mentor/${job.buyer_id}`)}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 border border-border">
-                    <AvatarImage src={otherPartyProfile?.avatar_url} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                      {otherPartyProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar src={otherPartyProfile?.avatar_url} className="h-12 w-12 border border-border" />
                   <div>
                     <p className="font-semibold text-foreground">{otherPartyProfile?.display_name || otherPartyLabel}</p>
                     <p className="text-xs text-muted-foreground">{otherPartyLabel}</p>

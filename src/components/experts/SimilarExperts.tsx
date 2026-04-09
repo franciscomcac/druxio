@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -134,12 +135,7 @@ const SimilarExperts = ({ currentExpertId, skills = [] }: SimilarExpertsProps) =
                   {/* Header with avatar and online status */}
                   <div className="flex items-start gap-3 mb-3">
                     <div className="relative">
-                      <Avatar className="h-12 w-12 ring-2 ring-border">
-                        <AvatarImage src={expert.avatar_url || undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {expert.display_name?.split(" ").map(n => n[0]).join("") || "U"}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar src={expert.avatar_url || undefined} className="h-12 w-12 ring-2 ring-border" />
                       {expert.is_online && (
                         <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
                       )}
