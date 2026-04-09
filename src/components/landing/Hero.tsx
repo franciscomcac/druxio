@@ -233,8 +233,18 @@ const Hero = () => {
                   Expert is quoting…
                 </div>
                 <div className="mt-3 flex gap-2">
-                  {[1, 2, 3].map((j) => (
-                    <div key={j} className="h-7 w-7 rounded-full bg-muted animate-pulse" style={{ animationDelay: `${j * 200}ms` }} />
+                  {[
+                    { initials: "SK", gradient: "from-blue-500 to-indigo-500" },
+                    { initials: "ER", gradient: "from-emerald-400 to-teal-500" },
+                    { initials: "AT", gradient: "from-amber-400 to-orange-500" },
+                  ].map((expert, j) => (
+                    <div
+                      key={j}
+                      className={`h-7 w-7 rounded-full bg-gradient-to-br ${expert.gradient} flex items-center justify-center text-[9px] font-bold text-white ring-2 ring-card`}
+                      style={{ animationDelay: `${j * 200}ms` }}
+                    >
+                      {expert.initials}
+                    </div>
                   ))}
                   <span className="text-[11px] text-muted-foreground self-center ml-1">3 experts online</span>
                 </div>
