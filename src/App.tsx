@@ -44,6 +44,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const ComingSoon = lazy(() => import("./pages/ComingSoon"));
+const Compare = lazy(() => import("./pages/Compare"));
 
 // Lazy-loaded overlays
 const SupportWidget = lazy(() => import("./components/support/SupportWidget"));
@@ -130,6 +131,7 @@ const App = () => (
                 <Route path="/quotes" element={<ActiveRequest />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/coming-soon" element={<ComingSoon />} />
+                <Route path="/compare" element={<Compare />} />
               </Route>
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
