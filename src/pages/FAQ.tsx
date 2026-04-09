@@ -137,20 +137,26 @@ const FAQ = () => {
     title: "FAQ — Druxio Help Center",
     description: "Find answers to common questions about Druxio — how to post tasks, hire freelancers, manage payments, escrow protection, and more.",
     canonical: "/faq",
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": faqSections.flatMap((s) =>
-        s.items.map((item) => ({
-          "@type": "Question",
-          "name": item.q,
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": item.a,
-          },
-        }))
-      ),
-    },
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqSections.flatMap((s) =>
+          s.items.map((item) => ({
+            "@type": "Question",
+            "name": item.q,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": item.a,
+            },
+          }))
+        ),
+        "speakable": {
+          "@type": "SpeakableSpecification",
+          "cssSelector": [".text-foreground", "h1", "h2"]
+        }
+      }
+    ],
   });
 
   return (
