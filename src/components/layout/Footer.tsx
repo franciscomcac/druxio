@@ -5,22 +5,25 @@ const footerLinks = {
   Product: [
     { label: "Post a Task", href: "/post-request" },
     { label: "Become an Expert", href: "/auth", becomeExpert: true },
-    { label: "Pricing", href: "/#pricing" },
+    { label: "Compare Fees", href: "/compare" },
     { label: "Categories", href: "/#categories" },
   ],
   Company: [
     { label: "Blog", href: "/blog" },
     { label: "How It Works", href: "/how-it-works" },
+    { label: "FAQ", href: "/faq" },
     { label: "Contact", href: "mailto:support@druxio.net" },
   ],
-  Support: [
-    { label: "FAQ", href: "/faq" },
-    { label: "Email Support", href: "mailto:support@druxio.net" },
+  Categories: [
+    { label: "Tech", href: "/category/tech" },
+    { label: "Business", href: "/category/business" },
+    { label: "Creative", href: "/category/creative" },
+    { label: "Gaming", href: "/category/gaming" },
   ],
   Legal: [
     { label: "Privacy Policy", href: "/privacy" },
     { label: "Terms of Service", href: "/terms" },
-    { label: "Cookie Policy", href: "/cookie-policy" },
+    { label: "Cookie Policy", href: "/cookies" },
   ],
 };
 

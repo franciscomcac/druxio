@@ -10,6 +10,11 @@ Disallow: /request/
 Disallow: /session/
 Disallow: /orders/
 Disallow: /notifications
+Disallow: /checkout
+Disallow: /coming-soon
+Disallow: /active-request/
+Disallow: /quotes
+Disallow: /reset-password
 
 # AI Crawlers — explicitly allowed for AI search visibility
 User-agent: GPTBot
@@ -46,7 +51,6 @@ User-agent: CCBot
 Disallow: /
 
 Sitemap: https://druxio.net/sitemap.xml
-Sitemap: https://fgpzlmomrzcpefqcstdn.supabase.co/functions/v1/sitemap
 
 # LLMs — see https://llmstxt.org
 # /llms.txt — concise overview
