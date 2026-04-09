@@ -18,17 +18,20 @@ const Newsletter = () => {
   };
 
   return (
-    <section ref={ref} className="bg-background py-12 md:py-24">
+    <section ref={ref} className="relative bg-background py-12 md:py-24 overflow-hidden">
+      {/* Diagonal accent shape */}
+      <div className="absolute -top-20 -right-20 w-[400px] h-[400px] bg-primary/[0.03] rounded-full blur-[100px] rotate-12 pointer-events-none" />
+
       <div className="container mx-auto px-4">
         <div className="mx-auto grid max-w-5xl gap-4 md:gap-6 lg:grid-cols-2">
-          {/* Stay Updated card */}
+          {/* Want in? card */}
           <div className="rounded-lg border border-border bg-card p-5 md:p-8 flex flex-col reveal reveal-left">
             <div className="mb-4 md:mb-6 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Mail className="h-5 w-5 md:h-6 md:w-6" />
             </div>
-            <h3 className="mb-2 text-xl md:text-2xl font-bold text-foreground">Stay Updated</h3>
+            <h3 className="mb-2 text-xl md:text-2xl font-bold text-foreground">Want in?</h3>
             <p className="mb-5 md:mb-8 text-muted-foreground text-xs md:text-sm leading-relaxed flex-1">
-              Get notified about new categories, features, and platform updates.
+              Get notified about new categories, features, and platform updates. No spam.
             </p>
 
             {submitted ? (
@@ -56,19 +59,19 @@ const Newsletter = () => {
                     Subscribe <ArrowRight className="h-4 w-4" />
                   </Button>
                 </form>
-                <p className="text-[10px] md:text-xs text-muted-foreground">No spam. Unsubscribe anytime.</p>
+                <p className="text-[10px] md:text-xs text-muted-foreground">Unsubscribe anytime.</p>
               </div>
             )}
           </div>
 
-          {/* Become an Expert card */}
+          {/* Got skills? Get paid. card */}
           <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/[0.08] to-card p-5 md:p-8 flex flex-col reveal reveal-right delay-150">
             <div className="mb-4 md:mb-6 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground glow-pulse">
               <Sparkles className="h-5 w-5 md:h-6 md:w-6" />
             </div>
-            <h3 className="mb-2 text-xl md:text-2xl font-bold text-foreground">Become an Expert</h3>
+            <h3 className="mb-2 text-xl md:text-2xl font-bold text-foreground">Got skills? Get paid.</h3>
             <p className="mb-4 md:mb-6 text-muted-foreground text-xs md:text-sm leading-relaxed">
-              Monetize your skills. Get pinged for jobs and earn up to{" "}
+              Get pinged for jobs in your niche and earn up to{" "}
               <span className="font-bold text-primary">€500/week</span>.
             </p>
             <ul className="mb-5 md:mb-8 space-y-2 md:space-y-3 flex-1">
