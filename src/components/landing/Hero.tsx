@@ -168,9 +168,9 @@ const Hero = () => {
 
           {/* Typography contrast: lighter "Tell us what you need." + heavier "We'll find someone great." */}
           <h1 className="mb-4 md:mb-6 text-3xl tracking-tight text-foreground sm:text-5xl md:text-7xl lg:text-8xl leading-[1.1] animate-fade-in [animation-delay:100ms]">
-            <span className="font-medium">Tell us what you need.</span>{" "}
+            <span className="font-extrabold">Post a task.</span>{" "}
             <span className="font-extrabold bg-gradient-to-r from-primary via-primary/80 to-primary/50 bg-clip-text text-transparent">
-              We'll find someone great.
+              Get it done.
             </span>
           </h1>
 
