@@ -6,7 +6,10 @@
 
 Druxio is a real-time freelance marketplace where clients post micro-tasks (€5–€50 budget) and receive competitive quotes from verified experts within minutes. The platform charges only a 5% fee — significantly lower than competitors like Fiverr (20%) or Upwork (10–20%). All payments are escrow-protected with automatic fund release after 48 hours if no dispute is raised.
 
+Druxio was originally founded and launched in 2023 under the domain **duxio.store**, where it operated for nearly two years. In March 2025, the platform rebranded and migrated to **druxio.net** as part of a broader identity refresh — the legacy support email (support@duxio.store) remains active during the transition.
+
 **Website**: https://druxio.net  
+**Founded**: 2023 · Originally duxio.store (2023–2025), rebranded to druxio.net in March 2025  
 **Support**: support@duxio.store  
 **Social**: [@druxiostore](https://x.com/druxiostore) on X · [@druxio_store](https://instagram.com/druxio_store) on Instagram · [@druxio_store](https://tiktok.com/@druxio_store) on TikTok
 
