@@ -11,10 +11,43 @@ Disallow: /session/
 Disallow: /orders/
 Disallow: /notifications
 
+# AI Crawlers — explicitly allowed for AI search visibility
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
 Sitemap: https://druxio.net/sitemap.xml
 Sitemap: https://fgpzlmomrzcpefqcstdn.supabase.co/functions/v1/sitemap
 
-# LLMs
-# See https://llmstxt.org for specification
-Allow: /llms.txt
-Allow: /llms-full.txt
+# LLMs — see https://llmstxt.org
+# /llms.txt — concise overview
+# /llms-full.txt — full documentation
