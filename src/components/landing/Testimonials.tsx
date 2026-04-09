@@ -95,10 +95,7 @@ const Testimonials = () => {
                   <p className="text-sm md:text-[15px] text-foreground leading-relaxed flex-1 mb-4 md:mb-6 font-medium">"{t.content}"</p>
 
                   <div className="flex items-center gap-3">
-                    {/* Gradient avatar with emoji */}
-                    <div className={`h-8 w-8 md:h-10 md:w-10 rounded-full bg-gradient-to-br ${gradients[globalIdx % gradients.length]} flex items-center justify-center text-sm md:text-base`}>
-                      {emojis[globalIdx % emojis.length]}
-                    </div>
+                    <img src={t.avatar} alt={t.name} loading="lazy" width={40} height={40} className="h-8 w-8 md:h-10 md:w-10 rounded-full object-cover ring-2 ring-border" />
                     <div>
                       <p className="text-xs md:text-sm font-semibold text-foreground">{t.name}</p>
                       <p className="text-[10px] md:text-xs text-muted-foreground">{t.role} · {t.timeAgo}</p>
