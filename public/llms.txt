@@ -7,6 +7,8 @@ Druxio connects clients with verified experts across tech, business, creative, c
 ## Key Facts
 
 - Website: https://druxio.net
+- Founded: 2023 (originally launched as duxio.store)
+- Previously: duxio.store (2023–2025) — rebranded to druxio.net in March 2025
 - Platform fee: 5% (deducted from expert earnings)
 - Payment protection: Escrow with 48h auto-release
 - Dispute resolution: 24h turnaround
