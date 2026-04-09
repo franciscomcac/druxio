@@ -4,21 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 
-const gradients = [
-  "from-blue-500/70 to-indigo-500/70",
-  "from-emerald-400/70 to-teal-500/70",
-  "from-amber-400/70 to-orange-500/70",
-  "from-pink-400/70 to-rose-500/70",
-  "from-violet-400/70 to-purple-500/70",
-];
-const emojis = ["🚀", "💡", "🎯", "⚡", "🔥"];
+import alexImg from "@/assets/testimonials/alex.jpg";
+import sarahImg from "@/assets/testimonials/sarah.jpg";
+import marcusImg from "@/assets/testimonials/marcus.jpg";
+import elenaImg from "@/assets/testimonials/elena.jpg";
+import tomImg from "@/assets/testimonials/tom.jpg";
 
 const testimonials = [
-  { name: "Alex M.", role: "Buyer", content: "Posted a Minecraft server debug request at 11pm — had 3 quotes in 90 seconds. Fixed in 15 minutes for €8. Insane.", rating: 5, category: "Gaming", timeAgo: "2 days ago" },
-  { name: "Sarah K.", role: "Expert", content: "I make €200/week just answering Discord bot questions in my spare time. The real-time pings mean I never miss a gig.", rating: 5, category: "Tech", timeAgo: "5 days ago" },
-  { name: "Marcus J.", role: "Buyer", content: "Needed SEO help urgently before a launch. Got a quote in under a minute, expert delivered in 20 min. Worth every cent.", rating: 5, category: "Business", timeAgo: "1 week ago" },
-  { name: "Elena R.", role: "Expert", content: "As a graphic designer, Druxio fills my downtime perfectly. Quick jobs, instant payment, no negotiations.", rating: 5, category: "Creative", timeAgo: "3 days ago" },
-  { name: "Tom W.", role: "Buyer", content: "Hired someone to set up my Shopify store in under an hour. The escrow system meant zero risk. Will definitely use again.", rating: 5, category: "Business", timeAgo: "4 days ago" },
+  { name: "Alex M.", role: "Buyer", content: "Posted a Minecraft server debug request at 11pm — had 3 quotes in 90 seconds. Fixed in 15 minutes for €8. Insane.", rating: 5, category: "Gaming", timeAgo: "2 days ago", avatar: alexImg },
+  { name: "Sarah K.", role: "Expert", content: "I make €200/week just answering Discord bot questions in my spare time. The real-time pings mean I never miss a gig.", rating: 5, category: "Tech", timeAgo: "5 days ago", avatar: sarahImg },
+  { name: "Marcus J.", role: "Buyer", content: "Needed SEO help urgently before a launch. Got a quote in under a minute, expert delivered in 20 min. Worth every cent.", rating: 5, category: "Business", timeAgo: "1 week ago", avatar: marcusImg },
+  { name: "Elena R.", role: "Expert", content: "As a graphic designer, Druxio fills my downtime perfectly. Quick jobs, instant payment, no negotiations.", rating: 5, category: "Creative", timeAgo: "3 days ago", avatar: elenaImg },
+  { name: "Tom W.", role: "Buyer", content: "Hired someone to set up my Shopify store in under an hour. The escrow system meant zero risk. Will definitely use again.", rating: 5, category: "Business", timeAgo: "4 days ago", avatar: tomImg },
 ];
 
 const Testimonials = () => {
