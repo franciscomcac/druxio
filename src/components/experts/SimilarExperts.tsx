@@ -135,7 +135,7 @@ const SimilarExperts = ({ currentExpertId, skills = [] }: SimilarExpertsProps) =
                   {/* Header with avatar and online status */}
                   <div className="flex items-start gap-3 mb-3">
                     <div className="relative">
-                      <UserAvatar src={expert.avatar_url || undefined} className="h-12 w-12 ring-2 ring-border" />
+                      <UserAvatar src={expert.avatar_url || undefined} userId={expert.id} name={expert.display_name} className="h-12 w-12 ring-2 ring-border" />
                       {expert.is_online && (
                         <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
                       )}

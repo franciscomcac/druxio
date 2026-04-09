@@ -241,7 +241,7 @@ const Dashboard = () => {
         <div className="mb-6 sm:mb-10 animate-fade-in">
           {/* Top row: avatar + name + icon actions */}
           <div className="flex items-center gap-3 sm:gap-5 mb-4">
-            <UserAvatar src={profile?.avatar_url} className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20 shadow-glow shrink-0" />
+            <UserAvatar src={profile?.avatar_url} userId={user?.id} name={profile?.display_name} className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20 shadow-glow shrink-0" />
 
             <div className="flex-1 min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">

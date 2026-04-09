@@ -248,7 +248,7 @@ const MentorProfile = () => {
               <CardContent className="p-6">
                 <div className="text-center mb-6">
                   <div className="relative inline-block">
-                    <UserAvatar src={mentor.avatar_url} className="h-24 w-24 ring-4 ring-border" />
+                    <UserAvatar src={mentor.avatar_url} userId={mentor.id} name={mentor.display_name} className="h-24 w-24 ring-4 ring-border" />
                     {mentor.is_online && (
                       <span className="absolute bottom-1 right-1 h-5 w-5 rounded-full bg-chart-2 ring-4 ring-background" />
                     )}
@@ -390,7 +390,7 @@ const MentorProfile = () => {
                     <Card key={review.id}>
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
-                          <UserAvatar src={review.reviewer_avatar} className="h-9 w-9 border border-border" />
+                          <UserAvatar src={review.reviewer_avatar} userId={review.reviewer_id} name={review.reviewer_name} className="h-9 w-9 border border-border" />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
