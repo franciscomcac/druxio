@@ -530,7 +530,7 @@ const Settings = () => {
               <CardContent className="space-y-6">
                 <div className="flex items-center gap-6">
                   <div className="relative">
-                    <UserAvatar src={profile?.avatar_url} userId={user?.id} name={profile?.display_name} className="h-20 w-20" />
+                    <UserAvatar src={profile?.avatar_url} userId={profile?.id} name={profile?.display_name} className="h-20 w-20" />
                     <label className="absolute bottom-0 right-0 p-1.5 bg-primary text-primary-foreground rounded-full cursor-pointer hover:bg-primary/90">
                       <Camera className="h-4 w-4" />
                       <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
