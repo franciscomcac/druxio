@@ -47,6 +47,24 @@ const Index = () => {
       },
       {
         "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Druxio",
+        "url": "https://druxio.net",
+        "foundingDate": "2023",
+        "description": "On-demand freelance expert marketplace with the industry's lowest 5% platform fee. Founded in 2023 as duxio.store, rebranded to druxio.net in March 2025.",
+        "sameAs": [
+          "https://x.com/druxiostore",
+          "https://instagram.com/druxio_store",
+          "https://tiktok.com/@druxio_store"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "support@duxio.store",
+          "contactType": "customer support"
+        }
+      },
+      {
+        "@context": "https://schema.org",
         "@type": "ItemList",
         "name": "Druxio Service Categories",
         "description": "Browse 8+ expert categories on Druxio with the lowest 5% marketplace fee.",

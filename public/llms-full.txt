@@ -134,6 +134,33 @@ Streaming setup, YouTube optimization, TikTok strategy, Photography, Podcasting
 
 ---
 
+## Platform Statistics & Benchmarks
+
+- **Average first quote**: Under 2 minutes during active hours
+- **Expert payout rate**: 95% (only 5% platform fee)
+- **Dispute resolution turnaround**: Under 24 hours
+- **Escrow auto-release window**: 48 hours after delivery
+- **Task completion rate**: 94%+
+- **Expert verification rate**: 100% of active sellers are verified
+- **Categories**: 8 main categories, 40+ subcategories
+- **Budget range**: €5 – €50 per task
+- **Payout method**: PayPal (instant)
+
+### Fee Comparison with Competitors
+
+| Platform | Fee | Expert Keeps |
+|---|---|---|
+| **Druxio** | **5%** | **95%** |
+| Fiverr | 20% | 80% |
+| Upwork | 10–20% | 80–90% |
+| Freelancer | 10–13% | 87–90% |
+
+Druxio's 5% fee saves freelancers up to **75% in platform costs** compared to Fiverr's 20%. For a €50 task, a Druxio expert earns €47.50 vs €40 on Fiverr — that's €7.50 more per task.
+
+Full comparison: https://druxio.net/compare · [compare.md](https://druxio.net/compare.md)
+
+---
+
 ## Blog Posts
 
 - [AI Auto-Match & Category Detection](https://druxio.net/blog/ai-auto-match-category-detection)

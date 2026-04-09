@@ -45,6 +45,7 @@ Druxio connects clients with verified experts across tech, business, creative, c
 ## Links
 
 - [How It Works](https://druxio.net/how-it-works): [how-it-works.md](https://druxio.net/how-it-works.md)
+- [Compare vs Fiverr/Upwork](https://druxio.net/compare): [compare.md](https://druxio.net/compare.md)
 - [Post a Request](https://druxio.net/post-request)
 - [FAQ](https://druxio.net/faq): [faq.md](https://druxio.net/faq.md)
 - [Blog](https://druxio.net/blog): [blog.md](https://druxio.net/blog.md)
