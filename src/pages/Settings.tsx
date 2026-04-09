@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import TimezoneSelect from "@/components/settings/TimezoneSelect";
@@ -529,10 +530,7 @@ const Settings = () => {
               <CardContent className="space-y-6">
                 <div className="flex items-center gap-6">
                   <div className="relative">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={profile?.avatar_url} />
-                      <AvatarFallback className="bg-primary/10 text-xl text-primary">{profile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "U"}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar src={profile?.avatar_url} className="h-20 w-20" />
                     <label className="absolute bottom-0 right-0 p-1.5 bg-primary text-primary-foreground rounded-full cursor-pointer hover:bg-primary/90">
                       <Camera className="h-4 w-4" />
                       <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />

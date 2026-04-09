@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import SellerConsentDialog from "@/components/onboarding/SellerConsentDialog";
@@ -240,12 +241,7 @@ const Dashboard = () => {
         <div className="mb-6 sm:mb-10 animate-fade-in">
           {/* Top row: avatar + name + icon actions */}
           <div className="flex items-center gap-3 sm:gap-5 mb-4">
-            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20 shadow-glow shrink-0">
-              <AvatarImage src={profile?.avatar_url} />
-              <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary text-lg font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar src={profile?.avatar_url} className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20 shadow-glow shrink-0" />
 
             <div className="flex-1 min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">

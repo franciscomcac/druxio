@@ -594,12 +594,7 @@ const Inbox = () => {
     return (
       <div key={msg.id} className={cn("flex gap-2 mb-3", isMe ? "justify-end" : "justify-start")}>
         {!isMe && (
-          <Avatar className="h-7 w-7 shrink-0 mt-1">
-            <AvatarImage src={activeConv?.otherUserAvatar ?? undefined} />
-            <AvatarFallback className="text-[10px] bg-muted">
-              {activeConv?.otherUserName?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar src={activeConv?.otherUserAvatar ?? undefined} className="h-7 w-7 shrink-0 mt-1" />
         )}
         <div className={cn("max-w-[70%] flex flex-col", isMe ? "items-end" : "items-start")}>
           {msg.image_urls && msg.image_urls.length > 0 && (
@@ -678,12 +673,7 @@ const Inbox = () => {
         )}
       >
         <div className="relative shrink-0">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={conv.otherUserAvatar ?? undefined} />
-            <AvatarFallback className="text-sm bg-muted">
-              {conv.otherUserName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar src={conv.otherUserAvatar ?? undefined} className="h-10 w-10" />
           {conv.otherUserOnline && (
             <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-background" />
           )}
@@ -898,12 +888,7 @@ const Inbox = () => {
               </Button>
 
               <div className="relative shrink-0">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={activeConv.otherUserAvatar ?? undefined} />
-                  <AvatarFallback className="text-sm bg-muted">
-                    {activeConv.otherUserName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar src={activeConv.otherUserAvatar ?? undefined} className="h-9 w-9" />
                 {activeConv.otherUserOnline && (
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-background" />
                 )}

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
@@ -1383,12 +1384,7 @@ const Admin = () => {
                                   onClick={() => navigate(`/mentor/${user.id}`)}
                                   title="View profile"
                                 >
-                                  <Avatar className="h-8 w-8">
-                                    <AvatarImage src={user.avatar_url || undefined} />
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                                      {(user.display_name || "U").charAt(0).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
+                                  <UserAvatar src={user.avatar_url || undefined} className="h-8 w-8" />
                                   <div>
                                     <p className="font-medium text-sm text-foreground hover:text-primary transition-colors">{user.display_name || "Unnamed"}</p>
                                     <p className="text-xs text-muted-foreground">{user.is_online ? "Online" : "Offline"}</p>

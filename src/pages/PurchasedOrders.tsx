@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -152,12 +153,7 @@ const PurchasedOrders = () => {
                 <>
                   <p className="text-lg font-bold text-primary">{format(Number(order.quote.price))}</p>
                   <div className="flex items-center gap-2">
-                    <Avatar className="h-7 w-7 border border-border">
-                      <AvatarImage src={order.sellerProfile?.avatar_url} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
-                        {order.sellerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar src={order.sellerProfile?.avatar_url} className="h-7 w-7 border border-border" />
                     <span className="text-xs text-muted-foreground">{order.sellerProfile?.display_name || "Seller"}</span>
                   </div>
                 </>

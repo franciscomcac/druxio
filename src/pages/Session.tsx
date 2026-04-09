@@ -6,6 +6,7 @@ import { useModeration } from "@/hooks/use-moderation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -330,12 +331,7 @@ const Session = () => {
                 </Button>
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage src={otherUser?.avatar_url} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {otherUser?.display_name?.split(" ").map((n) => n[0]).join("") || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar src={otherUser?.avatar_url} className="h-12 w-12" />
                     {otherUser?.is_online && (
                       <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
                     )}

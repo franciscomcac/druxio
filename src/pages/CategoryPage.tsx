@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -196,12 +197,7 @@ const CategoryPage = () => {
                   >
                     <CardContent className="flex items-center gap-3 p-3 pr-5">
                       <div className="relative">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={expert.avatar_url} />
-                          <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                            {expert.display_name?.charAt(0) || "U"}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar src={expert.avatar_url} className="h-10 w-10" />
                         <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-chart-2 ring-2 ring-background" />
                       </div>
                       <div>
@@ -264,12 +260,7 @@ const CategoryPage = () => {
                   >
                     <CardContent className="p-4 text-center">
                       <div className="relative inline-block mb-3">
-                        <Avatar className="h-16 w-16 ring-2 ring-border">
-                          <AvatarImage src={expert.avatar_url} />
-                          <AvatarFallback className="bg-primary/10 text-lg text-primary">
-                            {expert.display_name?.charAt(0) || "U"}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar src={expert.avatar_url} className="h-16 w-16 ring-2 ring-border" />
                         {expert.is_online && (
                           <span className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-chart-2 ring-2 ring-background" />
                         )}

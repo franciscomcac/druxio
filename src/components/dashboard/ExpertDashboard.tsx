@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -354,12 +355,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         onClick={() => navigate(`/order/${order.job.id}`)}
         className="w-full text-left flex items-center gap-3 rounded-sm border border-border bg-background/40 p-3 cursor-pointer transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03] active:scale-[0.99]"
       >
-        <Avatar className="h-8 w-8 border border-border shrink-0 rounded-sm">
-          <AvatarImage src={order.buyerProfile?.avatar_url} />
-          <AvatarFallback className="bg-primary/10 text-primary text-xs">
-            {order.buyerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar src={order.buyerProfile?.avatar_url} className="h-8 w-8 border border-border shrink-0 rounded-sm" />
         <div className="flex-1 min-w-0">
           <p className="font-medium text-foreground truncate text-sm">{order.job.title}</p>
           <p className="text-xs text-muted-foreground mt-0.5">

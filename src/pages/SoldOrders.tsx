@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import UserAvatar from "@/components/UserAvatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Package, Clock, CheckCircle2, AlertTriangle, ArrowRight, DollarSign, Timer } from "lucide-react";
@@ -164,12 +165,7 @@ const SoldOrders = () => {
                 </span>
               )}
               <div className="flex items-center gap-2">
-                <Avatar className="h-7 w-7 border border-border">
-                  <AvatarImage src={order.buyerProfile?.avatar_url} />
-                  <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
-                    {order.buyerProfile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "?"}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar src={order.buyerProfile?.avatar_url} className="h-7 w-7 border border-border" />
                 <span className="text-xs text-muted-foreground">{order.buyerProfile?.display_name || "Buyer"}</span>
               </div>
               {clickable && <ArrowRight className="h-4 w-4 text-muted-foreground" />}
