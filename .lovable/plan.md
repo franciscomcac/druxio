@@ -1,96 +1,72 @@
 
 
-## Plan: Implement 5 Features (Reviews Enhancement, Verification Badges, Order Follow-up, Referral Program, Saved Drafts)
+# Make Druxio Feel Hand-Crafted
 
-Based on the user's selection of items 3, 4, 5, 6, and 8 from the previous suggestions.
-
----
-
-### 1. Enhanced Review/Rating System
-**What**: Add verified purchase badges on reviews, helpful vote counts, and seller response capability.
-
-- Add a `verified_purchase` boolean display on reviews (derived from checking if a completed session exists between reviewer and reviewee)
-- Add a "Helpful" button on each review in `MentorProfile.tsx` (store in a new `review_votes` table)
-- Show a "Verified Purchase" badge next to reviews where the reviewer had a completed order with that expert
-- Allow experts to reply to reviews (add `reply` and `replied_at` columns to `reviews` table)
-
-**DB changes**: 
-- New `review_votes` table (id, review_id, user_id, created_at) with RLS
-- Add `reply` (text, nullable) and `replied_at` (timestamptz, nullable) columns to `reviews`
+## What we're doing
+Applying 5 changes across the landing page to break the "AI template" feel: varied layouts, more personality, better typography, an interactive hero, and human-written copy.
 
 ---
 
-### 2. Expert Verification Badges
-**What**: Visual trust indicators on expert profiles showing milestones.
+## 1. Visual Variety — Break Section Symmetry
 
-- Create a `getVerificationBadges()` utility that computes badges from profile data:
-  - "Verified Expert" — completed 10+ orders
-  - "Top Rated" — rating_avg >= 4.8 with 5+ reviews
-  - "Fast Responder" — response_time_minutes <= 10
-  - "Rising Star" — 5+ completed orders, joined < 30 days ago
-- Display badges on `MentorProfile.tsx`, expert cards in `ActiveRequest.tsx`, and `SimilarExperts.tsx`
-- No DB changes needed — computed from existing profile data
+**Current problem**: Every section follows the same pattern: small label → big heading → uniform grid. It screams template.
+
+**Changes**:
+- **HowItWorks**: Left-align the header and switch from a 4-column uniform grid to a 2-column layout where step 01 is a large featured card (spanning full width or 2 cols) and steps 02-04 are stacked beside it
+- **Categories**: Alternate between a featured "hero" category card (wider, taller) and smaller ones — e.g. first row has 1 large + 2 small, second row 3 small + 1 large
+- **MentorSpotlight (Recent Requests)**: Replace the uniform 5-card grid with a masonry-style layout — cards with varying heights based on content length
+- **Newsletter section**: Add a subtle rotated background shape or diagonal divider to break the flat rectangle pattern
+
+## 2. Media & Personality — Replace Initials with Real Touches
+
+**Changes**:
+- **Testimonials**: Replace the `AM`, `SK` initial circles with colorful gradient avatars that feel designed (unique gradient per person, with an emoji or small illustration instead of letters)
+- **Floating hero cards**: Add subtle hand-drawn-style borders or a slight skew variation so they don't all look identical
+- **Footer**: Add a short tagline with personality, e.g. "Built by freelancers, for freelancers. Amsterdam, NL 🇳🇱"
+
+## 3. Typography & Layout Variation
+
+**Changes**:
+- **Hero heading**: Make "Post a task." use a lighter weight (font-bold instead of font-extrabold) and "Get it done." heavier — creating contrast within the same line
+- **Section headings**: Vary sizes — HowItWorks gets a larger heading, Testimonials gets a smaller one, Categories uses a different alignment (right-aligned on desktop)
+- **Step numbers in HowItWorks**: Use a handwriting-style approach — make them oversized and semi-transparent as background elements rather than inline text
+
+## 4. Interactive Hero — Live Task Preview
+
+**Changes**:
+- When the user types in the hero input, show a live preview card below/beside the input that simulates what their posted task would look like
+- The card shows: their typed title, a randomly assigned category badge, a mock "Expert is quoting..." animation with a pulsing dot
+- Card fades in smoothly when text length > 5 characters, fades out when cleared
+- On mobile: card appears below the input; on desktop: appears as a floating card to the right
+
+## 5. Human-Centric Copy Rewrite
+
+**Changes across all landing sections**:
+
+| Section | Current | New |
+|---------|---------|-----|
+| Hero heading | "Post a task. Get it done." | "Tell us what you need. We'll find someone great." |
+| Hero subtitle | "Get verified quotes in under 2 minutes..." | "Describe your task, get quotes in seconds. Pay only when you're happy." |
+| Hero trust row | "Escrow-protected" / "~90s response" / "500+ experts" | "Your money is safe" / "Replies in under 2 min" / "500+ verified pros" |
+| HowItWorks label | "How It Works" | "Dead simple" |
+| HowItWorks heading | "From request to done in four steps" | "Four steps. That's it." |
+| Step titles | "Describe Your Need" → "Experts Get Notified" → "Compare & Hire" → "Done & Delivered" | "Say what you need" → "Experts jump in" → "Pick your favorite" → "Done. Pay. Rate." |
+| Categories heading | "Find Your Expert" | "Whatever you need" |
+| Recent Requests heading | "Recent Requests" | "Happening right now" |
+| Testimonials heading | "Loved by Buyers & Experts" | "Don't take our word for it" |
+| Newsletter heading | "Stay Updated" | "Want in?" |
+| Become Expert | "Monetize your skills" | "Got skills? Get paid." |
 
 ---
 
-### 3. Order Completion Follow-up Flow
-**What**: After an order is marked completed, prompt the buyer for a review and suggest related experts.
+## Files to modify
 
-- In `Order.tsx`, after status changes to "completed", show a follow-up card:
-  - Review prompt (already exists as dialog — auto-open it)
-  - "Need more help?" CTA linking to `/post-request` pre-filled with same category
-  - "Similar Experts" section using the `SimilarExperts` component
-- Add a "Was this helpful?" satisfaction survey (thumbs up/down) stored in the session's `notes` field
-
----
-
-### 4. Referral/Invite Program
-**What**: Users get a unique referral link; both referrer and invitee earn wallet credit on first completed order.
-
-**DB changes**:
-- New `referrals` table: id, referrer_id (uuid), referred_email (text), referred_user_id (uuid, nullable), status (pending/registered/rewarded), reward_amount (numeric, default 2.00), created_at
-- Add `referred_by` column to `profiles` table (uuid, nullable)
-- RLS: users can view/create their own referrals; system updates status
-
-**Implementation**:
-- New `/settings` tab or section: "Invite Friends" with unique link (`druxio.lovable.app/?ref=USER_ID`)
-- On signup, detect `ref` param from URL, store in `profiles.referred_by` and create referral record
-- Edge function or DB trigger: when referred user completes first order, credit both wallets with bonus (e.g. $2.00)
-- Dashboard widget showing referral stats (invited, registered, earned)
-
----
-
-### 5. Saved Drafts for Task Posting
-**What**: Auto-save PostRequest form state so users don't lose progress.
-
-- In `PostRequest.tsx`, debounce-save form state to `localStorage` every 3 seconds
-- On page load, check for saved draft and show a "Resume draft?" banner
-- Clear draft on successful submission
-- Store: category, subcategory, title, description, budget, deadline, template fields
-- No DB changes — purely client-side with localStorage
-
----
-
-### Technical Details
-
-**Files to create**:
-- `src/lib/verification-badges.ts` — badge computation logic
-- `src/components/experts/VerificationBadges.tsx` — badge display component
-- `src/components/order/OrderFollowUp.tsx` — post-completion follow-up card
-- `src/components/referral/ReferralSection.tsx` — invite UI for settings
-- `src/hooks/use-draft.ts` — localStorage draft auto-save hook
-
-**Files to modify**:
-- `src/pages/MentorProfile.tsx` — verified badges, review replies, helpful votes
-- `src/pages/Order.tsx` — follow-up flow after completion
-- `src/pages/PostRequest.tsx` — draft auto-save/restore
-- `src/pages/Settings.tsx` — referral tab
-- `src/pages/Auth.tsx` — capture `ref` param on signup
-- `src/components/experts/SimilarExperts.tsx` — add verification badges
-
-**Database migrations**:
-1. `review_votes` table + RLS
-2. `reviews` table: add `reply`, `replied_at` columns
-3. `referrals` table + RLS
-4. `profiles` table: add `referred_by` column
+- `src/components/landing/Hero.tsx` — typography contrast, live preview card, copy
+- `src/components/landing/HowItWorks.tsx` — asymmetric layout, oversized step numbers, copy
+- `src/components/landing/Categories.tsx` — featured card layout, right-aligned header, copy
+- `src/components/landing/MentorSpotlight.tsx` — masonry layout, copy
+- `src/components/landing/Testimonials.tsx` — gradient avatars, copy
+- `src/components/landing/Newsletter.tsx` — copy, subtle background shape
+- `src/components/landing/LiveStats.tsx` — minor copy tweaks
+- `src/components/layout/Footer.tsx` — personality tagline
 
