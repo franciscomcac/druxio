@@ -13,3 +13,8 @@ Disallow: /notifications
 
 Sitemap: https://druxio.net/sitemap.xml
 Sitemap: https://fgpzlmomrzcpefqcstdn.supabase.co/functions/v1/sitemap
+
+# LLMs
+# See https://llmstxt.org for specification
+Allow: /llms.txt
+Allow: /llms-full.txt

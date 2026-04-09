@@ -1,0 +1,54 @@
+# Druxio
+
+> On-demand freelance expert marketplace with the lowest 5% platform fee. Post any task, get real-time quotes from verified freelancers in under 2 minutes.
+
+Druxio connects clients with verified experts across tech, business, creative, content, music, fitness, languages, and gaming. Clients post a request with a budget (€5–€50), receive up to 3 expert quotes, and only pay when they accept — all protected by escrow.
+
+## Key Facts
+
+- Website: https://druxio.net
+- Platform fee: 5% (deducted from expert earnings)
+- Payment protection: Escrow with 48h auto-release
+- Dispute resolution: 24h turnaround
+- Payout method: PayPal
+- Support: support@duxio.store
+
+## Categories
+
+- **Tech**: Discord Bots, Web Dev, SEO, Server Setup, App Dev, WordPress
+- **Business**: Marketplace, Dropshipping, Accounting, Legal, Marketing, Startup
+- **Creative**: Ad Copy, Logo Design, Video Editing, Thumbnails, UI/UX, Branding
+- **Content**: Streaming, YouTube, TikTok, Photography, Podcasting
+- **Music**: Production, Mixing, Guitar, Piano, Vocals, Beat Making
+- **Fitness**: Personal Training, Nutrition, Yoga, Weight Loss
+- **Languages**: English, Spanish, French, Japanese, German
+- **Gaming**: Valorant, Arc Raiders, Fortnite, CS2, Apex, LoL
+
+## How It Works
+
+### For Clients
+1. Post a request describing what you need
+2. Set a budget between €5 and €50
+3. Receive up to 3 quotes from verified experts
+4. Accept a quote — payment is held in escrow
+5. Expert delivers — funds release after approval or 48h auto-release
+
+### For Experts
+1. Sign up and get verified for free
+2. Browse open requests in your categories
+3. Submit competitive quotes with estimated delivery time
+4. Complete the task and earn 95% of the agreed price
+5. Get paid via PayPal
+
+## Links
+
+- [How It Works](https://druxio.net/how-it-works)
+- [Post a Request](https://druxio.net/post-request)
+- [FAQ](https://druxio.net/faq)
+- [Blog](https://druxio.net/blog)
+- [Privacy Policy](https://druxio.net/privacy)
+- [Terms of Service](https://druxio.net/terms)
+
+## Optional
+
+- [Full documentation for LLMs](https://druxio.net/llms-full.txt)

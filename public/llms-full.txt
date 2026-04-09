@@ -1,0 +1,150 @@
+# Druxio — Full Documentation
+
+> On-demand freelance expert marketplace with the lowest 5% platform fee. Post any task, get real-time quotes from verified freelancers in under 2 minutes.
+
+## About
+
+Druxio is a real-time freelance marketplace where clients post micro-tasks (€5–€50 budget) and receive competitive quotes from verified experts within minutes. The platform charges only a 5% fee — significantly lower than competitors like Fiverr (20%) or Upwork (10–20%). All payments are escrow-protected with automatic fund release after 48 hours if no dispute is raised.
+
+**Website**: https://druxio.net  
+**Support**: support@duxio.store  
+**Social**: [@druxiostore](https://x.com/druxiostore) on X · [@druxio_store](https://instagram.com/druxio_store) on Instagram · [@druxio_store](https://tiktok.com/@druxio_store) on TikTok
+
+---
+
+## Platform Overview
+
+### For Clients (Buyers)
+
+- **Free to post**: Creating a request costs nothing
+- **Budget range**: €5 to €50 per task
+- **Quote system**: Receive up to 3 quotes from different experts
+- **Escrow protection**: Payment is held securely until work is approved
+- **Auto-release**: Funds automatically release to the expert 48 hours after delivery if no dispute is raised
+- **Dispute resolution**: 24-hour turnaround on all disputes
+- **AI matching**: Optional AI-powered expert matching based on request category and description
+
+### For Experts (Sellers)
+
+- **Free to join**: No subscription or listing fees
+- **Earnings**: Keep 95% of every completed job
+- **Real-time notifications**: Get alerted instantly when new jobs match your expertise
+- **Flexible pricing**: Set your own prices within the client's budget range
+- **Payouts**: Withdraw earnings via PayPal
+- **Verification**: Badge system for identity, skill, and track record verification
+- **Portfolio**: Showcase previous work with images and links
+
+---
+
+## Categories & Subcategories
+
+### Gaming
+Valorant, Arc Raiders, Fortnite, CS2, Apex Legends, League of Legends
+
+### Tech
+Discord Bots, Web Development, SEO, Server Setup, App Development, WordPress
+
+### Business
+Marketplace consulting, Dropshipping, Accounting, Legal advice, Marketing, Startup guidance
+
+### Creative
+Ad Copy, Logo Design, Video Editing, Thumbnails, UI/UX Design, Branding
+
+### Music
+Production, Mixing & Mastering, Guitar lessons, Piano lessons, Vocal coaching, Beat Making
+
+### Fitness
+Personal Training, Nutrition planning, Yoga instruction, Weight Loss coaching
+
+### Languages
+English, Spanish, French, Japanese, German
+
+### Content
+Streaming setup, YouTube optimization, TikTok strategy, Photography, Podcasting
+
+---
+
+## Pricing Model
+
+| Aspect | Details |
+|---|---|
+| Posting a request | Free |
+| Platform fee | 5% (deducted from expert earnings) |
+| Client cost | Exactly the quoted price — no hidden fees |
+| Expert earnings | 95% of agreed price |
+| Payment method | PayPal (escrow-protected) |
+| Auto-release | 48 hours after delivery |
+| Dispute window | Within 48 hours of delivery |
+
+---
+
+## How It Works — Step by Step
+
+### Client Flow
+1. **Post a request** — Describe what you need, select a category, set a budget (€5–€50)
+2. **Receive quotes** — Up to 3 verified experts bid on your request with price and estimated time
+3. **Accept a quote** — Choose the best expert; payment is captured and held in escrow
+4. **Work gets done** — Communicate via built-in chat with file sharing
+5. **Approve & release** — Review the delivery, approve it, or raise a dispute within 48h
+
+### Expert Flow
+1. **Create a profile** — Add skills, bio, hourly rate, and portfolio items
+2. **Browse requests** — Filter by category; get real-time notifications for matching jobs
+3. **Submit a quote** — Set your price and estimated delivery time with an optional message
+4. **Deliver the work** — Complete the task and mark it as delivered
+5. **Get paid** — Funds release after client approval or 48h auto-release; withdraw via PayPal
+
+---
+
+## Trust & Safety
+
+- **Escrow payments**: All funds are held in escrow until work is approved
+- **Verification badges**: Experts can earn identity, skill, and track record badges
+- **Content moderation**: AI-powered content moderation on all submissions
+- **User reporting**: Built-in reporting system for policy violations
+- **Ban system**: Admins can ban users who violate terms of service
+- **Dispute panel**: Structured negotiation → escalation → admin resolution flow
+
+---
+
+## Key Pages
+
+- **Homepage**: https://druxio.net/
+- **How It Works**: https://druxio.net/how-it-works
+- **Post a Request**: https://druxio.net/post-request
+- **FAQ**: https://druxio.net/faq
+- **Blog**: https://druxio.net/blog
+- **Sign Up / Login**: https://druxio.net/auth
+- **Privacy Policy**: https://druxio.net/privacy
+- **Terms of Service**: https://druxio.net/terms
+- **Cookie Policy**: https://druxio.net/cookies
+
+### Category Pages
+- https://druxio.net/category/tech
+- https://druxio.net/category/business
+- https://druxio.net/category/creative
+- https://druxio.net/category/content
+- https://druxio.net/category/music
+- https://druxio.net/category/fitness
+- https://druxio.net/category/languages
+- https://druxio.net/category/gaming
+
+---
+
+## Blog Posts
+
+- [AI Auto-Match & Category Detection](https://druxio.net/blog/ai-auto-match-category-detection)
+- [Beta Launch: Druxio Store](https://druxio.net/blog/beta-launch-druxio-store)
+- [How Druxio Works for Clients](https://druxio.net/blog/how-druxio-works-for-clients)
+- [Expertise Without Borders](https://druxio.net/blog/expertise-without-borders)
+
+---
+
+## Technical Details
+
+- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite
+- **Backend**: Lovable Cloud (Supabase-powered)
+- **Authentication**: Email + Google OAuth
+- **Payments**: PayPal (escrow model)
+- **AI Features**: AI-powered expert matching, content moderation, request refinement, session summaries
+- **Real-time**: Live presence indicators, instant notifications, real-time chat
