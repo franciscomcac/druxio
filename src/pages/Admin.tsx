@@ -1384,7 +1384,7 @@ const Admin = () => {
                                   onClick={() => navigate(`/mentor/${user.id}`)}
                                   title="View profile"
                                 >
-                                  <UserAvatar src={user.avatar_url || undefined} className="h-8 w-8" />
+                                  <UserAvatar src={user.avatar_url || undefined} userId={user.id} name={user.display_name} className="h-8 w-8" />
                                   <div>
                                     <p className="font-medium text-sm text-foreground hover:text-primary transition-colors">{user.display_name || "Unnamed"}</p>
                                     <p className="text-xs text-muted-foreground">{user.is_online ? "Online" : "Offline"}</p>
