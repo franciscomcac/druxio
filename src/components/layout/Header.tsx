@@ -4,7 +4,7 @@ import { useBalance } from "@/hooks/use-balance";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import UserAvatar from "@/components/UserAvatar";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -144,12 +144,7 @@ const Header = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button id="tour-profile-menu" variant="ghost" className="relative h-9 w-9 rounded-full">
-                    <Avatar className="h-9 w-9 border border-border/40">
-                      <AvatarImage src={profile?.avatar_url} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                        {profile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "U"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar src={profile?.avatar_url} name={profile?.display_name} userId={user.id} className="h-9 w-9 border-border/40" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-xl border-border/40">
@@ -256,12 +251,7 @@ const Header = () => {
                 {user ? (
                   <>
                     <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-lg bg-primary/[0.04] border border-border/30">
-                      <Avatar className="h-10 w-10 border border-border/40 shrink-0">
-                        <AvatarImage src={profile?.avatar_url} />
-                        <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
-                          {profile?.display_name?.split(" ").map((n: string) => n[0]).join("") || "U"}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserAvatar src={profile?.avatar_url} name={profile?.display_name} userId={user.id} className="h-10 w-10 border-border/40 shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-foreground truncate">{profile?.display_name || "User"}</p>
                         <button
