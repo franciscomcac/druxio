@@ -355,7 +355,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         onClick={() => navigate(`/order/${order.job.id}`)}
         className="w-full text-left flex items-center gap-3 rounded-sm border border-border bg-background/40 p-3 cursor-pointer transition-all duration-200 hover:border-primary/20 hover:bg-primary/[0.03] active:scale-[0.99]"
       >
-        <UserAvatar src={order.buyerProfile?.avatar_url} className="h-8 w-8 border border-border shrink-0 rounded-sm" />
+        <UserAvatar src={order.buyerProfile?.avatar_url} userId={order.job.buyer_id} name={order.buyerProfile?.display_name} className="h-8 w-8 border border-border shrink-0 rounded-sm" />
         <div className="flex-1 min-w-0">
           <p className="font-medium text-foreground truncate text-sm">{order.job.title}</p>
           <p className="text-xs text-muted-foreground mt-0.5">

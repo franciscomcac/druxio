@@ -843,7 +843,7 @@ const Order = () => {
               onClick={() => navigate(isBuyer ? `/mentor/${quote.expert_id}` : `/mentor/${job.buyer_id}`)}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-3">
-                  <UserAvatar src={otherPartyProfile?.avatar_url} className="h-12 w-12 border border-border" />
+                  <UserAvatar src={otherPartyProfile?.avatar_url} userId={isBuyer ? quote.expert_id : job.buyer_id} name={otherPartyProfile?.display_name} className="h-12 w-12 border border-border" />
                   <div>
                     <p className="font-semibold text-foreground">{otherPartyProfile?.display_name || otherPartyLabel}</p>
                     <p className="text-xs text-muted-foreground">{otherPartyLabel}</p>

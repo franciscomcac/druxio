@@ -197,7 +197,7 @@ const CategoryPage = () => {
                   >
                     <CardContent className="flex items-center gap-3 p-3 pr-5">
                       <div className="relative">
-                        <UserAvatar src={expert.avatar_url} className="h-10 w-10" />
+                        <UserAvatar src={expert.avatar_url} userId={expert.id} name={expert.display_name} className="h-10 w-10" />
                         <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-chart-2 ring-2 ring-background" />
                       </div>
                       <div>
@@ -260,7 +260,7 @@ const CategoryPage = () => {
                   >
                     <CardContent className="p-4 text-center">
                       <div className="relative inline-block mb-3">
-                        <UserAvatar src={expert.avatar_url} className="h-16 w-16 ring-2 ring-border" />
+                        <UserAvatar src={expert.avatar_url} userId={expert.id} name={expert.display_name} className="h-16 w-16 ring-2 ring-border" />
                         {expert.is_online && (
                           <span className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-chart-2 ring-2 ring-background" />
                         )}

@@ -331,7 +331,7 @@ const Session = () => {
                 </Button>
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <UserAvatar src={otherUser?.avatar_url} className="h-12 w-12" />
+                    <UserAvatar src={otherUser?.avatar_url} userId={otherUser?.id} name={otherUser?.display_name} className="h-12 w-12" />
                     {otherUser?.is_online && (
                       <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 ring-2 ring-background" />
                     )}

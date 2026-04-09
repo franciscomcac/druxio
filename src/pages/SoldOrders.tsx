@@ -165,7 +165,7 @@ const SoldOrders = () => {
                 </span>
               )}
               <div className="flex items-center gap-2">
-                <UserAvatar src={order.buyerProfile?.avatar_url} className="h-7 w-7 border border-border" />
+                <UserAvatar src={order.buyerProfile?.avatar_url} userId={order.job?.buyer_id} name={order.buyerProfile?.display_name} className="h-7 w-7 border border-border" />
                 <span className="text-xs text-muted-foreground">{order.buyerProfile?.display_name || "Buyer"}</span>
               </div>
               {clickable && <ArrowRight className="h-4 w-4 text-muted-foreground" />}

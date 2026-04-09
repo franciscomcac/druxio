@@ -153,7 +153,7 @@ const PurchasedOrders = () => {
                 <>
                   <p className="text-lg font-bold text-primary">{format(Number(order.quote.price))}</p>
                   <div className="flex items-center gap-2">
-                    <UserAvatar src={order.sellerProfile?.avatar_url} className="h-7 w-7 border border-border" />
+                    <UserAvatar src={order.sellerProfile?.avatar_url} userId={order.quote?.expert_id} name={order.sellerProfile?.display_name} className="h-7 w-7 border border-border" />
                     <span className="text-xs text-muted-foreground">{order.sellerProfile?.display_name || "Seller"}</span>
                   </div>
                 </>
