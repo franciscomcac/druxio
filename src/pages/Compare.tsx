@@ -60,9 +60,9 @@ const features = [
 function CellValue({ value }: { value: boolean | string }) {
   if (typeof value === "boolean") {
     return value ? (
-      <Check className="h-5 w-5 text-emerald-500 mx-auto" />
+      <Check className="h-5 w-5 text-primary mx-auto" />
     ) : (
-      <X className="h-5 w-5 text-red-400 mx-auto" />
+      <X className="h-5 w-5 text-destructive mx-auto" />
     );
   }
   return <span className="text-sm font-medium text-foreground">{value}</span>;
