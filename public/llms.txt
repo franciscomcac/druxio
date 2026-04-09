@@ -42,12 +42,13 @@ Druxio connects clients with verified experts across tech, business, creative, c
 
 ## Links
 
-- [How It Works](https://druxio.net/how-it-works)
+- [How It Works](https://druxio.net/how-it-works): [how-it-works.md](https://druxio.net/how-it-works.md)
 - [Post a Request](https://druxio.net/post-request)
-- [FAQ](https://druxio.net/faq)
+- [FAQ](https://druxio.net/faq): [faq.md](https://druxio.net/faq.md)
 - [Blog](https://druxio.net/blog)
-- [Privacy Policy](https://druxio.net/privacy)
-- [Terms of Service](https://druxio.net/terms)
+- [Privacy Policy](https://druxio.net/privacy): [privacy.md](https://druxio.net/privacy.md)
+- [Terms of Service](https://druxio.net/terms): [terms.md](https://druxio.net/terms.md)
+- [Cookie Policy](https://druxio.net/cookies): [cookies.md](https://druxio.net/cookies.md)
 
 ## Optional
 
