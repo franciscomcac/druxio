@@ -45,10 +45,29 @@ Druxio connects clients with verified experts across tech, business, creative, c
 - [How It Works](https://druxio.net/how-it-works): [how-it-works.md](https://druxio.net/how-it-works.md)
 - [Post a Request](https://druxio.net/post-request)
 - [FAQ](https://druxio.net/faq): [faq.md](https://druxio.net/faq.md)
-- [Blog](https://druxio.net/blog)
+- [Blog](https://druxio.net/blog): [blog.md](https://druxio.net/blog.md)
 - [Privacy Policy](https://druxio.net/privacy): [privacy.md](https://druxio.net/privacy.md)
 - [Terms of Service](https://druxio.net/terms): [terms.md](https://druxio.net/terms.md)
 - [Cookie Policy](https://druxio.net/cookies): [cookies.md](https://druxio.net/cookies.md)
+
+## Blog Posts
+
+- [Pay with PayPal on Druxio](https://druxio.net/blog/paypal-payments-now-live): [paypal-payments-now-live.md](https://druxio.net/blog/paypal-payments-now-live.md)
+- [AI Auto-Match Category Detection](https://druxio.net/blog/ai-auto-match-category-detection): [ai-auto-match-category-detection.md](https://druxio.net/blog/ai-auto-match-category-detection.md)
+- [Beta Launch](https://druxio.net/blog/beta-launch-druxio-store): [beta-launch-druxio-store.md](https://druxio.net/blog/beta-launch-druxio-store.md)
+- [How Druxio Works for Clients](https://druxio.net/blog/how-druxio-works-for-clients): [how-druxio-works-for-clients.md](https://druxio.net/blog/how-druxio-works-for-clients.md)
+- [Expertise Without Borders](https://druxio.net/blog/expertise-without-borders): [expertise-without-borders.md](https://druxio.net/blog/expertise-without-borders.md)
+
+## Category Pages
+
+- [Tech](https://druxio.net/category/tech): [tech.md](https://druxio.net/category/tech.md)
+- [Business](https://druxio.net/category/business): [business.md](https://druxio.net/category/business.md)
+- [Creative](https://druxio.net/category/creative): [creative.md](https://druxio.net/category/creative.md)
+- [Content](https://druxio.net/category/content): [content.md](https://druxio.net/category/content.md)
+- [Music](https://druxio.net/category/music): [music.md](https://druxio.net/category/music.md)
+- [Fitness](https://druxio.net/category/fitness): [fitness.md](https://druxio.net/category/fitness.md)
+- [Languages](https://druxio.net/category/languages): [languages.md](https://druxio.net/category/languages.md)
+- [Gaming](https://druxio.net/category/gaming): [gaming.md](https://druxio.net/category/gaming.md)
 
 ## Optional
 
