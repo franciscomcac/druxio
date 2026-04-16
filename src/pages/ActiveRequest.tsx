@@ -65,6 +65,7 @@ interface Job {
 interface SellerConvo {
   jobId: string;
   jobTitle: string;
+  jobDescription: string | null;
   jobCategory: string;
   jobStatus: string;
   quoteStatus: string;
