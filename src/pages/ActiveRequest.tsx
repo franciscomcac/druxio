@@ -818,6 +818,15 @@ const ActiveRequest = () => {
     });
     if (error) {
       toast({ title: "Failed to send message", description: error.message, variant: "destructive" });
+    } else {
+      // Email notification to the expert
+      const { data: myProfile } = await supabase.from("profiles").select("display_name").eq("id", userId).single();
+      sendOrderEmail("new_message", {
+        recipientId: selectedChatPartnerId,
+        senderName: myProfile?.display_name || "Someone",
+        messagePreview: messageContent || "📎 Image",
+        sessionId: sid,
+      });
     }
     setSendingChat(false);
   };
@@ -855,6 +864,15 @@ const ActiveRequest = () => {
     });
     if (error) {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
+    } else if (activeConvo) {
+      // Email notification to the buyer
+      const { data: myProfile } = await supabase.from("profiles").select("display_name").eq("id", userId).single();
+      sendOrderEmail("new_message", {
+        recipientId: activeConvo.buyerId,
+        senderName: myProfile?.display_name || "Someone",
+        messagePreview: content || "📎 Image",
+        sessionId: activeConvo.sessionId,
+      });
     }
     setSendingSellerChat(false);
   };
