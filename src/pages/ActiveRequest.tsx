@@ -176,7 +176,7 @@ const ActiveRequest = () => {
       const welcomeMessages: ChatMessage[] = [
         {
           id: "demo-welcome-1",
-          content: "📋 Order Request\n\n📌 Tutorial: Practice Sending a Quote\n🏷 Category: Getting Started\n💰 Budget: €10 – €25\n⏱ Deadline: 1 day\n\n📄 Details:\nThis is a demo request! Practice chatting and updating your offer here.",
+          content: "📋 Order Request\n\n📌 Tutorial: Practice Sending a Quote\n🏷 Category: Getting Started\n💰 Price Range: €10 – €25\n⏱ Suggested Delivery: 1 day\n\n📄 Details:\nThis is a demo request! Practice chatting and updating your offer here.",
           sender_id: "demo-buyer",
           created_at: new Date(Date.now() - 60000).toISOString(),
         },
@@ -663,8 +663,8 @@ const ActiveRequest = () => {
 
     const sendAutoMessage = async (sid: string, isNew: boolean) => {
       if (!isNew || !userId) return;
-      const budgetLine = `\n💰 Budget: €${job.budget_min} – €${job.budget_max}`;
-      const deadlineLine = `\n⏱ Deadline: ${formatDeliveryTime(job.deadline_minutes)}`;
+      const budgetLine = `\n💰 Price Range: €${job.budget_min} – €${job.budget_max}`;
+      const deadlineLine = `\n⏱ Suggested Delivery: ${formatDeliveryTime(job.deadline_minutes)}`;
       const descLine = job.description ? `\n\n📄 Details:\n${job.description}` : "";
       const content = `📋 Order Request\n\n📌 ${job.title}\n🏷 Category: ${job.category}${budgetLine}${deadlineLine}${descLine}`;
       await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
@@ -1184,7 +1184,7 @@ const ActiveRequest = () => {
                 <p className="text-xs font-semibold text-foreground truncate">{activeConvo.jobTitle}</p>
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground flex-wrap">
                   <Badge variant="outline" className="text-[9px] h-4">{activeConvo.jobCategory}</Badge>
-                  <span>Budget: {format(activeConvo.budgetMin)}–{format(activeConvo.budgetMax)}</span>
+                  <span>Range: {format(activeConvo.budgetMin)}–{format(activeConvo.budgetMax)}</span>
                 </div>
                 {activeConvo.buyerRating && activeConvo.buyerRating > 0 && (
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
@@ -1418,11 +1418,11 @@ const ActiveRequest = () => {
                 <Badge variant="outline" className="text-[10px]">{activeConvo.jobCategory}</Badge>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   <div className="rounded-lg bg-muted/40 p-2">
-                    <p className="text-[9px] text-muted-foreground uppercase">Budget</p>
+                    <p className="text-[9px] text-muted-foreground uppercase">Price Range</p>
                     <p className="text-xs font-semibold text-foreground">{format(activeConvo.budgetMin)} – {format(activeConvo.budgetMax)}</p>
                   </div>
                   <div className="rounded-lg bg-muted/40 p-2">
-                    <p className="text-[9px] text-muted-foreground uppercase">Deadline</p>
+                    <p className="text-[9px] text-muted-foreground uppercase">Suggested Delivery</p>
                     <p className="text-xs font-semibold text-foreground">{formatDeliveryTime(activeConvo.deadlineMinutes)}</p>
                   </div>
                 </div>
