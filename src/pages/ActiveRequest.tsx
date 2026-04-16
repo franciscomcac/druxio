@@ -65,6 +65,7 @@ interface Job {
 interface SellerConvo {
   jobId: string;
   jobTitle: string;
+  jobDescription: string | null;
   jobCategory: string;
   jobStatus: string;
   quoteStatus: string;
@@ -413,6 +414,7 @@ const ActiveRequest = () => {
             budgetMax: 25,
             quoteCreatedAt: new Date().toISOString(),
             deadlineMinutes: 1440,
+            jobDescription: "This is a demo request! Practice chatting and updating your offer here.",
           });
           setSellerChatMessages([]);
         } else {
@@ -426,7 +428,7 @@ const ActiveRequest = () => {
       const convos: SellerConvo[] = [];
 
       await Promise.all(myQuotes.map(async (q) => {
-        const { data: jobData } = await supabase.from("jobs").select("id, title, category, status, buyer_id, budget_min, budget_max, deadline_minutes").eq("id", q.job_id).single();
+        const { data: jobData } = await supabase.from("jobs").select("id, title, description, category, status, buyer_id, budget_min, budget_max, deadline_minutes").eq("id", q.job_id).single();
         if (!jobData) return;
 
         const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url, rating_avg, total_spent").eq("id", jobData.buyer_id).single();
@@ -468,6 +470,7 @@ const ActiveRequest = () => {
         convos.push({
           jobId: jobData.id,
           jobTitle: jobData.title,
+          jobDescription: jobData.description || null,
           jobCategory: jobData.category,
           jobStatus: jobData.status,
           quoteStatus: q.status,
@@ -532,6 +535,7 @@ const ActiveRequest = () => {
           budgetMax: 25,
           quoteCreatedAt: new Date().toISOString(),
           deadlineMinutes: 1440,
+          jobDescription: "This is a demo request! Practice chatting and updating your offer here.",
         });
         setSellerChatMessages([]);
         return;
@@ -1087,6 +1091,7 @@ const ActiveRequest = () => {
     budgetMax: 25,
     quoteCreatedAt: new Date().toISOString(),
     deadlineMinutes: 1440,
+    jobDescription: "This is a demo request! Practice chatting and updating your offer here.",
   };
 
   const isDemo = (convo: SellerConvo) => convo.jobId === "demo-tutorial-quote";
@@ -1435,16 +1440,12 @@ const ActiveRequest = () => {
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Request Details</p>
                 <p className="text-sm font-semibold text-foreground leading-snug">{activeConvo.jobTitle}</p>
                 <Badge variant="outline" className="text-[10px]">{activeConvo.jobCategory}</Badge>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  <div className="rounded-lg bg-muted/40 p-2">
-                    <p className="text-[9px] text-muted-foreground uppercase">Price Range</p>
-                    <p className="text-xs font-semibold text-foreground">{format(activeConvo.budgetMin)} – {format(activeConvo.budgetMax)}</p>
+                {activeConvo.jobDescription && (
+                  <div className="rounded-lg bg-muted/40 p-3 mt-2">
+                    <p className="text-[9px] text-muted-foreground uppercase mb-1">Buyer's Description</p>
+                    <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{activeConvo.jobDescription}</p>
                   </div>
-                  <div className="rounded-lg bg-muted/40 p-2">
-                    <p className="text-[9px] text-muted-foreground uppercase">Suggested Delivery</p>
-                    <p className="text-xs font-semibold text-foreground">{formatDeliveryTime(activeConvo.deadlineMinutes)}</p>
-                  </div>
-                </div>
+                )}
               </div>
 
               <div className="p-4 border-b border-border">
