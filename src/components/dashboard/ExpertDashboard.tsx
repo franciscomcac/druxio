@@ -196,7 +196,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         if (newJob.status === "open" && newJob.buyer_id !== profile?.id) {
           setOpenJobs((prev) => [newJob, ...prev]);
           playNotificationSound();
-          toast({ title: "🔔 New request!", description: `"${newJob.title}" — €${newJob.budget_max}` });
+          toast({ title: "🔔 New request!", description: `"${newJob.title}" — ${formatDeliveryTime(newJob.deadline_minutes)}` });
         }
       })
       .subscribe();
