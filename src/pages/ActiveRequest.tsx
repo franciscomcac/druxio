@@ -1418,11 +1418,11 @@ const ActiveRequest = () => {
                 <Badge variant="outline" className="text-[10px]">{activeConvo.jobCategory}</Badge>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   <div className="rounded-lg bg-muted/40 p-2">
-                    <p className="text-[9px] text-muted-foreground uppercase">Budget</p>
+                    <p className="text-[9px] text-muted-foreground uppercase">Price Range</p>
                     <p className="text-xs font-semibold text-foreground">{format(activeConvo.budgetMin)} – {format(activeConvo.budgetMax)}</p>
                   </div>
                   <div className="rounded-lg bg-muted/40 p-2">
-                    <p className="text-[9px] text-muted-foreground uppercase">Deadline</p>
+                    <p className="text-[9px] text-muted-foreground uppercase">Suggested Delivery</p>
                     <p className="text-xs font-semibold text-foreground">{formatDeliveryTime(activeConvo.deadlineMinutes)}</p>
                   </div>
                 </div>
