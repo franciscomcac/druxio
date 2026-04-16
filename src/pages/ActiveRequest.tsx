@@ -414,6 +414,7 @@ const ActiveRequest = () => {
             budgetMax: 25,
             quoteCreatedAt: new Date().toISOString(),
             deadlineMinutes: 1440,
+            jobDescription: "This is a demo request! Practice chatting and updating your offer here.",
           });
           setSellerChatMessages([]);
         } else {
@@ -427,7 +428,7 @@ const ActiveRequest = () => {
       const convos: SellerConvo[] = [];
 
       await Promise.all(myQuotes.map(async (q) => {
-        const { data: jobData } = await supabase.from("jobs").select("id, title, category, status, buyer_id, budget_min, budget_max, deadline_minutes").eq("id", q.job_id).single();
+        const { data: jobData } = await supabase.from("jobs").select("id, title, description, category, status, buyer_id, budget_min, budget_max, deadline_minutes").eq("id", q.job_id).single();
         if (!jobData) return;
 
         const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url, rating_avg, total_spent").eq("id", jobData.buyer_id).single();
@@ -469,6 +470,7 @@ const ActiveRequest = () => {
         convos.push({
           jobId: jobData.id,
           jobTitle: jobData.title,
+          jobDescription: jobData.description || null,
           jobCategory: jobData.category,
           jobStatus: jobData.status,
           quoteStatus: q.status,
@@ -533,6 +535,7 @@ const ActiveRequest = () => {
           budgetMax: 25,
           quoteCreatedAt: new Date().toISOString(),
           deadlineMinutes: 1440,
+          jobDescription: "This is a demo request! Practice chatting and updating your offer here.",
         });
         setSellerChatMessages([]);
         return;
