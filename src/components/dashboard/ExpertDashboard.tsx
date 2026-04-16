@@ -513,9 +513,9 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-background/40 p-3 space-y-0.5">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Max Delivery</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Suggested Delivery</p>
                 <p className="text-lg font-bold text-foreground">{previewJob ? formatDeliveryTime(previewJob.deadline_minutes) : "—"}</p>
-                <p className="text-[10px] text-muted-foreground">Buyer's deadline</p>
+                <p className="text-[10px] text-muted-foreground">Buyer's preference</p>
               </div>
             </div>
 
