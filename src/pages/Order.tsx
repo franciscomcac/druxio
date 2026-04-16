@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useSEO } from "@/hooks/use-seo";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { sendOrderEmail } from "@/lib/send-email";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useModeration } from "@/hooks/use-moderation";
 import { Button } from "@/components/ui/button";
@@ -302,6 +303,20 @@ const Order = () => {
       });
       if (error) throw error;
       setChatInput("");
+
+      // Send email notification to the other party
+      if (job && quote) {
+        const isBuyer = userId === job.buyer_id;
+        const recipientId = isBuyer ? quote.expert_id : job.buyer_id;
+        const myProfile = isBuyer ? buyerProfile : sellerProfile;
+        sendOrderEmail("new_message", {
+          recipientId,
+          senderName: myProfile?.display_name || "Someone",
+          messagePreview: messageText || "📷 Image",
+          sessionId,
+        });
+      }
+
       if (messageText) {
         softCheckContent(messageText, "order chat message", { job_id: jobId, sender_id: userId });
       }
