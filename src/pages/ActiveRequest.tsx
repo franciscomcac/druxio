@@ -1091,6 +1091,7 @@ const ActiveRequest = () => {
     budgetMax: 25,
     quoteCreatedAt: new Date().toISOString(),
     deadlineMinutes: 1440,
+    jobDescription: "This is a demo request! Practice chatting and updating your offer here.",
   };
 
   const isDemo = (convo: SellerConvo) => convo.jobId === "demo-tutorial-quote";
