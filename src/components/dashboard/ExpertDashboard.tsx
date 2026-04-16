@@ -196,7 +196,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
         if (newJob.status === "open" && newJob.buyer_id !== profile?.id) {
           setOpenJobs((prev) => [newJob, ...prev]);
           playNotificationSound();
-          toast({ title: "🔔 New request!", description: `"${newJob.title}" — €${newJob.budget_max}` });
+          toast({ title: "🔔 New request!", description: `"${newJob.title}" — ${formatDeliveryTime(newJob.deadline_minutes)}` });
         }
       })
       .subscribe();
@@ -646,7 +646,6 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                               <p className="font-medium text-foreground text-sm leading-snug line-clamp-1">{DEMO_JOB.title}</p>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span className="font-bold text-foreground">€{DEMO_JOB.budget_max}</span>
                               <span className="flex items-center gap-0.5"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(DEMO_JOB.deadline_minutes)}</span>
                               <span className="text-primary text-[10px]">Practice quoting!</span>
                             </div>
@@ -685,10 +684,9 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
                                           <p className="font-medium text-foreground text-sm leading-snug line-clamp-1 hover:text-primary transition-colors">
                                             {job.title}
                                           </p>
-                                          <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
-                                            <span className="font-bold text-foreground">€{job.budget_max}</span>
-                                            <span className="flex items-center gap-0.5"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(job.deadline_minutes)}</span>
-                                            <span>{timeAgo(job.created_at)}</span>
+                                            <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
+                                              <span className="flex items-center gap-0.5"><Clock className="h-3 w-3 text-primary/60" /> {formatDeliveryTime(job.deadline_minutes)}</span>
+                                              <span>{timeAgo(job.created_at)}</span>
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-1 shrink-0">
