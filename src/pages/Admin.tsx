@@ -2043,6 +2043,213 @@ const Admin = () => {
             )}
           </TabsContent>
 
+          {/* ═══ LIVE MONITOR TAB ═══ */}
+          <TabsContent value="live">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={liveSubTab === "requests" ? "default" : "outline"}
+                  onClick={() => setLiveSubTab("requests")}
+                  className="gap-1.5"
+                >
+                  <Trophy className="h-4 w-4" /> Requests Leaderboard
+                </Button>
+                <Button
+                  size="sm"
+                  variant={liveSubTab === "chats" ? "default" : "outline"}
+                  onClick={() => setLiveSubTab("chats")}
+                  className="gap-1.5"
+                >
+                  <MessageSquare className="h-4 w-4" /> Live Chats
+                </Button>
+              </div>
+              <Button size="sm" variant="ghost" onClick={loadLiveMonitor} disabled={liveLoading} className="gap-1.5">
+                {liveLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                Refresh
+              </Button>
+            </div>
+
+            {liveLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+              </div>
+            ) : liveSubTab === "requests" ? (
+              liveJobs.length === 0 ? (
+                <Card><CardContent className="py-10 text-center text-muted-foreground"><Activity className="h-10 w-10 mx-auto mb-2 opacity-30" />No live requests right now.</CardContent></Card>
+              ) : (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-primary" /> Active Requests Leaderboard
+                    </CardTitle>
+                    <CardDescription>Ranked by quote activity. Click a row to inspect the request.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">#</TableHead>
+                          <TableHead>Request</TableHead>
+                          <TableHead>Buyer</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Quotes</TableHead>
+                          <TableHead className="text-right">Lowest €</TableHead>
+                          <TableHead className="text-right">Posted</TableHead>
+                          <TableHead className="w-10"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {liveJobs.map((j, i) => (
+                          <TableRow key={j.id} className="cursor-pointer" onClick={() => navigate(`/request/${j.id}`)}>
+                            <TableCell className="font-mono text-xs text-muted-foreground">
+                              {i < 3 ? <Trophy className={cn("h-4 w-4", i === 0 ? "text-yellow-500" : i === 1 ? "text-zinc-400" : "text-amber-700")} /> : i + 1}
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium text-sm text-foreground line-clamp-1 max-w-[260px]">{j.title}</div>
+                              <div className="text-[11px] text-muted-foreground">{j.category}{j.subcategory ? ` · ${j.subcategory}` : ""}</div>
+                            </TableCell>
+                            <TableCell className="text-sm">{j.buyer_name}</TableCell>
+                            <TableCell>
+                              <Badge variant={j.status === "disputed" ? "destructive" : j.status === "in_progress" ? "default" : "secondary"} className="text-[10px]">
+                                {j.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-medium">{j.quote_count}</TableCell>
+                            <TableCell className="text-right">{j.lowest_quote != null ? `€${Number(j.lowest_quote).toFixed(2)}` : "—"}</TableCell>
+                            <TableCell className="text-right text-xs text-muted-foreground">{formatDistanceToNow(new Date(j.created_at), { addSuffix: true })}</TableCell>
+                            <TableCell><ArrowRight className="h-4 w-4 text-muted-foreground" /></TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4">
+                {/* Sessions list */}
+                <Card className="lg:max-h-[70vh] overflow-hidden flex flex-col">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-primary" /> Active Chats
+                    </CardTitle>
+                    <CardDescription>{liveSessions.length} session{liveSessions.length === 1 ? "" : "s"}</CardDescription>
+                  </CardHeader>
+                  <ScrollArea className="flex-1">
+                    <div className="px-3 pb-3 space-y-1.5">
+                      {liveSessions.length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-8">No chats yet.</p>
+                      )}
+                      {liveSessions.map(s => (
+                        <button
+                          key={s.id}
+                          onClick={() => setSelectedLiveSession(s)}
+                          className={cn(
+                            "w-full text-left rounded-md border p-2.5 transition-colors",
+                            selectedLiveSession?.id === s.id
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/30 hover:bg-muted/30"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <div className="font-medium text-xs text-foreground line-clamp-1">
+                              {s.job_title || `${s.mentee_name} ↔ ${s.mentor_name}`}
+                            </div>
+                            <Badge variant="secondary" className="text-[9px] h-4 px-1 shrink-0">{s.message_count}</Badge>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground line-clamp-1">
+                            {s.mentee_name} ↔ {s.mentor_name}
+                          </div>
+                          {s.last_message_preview && (
+                            <p className="text-[11px] text-muted-foreground/80 mt-1 line-clamp-1 italic">
+                              {s.last_message_preview}
+                            </p>
+                          )}
+                          <div className="text-[10px] text-muted-foreground mt-1">
+                            {s.last_message_at
+                              ? formatDistanceToNow(new Date(s.last_message_at), { addSuffix: true })
+                              : formatDistanceToNow(new Date(s.updated_at), { addSuffix: true })}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </Card>
+
+                {/* Chat viewer */}
+                <Card className="lg:max-h-[70vh] overflow-hidden flex flex-col">
+                  <CardHeader className="pb-3 border-b border-border">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-primary" />
+                      {selectedLiveSession
+                        ? (selectedLiveSession.job_title || `${selectedLiveSession.mentee_name} ↔ ${selectedLiveSession.mentor_name}`)
+                        : "Select a chat"}
+                    </CardTitle>
+                    {selectedLiveSession && (
+                      <CardDescription className="text-xs">
+                        {selectedLiveSession.mentee_name} (buyer) ↔ {selectedLiveSession.mentor_name} (expert)
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  {!selectedLiveSession ? (
+                    <CardContent className="flex-1 flex items-center justify-center text-center text-muted-foreground py-16">
+                      <div>
+                        <MessageSquare className="h-10 w-10 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">Pick a chat on the left to monitor it in real time.</p>
+                      </div>
+                    </CardContent>
+                  ) : liveMessagesLoading ? (
+                    <CardContent className="flex-1 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardContent>
+                  ) : (
+                    <ScrollArea className="flex-1">
+                      <div className="p-4 space-y-3">
+                        {liveMessages.length === 0 && (
+                          <p className="text-sm text-muted-foreground text-center py-8">No messages in this chat yet.</p>
+                        )}
+                        {liveMessages.map(m => {
+                          const isMentor = m.sender_id === selectedLiveSession.mentor_id;
+                          return (
+                            <div key={m.id} className="flex gap-2">
+                              <div className={cn(
+                                "h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-medium shrink-0",
+                                isMentor ? "bg-primary/15 text-primary" : "bg-muted text-foreground"
+                              )}>
+                                {(m.sender_name || "?").slice(0, 2).toUpperCase()}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-xs font-medium text-foreground">{m.sender_name}</span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {format(new Date(m.created_at), "MMM d, HH:mm")}
+                                  </span>
+                                  <Badge variant="outline" className="text-[9px] h-4 px-1">
+                                    {isMentor ? "expert" : "buyer"}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words mt-0.5">{m.content}</p>
+                                {m.image_urls && m.image_urls.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                    {m.image_urls.map((url, i) => (
+                                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                                        <img src={url} alt="" className="h-16 w-16 object-cover rounded border border-border" />
+                                      </a>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <div ref={liveBottomRef} />
+                      </div>
+                    </ScrollArea>
+                  )}
+                </Card>
+              </div>
+            )}
+          </TabsContent>
+
         </Tabs>
 
         {/* ═══ REPORT DETAIL DIALOG ═══ */}
