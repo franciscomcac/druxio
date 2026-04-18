@@ -365,6 +365,35 @@ const Admin = () => {
     if (isAdmin && activeTab === "reports") loadReports();
   }, [reportsFilter]);
 
+  // Live monitor: load messages + realtime when a session is selected
+  useEffect(() => {
+    if (!selectedLiveSession) { setLiveMessages([]); return; }
+    loadLiveMessages(selectedLiveSession.id);
+    const ch = supabase
+      .channel(`admin-live-${selectedLiveSession.id}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `session_id=eq.${selectedLiveSession.id}`,
+      }, async (payload) => {
+        const m = payload.new as any;
+        const { data: p } = await supabase.from("profiles").select("display_name").eq("id", m.sender_id).maybeSingle();
+        setLiveMessages(prev => prev.find(x => x.id === m.id) ? prev : [...prev, { ...m, sender_name: p?.display_name || "Unknown" }]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLiveSession]);
+
+  // Auto-scroll live chat viewer
+  useEffect(() => {
+    const el = liveBottomRef.current;
+    if (!el) return;
+    const container = el.closest("[data-radix-scroll-area-viewport]") as HTMLElement | null;
+    if (container) container.scrollTop = container.scrollHeight;
+    else el.scrollIntoView({ block: "nearest" });
+  }, [liveMessages]);
+
   // ─── Data loaders ───────────────────────────────────────────────
 
   const loadLiveMonitor = async () => {
