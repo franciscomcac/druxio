@@ -255,6 +255,16 @@ const Admin = () => {
   // Stats
   const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0, pendingReports: 0 });
 
+  // Live monitor
+  const [liveJobs, setLiveJobs] = useState<LiveJobRow[]>([]);
+  const [liveSessions, setLiveSessions] = useState<LiveSessionRow[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveSubTab, setLiveSubTab] = useState<"requests" | "chats">("requests");
+  const [selectedLiveSession, setSelectedLiveSession] = useState<LiveSessionRow | null>(null);
+  const [liveMessages, setLiveMessages] = useState<LiveMessage[]>([]);
+  const [liveMessagesLoading, setLiveMessagesLoading] = useState(false);
+  const liveBottomRef = useRef<HTMLDivElement>(null);
+
   // ─── Auth check ─────────────────────────────────────────────────
 
   useEffect(() => {
