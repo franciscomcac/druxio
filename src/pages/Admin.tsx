@@ -1330,6 +1330,11 @@ const Admin = () => {
                 <span className="sm:hidden">Rep.</span>
                 {stats.pendingReports > 0 && <Badge variant="destructive" className="ml-0.5 text-[9px] h-4 px-1">{stats.pendingReports}</Badge>}
               </TabsTrigger>
+              <TabsTrigger value="live" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Radio className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Live Monitor</span>
+                <span className="sm:hidden">Live</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
