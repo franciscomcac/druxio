@@ -29,7 +29,7 @@ import {
   CheckCircle2, XCircle, Eye, Ban, RefreshCw, DollarSign,
   MessageSquare, Clock, ArrowRight, BarChart3, Wallet, ArrowDownToLine,
   Headphones, Send, Bot, User, MessageSquarePlus, Star, Trash2,
-  Flag, ShieldAlert, CreditCard,
+  Flag, ShieldAlert, CreditCard, Activity, Trophy, Radio,
 } from "lucide-react";
 import { formatDistanceToNow, format, isPast } from "date-fns";
 
@@ -143,7 +143,44 @@ interface ReportRow {
   is_banned: boolean;
 }
 
-// ─── Component ───────────────────────────────────────────────────
+interface LiveJobRow {
+  id: string;
+  title: string;
+  category: string;
+  subcategory: string | null;
+  status: string;
+  created_at: string;
+  buyer_id: string;
+  buyer_name: string;
+  description: string | null;
+  quote_count: number;
+  message_count: number;
+  lowest_quote: number | null;
+}
+
+interface LiveSessionRow {
+  id: string;
+  mentor_id: string;
+  mentor_name: string;
+  mentee_id: string;
+  mentee_name: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  message_count: number;
+  last_message_at: string | null;
+  last_message_preview: string | null;
+  job_title: string | null;
+}
+
+interface LiveMessage {
+  id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+  image_urls: string[] | null;
+  sender_name?: string;
+}
 
 const Admin = () => {
   useSEO({ title: "Admin", noIndex: true });
@@ -218,6 +255,16 @@ const Admin = () => {
   // Stats
   const [stats, setStats] = useState({ totalOrders: 0, activeDisputes: 0, totalUsers: 0, revenue: 0, pendingWithdrawals: 0, openSupport: 0, pendingReports: 0 });
 
+  // Live monitor
+  const [liveJobs, setLiveJobs] = useState<LiveJobRow[]>([]);
+  const [liveSessions, setLiveSessions] = useState<LiveSessionRow[]>([]);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [liveSubTab, setLiveSubTab] = useState<"requests" | "chats">("requests");
+  const [selectedLiveSession, setSelectedLiveSession] = useState<LiveSessionRow | null>(null);
+  const [liveMessages, setLiveMessages] = useState<LiveMessage[]>([]);
+  const [liveMessagesLoading, setLiveMessagesLoading] = useState(false);
+  const liveBottomRef = useRef<HTMLDivElement>(null);
+
   // ─── Auth check ─────────────────────────────────────────────────
 
   useEffect(() => {
@@ -253,6 +300,7 @@ const Admin = () => {
     if (activeTab === "support") loadSupportTickets();
     if (activeTab === "feedback") loadFeedback();
     if (activeTab === "reports") loadReports();
+    if (activeTab === "live") loadLiveMonitor();
     loadStats();
   }, [isAdmin, activeTab]);
 
@@ -317,7 +365,148 @@ const Admin = () => {
     if (isAdmin && activeTab === "reports") loadReports();
   }, [reportsFilter]);
 
+  // Live monitor: load messages + realtime when a session is selected
+  useEffect(() => {
+    if (!selectedLiveSession) { setLiveMessages([]); return; }
+    loadLiveMessages(selectedLiveSession.id);
+    const ch = supabase
+      .channel(`admin-live-${selectedLiveSession.id}`)
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `session_id=eq.${selectedLiveSession.id}`,
+      }, async (payload) => {
+        const m = payload.new as any;
+        const { data: p } = await supabase.from("profiles").select("display_name").eq("id", m.sender_id).maybeSingle();
+        setLiveMessages(prev => prev.find(x => x.id === m.id) ? prev : [...prev, { ...m, sender_name: p?.display_name || "Unknown" }]);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [selectedLiveSession]);
+
+  // Auto-scroll live chat viewer
+  useEffect(() => {
+    const el = liveBottomRef.current;
+    if (!el) return;
+    const container = el.closest("[data-radix-scroll-area-viewport]") as HTMLElement | null;
+    if (container) container.scrollTop = container.scrollHeight;
+    else el.scrollIntoView({ block: "nearest" });
+  }, [liveMessages]);
+
   // ─── Data loaders ───────────────────────────────────────────────
+
+  const loadLiveMonitor = async () => {
+    setLiveLoading(true);
+
+    const { data: jobs } = await supabase
+      .from("jobs")
+      .select("id, title, category, subcategory, status, created_at, buyer_id, description")
+      .in("status", ["open", "in_progress", "disputed"])
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const buyerIds = Array.from(new Set((jobs || []).map(j => j.buyer_id)));
+    const { data: buyers } = buyerIds.length
+      ? await supabase.from("profiles").select("id, display_name").in("id", buyerIds)
+      : { data: [] as { id: string; display_name: string | null }[] };
+    const buyerMap = new Map((buyers || []).map(b => [b.id, b.display_name || "Unknown"]));
+
+    const enrichedJobs: LiveJobRow[] = await Promise.all(
+      (jobs || []).map(async (j) => {
+        const [{ count: quoteCount }, { data: quoteAgg }] = await Promise.all([
+          supabase.from("quotes").select("id", { count: "exact", head: true }).eq("job_id", j.id),
+          supabase.from("quotes").select("price").eq("job_id", j.id).order("price", { ascending: true }).limit(1),
+        ]);
+        return {
+          id: j.id,
+          title: j.title,
+          category: j.category,
+          subcategory: j.subcategory,
+          status: j.status,
+          created_at: j.created_at || "",
+          buyer_id: j.buyer_id,
+          buyer_name: buyerMap.get(j.buyer_id) || "Unknown",
+          description: j.description,
+          quote_count: quoteCount || 0,
+          message_count: 0,
+          lowest_quote: quoteAgg && quoteAgg.length ? Number(quoteAgg[0].price) : null,
+        };
+      })
+    );
+
+    enrichedJobs.sort((a, b) => b.quote_count - a.quote_count || +new Date(b.created_at) - +new Date(a.created_at));
+    setLiveJobs(enrichedJobs);
+
+    const { data: sessions } = await supabase
+      .from("sessions")
+      .select("id, mentor_id, mentee_id, status, created_at, updated_at, categories")
+      .order("updated_at", { ascending: false })
+      .limit(50);
+
+    const userIds = Array.from(new Set([
+      ...(sessions || []).map(s => s.mentor_id),
+      ...(sessions || []).map(s => s.mentee_id),
+    ]));
+    const { data: profilesData } = userIds.length
+      ? await supabase.from("profiles").select("id, display_name").in("id", userIds)
+      : { data: [] as { id: string; display_name: string | null }[] };
+    const nameMap = new Map((profilesData || []).map(p => [p.id, p.display_name || "Unknown"]));
+
+    const enrichedSessions: LiveSessionRow[] = await Promise.all(
+      (sessions || []).map(async (s) => {
+        const [{ count: msgCount }, { data: lastMsg }] = await Promise.all([
+          supabase.from("messages").select("id", { count: "exact", head: true }).eq("session_id", s.id),
+          supabase.from("messages").select("content, created_at").eq("session_id", s.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        ]);
+        let jobTitle: string | null = null;
+        const cat0 = (s as any).categories?.[0];
+        if (cat0 && /^[0-9a-f-]{36}$/i.test(cat0)) {
+          const { data: j } = await supabase.from("jobs").select("title").eq("id", cat0).maybeSingle();
+          jobTitle = j?.title || null;
+        }
+        return {
+          id: s.id,
+          mentor_id: s.mentor_id,
+          mentor_name: nameMap.get(s.mentor_id) || "Unknown",
+          mentee_id: s.mentee_id,
+          mentee_name: nameMap.get(s.mentee_id) || "Unknown",
+          status: (s.status as string) || "pending",
+          created_at: s.created_at || "",
+          updated_at: s.updated_at || "",
+          message_count: msgCount || 0,
+          last_message_at: lastMsg?.created_at || null,
+          last_message_preview: lastMsg?.content ? lastMsg.content.slice(0, 80) : null,
+          job_title: jobTitle,
+        };
+      })
+    );
+
+    enrichedSessions.sort((a, b) => +new Date(b.last_message_at || b.updated_at) - +new Date(a.last_message_at || a.updated_at));
+    setLiveSessions(enrichedSessions);
+    setLiveLoading(false);
+  };
+
+  const loadLiveMessages = async (sessionId: string) => {
+    setLiveMessagesLoading(true);
+    const { data } = await supabase
+      .from("messages")
+      .select("id, sender_id, content, created_at, image_urls")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: true });
+
+    const senderIds = Array.from(new Set((data || []).map(m => m.sender_id)));
+    const { data: profilesData } = senderIds.length
+      ? await supabase.from("profiles").select("id, display_name").in("id", senderIds)
+      : { data: [] as { id: string; display_name: string | null }[] };
+    const nameMap = new Map((profilesData || []).map(p => [p.id, p.display_name || "Unknown"]));
+
+    setLiveMessages(((data || []) as any[]).map(m => ({
+      ...m,
+      sender_name: nameMap.get(m.sender_id) || "Unknown",
+    })));
+    setLiveMessagesLoading(false);
+  };
 
   const loadStats = async () => {
     const [jobsCount, disputeCount, usersCount, transactionsData, pendingWdCount, pendingReportsCount] = await Promise.all([
@@ -1141,6 +1330,11 @@ const Admin = () => {
                 <span className="sm:hidden">Rep.</span>
                 {stats.pendingReports > 0 && <Badge variant="destructive" className="ml-0.5 text-[9px] h-4 px-1">{stats.pendingReports}</Badge>}
               </TabsTrigger>
+              <TabsTrigger value="live" className="gap-1.5 text-xs sm:text-sm px-2.5 sm:px-3">
+                <Radio className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Live Monitor</span>
+                <span className="sm:hidden">Live</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -1845,6 +2039,213 @@ const Admin = () => {
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* ═══ LIVE MONITOR TAB ═══ */}
+          <TabsContent value="live">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={liveSubTab === "requests" ? "default" : "outline"}
+                  onClick={() => setLiveSubTab("requests")}
+                  className="gap-1.5"
+                >
+                  <Trophy className="h-4 w-4" /> Requests Leaderboard
+                </Button>
+                <Button
+                  size="sm"
+                  variant={liveSubTab === "chats" ? "default" : "outline"}
+                  onClick={() => setLiveSubTab("chats")}
+                  className="gap-1.5"
+                >
+                  <MessageSquare className="h-4 w-4" /> Live Chats
+                </Button>
+              </div>
+              <Button size="sm" variant="ghost" onClick={loadLiveMonitor} disabled={liveLoading} className="gap-1.5">
+                {liveLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                Refresh
+              </Button>
+            </div>
+
+            {liveLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+              </div>
+            ) : liveSubTab === "requests" ? (
+              liveJobs.length === 0 ? (
+                <Card><CardContent className="py-10 text-center text-muted-foreground"><Activity className="h-10 w-10 mx-auto mb-2 opacity-30" />No live requests right now.</CardContent></Card>
+              ) : (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Trophy className="h-4 w-4 text-primary" /> Active Requests Leaderboard
+                    </CardTitle>
+                    <CardDescription>Ranked by quote activity. Click a row to inspect the request.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">#</TableHead>
+                          <TableHead>Request</TableHead>
+                          <TableHead>Buyer</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Quotes</TableHead>
+                          <TableHead className="text-right">Lowest €</TableHead>
+                          <TableHead className="text-right">Posted</TableHead>
+                          <TableHead className="w-10"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {liveJobs.map((j, i) => (
+                          <TableRow key={j.id} className="cursor-pointer" onClick={() => navigate(`/request/${j.id}`)}>
+                            <TableCell className="font-mono text-xs text-muted-foreground">
+                              {i < 3 ? <Trophy className={cn("h-4 w-4", i === 0 ? "text-primary" : "text-muted-foreground")} /> : i + 1}
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium text-sm text-foreground line-clamp-1 max-w-[260px]">{j.title}</div>
+                              <div className="text-[11px] text-muted-foreground">{j.category}{j.subcategory ? ` · ${j.subcategory}` : ""}</div>
+                            </TableCell>
+                            <TableCell className="text-sm">{j.buyer_name}</TableCell>
+                            <TableCell>
+                              <Badge variant={j.status === "disputed" ? "destructive" : j.status === "in_progress" ? "default" : "secondary"} className="text-[10px]">
+                                {j.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-medium">{j.quote_count}</TableCell>
+                            <TableCell className="text-right">{j.lowest_quote != null ? `€${Number(j.lowest_quote).toFixed(2)}` : "—"}</TableCell>
+                            <TableCell className="text-right text-xs text-muted-foreground">{formatDistanceToNow(new Date(j.created_at), { addSuffix: true })}</TableCell>
+                            <TableCell><ArrowRight className="h-4 w-4 text-muted-foreground" /></TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              )
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-4">
+                {/* Sessions list */}
+                <Card className="lg:max-h-[70vh] overflow-hidden flex flex-col">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-primary" /> Active Chats
+                    </CardTitle>
+                    <CardDescription>{liveSessions.length} session{liveSessions.length === 1 ? "" : "s"}</CardDescription>
+                  </CardHeader>
+                  <ScrollArea className="flex-1">
+                    <div className="px-3 pb-3 space-y-1.5">
+                      {liveSessions.length === 0 && (
+                        <p className="text-sm text-muted-foreground text-center py-8">No chats yet.</p>
+                      )}
+                      {liveSessions.map(s => (
+                        <button
+                          key={s.id}
+                          onClick={() => setSelectedLiveSession(s)}
+                          className={cn(
+                            "w-full text-left rounded-md border p-2.5 transition-colors",
+                            selectedLiveSession?.id === s.id
+                              ? "border-primary bg-primary/5"
+                              : "border-border hover:border-primary/30 hover:bg-muted/30"
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <div className="font-medium text-xs text-foreground line-clamp-1">
+                              {s.job_title || `${s.mentee_name} ↔ ${s.mentor_name}`}
+                            </div>
+                            <Badge variant="secondary" className="text-[9px] h-4 px-1 shrink-0">{s.message_count}</Badge>
+                          </div>
+                          <div className="text-[10px] text-muted-foreground line-clamp-1">
+                            {s.mentee_name} ↔ {s.mentor_name}
+                          </div>
+                          {s.last_message_preview && (
+                            <p className="text-[11px] text-muted-foreground/80 mt-1 line-clamp-1 italic">
+                              {s.last_message_preview}
+                            </p>
+                          )}
+                          <div className="text-[10px] text-muted-foreground mt-1">
+                            {s.last_message_at
+                              ? formatDistanceToNow(new Date(s.last_message_at), { addSuffix: true })
+                              : formatDistanceToNow(new Date(s.updated_at), { addSuffix: true })}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </Card>
+
+                {/* Chat viewer */}
+                <Card className="lg:max-h-[70vh] overflow-hidden flex flex-col">
+                  <CardHeader className="pb-3 border-b border-border">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-primary" />
+                      {selectedLiveSession
+                        ? (selectedLiveSession.job_title || `${selectedLiveSession.mentee_name} ↔ ${selectedLiveSession.mentor_name}`)
+                        : "Select a chat"}
+                    </CardTitle>
+                    {selectedLiveSession && (
+                      <CardDescription className="text-xs">
+                        {selectedLiveSession.mentee_name} (buyer) ↔ {selectedLiveSession.mentor_name} (expert)
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  {!selectedLiveSession ? (
+                    <CardContent className="flex-1 flex items-center justify-center text-center text-muted-foreground py-16">
+                      <div>
+                        <MessageSquare className="h-10 w-10 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">Pick a chat on the left to monitor it in real time.</p>
+                      </div>
+                    </CardContent>
+                  ) : liveMessagesLoading ? (
+                    <CardContent className="flex-1 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></CardContent>
+                  ) : (
+                    <ScrollArea className="flex-1">
+                      <div className="p-4 space-y-3">
+                        {liveMessages.length === 0 && (
+                          <p className="text-sm text-muted-foreground text-center py-8">No messages in this chat yet.</p>
+                        )}
+                        {liveMessages.map(m => {
+                          const isMentor = m.sender_id === selectedLiveSession.mentor_id;
+                          return (
+                            <div key={m.id} className="flex gap-2">
+                              <div className={cn(
+                                "h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-medium shrink-0",
+                                isMentor ? "bg-primary/15 text-primary" : "bg-muted text-foreground"
+                              )}>
+                                {(m.sender_name || "?").slice(0, 2).toUpperCase()}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-xs font-medium text-foreground">{m.sender_name}</span>
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {format(new Date(m.created_at), "MMM d, HH:mm")}
+                                  </span>
+                                  <Badge variant="outline" className="text-[9px] h-4 px-1">
+                                    {isMentor ? "expert" : "buyer"}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words mt-0.5">{m.content}</p>
+                                {m.image_urls && m.image_urls.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                    {m.image_urls.map((url, i) => (
+                                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                                        <img src={url} alt="" className="h-16 w-16 object-cover rounded border border-border" />
+                                      </a>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <div ref={liveBottomRef} />
+                      </div>
+                    </ScrollArea>
+                  )}
+                </Card>
               </div>
             )}
           </TabsContent>
