@@ -367,6 +367,118 @@ const Admin = () => {
 
   // ─── Data loaders ───────────────────────────────────────────────
 
+  const loadLiveMonitor = async () => {
+    setLiveLoading(true);
+
+    const { data: jobs } = await supabase
+      .from("jobs")
+      .select("id, title, category, subcategory, status, created_at, buyer_id, description")
+      .in("status", ["open", "in_progress", "disputed"])
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const buyerIds = Array.from(new Set((jobs || []).map(j => j.buyer_id)));
+    const { data: buyers } = buyerIds.length
+      ? await supabase.from("profiles").select("id, display_name").in("id", buyerIds)
+      : { data: [] as { id: string; display_name: string | null }[] };
+    const buyerMap = new Map((buyers || []).map(b => [b.id, b.display_name || "Unknown"]));
+
+    const enrichedJobs: LiveJobRow[] = await Promise.all(
+      (jobs || []).map(async (j) => {
+        const [{ count: quoteCount }, { data: quoteAgg }] = await Promise.all([
+          supabase.from("quotes").select("id", { count: "exact", head: true }).eq("job_id", j.id),
+          supabase.from("quotes").select("price").eq("job_id", j.id).order("price", { ascending: true }).limit(1),
+        ]);
+        return {
+          id: j.id,
+          title: j.title,
+          category: j.category,
+          subcategory: j.subcategory,
+          status: j.status,
+          created_at: j.created_at || "",
+          buyer_id: j.buyer_id,
+          buyer_name: buyerMap.get(j.buyer_id) || "Unknown",
+          description: j.description,
+          quote_count: quoteCount || 0,
+          message_count: 0,
+          lowest_quote: quoteAgg && quoteAgg.length ? Number(quoteAgg[0].price) : null,
+        };
+      })
+    );
+
+    enrichedJobs.sort((a, b) => b.quote_count - a.quote_count || +new Date(b.created_at) - +new Date(a.created_at));
+    setLiveJobs(enrichedJobs);
+
+    const { data: sessions } = await supabase
+      .from("sessions")
+      .select("id, mentor_id, mentee_id, status, created_at, updated_at, categories")
+      .order("updated_at", { ascending: false })
+      .limit(50);
+
+    const userIds = Array.from(new Set([
+      ...(sessions || []).map(s => s.mentor_id),
+      ...(sessions || []).map(s => s.mentee_id),
+    ]));
+    const { data: profilesData } = userIds.length
+      ? await supabase.from("profiles").select("id, display_name").in("id", userIds)
+      : { data: [] as { id: string; display_name: string | null }[] };
+    const nameMap = new Map((profilesData || []).map(p => [p.id, p.display_name || "Unknown"]));
+
+    const enrichedSessions: LiveSessionRow[] = await Promise.all(
+      (sessions || []).map(async (s) => {
+        const [{ count: msgCount }, { data: lastMsg }] = await Promise.all([
+          supabase.from("messages").select("id", { count: "exact", head: true }).eq("session_id", s.id),
+          supabase.from("messages").select("content, created_at").eq("session_id", s.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        ]);
+        let jobTitle: string | null = null;
+        const cat0 = (s as any).categories?.[0];
+        if (cat0 && /^[0-9a-f-]{36}$/i.test(cat0)) {
+          const { data: j } = await supabase.from("jobs").select("title").eq("id", cat0).maybeSingle();
+          jobTitle = j?.title || null;
+        }
+        return {
+          id: s.id,
+          mentor_id: s.mentor_id,
+          mentor_name: nameMap.get(s.mentor_id) || "Unknown",
+          mentee_id: s.mentee_id,
+          mentee_name: nameMap.get(s.mentee_id) || "Unknown",
+          status: (s.status as string) || "pending",
+          created_at: s.created_at || "",
+          updated_at: s.updated_at || "",
+          message_count: msgCount || 0,
+          last_message_at: lastMsg?.created_at || null,
+          last_message_preview: lastMsg?.content ? lastMsg.content.slice(0, 80) : null,
+          job_title: jobTitle,
+        };
+      })
+    );
+
+    enrichedSessions.sort((a, b) => +new Date(b.last_message_at || b.updated_at) - +new Date(a.last_message_at || a.updated_at));
+    setLiveSessions(enrichedSessions);
+    setLiveLoading(false);
+  };
+
+  const loadLiveMessages = async (sessionId: string) => {
+    setLiveMessagesLoading(true);
+    const { data } = await supabase
+      .from("messages")
+      .select("id, sender_id, content, created_at, image_urls")
+      .eq("session_id", sessionId)
+      .order("created_at", { ascending: true });
+
+    const senderIds = Array.from(new Set((data || []).map(m => m.sender_id)));
+    const { data: profilesData } = senderIds.length
+      ? await supabase.from("profiles").select("id, display_name").in("id", senderIds)
+      : { data: [] as { id: string; display_name: string | null }[] };
+    const nameMap = new Map((profilesData || []).map(p => [p.id, p.display_name || "Unknown"]));
+
+    setLiveMessages(((data || []) as any[]).map(m => ({
+      ...m,
+      sender_name: nameMap.get(m.sender_id) || "Unknown",
+    })));
+    setLiveMessagesLoading(false);
+  };
+
   const loadStats = async () => {
     const [jobsCount, disputeCount, usersCount, transactionsData, pendingWdCount, pendingReportsCount] = await Promise.all([
       supabase.from("jobs").select("id", { count: "exact", head: true }),
