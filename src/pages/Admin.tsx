@@ -300,6 +300,7 @@ const Admin = () => {
     if (activeTab === "support") loadSupportTickets();
     if (activeTab === "feedback") loadFeedback();
     if (activeTab === "reports") loadReports();
+    if (activeTab === "live") loadLiveMonitor();
     loadStats();
   }, [isAdmin, activeTab]);
 
