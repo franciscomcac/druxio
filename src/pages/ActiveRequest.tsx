@@ -367,9 +367,9 @@ const ActiveRequest = () => {
           })
         );
         setQuotes(withProfiles);
-        if (userIsBuyer && withProfiles.length > 0) {
+        if (effectiveBuyer && withProfiles.length > 0) {
           setSelectedChatPartnerId(withProfiles[0].expert_id);
-        } else if (!userIsBuyer) {
+        } else if (!effectiveBuyer) {
           setSelectedChatPartnerId(jobData.buyer_id);
         }
       }
