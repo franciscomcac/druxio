@@ -325,16 +325,30 @@ const ActiveRequest = () => {
       if (!jobData) { navigate("/dashboard"); return; }
 
       const userIsBuyer = jobData.buyer_id === user.id;
-      setIsBuyer(userIsBuyer);
 
+      // Admins can view any request as if they were the buyer (read-only monitoring)
+      let isAdminViewer = false;
       if (!userIsBuyer) {
+        const { data: adminRole } = await supabase
+          .from("user_roles")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .maybeSingle();
+        isAdminViewer = !!adminRole;
+      }
+
+      const effectiveBuyer = userIsBuyer || isAdminViewer;
+      setIsBuyer(effectiveBuyer);
+
+      if (!effectiveBuyer) {
         const { data: myQuoteCheck } = await supabase.from("quotes").select("id").eq("job_id", jobId).eq("expert_id", user.id).maybeSingle();
         if (!myQuoteCheck) { navigate("/dashboard"); return; }
       }
 
       setJob(jobData);
 
-      if (!userIsBuyer) {
+      if (!effectiveBuyer || isAdminViewer) {
         const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", jobData.buyer_id).single();
         if (bp) setBuyerProfile(bp);
       }
@@ -353,9 +367,9 @@ const ActiveRequest = () => {
           })
         );
         setQuotes(withProfiles);
-        if (userIsBuyer && withProfiles.length > 0) {
+        if (effectiveBuyer && withProfiles.length > 0) {
           setSelectedChatPartnerId(withProfiles[0].expert_id);
-        } else if (!userIsBuyer) {
+        } else if (!effectiveBuyer) {
           setSelectedChatPartnerId(jobData.buyer_id);
         }
       }
