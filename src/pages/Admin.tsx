@@ -2103,7 +2103,7 @@ const Admin = () => {
                         {liveJobs.map((j, i) => (
                           <TableRow key={j.id} className="cursor-pointer" onClick={() => navigate(`/request/${j.id}`)}>
                             <TableCell className="font-mono text-xs text-muted-foreground">
-                              {i < 3 ? <Trophy className={cn("h-4 w-4", i === 0 ? "text-yellow-500" : i === 1 ? "text-zinc-400" : "text-amber-700")} /> : i + 1}
+                              {i < 3 ? <Trophy className={cn("h-4 w-4", i === 0 ? "text-primary" : "text-muted-foreground")} /> : i + 1}
                             </TableCell>
                             <TableCell>
                               <div className="font-medium text-sm text-foreground line-clamp-1 max-w-[260px]">{j.title}</div>
