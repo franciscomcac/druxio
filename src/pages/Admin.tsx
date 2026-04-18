@@ -143,7 +143,44 @@ interface ReportRow {
   is_banned: boolean;
 }
 
-// ─── Component ───────────────────────────────────────────────────
+interface LiveJobRow {
+  id: string;
+  title: string;
+  category: string;
+  subcategory: string | null;
+  status: string;
+  created_at: string;
+  buyer_id: string;
+  buyer_name: string;
+  description: string | null;
+  quote_count: number;
+  message_count: number;
+  lowest_quote: number | null;
+}
+
+interface LiveSessionRow {
+  id: string;
+  mentor_id: string;
+  mentor_name: string;
+  mentee_id: string;
+  mentee_name: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  message_count: number;
+  last_message_at: string | null;
+  last_message_preview: string | null;
+  job_title: string | null;
+}
+
+interface LiveMessage {
+  id: string;
+  sender_id: string;
+  content: string;
+  created_at: string;
+  image_urls: string[] | null;
+  sender_name?: string;
+}
 
 const Admin = () => {
   useSEO({ title: "Admin", noIndex: true });
