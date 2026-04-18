@@ -2101,7 +2101,7 @@ const Admin = () => {
                       </TableHeader>
                       <TableBody>
                         {liveJobs.map((j, i) => (
-                          <TableRow key={j.id} className="cursor-pointer" onClick={() => navigate(`/request/${j.id}`)}>
+                          <TableRow key={j.id} className="cursor-pointer" onClick={() => navigate(`/active-request/${j.id}`)}>
                             <TableCell className="font-mono text-xs text-muted-foreground">
                               {i < 3 ? <Trophy className={cn("h-4 w-4", i === 0 ? "text-primary" : "text-muted-foreground")} /> : i + 1}
                             </TableCell>
