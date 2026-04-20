@@ -682,11 +682,12 @@ const ActiveRequest = () => {
 
     const sendAutoMessage = async (sid: string, isNew: boolean) => {
       if (!isNew || !userId) return;
-      const budgetLine = `\n💰 Price Range: €${job.budget_min} – €${job.budget_max}`;
-      const deadlineLine = `\n⏱ Suggested Delivery: ${formatDeliveryTime(job.deadline_minutes)}`;
-      const descLine = job.description ? `\n\n📄 Details:\n${job.description}` : "";
-      const content = `📋 Order Request\n\n📌 ${job.title}\n🏷 Category: ${job.category}${budgetLine}${deadlineLine}${descLine}`;
-      await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
+      // System notice only — the rest of the conversation is between client and expert.
+      await supabase.from("messages").insert({
+        session_id: sid,
+        sender_id: userId,
+        content: `🛡️ ADMIN: Quote received. You can now chat directly with the expert to discuss details before accepting.`,
+      });
     };
 
     const loadSessions = async () => {
@@ -915,7 +916,7 @@ const ActiveRequest = () => {
           issue_description: convo.jobTitle, categories: [convo.jobCategory], session_type: "chat",
         }).select("id").single();
         if (newSession) {
-          const content = `📋 New offer: €${convo.myPrice.toFixed(2)} — delivery in ${formatDeliveryTime(convo.myDelivery)}`;
+          const content = `🛡️ ADMIN: Quote sent. The buyer will review and may message you here to discuss.`;
           await supabase.from("messages").insert({ session_id: newSession.id, sender_id: userId, content });
           const updated = { ...convo, sessionId: newSession.id };
           setActiveConvo(updated);
@@ -937,11 +938,7 @@ const ActiveRequest = () => {
       toast({ title: "Failed to update offer", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Offer updated!" });
-      const sid = activeConvo.sessionId;
-      if (sid) {
-        const content = `📋 New offer: €${price.toFixed(2)} — delivery in ${formatDeliveryTime(minutes)}`;
-        await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
-      }
+      // No auto-message on quote update — the expert can message the buyer directly to explain the change.
       setSellerConvos(prev => prev.map(c => c.jobId === activeConvo.jobId ? { ...c, myPrice: price, myDelivery: minutes } : c));
       setActiveConvo(prev => prev ? { ...prev, myPrice: price, myDelivery: minutes } : prev);
       setNewQuotePrice("");
@@ -998,11 +995,31 @@ const ActiveRequest = () => {
 
   // ── Message bubble renderer ────────────────────────────────────────────────
   const renderMessageBubble = (msg: ChatMessage, isMe: boolean) => {
+    const isAdminMsg = msg.content.startsWith("🛡️ ADMIN:");
     const isOfferMsg = msg.content.startsWith("📋 New offer:");
     const isJobMsg = msg.content.startsWith("📋 Order Request");
     const isAutoMsg = isOfferMsg || isJobMsg;
     const hasImages = msg.image_urls && msg.image_urls.length > 0;
     const isImageOnly = ["📎 Image", "📷 Image"].includes(msg.content.trim());
+
+    // Admin / system notice (centered, neutral, no sender bubble)
+    if (isAdminMsg) {
+      const adminText = msg.content.replace(/^🛡️ ADMIN:\s*/, "");
+      return (
+        <div key={msg.id} className="flex justify-center my-2">
+          <div className="max-w-[90%] rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-center">
+            <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+              🛡️ System notice
+            </p>
+            <p className="text-xs text-foreground/80 whitespace-pre-wrap">{adminText}</p>
+            <p className="text-[10px] mt-1 text-muted-foreground/70">
+              {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div key={msg.id} className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
         <div className={`max-w-[80%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
