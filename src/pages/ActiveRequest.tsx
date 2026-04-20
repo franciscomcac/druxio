@@ -916,7 +916,7 @@ const ActiveRequest = () => {
           issue_description: convo.jobTitle, categories: [convo.jobCategory], session_type: "chat",
         }).select("id").single();
         if (newSession) {
-          const content = `📋 New offer: €${convo.myPrice.toFixed(2)} — delivery in ${formatDeliveryTime(convo.myDelivery)}`;
+          const content = `🛡️ ADMIN: Quote sent. The buyer will review and may message you here to discuss.`;
           await supabase.from("messages").insert({ session_id: newSession.id, sender_id: userId, content });
           const updated = { ...convo, sessionId: newSession.id };
           setActiveConvo(updated);
