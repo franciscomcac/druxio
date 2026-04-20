@@ -38,7 +38,7 @@ const Footer = () => {
               <span className="text-xl font-bold text-foreground">Drux<Zap className="inline h-4 w-4 -mx-0.5" style={{ color: 'hsl(188 100% 48%)', fill: 'hsl(188 100% 48%)' }} />o</span>
             </Link>
             <p className="mb-4 md:mb-6 max-w-xs text-xs md:text-sm text-muted-foreground leading-relaxed">
-              Built by freelancers, for freelancers. Amsterdam, NL 🇳🇱
+              Built by freelancers, for freelancers. Lisbon, Portugal 🇵🇹
             </p>
             <div className="flex gap-3">
               {[
