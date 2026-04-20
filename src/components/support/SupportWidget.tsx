@@ -219,6 +219,7 @@ interface SupportMessage {
 
 export default function SupportWidget() {
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("role");
   const [role, setRole] = useState<"client" | "expert" | null>(null);
