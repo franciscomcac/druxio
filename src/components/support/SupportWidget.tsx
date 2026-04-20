@@ -11,6 +11,7 @@ import {
   User, Briefcase, ChevronRight, Headphones, Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { formatDistanceToNow } from "date-fns";
 
 // ─── Config ────────────────────────────────────────────────────────────────
