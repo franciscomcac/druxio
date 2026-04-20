@@ -938,11 +938,7 @@ const ActiveRequest = () => {
       toast({ title: "Failed to update offer", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Offer updated!" });
-      const sid = activeConvo.sessionId;
-      if (sid) {
-        const content = `📋 New offer: €${price.toFixed(2)} — delivery in ${formatDeliveryTime(minutes)}`;
-        await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
-      }
+      // No auto-message on quote update — the expert can message the buyer directly to explain the change.
       setSellerConvos(prev => prev.map(c => c.jobId === activeConvo.jobId ? { ...c, myPrice: price, myDelivery: minutes } : c));
       setActiveConvo(prev => prev ? { ...prev, myPrice: price, myDelivery: minutes } : prev);
       setNewQuotePrice("");
