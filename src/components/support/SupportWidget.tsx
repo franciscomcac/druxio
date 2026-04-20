@@ -383,7 +383,6 @@ export default function SupportWidget() {
 
   // Hide on inbox/admin (all viewports). Hide on Active Quotes (/quotes, /request/*) on mobile only.
   if (location.pathname === "/inbox" || location.pathname.startsWith("/admin")) return null;
-  const isMobile = typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
   if (isMobile && (location.pathname === "/quotes" || location.pathname.startsWith("/request/"))) return null;
 
   return (
