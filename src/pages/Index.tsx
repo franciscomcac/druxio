@@ -86,12 +86,12 @@ const Index = () => {
   return (
     <main>
       <Hero />
-      <LiveStats />
-      <HowItWorks />
+      <div className="cv-auto"><LiveStats /></div>
+      <div className="cv-auto"><HowItWorks /></div>
       <Suspense fallback={null}>
-        <MentorSpotlight />
-        <Testimonials />
-        <Newsletter />
+        <div className="cv-auto"><MentorSpotlight /></div>
+        <div className="cv-auto"><Testimonials /></div>
+        <div className="cv-auto"><Newsletter /></div>
       </Suspense>
     </main>
   );
