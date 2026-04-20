@@ -246,8 +246,8 @@ const Header = () => {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-9 w-9"><Menu className="h-5 w-5" /></Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 bg-card/95 backdrop-blur-xl border-border/30">
-              <div className="flex flex-col gap-1 pt-6">
+            <SheetContent side="right" className="w-72 bg-card/95 backdrop-blur-xl border-border/30 p-0 flex flex-col">
+              <div className="flex flex-col gap-0.5 pt-6 px-6 pb-6 overflow-y-auto flex-1">
                 {user ? (
                   <>
                     <div className="flex items-center gap-3 px-3 py-3 mb-2 rounded-lg bg-primary/[0.04] border border-border/30">
