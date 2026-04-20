@@ -13,7 +13,7 @@ const AppLayout = ({ showFooter = true }: AppLayoutProps) => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main id="main-content" className="flex-1 flex flex-col lg:pt-14">
+      <main id="main-content" className="flex-1 flex flex-col pt-14">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>
             <Outlet />
