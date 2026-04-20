@@ -808,6 +808,8 @@ const ActiveRequest = () => {
     }
 
     await supabase.from("jobs").update({ status: "cancelled" }).eq("id", jobId);
+    // Mark all pending quotes on this job as withdrawn so sellers see them as such
+    await supabase.from("quotes").update({ status: "withdrawn" }).eq("job_id", jobId).eq("status", "pending");
     toast({ title: "Request cancelled" });
     navigate("/dashboard");
   };
@@ -1143,7 +1145,10 @@ const ActiveRequest = () => {
     // Always show the currently viewed job's convo
     if (c.jobId === jobId) return true;
     // Show all quotes tied to open jobs
-    return c.jobStatus === "open";
+    if (c.jobStatus === "open") return true;
+    // Show withdrawn/cancelled quotes too, so sellers see the final status
+    if (c.jobStatus === "cancelled" || c.quoteStatus === "withdrawn") return true;
+    return false;
   });
   const quoteConvos = isTutorialActive ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
@@ -1163,8 +1168,12 @@ const ActiveRequest = () => {
   if (!isBuyer) {
     const renderConvoItem = (convo: SellerConvo) => {
       const isActive = activeConvoJobId === convo.jobId;
+      const isWithdrawn = convo.quoteStatus === "withdrawn" || convo.jobStatus === "cancelled";
       const expiry = getExpiryInfo(convo.quoteCreatedAt);
       const quotedAgo = formatDistanceToNow(new Date(convo.quoteCreatedAt), { addSuffix: true });
+      const dotColor = isWithdrawn ? "bg-muted-foreground" : expiry.color;
+      const statusLabel = isWithdrawn ? "Withdrawn" : expiry.label;
+      const statusTextColor = isWithdrawn ? "text-muted-foreground" : expiry.textColor;
 
       return (
         <button
@@ -1184,20 +1193,20 @@ const ActiveRequest = () => {
             isActive
               ? "bg-primary/10 border border-primary/20"
               : "hover:bg-muted/50 border border-transparent"
-          } ${isDemo(convo) ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background" : ""}`}
+          } ${isDemo(convo) ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background" : ""} ${isWithdrawn ? "opacity-70" : ""}`}
         >
           <div className="flex items-start gap-2.5">
             <div className="flex flex-col items-center gap-1 pt-1">
-              <span className={`h-2 w-2 rounded-full shrink-0 ${expiry.color}`} />
+              <span className={`h-2 w-2 rounded-full shrink-0 ${dotColor}`} />
             </div>
             <UserAvatar src={convo.buyerAvatar || undefined} userId={convo.buyerId} name={convo.buyerName} className="h-9 w-9 border border-border shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-1">
-                <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"} ${isWithdrawn ? "line-through" : ""}`}>
                   {convo.buyerName || "Buyer"}
                 </p>
                 <div className="flex items-center gap-1 shrink-0">
-                  {convo.unread > 0 && (
+                  {convo.unread > 0 && !isWithdrawn && (
                     <span className="h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
                       {convo.unread}
                     </span>
@@ -1206,13 +1215,13 @@ const ActiveRequest = () => {
               </div>
               <p className="text-[10px] text-muted-foreground truncate">{convo.jobTitle}</p>
               <div className="flex items-center gap-2 mt-1">
-                <p className="text-[10px] text-primary font-semibold">{format(convo.myPrice)}</p>
+                <p className={`text-[10px] font-semibold ${isWithdrawn ? "text-muted-foreground line-through" : "text-primary"}`}>{format(convo.myPrice)}</p>
                 <span className="text-[9px] text-muted-foreground">·</span>
                 <p className="text-[10px] text-muted-foreground">{formatDeliveryTime(convo.myDelivery)}</p>
               </div>
               <div className="flex items-center justify-between mt-0.5">
                 <p className="text-[9px] text-muted-foreground">Quoted {quotedAgo}</p>
-                <span className={`text-[9px] font-medium ${expiry.textColor}`}>{expiry.label}</span>
+                <span className={`text-[9px] font-medium ${statusTextColor}`}>{statusLabel}</span>
               </div>
             </div>
             {isMobile && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />}
@@ -1467,6 +1476,16 @@ const ActiveRequest = () => {
             {/* ── Right panel: desktop only ── */}
             <div id="tour-quotes-right-panel" className="hidden lg:flex flex-col w-72 border-l border-border bg-card/40 shrink-0 overflow-y-auto">
               {(() => {
+                const isWithdrawn = activeConvo.quoteStatus === "withdrawn" || activeConvo.jobStatus === "cancelled";
+                if (isWithdrawn) {
+                  return (
+                    <div className="px-4 py-2.5 border-b border-border flex items-center gap-2 bg-muted/40">
+                      <Ban className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs font-medium text-muted-foreground">Quote withdrawn</span>
+                      <span className="text-[10px] text-muted-foreground">— buyer cancelled the request</span>
+                    </div>
+                  );
+                }
                 const expiry = getExpiryInfo(activeConvo.quoteCreatedAt);
                 return (
                   <div className={`px-4 py-2.5 border-b border-border flex items-center gap-2 ${expiry.urgent ? "bg-destructive/10" : "bg-muted/30"}`}>
