@@ -1168,8 +1168,12 @@ const ActiveRequest = () => {
   if (!isBuyer) {
     const renderConvoItem = (convo: SellerConvo) => {
       const isActive = activeConvoJobId === convo.jobId;
+      const isWithdrawn = convo.quoteStatus === "withdrawn" || convo.jobStatus === "cancelled";
       const expiry = getExpiryInfo(convo.quoteCreatedAt);
       const quotedAgo = formatDistanceToNow(new Date(convo.quoteCreatedAt), { addSuffix: true });
+      const dotColor = isWithdrawn ? "bg-muted-foreground" : expiry.color;
+      const statusLabel = isWithdrawn ? "Withdrawn" : expiry.label;
+      const statusTextColor = isWithdrawn ? "text-muted-foreground" : expiry.textColor;
 
       return (
         <button
@@ -1189,20 +1193,20 @@ const ActiveRequest = () => {
             isActive
               ? "bg-primary/10 border border-primary/20"
               : "hover:bg-muted/50 border border-transparent"
-          } ${isDemo(convo) ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background" : ""}`}
+          } ${isDemo(convo) ? "ring-1 ring-primary/30 ring-offset-1 ring-offset-background" : ""} ${isWithdrawn ? "opacity-70" : ""}`}
         >
           <div className="flex items-start gap-2.5">
             <div className="flex flex-col items-center gap-1 pt-1">
-              <span className={`h-2 w-2 rounded-full shrink-0 ${expiry.color}`} />
+              <span className={`h-2 w-2 rounded-full shrink-0 ${dotColor}`} />
             </div>
             <UserAvatar src={convo.buyerAvatar || undefined} userId={convo.buyerId} name={convo.buyerName} className="h-9 w-9 border border-border shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-1">
-                <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"}`}>
+                <p className={`text-xs font-semibold truncate ${isActive ? "text-primary" : "text-foreground"} ${isWithdrawn ? "line-through" : ""}`}>
                   {convo.buyerName || "Buyer"}
                 </p>
                 <div className="flex items-center gap-1 shrink-0">
-                  {convo.unread > 0 && (
+                  {convo.unread > 0 && !isWithdrawn && (
                     <span className="h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">
                       {convo.unread}
                     </span>
@@ -1211,13 +1215,13 @@ const ActiveRequest = () => {
               </div>
               <p className="text-[10px] text-muted-foreground truncate">{convo.jobTitle}</p>
               <div className="flex items-center gap-2 mt-1">
-                <p className="text-[10px] text-primary font-semibold">{format(convo.myPrice)}</p>
+                <p className={`text-[10px] font-semibold ${isWithdrawn ? "text-muted-foreground line-through" : "text-primary"}`}>{format(convo.myPrice)}</p>
                 <span className="text-[9px] text-muted-foreground">·</span>
                 <p className="text-[10px] text-muted-foreground">{formatDeliveryTime(convo.myDelivery)}</p>
               </div>
               <div className="flex items-center justify-between mt-0.5">
                 <p className="text-[9px] text-muted-foreground">Quoted {quotedAgo}</p>
-                <span className={`text-[9px] font-medium ${expiry.textColor}`}>{expiry.label}</span>
+                <span className={`text-[9px] font-medium ${statusTextColor}`}>{statusLabel}</span>
               </div>
             </div>
             {isMobile && <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 mt-2" />}
