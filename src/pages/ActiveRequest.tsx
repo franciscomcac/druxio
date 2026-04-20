@@ -995,11 +995,31 @@ const ActiveRequest = () => {
 
   // ── Message bubble renderer ────────────────────────────────────────────────
   const renderMessageBubble = (msg: ChatMessage, isMe: boolean) => {
+    const isAdminMsg = msg.content.startsWith("🛡️ ADMIN:");
     const isOfferMsg = msg.content.startsWith("📋 New offer:");
     const isJobMsg = msg.content.startsWith("📋 Order Request");
     const isAutoMsg = isOfferMsg || isJobMsg;
     const hasImages = msg.image_urls && msg.image_urls.length > 0;
     const isImageOnly = ["📎 Image", "📷 Image"].includes(msg.content.trim());
+
+    // Admin / system notice (centered, neutral, no sender bubble)
+    if (isAdminMsg) {
+      const adminText = msg.content.replace(/^🛡️ ADMIN:\s*/, "");
+      return (
+        <div key={msg.id} className="flex justify-center my-2">
+          <div className="max-w-[90%] rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-center">
+            <p className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+              🛡️ System notice
+            </p>
+            <p className="text-xs text-foreground/80 whitespace-pre-wrap">{adminText}</p>
+            <p className="text-[10px] mt-1 text-muted-foreground/70">
+              {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div key={msg.id} className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
         <div className={`max-w-[80%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
