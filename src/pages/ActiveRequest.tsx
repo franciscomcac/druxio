@@ -1145,7 +1145,10 @@ const ActiveRequest = () => {
     // Always show the currently viewed job's convo
     if (c.jobId === jobId) return true;
     // Show all quotes tied to open jobs
-    return c.jobStatus === "open";
+    if (c.jobStatus === "open") return true;
+    // Show withdrawn/cancelled quotes too, so sellers see the final status
+    if (c.jobStatus === "cancelled" || c.quoteStatus === "withdrawn") return true;
+    return false;
   });
   const quoteConvos = isTutorialActive ? [DEMO_CONVO, ...realQuoteConvos] : realQuoteConvos;
 
