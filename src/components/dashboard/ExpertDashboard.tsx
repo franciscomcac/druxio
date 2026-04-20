@@ -381,7 +381,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
     <div className="space-y-5 sm:space-y-8">
       {/* ── Quote Dialog ── */}
       <Dialog open={!!quoteDialog} onOpenChange={() => setQuoteDialog(null)}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border w-[calc(100vw-32px)] max-w-md mx-auto rounded-xl">
+        <DialogContent className="bg-card/95 backdrop-blur-md border-border w-[calc(100vw-32px)] max-w-md mx-auto rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-base">Send Quote</DialogTitle>
             <DialogDescription className="text-xs">
@@ -473,7 +473,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
       {/* ── Job Preview Dialog ── */}
       <Dialog open={!!previewJob} onOpenChange={() => setPreviewJob(null)}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border w-[calc(100vw-32px)] max-w-lg mx-auto rounded-xl overflow-hidden p-0">
+        <DialogContent className="bg-card/95 backdrop-blur-md border-border w-[calc(100vw-32px)] max-w-lg mx-auto rounded-xl overflow-hidden p-0">
           {/* Header band */}
           <div className="px-5 pt-5 pb-4 border-b border-border">
             <div className="flex items-start gap-3 pr-7">
@@ -569,7 +569,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       {/* ── Stats — 2 cols mobile, 4 desktop ── */}
       <div id="tour-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {statCards.map((stat, i) => (
-          <Card key={i} className="border-border bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-0.5 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 60}ms` }}>
+          <Card key={i} className="border-border bg-card/60 backdrop-blur-md transition-all duration-300 hover:shadow-glow hover:-translate-y-0.5 animate-fade-in rounded-sm" style={{ animationDelay: `${i * 60}ms` }}>
             <CardContent className="p-4 sm:pt-6">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-sm bg-primary/[0.08] text-primary shrink-0">{stat.icon}</div>
@@ -593,7 +593,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
       {/* ── Main area — full width tabs + stacked sidebar ── */}
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:200ms] rounded-sm">
+          <Card className="border-border bg-card/60 backdrop-blur-md animate-slide-up [animation-delay:200ms] rounded-sm">
             <CardContent className="pt-4 px-2 sm:px-6">
               <Tabs defaultValue="live" className="space-y-3" id="tour-tabs">
                 {/* Tabs — icon + short label on mobile, full on desktop */}
@@ -813,7 +813,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
 
         {/* ── Sidebar — stacks below on mobile ── */}
         <div className="space-y-4">
-          <Card id="tour-categories" className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms] rounded-sm">
+          <Card id="tour-categories" className="border-border bg-card/60 backdrop-blur-md animate-slide-up [animation-delay:300ms] rounded-sm">
             <CardHeader className="flex flex-row items-center justify-between pb-2 px-4">
               <CardTitle className="text-base">Your Categories</CardTitle>
               <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={() => navigate("/settings")}>
@@ -840,7 +840,7 @@ const ExpertDashboard = ({ profile, subscribedCategories }: ExpertDashboardProps
             </CardContent>
           </Card>
 
-          <Card id="tour-quick-actions" className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms] rounded-sm">
+          <Card id="tour-quick-actions" className="border-border bg-card/60 backdrop-blur-md animate-slide-up [animation-delay:400ms] rounded-sm">
             <CardHeader className="pb-2 px-4"><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
             <CardContent className="space-y-2.5 px-4 pb-4">
               <Button variant="outline" className="w-full justify-between border-border hover:bg-primary/[0.06] hover:border-primary/20 h-10 text-sm" onClick={() => navigate("/settings")}>

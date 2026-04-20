@@ -80,7 +80,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
         {statCards.map((stat, i) => (
           <Card
             key={i}
-            className="border-border bg-card/60 backdrop-blur-xl transition-all duration-300 hover:shadow-glow hover:-translate-y-0.5 animate-fade-in"
+            className="border-border bg-card/60 backdrop-blur-md transition-all duration-300 hover:shadow-glow hover:-translate-y-0.5 animate-fade-in"
             style={{ animationDelay: `${i * 60}ms` }}
           >
             <CardContent className="p-4 sm:pt-6">
@@ -102,7 +102,7 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
       <div className="grid gap-5 lg:grid-cols-3">
         {/* Job list — full width on mobile */}
         <div className="lg:col-span-2">
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:200ms]">
+          <Card className="border-border bg-card/60 backdrop-blur-md animate-slide-up [animation-delay:200ms]">
             <CardHeader className="pb-3 px-4 sm:px-6">
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-base sm:text-lg">
@@ -172,14 +172,14 @@ const ClientDashboard = ({ profile, myJobs, onJobsChanged }: ClientDashboardProp
 
         {/* Sidebar — stacks below on mobile */}
         <div className="space-y-4">
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:300ms]">
+          <Card className="border-border bg-card/60 backdrop-blur-md animate-slide-up [animation-delay:300ms]">
             <CardHeader className="pb-2"><CardTitle className="text-base">Client Rank</CardTitle></CardHeader>
             <CardContent>
               <RankBadge totalSpent={profile?.total_spent || 0} showProgress size="md" />
             </CardContent>
           </Card>
 
-          <Card className="border-border bg-card/60 backdrop-blur-xl animate-slide-up [animation-delay:400ms]">
+          <Card className="border-border bg-card/60 backdrop-blur-md animate-slide-up [animation-delay:400ms]">
             <CardHeader className="pb-2"><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
             <CardContent className="space-y-2.5">
               <Button className="w-full justify-between shadow-glow hover:shadow-glow-lg transition-shadow h-10" onClick={() => navigate("/post-request")}>
