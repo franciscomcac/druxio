@@ -1096,7 +1096,7 @@ const PostRequest = () => {
             )}
 
             {autoMatchLoading && (
-              <Card className="border-primary/20 bg-card/60 backdrop-blur-xl">
+              <Card className="border-primary/20 bg-card/60 backdrop-blur-md">
                 <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
                   <div className="relative">
                     <div className="h-16 w-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
@@ -1119,7 +1119,7 @@ const PostRequest = () => {
                   </div>
                 </div>
 
-                <Card className="border-primary/20 bg-card/60 backdrop-blur-xl">
+                <Card className="border-primary/20 bg-card/60 backdrop-blur-md">
                   <CardContent className="pt-6 space-y-5">
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Detected Category</label>
@@ -1307,7 +1307,7 @@ const PostRequest = () => {
             </div>
 
             {/* Input area */}
-            <Card className="border-border bg-card/60 backdrop-blur-xl mb-6">
+            <Card className="border-border bg-card/60 backdrop-blur-md mb-6">
               <CardContent className="pt-6 space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -1359,7 +1359,7 @@ const PostRequest = () => {
                 </div>
 
                 {/* Suggested fields */}
-                <Card className="border-primary/20 bg-card/60 backdrop-blur-xl">
+                <Card className="border-primary/20 bg-card/60 backdrop-blur-md">
                   <CardContent className="pt-6 space-y-5">
                     <div className="space-y-1.5">
                       <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Suggested Category</label>
@@ -1418,7 +1418,7 @@ const PostRequest = () => {
             </div>
 
             <form id="post-request-form" onSubmit={handleSubmit} className="space-y-6">
-              <Card className="border-border bg-card/60 backdrop-blur-xl">
+              <Card className="border-border bg-card/60 backdrop-blur-md">
                 <CardContent className="space-y-5 pt-6">
                   <div id="tour-title-input" className="space-y-2">
                     <label className="text-sm font-medium text-foreground">Title</label>
@@ -1612,7 +1612,7 @@ const PostRequest = () => {
               )}
 
               {quotes.map((quote, i) => (
-                <Card key={quote.id} className="border-border/30 bg-card/60 backdrop-blur-xl transition-all duration-500 hover:shadow-glow hover:-translate-y-1 animate-slide-up" style={{ animationDelay: `${i * 100}ms` }}>
+                <Card key={quote.id} className="border-border/30 bg-card/60 backdrop-blur-md transition-all duration-500 hover:shadow-glow hover:-translate-y-1 animate-slide-up" style={{ animationDelay: `${i * 100}ms` }}>
                   <CardContent className="flex items-center gap-5 p-6">
                     <Avatar className="h-14 w-14 border border-border/30">
                       <AvatarFallback className="bg-gradient-to-br from-primary/15 to-primary/5 text-primary font-bold">

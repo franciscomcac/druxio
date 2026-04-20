@@ -1586,7 +1586,7 @@ const ActiveRequest = () => {
         )}
 
         <Dialog open={withdrawDialog} onOpenChange={setWithdrawDialog}>
-          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-sm">
+          <DialogContent className="bg-card/95 backdrop-blur-md border-border max-w-sm">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2"><Ban className="h-5 w-5 text-destructive" />Withdraw Quote</DialogTitle>
               <DialogDescription>This will remove your offer on &quot;{activeConvo?.jobTitle}&quot;. The buyer will be notified.</DialogDescription>

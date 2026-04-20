@@ -1,27 +1,10 @@
-import { motion } from "framer-motion";
 import type { ReactNode } from "react";
 
-const pageVariants = {
-  initial: { opacity: 0, y: 16 },
-  enter: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8 },
-};
-
-const pageTransition = {
-  duration: 0.3,
-  ease: [0.22, 1, 0.36, 1],
-};
-
+// Lightweight page wrapper. The previous framer-motion fade added 200-300ms
+// of compositing per navigation; a CSS fade keeps the perceived snappiness
+// without re-painting the whole tree on the GPU.
 const PageTransition = ({ children }: { children: ReactNode }) => (
-  <motion.div
-    initial="initial"
-    animate="enter"
-    exit="exit"
-    variants={pageVariants}
-    transition={pageTransition}
-  >
-    {children}
-  </motion.div>
+  <div className="animate-in fade-in duration-150">{children}</div>
 );
 
 export default PageTransition;

@@ -45,7 +45,7 @@ const QuickHelpForm = () => {
             <p className="text-muted-foreground text-lg animate-fade-in [animation-delay:200ms]">Tell us what you need — experts are notified instantly</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border bg-card/60 p-8 backdrop-blur-xl shadow-lg animate-slide-up [animation-delay:300ms]">
+          <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border border-border bg-card/60 p-8 backdrop-blur-md shadow-lg animate-slide-up [animation-delay:300ms]">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">What do you need help with?</label>
               <Input placeholder='e.g. "Fix Minecraft server TPS drops"' value={title} onChange={(e) => setTitle(e.target.value)} required className="bg-background/60 border-border focus:border-primary/40" />

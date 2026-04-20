@@ -131,7 +131,7 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="bg-card/95 backdrop-blur-xl border-border sm:max-w-md">
+      <DialogContent className="bg-card/95 backdrop-blur-md border-border sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5 text-primary" /> Withdraw Funds

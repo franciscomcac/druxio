@@ -250,12 +250,20 @@ html, body {
   max-width: 100vw;
 }
 
+/* Reserve scrollbar gutter so dialogs/sheets don't shift fixed header */
+html {
+  scrollbar-gutter: stable;
+}
+
 html {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* Use dynamic viewport height for chat containers */
 .h-dvh { height: 100dvh; }
+
+/* Skip rendering work for off-screen sections (huge perf win on long pages) */
+.cv-auto { content-visibility: auto; contain-intrinsic-size: 1px 800px; }
 
 /* Prevent rubber-band overscroll on chat pages */
 .overscroll-none { overscroll-behavior: none; }

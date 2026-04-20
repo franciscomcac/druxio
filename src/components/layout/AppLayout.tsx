@@ -1,5 +1,4 @@
-import { Outlet, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
 import PageTransition from "./PageTransition";
@@ -9,16 +8,13 @@ interface AppLayoutProps {
 }
 
 const AppLayout = ({ showFooter = true }: AppLayoutProps) => {
-  const location = useLocation();
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
       <main id="main-content" className="flex-1 flex flex-col pt-14">
-        <AnimatePresence mode="wait">
-          <PageTransition key={location.pathname}>
-            <Outlet />
-          </PageTransition>
-        </AnimatePresence>
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
       {showFooter && <Footer />}
     </div>
