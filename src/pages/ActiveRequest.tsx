@@ -326,9 +326,19 @@ const ActiveRequest = () => {
 
       const userIsBuyer = jobData.buyer_id === user.id;
 
-      // Admins can view any request as if they were the buyer (read-only monitoring)
+      // Check if the user is a participating expert on this job (has quoted).
+      // If so, they always see their seller/expert view — even if they're an admin.
+      const { data: myQuoteCheck } = await supabase
+        .from("quotes")
+        .select("id")
+        .eq("job_id", jobId)
+        .eq("expert_id", user.id)
+        .maybeSingle();
+      const userIsExpertOnJob = !!myQuoteCheck;
+
+      // Admins can view any OTHER user's request as buyer (read-only monitoring).
       let isAdminViewer = false;
-      if (!userIsBuyer) {
+      if (!userIsBuyer && !userIsExpertOnJob) {
         const { data: adminRole } = await supabase
           .from("user_roles")
           .select("id")
@@ -341,9 +351,9 @@ const ActiveRequest = () => {
       const effectiveBuyer = userIsBuyer || isAdminViewer;
       setIsBuyer(effectiveBuyer);
 
-      if (!effectiveBuyer) {
-        const { data: myQuoteCheck } = await supabase.from("quotes").select("id").eq("job_id", jobId).eq("expert_id", user.id).maybeSingle();
-        if (!myQuoteCheck) { navigate("/dashboard"); return; }
+      if (!effectiveBuyer && !userIsExpertOnJob) {
+        navigate("/dashboard");
+        return;
       }
 
       setJob(jobData);
