@@ -808,6 +808,8 @@ const ActiveRequest = () => {
     }
 
     await supabase.from("jobs").update({ status: "cancelled" }).eq("id", jobId);
+    // Mark all pending quotes on this job as withdrawn so sellers see them as such
+    await supabase.from("quotes").update({ status: "withdrawn" }).eq("job_id", jobId).eq("status", "pending");
     toast({ title: "Request cancelled" });
     navigate("/dashboard");
   };
