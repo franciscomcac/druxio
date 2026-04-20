@@ -682,11 +682,12 @@ const ActiveRequest = () => {
 
     const sendAutoMessage = async (sid: string, isNew: boolean) => {
       if (!isNew || !userId) return;
-      const budgetLine = `\n💰 Price Range: €${job.budget_min} – €${job.budget_max}`;
-      const deadlineLine = `\n⏱ Suggested Delivery: ${formatDeliveryTime(job.deadline_minutes)}`;
-      const descLine = job.description ? `\n\n📄 Details:\n${job.description}` : "";
-      const content = `📋 Order Request\n\n📌 ${job.title}\n🏷 Category: ${job.category}${budgetLine}${deadlineLine}${descLine}`;
-      await supabase.from("messages").insert({ session_id: sid, sender_id: userId, content });
+      // System notice only — the rest of the conversation is between client and expert.
+      await supabase.from("messages").insert({
+        session_id: sid,
+        sender_id: userId,
+        content: `🛡️ ADMIN: Quote received. You can now chat directly with the expert to discuss details before accepting.`,
+      });
     };
 
     const loadSessions = async () => {
