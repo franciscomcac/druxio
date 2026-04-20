@@ -11,6 +11,7 @@ import {
   User, Briefcase, ChevronRight, Headphones, Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { formatDistanceToNow } from "date-fns";
 
 // ─── Config ────────────────────────────────────────────────────────────────
@@ -218,6 +219,7 @@ interface SupportMessage {
 
 export default function SupportWidget() {
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("role");
   const [role, setRole] = useState<"client" | "expert" | null>(null);
@@ -379,8 +381,9 @@ export default function SupportWidget() {
 
   // ─── Render ─────────────────────────────────────────────────────
 
-  // Hide on inbox — the full-page chat UI makes the widget redundant
+  // Hide on inbox/admin (all viewports). Hide on Active Quotes (/quotes, /request/*) on mobile only.
   if (location.pathname === "/inbox" || location.pathname.startsWith("/admin")) return null;
+  if (isMobile && (location.pathname === "/quotes" || location.pathname.startsWith("/request/"))) return null;
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
