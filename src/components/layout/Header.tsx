@@ -267,31 +267,31 @@ const Header = () => {
                       <Button className="w-full gap-2 mb-2 shadow-glow"><Plus className="h-4 w-4" /> Post a Task</Button>
                     </Link>
                     <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10"><LayoutDashboard className="h-4 w-4" /> Dashboard</Button>
                     </Link>
                     <Link to="/orders/purchased" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Package className="h-4 w-4" /> Purchased Orders</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10"><Package className="h-4 w-4" /> Purchased Orders</Button>
                     </Link>
                     <Link to="/orders/sold" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Wallet className="h-4 w-4" /> Sold Orders</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10"><Wallet className="h-4 w-4" /> Sold Orders</Button>
                     </Link>
                     <Link to="/inbox" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><MessageSquare className="h-4 w-4" /> Messages</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10"><MessageSquare className="h-4 w-4" /> Messages</Button>
                     </Link>
                     {isMentorUser && (
                       <Link to="/quotes" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start gap-2 h-11"><FileText className="h-4 w-4" /> Active Quotes</Button>
+                        <Button variant="ghost" className="w-full justify-start gap-2 h-10"><FileText className="h-4 w-4" /> Active Quotes</Button>
                       </Link>
                     )}
                     <Link to="/wallet" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Wallet className="h-4 w-4" /> Wallet</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10"><Wallet className="h-4 w-4" /> Wallet</Button>
                     </Link>
                     <Link to="/settings" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11"><Settings className="h-4 w-4" /> Settings</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10"><Settings className="h-4 w-4" /> Settings</Button>
                     </Link>
                     {isAdminUser && (
                       <Link to="/admin" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start gap-2 h-11"><ShieldCheck className="h-4 w-4" /> Admin</Button>
+                        <Button variant="ghost" className="w-full justify-start gap-2 h-10"><ShieldCheck className="h-4 w-4" /> Admin</Button>
                       </Link>
                     )}
                     <hr className="border-border/30 my-2" />
@@ -315,26 +315,26 @@ const Header = () => {
                     </div>
                     <hr className="border-border/30 my-2" />
                     <Link to="/how-it-works" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11">How It Works</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10">How It Works</Button>
                     </Link>
                     <Link to="/blog" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11">Blog</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10">Blog</Button>
                     </Link>
                     <hr className="border-border/30 my-2" />
-                    <Button variant="ghost" className="w-full justify-start gap-2 h-11 text-destructive" onClick={() => { setIsOpen(false); handleSignOut(); }}>
+                    <Button variant="ghost" className="w-full justify-start gap-2 h-10 text-destructive" onClick={() => { setIsOpen(false); handleSignOut(); }}>
                       <LogOut className="h-4 w-4" /> Sign Out
                     </Button>
                   </>
                 ) : (
                   <>
                     <Link to="/how-it-works" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11">How It Works</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10">How It Works</Button>
                     </Link>
                     <Link to="/blog" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 h-11">Blog</Button>
+                      <Button variant="ghost" className="w-full justify-start gap-2 h-10">Blog</Button>
                     </Link>
                     <hr className="border-border/30 my-2" />
-                    <Button variant="ghost" className="w-full justify-start gap-2 h-11" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}>
+                    <Button variant="ghost" className="w-full justify-start gap-2 h-10" onClick={() => { setIsOpen(false); setAuthTab("login"); setAuthOpen(true); }}>
                       <User className="h-4 w-4" /> Sign In
                     </Button>
                     <Button className="w-full gap-2 shadow-glow" onClick={() => { setIsOpen(false); setAuthTab("signup"); setAuthOpen(true); }}>
