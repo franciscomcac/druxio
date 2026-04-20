@@ -380,7 +380,7 @@ export default function SupportWidget() {
   // ─── Render ─────────────────────────────────────────────────────
 
   // Hide on inbox — the full-page chat UI makes the widget redundant
-  if (location.pathname === "/inbox") return null;
+  if (location.pathname === "/inbox" || location.pathname.startsWith("/admin")) return null;
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
