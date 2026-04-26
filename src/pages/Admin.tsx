@@ -227,6 +227,12 @@ const Admin = () => {
   const [userSearch, setUserSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [roleToAdd, setRoleToAdd] = useState<string>("");
+  const [userBanReason, setUserBanReason] = useState("");
+  const [userBanLoading, setUserBanLoading] = useState(false);
+  const [bannedIps, setBannedIps] = useState<BannedIpRow[]>([]);
+  const [ipBanLoading, setIpBanLoading] = useState(false);
+  const [ipAddress, setIpAddress] = useState("");
+  const [ipBanReason, setIpBanReason] = useState("");
 
   // Withdrawals
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
@@ -306,7 +312,7 @@ const Admin = () => {
     if (!isAdmin) return;
     if (activeTab === "disputes") loadDisputes();
     if (activeTab === "orders") loadOrders();
-    if (activeTab === "users") loadUsers();
+    if (activeTab === "users") { loadUsers(); loadBannedIps(); }
     if (activeTab === "withdrawals") loadWithdrawals();
     if (activeTab === "support") loadSupportTickets();
     if (activeTab === "feedback") loadFeedback();
@@ -657,7 +663,7 @@ const Admin = () => {
     setUsersLoading(true);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, display_name, avatar_url, is_online, wallet_balance, total_sessions, rating_avg, created_at")
+      .select("id, display_name, avatar_url, is_online, is_banned, ban_reason, wallet_balance, total_sessions, rating_avg, created_at")
       .order("created_at", { ascending: false });
 
     if (!profiles) { setUsersLoading(false); return; }
@@ -668,6 +674,8 @@ const Admin = () => {
         return {
           ...p,
           is_online: p.is_online || false,
+          is_banned: p.is_banned || false,
+          ban_reason: p.ban_reason || null,
           wallet_balance: Number(p.wallet_balance) || 0,
           total_sessions: p.total_sessions || 0,
           rating_avg: Number(p.rating_avg) || 0,
