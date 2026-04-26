@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      banned_ips: {
+        Row: {
+          banned_by: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          ip_address: string
+          is_active: boolean
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          banned_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          ip_address: string
+          is_active?: boolean
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          banned_by?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          ip_address?: string
+          is_active?: boolean
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string | null
