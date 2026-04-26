@@ -13,6 +13,7 @@ import { useGlobalSound } from "./hooks/use-global-sound";
 import ScrollToTop from "./components/ScrollToTop";
 import ErrorBoundary from "./components/ErrorBoundary";
 import CookieConsent from "./components/CookieConsent";
+import { useBanCheck } from "./hooks/use-ban-check";
 
 // Eagerly loaded (landing + auth — critical path)
 import Index from "./pages/Index";
@@ -89,6 +90,22 @@ const PageLoader = () => (
   </div>
 );
 
+const BanGate = ({ children }: { children: React.ReactNode }) => {
+  const { isBanned, banReason, loading } = useBanCheck();
+  if (loading) return <PageLoader />;
+  if (isBanned) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="max-w-md rounded-lg border border-destructive/30 bg-card p-6 text-center shadow-lg">
+          <h1 className="text-xl font-bold text-foreground">Access suspended</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{banReason || "This account or network has been blocked by administration."}</p>
+        </div>
+      </div>
+    );
+  }
+  return <>{children}</>;
+};
+
 const AdminRoute = () => {
   const navigate = useNavigate();
   const [allowed, setAllowed] = useState(false);
@@ -119,6 +136,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <BanGate>
           <ScrollToTop />
           <SignOutRedirect />
           <Suspense fallback={<PageLoader />}>
@@ -168,6 +186,7 @@ const App = () => (
             <FeedbackWidget />
           </Suspense>
           <CookieConsent />
+          </BanGate>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
