@@ -1674,6 +1674,7 @@ const Admin = () => {
                               </TableCell>
                               <TableCell>
                                 <div className="flex flex-wrap gap-1">
+                                  {user.is_banned && <Badge variant="destructive" className="text-xs">banned</Badge>}
                                   {user.roles.map(r => (
                                     <Badge key={r} variant={r === "admin" ? "default" : "secondary"} className="text-xs">
                                       {r}
@@ -1701,6 +1702,33 @@ const Admin = () => {
                 </div>
               </Card>
             )}
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base"><Ban className="h-4 w-4 text-destructive" /> IP Bans</CardTitle>
+                <CardDescription>Block abusive IP addresses from using the app.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-2 sm:grid-cols-[180px_1fr_auto]">
+                  <Input placeholder="IP address" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} />
+                  <Input placeholder="Reason" value={ipBanReason} onChange={(e) => setIpBanReason(e.target.value)} />
+                  <Button onClick={handleAddIpBan} disabled={ipBanLoading}><Ban className="h-4 w-4 mr-1" /> Ban IP</Button>
+                </div>
+                <div className="space-y-2">
+                  {bannedIps.length === 0 ? <p className="text-sm text-muted-foreground">No IP bans yet.</p> : bannedIps.map((row) => (
+                    <div key={row.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-card/60 p-3">
+                      <div className="min-w-0">
+                        <p className="font-mono text-sm text-foreground">{row.ip_address}</p>
+                        <p className="text-xs text-muted-foreground truncate">{row.reason || "No reason provided"}</p>
+                      </div>
+                      <Button size="sm" variant={row.is_active ? "destructive" : "outline"} onClick={() => handleToggleIpBan(row, !row.is_active)}>
+                        {row.is_active ? "Disable" : "Enable"}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* ═══ WITHDRAWALS TAB ═══ */}
@@ -2670,6 +2698,21 @@ const Admin = () => {
                     Update
                   </Button>
                 </div>
+              </div>
+
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-2">
+                <p className="text-sm font-medium text-foreground">Account Ban</p>
+                {selectedUser.is_banned && <p className="text-xs text-destructive">Currently banned: {selectedUser.ban_reason || "No reason provided"}</p>}
+                <Textarea placeholder="Ban reason" value={userBanReason} onChange={(e) => setUserBanReason(e.target.value)} rows={2} />
+                <Button
+                  size="sm"
+                  variant={selectedUser.is_banned ? "outline" : "destructive"}
+                  onClick={() => handleManageUserBan(selectedUser, !selectedUser.is_banned)}
+                  disabled={userBanLoading}
+                >
+                  {userBanLoading && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                  {selectedUser.is_banned ? "Unban User" : "Ban User"}
+                </Button>
               </div>
 
               {/* Info */}
