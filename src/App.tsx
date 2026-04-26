@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "./components/layout/AppLayout";
 import { usePresence } from "./hooks/use-presence";
@@ -89,6 +89,27 @@ const PageLoader = () => (
   </div>
 );
 
+const AdminRoute = () => {
+  const navigate = useNavigate();
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const check = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { navigate("/auth", { replace: true }); return; }
+      const { data } = await supabase.rpc("is_admin", { _user_id: user.id });
+      if (!active) return;
+      if (!data) { navigate("/dashboard", { replace: true }); return; }
+      setAllowed(true);
+    };
+    check();
+    return () => { active = false; };
+  }, [navigate]);
+
+  return allowed ? <Admin /> : <PageLoader />;
+};
+
 const App = () => (
   <ErrorBoundary>
   <CurrencyProvider>
@@ -121,7 +142,7 @@ const App = () => (
                 <Route path="/order/:jobId" element={<Order />} />
                 <Route path="/orders/purchased" element={<PurchasedOrders />} />
                 <Route path="/orders/sold" element={<SoldOrders />} />
-                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin" element={<AdminRoute />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/category/:slug" element={<CategoryPage />} />
                 <Route path="/faq" element={<FAQ />} />
