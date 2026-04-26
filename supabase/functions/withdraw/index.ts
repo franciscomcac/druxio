@@ -139,11 +139,6 @@ Deno.serve(async (req) => {
       .single();
 
     if (txError) {
-      // Rollback balance
-      await adminClient
-        .from("profiles")
-        .update({ wallet_balance: profile.wallet_balance })
-        .eq("id", userId);
       console.error("Transaction error:", txError);
       return new Response(JSON.stringify({ error: "Failed to create transaction" }), {
         status: 500,
@@ -238,8 +233,9 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("Withdraw error:", error);
+    const message = error instanceof Error ? error.message : "Internal server error";
     return new Response(
-      JSON.stringify({ error: error.message || "Internal server error" }),
+      JSON.stringify({ error: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
