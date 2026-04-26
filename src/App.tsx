@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import AppLayout from "./components/layout/AppLayout";
 import { usePresence } from "./hooks/use-presence";
@@ -90,7 +90,7 @@ const PageLoader = () => (
   </div>
 );
 
-const BanGate = ({ children }: { children: React.ReactNode }) => {
+const BanGate = ({ children }: { children: ReactNode }) => {
   const { isBanned, banReason, loading } = useBanCheck();
   if (loading) return <PageLoader />;
   if (isBanned) {
