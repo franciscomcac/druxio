@@ -8,6 +8,14 @@ export const useBanCheck = () => {
 
   useEffect(() => {
     const check = async () => {
+      const { data: ipBan } = await supabase.functions.invoke("check-ip-ban");
+      if (ipBan?.banned) {
+        setIsBanned(true);
+        setBanReason(ipBan.reason || "Access blocked by administration");
+        setLoading(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
