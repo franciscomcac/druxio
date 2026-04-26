@@ -72,6 +72,8 @@ interface UserRow {
   display_name: string | null;
   avatar_url: string | null;
   is_online: boolean;
+  is_banned: boolean;
+  ban_reason: string | null;
   wallet_balance: number;
   total_sessions: number;
   rating_avg: number;
@@ -182,6 +184,15 @@ interface LiveMessage {
   sender_name?: string;
 }
 
+interface BannedIpRow {
+  id: string;
+  ip_address: string;
+  reason: string | null;
+  is_active: boolean;
+  expires_at: string | null;
+  created_at: string;
+}
+
 const Admin = () => {
   useSEO({ title: "Admin", noIndex: true });
   const navigate = useNavigate();
@@ -216,6 +227,12 @@ const Admin = () => {
   const [userSearch, setUserSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<UserRow | null>(null);
   const [roleToAdd, setRoleToAdd] = useState<string>("");
+  const [userBanReason, setUserBanReason] = useState("");
+  const [userBanLoading, setUserBanLoading] = useState(false);
+  const [bannedIps, setBannedIps] = useState<BannedIpRow[]>([]);
+  const [ipBanLoading, setIpBanLoading] = useState(false);
+  const [ipAddress, setIpAddress] = useState("");
+  const [ipBanReason, setIpBanReason] = useState("");
 
   // Withdrawals
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[]>([]);
@@ -295,7 +312,7 @@ const Admin = () => {
     if (!isAdmin) return;
     if (activeTab === "disputes") loadDisputes();
     if (activeTab === "orders") loadOrders();
-    if (activeTab === "users") loadUsers();
+    if (activeTab === "users") { loadUsers(); loadBannedIps(); }
     if (activeTab === "withdrawals") loadWithdrawals();
     if (activeTab === "support") loadSupportTickets();
     if (activeTab === "feedback") loadFeedback();
@@ -646,7 +663,7 @@ const Admin = () => {
     setUsersLoading(true);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, display_name, avatar_url, is_online, wallet_balance, total_sessions, rating_avg, created_at")
+      .select("id, display_name, avatar_url, is_online, is_banned, ban_reason, wallet_balance, total_sessions, rating_avg, created_at")
       .order("created_at", { ascending: false });
 
     if (!profiles) { setUsersLoading(false); return; }
@@ -657,6 +674,8 @@ const Admin = () => {
         return {
           ...p,
           is_online: p.is_online || false,
+          is_banned: p.is_banned || false,
+          ban_reason: p.ban_reason || null,
           wallet_balance: Number(p.wallet_balance) || 0,
           total_sessions: p.total_sessions || 0,
           rating_avg: Number(p.rating_avg) || 0,
@@ -822,6 +841,74 @@ const Admin = () => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
     setReportActionLoading(false);
+  };
+
+  const handleManageUserBan = async (user: UserRow, ban: boolean) => {
+    setUserBanLoading(true);
+    try {
+      const reason = userBanReason.trim() || "Banned by admin";
+      const { error } = await supabase.from("profiles").update({
+        is_banned: ban,
+        ban_reason: ban ? reason : null,
+        banned_at: ban ? new Date().toISOString() : null,
+      }).eq("id", user.id);
+      if (error) throw error;
+
+      await supabase.from("notifications").insert({
+        user_id: user.id,
+        type: ban ? "account_banned" : "account_unbanned",
+        title: ban ? "Account Suspended" : "Account Reinstated",
+        message: ban ? "Your account has been suspended by administration." : "Your account has been reinstated.",
+      });
+
+      toast({ title: ban ? "User banned" : "User unbanned" });
+      setUserBanReason("");
+      setSelectedUser(null);
+      loadUsers();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setUserBanLoading(false);
+  };
+
+  const loadBannedIps = async () => {
+    setIpBanLoading(true);
+    const { data, error } = await supabase
+      .from("banned_ips" as any)
+      .select("id, ip_address, reason, is_active, expires_at, created_at")
+      .order("created_at", { ascending: false });
+    if (error) toast({ title: "Could not load IP bans", description: error.message, variant: "destructive" });
+    setBannedIps(((data || []) as unknown) as BannedIpRow[]);
+    setIpBanLoading(false);
+  };
+
+  const handleAddIpBan = async () => {
+    const ip = ipAddress.trim();
+    if (!ip || ip.length < 3 || ip.length > 64) {
+      toast({ title: "Enter a valid IP address", variant: "destructive" });
+      return;
+    }
+    setIpBanLoading(true);
+    const { error } = await supabase.from("banned_ips" as any).upsert({
+      ip_address: ip,
+      reason: ipBanReason.trim() || null,
+      is_active: true,
+      banned_by: adminId,
+    } as any, { onConflict: "ip_address" });
+    if (error) toast({ title: "Could not ban IP", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: "IP banned" });
+      setIpAddress("");
+      setIpBanReason("");
+      loadBannedIps();
+    }
+    setIpBanLoading(false);
+  };
+
+  const handleToggleIpBan = async (row: BannedIpRow, active: boolean) => {
+    const { error } = await supabase.from("banned_ips" as any).update({ is_active: active } as any).eq("id", row.id);
+    if (error) toast({ title: "Could not update IP ban", description: error.message, variant: "destructive" });
+    else loadBannedIps();
   };
 
   const getSignedImageUrl = async (path: string): Promise<string> => {
@@ -1587,6 +1674,7 @@ const Admin = () => {
                               </TableCell>
                               <TableCell>
                                 <div className="flex flex-wrap gap-1">
+                                  {user.is_banned && <Badge variant="destructive" className="text-xs">banned</Badge>}
                                   {user.roles.map(r => (
                                     <Badge key={r} variant={r === "admin" ? "default" : "secondary"} className="text-xs">
                                       {r}
@@ -1614,6 +1702,33 @@ const Admin = () => {
                 </div>
               </Card>
             )}
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base"><Ban className="h-4 w-4 text-destructive" /> IP Bans</CardTitle>
+                <CardDescription>Block abusive IP addresses from using the app.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-2 sm:grid-cols-[180px_1fr_auto]">
+                  <Input placeholder="IP address" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} />
+                  <Input placeholder="Reason" value={ipBanReason} onChange={(e) => setIpBanReason(e.target.value)} />
+                  <Button onClick={handleAddIpBan} disabled={ipBanLoading}><Ban className="h-4 w-4 mr-1" /> Ban IP</Button>
+                </div>
+                <div className="space-y-2">
+                  {bannedIps.length === 0 ? <p className="text-sm text-muted-foreground">No IP bans yet.</p> : bannedIps.map((row) => (
+                    <div key={row.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-card/60 p-3">
+                      <div className="min-w-0">
+                        <p className="font-mono text-sm text-foreground">{row.ip_address}</p>
+                        <p className="text-xs text-muted-foreground truncate">{row.reason || "No reason provided"}</p>
+                      </div>
+                      <Button size="sm" variant={row.is_active ? "destructive" : "outline"} onClick={() => handleToggleIpBan(row, !row.is_active)}>
+                        {row.is_active ? "Disable" : "Enable"}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* ═══ WITHDRAWALS TAB ═══ */}
@@ -2583,6 +2698,21 @@ const Admin = () => {
                     Update
                   </Button>
                 </div>
+              </div>
+
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-2">
+                <p className="text-sm font-medium text-foreground">Account Ban</p>
+                {selectedUser.is_banned && <p className="text-xs text-destructive">Currently banned: {selectedUser.ban_reason || "No reason provided"}</p>}
+                <Textarea placeholder="Ban reason" value={userBanReason} onChange={(e) => setUserBanReason(e.target.value)} rows={2} />
+                <Button
+                  size="sm"
+                  variant={selectedUser.is_banned ? "outline" : "destructive"}
+                  onClick={() => handleManageUserBan(selectedUser, !selectedUser.is_banned)}
+                  disabled={userBanLoading}
+                >
+                  {userBanLoading && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                  {selectedUser.is_banned ? "Unban User" : "Ban User"}
+                </Button>
               </div>
 
               {/* Info */}
