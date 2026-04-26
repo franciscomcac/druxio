@@ -46,7 +46,7 @@ export function useBalance() {
     const earned = txns.filter(t => t.type === "session_earning" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
     const refunded = txns.filter(t => t.type === "refund" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
     const deposited = txns.filter(t => t.type === "deposit" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
-    const withdrawn = txns.filter(t => t.type === "withdrawal" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
+    const withdrawn = txns.filter(t => t.type === "withdrawal" && ["completed", "pending"].includes(t.status)).reduce((s, t) => s + t.amount, 0);
 
     const next = {
       balance: deposited + earned + refunded - spent - withdrawn,
