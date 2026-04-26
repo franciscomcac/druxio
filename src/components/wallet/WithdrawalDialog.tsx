@@ -69,33 +69,20 @@ const WithdrawalDialog = ({ open, onOpenChange, balance, onSuccess }: Withdrawal
         setSuccess(true);
         setResult({ netAmount: data.breakdown?.netAmount || netAmount, destination: paypalEmail });
       } else {
-        // Crypto: create a pending withdrawal for admin to process
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Not authenticated");
-
-        const { error: insertErr } = await supabase.from("withdrawals").insert({
-          user_id: user.id,
-          amount: numAmount,
-          method: "crypto",
-          crypto_token: cryptoToken,
-          crypto_network: cryptoNetwork,
-          crypto_address: cryptoAddress,
-          status: "pending",
+        const { data, error } = await supabase.functions.invoke("withdraw", {
+          body: {
+            amount: numAmount,
+            method: "crypto",
+            crypto_token: cryptoToken,
+            crypto_network: cryptoNetwork,
+            crypto_address: cryptoAddress,
+          },
         });
-        if (insertErr) throw new Error(insertErr.message);
-
-        // Deduct from wallet via a withdrawal transaction
-        const { error: txErr } = await supabase.from("transactions").insert({
-          user_id: user.id,
-          amount: numAmount,
-          type: "withdrawal",
-          status: "completed",
-          description: `Crypto withdrawal (${cryptoToken} on ${cryptoNetwork})`,
-        });
-        if (txErr) throw new Error(txErr.message);
+        if (error) throw new Error(error.message);
+        if (data?.error) throw new Error(data.error);
 
         setSuccess(true);
-        setResult({ netAmount, destination: `${cryptoToken} wallet` });
+        setResult({ netAmount: data.breakdown?.netAmount || netAmount, destination: `${cryptoToken} wallet` });
       }
 
       const { data: { user } } = await supabase.auth.getUser();
