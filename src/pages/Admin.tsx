@@ -843,6 +843,74 @@ const Admin = () => {
     setReportActionLoading(false);
   };
 
+  const handleManageUserBan = async (user: UserRow, ban: boolean) => {
+    setUserBanLoading(true);
+    try {
+      const reason = userBanReason.trim() || "Banned by admin";
+      const { error } = await supabase.from("profiles").update({
+        is_banned: ban,
+        ban_reason: ban ? reason : null,
+        banned_at: ban ? new Date().toISOString() : null,
+      }).eq("id", user.id);
+      if (error) throw error;
+
+      await supabase.from("notifications").insert({
+        user_id: user.id,
+        type: ban ? "account_banned" : "account_unbanned",
+        title: ban ? "Account Suspended" : "Account Reinstated",
+        message: ban ? "Your account has been suspended by administration." : "Your account has been reinstated.",
+      });
+
+      toast({ title: ban ? "User banned" : "User unbanned" });
+      setUserBanReason("");
+      setSelectedUser(null);
+      loadUsers();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+    setUserBanLoading(false);
+  };
+
+  const loadBannedIps = async () => {
+    setIpBanLoading(true);
+    const { data, error } = await supabase
+      .from("banned_ips" as any)
+      .select("id, ip_address, reason, is_active, expires_at, created_at")
+      .order("created_at", { ascending: false });
+    if (error) toast({ title: "Could not load IP bans", description: error.message, variant: "destructive" });
+    setBannedIps(((data || []) as unknown) as BannedIpRow[]);
+    setIpBanLoading(false);
+  };
+
+  const handleAddIpBan = async () => {
+    const ip = ipAddress.trim();
+    if (!ip || ip.length < 3 || ip.length > 64) {
+      toast({ title: "Enter a valid IP address", variant: "destructive" });
+      return;
+    }
+    setIpBanLoading(true);
+    const { error } = await supabase.from("banned_ips" as any).upsert({
+      ip_address: ip,
+      reason: ipBanReason.trim() || null,
+      is_active: true,
+      banned_by: adminId,
+    } as any, { onConflict: "ip_address" });
+    if (error) toast({ title: "Could not ban IP", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: "IP banned" });
+      setIpAddress("");
+      setIpBanReason("");
+      loadBannedIps();
+    }
+    setIpBanLoading(false);
+  };
+
+  const handleToggleIpBan = async (row: BannedIpRow, active: boolean) => {
+    const { error } = await supabase.from("banned_ips" as any).update({ is_active: active } as any).eq("id", row.id);
+    if (error) toast({ title: "Could not update IP ban", description: error.message, variant: "destructive" });
+    else loadBannedIps();
+  };
+
   const getSignedImageUrl = async (path: string): Promise<string> => {
     const { data } = await supabase.storage.from("report-images").createSignedUrl(path, 3600);
     return data?.signedUrl || "";
