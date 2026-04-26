@@ -72,6 +72,8 @@ interface UserRow {
   display_name: string | null;
   avatar_url: string | null;
   is_online: boolean;
+  is_banned: boolean;
+  ban_reason: string | null;
   wallet_balance: number;
   total_sessions: number;
   rating_avg: number;
@@ -180,6 +182,15 @@ interface LiveMessage {
   created_at: string;
   image_urls: string[] | null;
   sender_name?: string;
+}
+
+interface BannedIpRow {
+  id: string;
+  ip_address: string;
+  reason: string | null;
+  is_active: boolean;
+  expires_at: string | null;
+  created_at: string;
 }
 
 const Admin = () => {
