@@ -918,14 +918,11 @@ const Inbox = () => {
                     variant="ghost"
                     size="sm"
                     className="gap-1.5 text-xs h-8"
-                    onClick={() => navigate(activeConv.iAmSeller
-                      ? `/request/${activeConv.jobId}`
-                      : `/order/${activeConv.jobId}`
-                    )}
+                    onClick={() => navigate(`/order/${activeConv.jobId}`)}
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">
-                      {activeConv.iAmSeller ? "View Request" : "View Order"}
+                      View Order
                     </span>
                   </Button>
                 )}
