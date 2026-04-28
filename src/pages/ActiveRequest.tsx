@@ -457,25 +457,42 @@ const ActiveRequest = () => {
 
         const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url, rating_avg, total_spent").eq("id", jobData.buyer_id).single();
 
-        // Find session for this pair
+        // Find the exact quote/order session for this request first, then fall back to older pair sessions.
         const { data: session } = await supabase
+          .from("sessions")
+          .select("id")
+          .eq("mentor_id", userId)
+          .eq("mentee_id", jobData.buyer_id)
+          .contains("categories", [jobData.id])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const finalSession = session || (await supabase
+          .from("sessions")
+          .select("id")
+          .eq("mentor_id", userId)
+          .eq("mentee_id", jobData.buyer_id)
+          .contains("categories", [jobData.category])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()).data || (await supabase
           .from("sessions")
           .select("id")
           .eq("mentor_id", userId)
           .eq("mentee_id", jobData.buyer_id)
           .order("created_at", { ascending: false })
           .limit(1)
-          .maybeSingle();
+          .maybeSingle()).data;
 
         let lastMessage: string | null = null;
         let lastMessageAt: string | null = null;
         let unread = 0;
 
-        if (session) {
+        if (finalSession) {
           const { data: msgs } = await supabase
             .from("messages")
             .select("content, created_at, sender_id, is_read")
-            .eq("session_id", session.id)
+            .eq("session_id", finalSession.id)
             .order("created_at", { ascending: false })
             .limit(1);
           if (msgs && msgs.length > 0) {
@@ -485,7 +502,7 @@ const ActiveRequest = () => {
           const { count } = await supabase
             .from("messages")
             .select("id", { count: "exact", head: true })
-            .eq("session_id", session.id)
+            .eq("session_id", finalSession.id)
             .eq("is_read", false)
             .neq("sender_id", userId);
           unread = count || 0;
@@ -506,7 +523,7 @@ const ActiveRequest = () => {
           myPrice: q.price,
           myDelivery: q.estimated_minutes,
           myQuoteId: q.id,
-          sessionId: session?.id || null,
+          sessionId: finalSession?.id || null,
           lastMessage,
           lastMessageAt,
           unread,
