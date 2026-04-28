@@ -85,7 +85,17 @@ async function finalizeOrder(serviceClient: any, userId: string, jobId: string, 
 
   const { data: job } = await serviceClient.from("jobs").select("title, description, category, subcategory, deadline_minutes").eq("id", jobId).single();
 
-  const { data: quoteSession } = job ? await serviceClient
+  const { data: existingOrderSession } = await serviceClient
+    .from("sessions")
+    .select("id, categories")
+    .eq("mentee_id", userId)
+    .eq("mentor_id", quote.expert_id)
+    .contains("categories", [jobId])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { data: quoteSession } = !existingOrderSession && job ? await serviceClient
     .from("sessions")
     .select("id, categories")
     .eq("mentee_id", userId)
@@ -95,7 +105,14 @@ async function finalizeOrder(serviceClient: any, userId: string, jobId: string, 
     .limit(1)
     .maybeSingle() : { data: null };
 
-  const { data: newSession } = quoteSession
+  const { data: newSession } = existingOrderSession
+    ? await serviceClient.from("sessions").update({
+        status: "accepted",
+        duration_minutes: quote.estimated_minutes,
+        price: Number(quote.price),
+        issue_description: jobId,
+      }).eq("id", existingOrderSession.id).select("id").single()
+    : quoteSession
     ? await serviceClient.from("sessions").update({
         status: "accepted",
         duration_minutes: quote.estimated_minutes,
