@@ -186,7 +186,7 @@ const Inbox = () => {
       let myPrice: number | null = null;
 
       // First try to find job via session.categories (stores [jobId])
-      const sessionJobId = session.categories?.[0];
+      const sessionJobId = session.categories?.find((categoryOrJobId: string) => jobMap.has(categoryOrJobId));
       if (sessionJobId) {
         linkedJob = jobMap.get(sessionJobId);
       }
