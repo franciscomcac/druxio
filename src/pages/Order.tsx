@@ -136,6 +136,23 @@ const Order = () => {
         .eq("id", jobData.buyer_id).single();
       setBuyerProfile(bp);
 
+      // Prefer the quote/chat session, then attach it to the accepted order.
+      const { data: quoteChatSession } = await supabase
+        .from("sessions").select("id, categories")
+        .eq("mentee_id", jobData.buyer_id)
+        .eq("mentor_id", quoteData.expert_id)
+        .contains("categories", [jobData.category])
+        .order("created_at", { ascending: false }).limit(1).maybeSingle();
+
+      if (quoteChatSession && !quoteChatSession.categories?.includes(jobId)) {
+        const categories = Array.from(new Set([...(quoteChatSession.categories || []), jobId]));
+        await supabase.from("sessions").update({
+          status: "accepted",
+          issue_description: jobId,
+          categories,
+        }).eq("id", quoteChatSession.id);
+      }
+
       // Find session linked to this specific job
       const { data: sessionData } = await supabase
         .from("sessions").select("id")
@@ -145,7 +162,7 @@ const Order = () => {
         .order("created_at", { ascending: false }).limit(1).maybeSingle();
 
       // Fallback: find any session between the two users if job-specific not found
-      const finalSession = sessionData || (await supabase
+      const finalSession = quoteChatSession || sessionData || (await supabase
         .from("sessions").select("id")
         .eq("mentee_id", jobData.buyer_id)
         .eq("mentor_id", quoteData.expert_id)
