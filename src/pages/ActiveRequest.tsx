@@ -694,14 +694,20 @@ const ActiveRequest = () => {
     if (!jobId || !userId || quotes.length === 0 || !job || !isBuyer) return;
 
     const findOrCreateSession = async (mentorId: string, menteeId: string): Promise<[string | null, boolean]> => {
-      const { data: existing } = await supabase.from("sessions").select("id").eq("mentor_id", mentorId).eq("mentee_id", menteeId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: existing } = await supabase.from("sessions").select("id, categories").eq("mentor_id", mentorId).eq("mentee_id", menteeId).contains("categories", [jobId]).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (existing) return [existing.id, false];
+      const { data: quoteSession } = await supabase.from("sessions").select("id, categories").eq("mentor_id", mentorId).eq("mentee_id", menteeId).contains("categories", [job.category]).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (quoteSession) {
+        const categories = Array.from(new Set([...(quoteSession.categories || []), jobId]));
+        await supabase.from("sessions").update({ categories }).eq("id", quoteSession.id);
+        return [quoteSession.id, false];
+      }
       const { data: newSession } = await supabase.from("sessions").insert({
         mentor_id: mentorId,
         mentee_id: menteeId,
         status: "pending",
         issue_description: job.title,
-        categories: [job.category],
+        categories: [job.category, jobId],
         session_type: "chat",
       }).select("id").single();
       return [newSession?.id || null, true];
