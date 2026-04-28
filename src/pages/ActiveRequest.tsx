@@ -457,25 +457,42 @@ const ActiveRequest = () => {
 
         const { data: bp } = await supabase.from("profiles").select("display_name, avatar_url, rating_avg, total_spent").eq("id", jobData.buyer_id).single();
 
-        // Find session for this pair
+        // Find the exact quote/order session for this request first, then fall back to older pair sessions.
         const { data: session } = await supabase
+          .from("sessions")
+          .select("id")
+          .eq("mentor_id", userId)
+          .eq("mentee_id", jobData.buyer_id)
+          .contains("categories", [jobData.id])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const finalSession = session || (await supabase
+          .from("sessions")
+          .select("id")
+          .eq("mentor_id", userId)
+          .eq("mentee_id", jobData.buyer_id)
+          .contains("categories", [jobData.category])
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()).data || (await supabase
           .from("sessions")
           .select("id")
           .eq("mentor_id", userId)
           .eq("mentee_id", jobData.buyer_id)
           .order("created_at", { ascending: false })
           .limit(1)
-          .maybeSingle();
+          .maybeSingle()).data;
 
         let lastMessage: string | null = null;
         let lastMessageAt: string | null = null;
         let unread = 0;
 
-        if (session) {
+        if (finalSession) {
           const { data: msgs } = await supabase
             .from("messages")
             .select("content, created_at, sender_id, is_read")
-            .eq("session_id", session.id)
+            .eq("session_id", finalSession.id)
             .order("created_at", { ascending: false })
             .limit(1);
           if (msgs && msgs.length > 0) {
@@ -485,7 +502,7 @@ const ActiveRequest = () => {
           const { count } = await supabase
             .from("messages")
             .select("id", { count: "exact", head: true })
-            .eq("session_id", session.id)
+            .eq("session_id", finalSession.id)
             .eq("is_read", false)
             .neq("sender_id", userId);
           unread = count || 0;
@@ -506,7 +523,7 @@ const ActiveRequest = () => {
           myPrice: q.price,
           myDelivery: q.estimated_minutes,
           myQuoteId: q.id,
-          sessionId: session?.id || null,
+          sessionId: finalSession?.id || null,
           lastMessage,
           lastMessageAt,
           unread,
@@ -677,14 +694,20 @@ const ActiveRequest = () => {
     if (!jobId || !userId || quotes.length === 0 || !job || !isBuyer) return;
 
     const findOrCreateSession = async (mentorId: string, menteeId: string): Promise<[string | null, boolean]> => {
-      const { data: existing } = await supabase.from("sessions").select("id").eq("mentor_id", mentorId).eq("mentee_id", menteeId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: existing } = await supabase.from("sessions").select("id, categories").eq("mentor_id", mentorId).eq("mentee_id", menteeId).contains("categories", [jobId]).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (existing) return [existing.id, false];
+      const { data: quoteSession } = await supabase.from("sessions").select("id, categories").eq("mentor_id", mentorId).eq("mentee_id", menteeId).contains("categories", [job.category]).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (quoteSession) {
+        const categories = Array.from(new Set([...(quoteSession.categories || []), jobId]));
+        await supabase.from("sessions").update({ categories }).eq("id", quoteSession.id);
+        return [quoteSession.id, false];
+      }
       const { data: newSession } = await supabase.from("sessions").insert({
         mentor_id: mentorId,
         mentee_id: menteeId,
         status: "pending",
         issue_description: job.title,
-        categories: [job.category],
+        categories: [job.category, jobId],
         session_type: "chat",
       }).select("id").single();
       return [newSession?.id || null, true];
@@ -917,15 +940,24 @@ const ActiveRequest = () => {
     if (isMobile) setMobileView("chat");
     // If no session yet, create one and auto-send offer
     if (!convo.sessionId && userId) {
-      const { data: existing } = await supabase.from("sessions").select("id").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: existing } = await supabase.from("sessions").select("id, categories").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).contains("categories", [convo.jobId]).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (existing) {
         const updated = { ...convo, sessionId: existing.id };
         setActiveConvo(updated);
         setSellerConvos(prev => prev.map(c => c.jobId === convo.jobId ? updated : c));
       } else {
+        const { data: quoteSession } = await supabase.from("sessions").select("id, categories").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).contains("categories", [convo.jobCategory]).order("created_at", { ascending: false }).limit(1).maybeSingle();
+        if (quoteSession) {
+          const categories = Array.from(new Set([...(quoteSession.categories || []), convo.jobId]));
+          await supabase.from("sessions").update({ categories }).eq("id", quoteSession.id);
+          const updated = { ...convo, sessionId: quoteSession.id };
+          setActiveConvo(updated);
+          setSellerConvos(prev => prev.map(c => c.jobId === convo.jobId ? updated : c));
+          return;
+        }
         const { data: newSession } = await supabase.from("sessions").insert({
           mentor_id: userId, mentee_id: convo.buyerId, status: "pending",
-          issue_description: convo.jobTitle, categories: [convo.jobCategory], session_type: "chat",
+          issue_description: convo.jobTitle, categories: [convo.jobCategory, convo.jobId], session_type: "chat",
         }).select("id").single();
         if (newSession) {
           const content = `🛡️ ADMIN: Quote sent. The buyer will review and may message you here to discuss.`;

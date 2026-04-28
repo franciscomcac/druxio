@@ -83,20 +83,53 @@ async function finalizeOrder(serviceClient: any, userId: string, jobId: string, 
   // Record wallet deduction transaction
   await processWalletDeduction(serviceClient, userId, walletDeduction, jobId);
 
-  // Always create a new session for this specific job/order
-  const { data: newSession } = await serviceClient.from("sessions").insert({
-    mentee_id: userId,
-    mentor_id: quote.expert_id,
-    status: "accepted",
-    duration_minutes: quote.estimated_minutes,
-    price: Number(quote.price),
-    session_type: "chat",
-    issue_description: jobId,
-    categories: [jobId],
-  }).select("id").single();
-
-  // Send auto-messages to seed the order chat
   const { data: job } = await serviceClient.from("jobs").select("title, description, category, subcategory, deadline_minutes").eq("id", jobId).single();
+
+  const { data: existingOrderSession } = await serviceClient
+    .from("sessions")
+    .select("id, categories")
+    .eq("mentee_id", userId)
+    .eq("mentor_id", quote.expert_id)
+    .contains("categories", [jobId])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { data: quoteSession } = !existingOrderSession && job ? await serviceClient
+    .from("sessions")
+    .select("id, categories")
+    .eq("mentee_id", userId)
+    .eq("mentor_id", quote.expert_id)
+    .contains("categories", [job.category])
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle() : { data: null };
+
+  const { data: newSession } = existingOrderSession
+    ? await serviceClient.from("sessions").update({
+        status: "accepted",
+        duration_minutes: quote.estimated_minutes,
+        price: Number(quote.price),
+        issue_description: jobId,
+      }).eq("id", existingOrderSession.id).select("id").single()
+    : quoteSession
+    ? await serviceClient.from("sessions").update({
+        status: "accepted",
+        duration_minutes: quote.estimated_minutes,
+        price: Number(quote.price),
+        issue_description: jobId,
+        categories: Array.from(new Set([...(quoteSession.categories || []), jobId])),
+      }).eq("id", quoteSession.id).select("id").single()
+    : await serviceClient.from("sessions").insert({
+        mentee_id: userId,
+        mentor_id: quote.expert_id,
+        status: "accepted",
+        duration_minutes: quote.estimated_minutes,
+        price: Number(quote.price),
+        session_type: "chat",
+        issue_description: jobId,
+        categories: [job?.category, jobId].filter(Boolean),
+      }).select("id").single();
 
   if (newSession && job) {
     const orderDetailsMsg = `📋 **Order Details**\n\n**${job.title}**\n${job.description || ""}\n\n📂 ${job.category}${job.subcategory ? ` › ${job.subcategory}` : ""}\n💰 €${Number(quote.price).toFixed(2)}\n⏱️ ${quote.estimated_minutes} min delivery`;
