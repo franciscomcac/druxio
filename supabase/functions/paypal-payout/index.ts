@@ -145,6 +145,17 @@ Deno.serve(async (req) => {
     const sellerEarning = Math.round(servicePrice * (1 - PLATFORM_FEE_RATE) * 100) / 100;
     const platformFeeAmount = Math.round(servicePrice * PLATFORM_FEE_RATE * 100) / 100;
 
+    await creditSellerWallet(serviceClient, quote.expert_id, sellerProfile, sellerEarning, servicePrice, platformFeeAmount, job.title, jobId, "Credited to wallet for withdrawal.");
+    await serviceClient.from("jobs").update({ status: "completed", escrow_status: "completed" }).eq("id", jobId);
+    await serviceClient.from("sessions").update({ status: "completed" })
+      .eq("mentee_id", job.buyer_id)
+      .eq("mentor_id", quote.expert_id)
+      .contains("categories", [jobId]);
+
+    return new Response(JSON.stringify({
+      success: true, method: "wallet", amount: sellerEarning,
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
     if (sellerPaypalEmail) {
       // Send instant PayPal payout
       const baseUrl = Deno.env.get("PAYPAL_MODE") === "live"
