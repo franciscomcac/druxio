@@ -940,15 +940,24 @@ const ActiveRequest = () => {
     if (isMobile) setMobileView("chat");
     // If no session yet, create one and auto-send offer
     if (!convo.sessionId && userId) {
-      const { data: existing } = await supabase.from("sessions").select("id").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: existing } = await supabase.from("sessions").select("id, categories").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).contains("categories", [convo.jobId]).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (existing) {
         const updated = { ...convo, sessionId: existing.id };
         setActiveConvo(updated);
         setSellerConvos(prev => prev.map(c => c.jobId === convo.jobId ? updated : c));
       } else {
+        const { data: quoteSession } = await supabase.from("sessions").select("id, categories").eq("mentor_id", userId).eq("mentee_id", convo.buyerId).contains("categories", [convo.jobCategory]).order("created_at", { ascending: false }).limit(1).maybeSingle();
+        if (quoteSession) {
+          const categories = Array.from(new Set([...(quoteSession.categories || []), convo.jobId]));
+          await supabase.from("sessions").update({ categories }).eq("id", quoteSession.id);
+          const updated = { ...convo, sessionId: quoteSession.id };
+          setActiveConvo(updated);
+          setSellerConvos(prev => prev.map(c => c.jobId === convo.jobId ? updated : c));
+          return;
+        }
         const { data: newSession } = await supabase.from("sessions").insert({
           mentor_id: userId, mentee_id: convo.buyerId, status: "pending",
-          issue_description: convo.jobTitle, categories: [convo.jobCategory], session_type: "chat",
+          issue_description: convo.jobTitle, categories: [convo.jobCategory, convo.jobId], session_type: "chat",
         }).select("id").single();
         if (newSession) {
           const content = `🛡️ ADMIN: Quote sent. The buyer will review and may message you here to discuss.`;
