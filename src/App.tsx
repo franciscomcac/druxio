@@ -14,6 +14,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import ErrorBoundary from "./components/ErrorBoundary";
 import CookieConsent from "./components/CookieConsent";
 import { useBanCheck } from "./hooks/use-ban-check";
+import { Analytics } from "@vercel/analytics/react";
 
 // Eagerly loaded (landing + auth — critical path)
 import Index from "./pages/Index";
@@ -188,6 +189,7 @@ const App = () => (
           <CookieConsent />
           </BanGate>
         </BrowserRouter>
+        <Analytics />
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
