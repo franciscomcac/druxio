@@ -252,8 +252,12 @@ const Auth = () => {
                   if (!localStorage.getItem("auth_redirect")) {
                     localStorage.setItem("auth_redirect", "/dashboard");
                   }
+                  // Use production domain for OAuth redirect so preview URLs
+                  // (which get deleted) don't break the Google login flow.
+                  const isPreview = window.location.hostname.includes("id-preview--");
+                  const redirectUri = isPreview ? "https://duxio.store" : window.location.origin;
                   const { error } = await lovable.auth.signInWithOAuth("google", {
-                    redirect_uri: window.location.origin,
+                    redirect_uri: redirectUri,
                   });
                   if (error) {
                     toast({ title: "Google sign-in failed", description: String(error), variant: "destructive" });
