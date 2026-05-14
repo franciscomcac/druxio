@@ -1,4 +1,4 @@
-project_id = "acafwsglzdgafhlqjuld"
+project_id = "fgpzlmomrzcpefqcstdn"
 
 [functions.withdraw]
 verify_jwt = false
