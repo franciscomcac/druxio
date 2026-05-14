@@ -3,6 +3,7 @@ import { useSEO } from "@/hooks/use-seo";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { sendEmail, buildWelcomeEmail } from "@/lib/send-email";
+import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -253,12 +254,13 @@ const Auth = () => {
                   }
                   // Use production domain for OAuth redirect so preview URLs
                   // (which get deleted) don't break the Google login flow.
-                  const { error } = await supabase.auth.signInWithOAuth({
-                    provider: "google",
-                    options: { redirectTo: window.location.origin },
+                  const isPreview = window.location.hostname.includes("id-preview--");
+                  const redirectUri = isPreview ? "https://duxio.store" : window.location.origin;
+                  const { error } = await lovable.auth.signInWithOAuth("google", {
+                    redirect_uri: redirectUri,
                   });
                   if (error) {
-                    toast({ title: "Google sign-in failed", description: error.message, variant: "destructive" });
+                    toast({ title: "Google sign-in failed", description: String(error), variant: "destructive" });
                   }
                   setGoogleLoading(false);
                 }}
