@@ -21,18 +21,18 @@ const Blog = () => {
       "@type": "CollectionPage",
       "name": "Druxio Blog",
       "description": "Tips, guides, and insights on getting work done faster with Druxio.",
-      "url": "https://druxio.lovable.app/blog",
+      "url": "https://druxio.net/blog",
       "publisher": {
         "@type": "Organization",
         "name": "Druxio",
-        "url": "https://druxio.lovable.app"
+        "url": "https://druxio.net"
       },
       "mainEntity": {
         "@type": "ItemList",
         "itemListElement": blogPosts.map((post, i) => ({
           "@type": "ListItem",
           "position": i + 1,
-          "url": `https://druxio.lovable.app/blog/${post.slug}`,
+          "url": `https://druxio.net/blog/${post.slug}`,
           "name": post.title
         }))
       }

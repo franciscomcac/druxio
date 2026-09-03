@@ -1,13 +1,13 @@
 import { lazy, Suspense } from "react";
 import Hero from "@/components/landing/Hero";
-import LiveStats from "@/components/landing/LiveStats";
 import HowItWorks from "@/components/landing/HowItWorks";
 import { useSEO } from "@/hooks/use-seo";
 
 // Below-fold sections — lazy loaded
-const MentorSpotlight = lazy(() => import("@/components/landing/MentorSpotlight"));
+const LiveMarketplace = lazy(() => import("@/components/landing/LiveMarketplace"));
+const FeeComparison = lazy(() => import("@/components/landing/FeeComparison"));
 const Testimonials = lazy(() => import("@/components/landing/Testimonials"));
-const Newsletter = lazy(() => import("@/components/landing/Newsletter"));
+const FinalCTA = lazy(() => import("@/components/landing/FinalCTA"));
 
 const Index = () => {
   useSEO({
@@ -86,12 +86,12 @@ const Index = () => {
   return (
     <main>
       <Hero />
-      <div className="cv-auto"><LiveStats /></div>
-      <div className="cv-auto"><HowItWorks /></div>
       <Suspense fallback={null}>
-        <div className="cv-auto"><MentorSpotlight /></div>
+        <div className="cv-auto"><LiveMarketplace /></div>
+        <div className="cv-auto"><HowItWorks /></div>
+        <div className="cv-auto"><FeeComparison /></div>
         <div className="cv-auto"><Testimonials /></div>
-        <div className="cv-auto"><Newsletter /></div>
+        <div className="cv-auto"><FinalCTA /></div>
       </Suspense>
     </main>
   );

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 const BASE_URL = "https://druxio.net";
 const SITE_NAME = "Druxio";
-const DEFAULT_OG_IMAGE = "https://storage.googleapis.com/gpt-engineer-file-uploads/G0936umxfkP8XUxHjCHkuY6oOfS2/social-images/social-1771596374263-Screenshot_2026-02-20_140526.webp";
+const DEFAULT_OG_IMAGE = "https://druxio.net/og-preview.png";
 
 interface SeoOptions {
   title: string;

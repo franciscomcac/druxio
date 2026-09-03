@@ -331,7 +331,7 @@ export default function SupportWidget() {
               <p style="margin:0 0 8px"><strong>Role:</strong> ${role}</p>
               <p style="margin:0 0 8px"><strong>Category:</strong> ${category}</p>
               <p style="margin:0 0 16px"><strong>Issue:</strong> ${problem}</p>
-              <a href="https://druxio.lovable.app/admin" style="display:inline-block;padding:10px 20px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Open Admin Dashboard</a>
+              <a href="https://druxio.net/admin" style="display:inline-block;padding:10px 20px;background:#3b82f6;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">Open Admin Dashboard</a>
             </div>
           `,
         },

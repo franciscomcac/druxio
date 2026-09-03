@@ -296,3 +296,113 @@ html {
 .animate-scale-in {
   opacity: 0;
 }
+
+/* ── Premium glass / depth system ─────────────────────────────── */
+@layer components {
+  /* Frosted glass surface — layered blur + inner highlight + soft shadow */
+  .glass {
+    background: hsl(var(--card) / 0.55);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid hsl(var(--foreground) / 0.08);
+    box-shadow:
+      0 1px 0 0 hsl(var(--foreground) / 0.05) inset,
+      0 8px 30px -12px hsl(220 40% 3% / 0.5);
+  }
+
+  .dark .glass {
+    background: hsl(var(--card) / 0.5);
+    border-color: hsl(var(--foreground) / 0.07);
+    box-shadow:
+      0 1px 0 0 hsl(var(--foreground) / 0.06) inset,
+      0 12px 40px -12px hsl(0 0% 0% / 0.55);
+  }
+
+  /* Stronger, brighter glass for feature/CTA cards */
+  .glass-strong {
+    background: linear-gradient(
+      160deg,
+      hsl(var(--card) / 0.7),
+      hsl(var(--card) / 0.4)
+    );
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid hsl(var(--foreground) / 0.1);
+    box-shadow:
+      0 1px 0 0 hsl(var(--foreground) / 0.08) inset,
+      0 20px 50px -20px hsl(220 40% 3% / 0.6);
+  }
+
+  /* Gradient hairline border via mask — for premium accented cards */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary) / 0.6),
+      hsl(var(--primary) / 0.05) 40%,
+      transparent 70%
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+/* Atmospheric radial glow blob helper */
+.glow-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Marquee (infinite horizontal scroll) ─────────────────────── */
+@keyframes marquee-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+.marquee-left { animation: marquee-left 42s linear infinite; }
+.marquee-right { animation: marquee-right 52s linear infinite; }
+.marquee-pause:hover .marquee-track { animation-play-state: paused; }
+
+/* Edge fade mask for marquee rows */
+.edge-fade-x {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* Animated fill bar for fee comparison */
+@keyframes grow-x {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.grow-x {
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.grow-x.visible {
+  animation: grow-x 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-left, .marquee-right { animation: none; }
+  .grow-x { transform: scaleX(1); animation: none; }
+}

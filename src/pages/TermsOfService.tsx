@@ -33,7 +33,7 @@ const TermsOfService = () => {
         </p>
 
         <Section title="1. Definitions">
-          <p><strong className="text-foreground">"Druxio"</strong> means the platform operated at druxio.lovable.app and its associated services.</p>
+          <p><strong className="text-foreground">"Druxio"</strong> means the platform operated at druxio.net and its associated services.</p>
           <p><strong className="text-foreground">"Client"</strong> means a registered user who posts tasks and purchases expert services.</p>
           <p><strong className="text-foreground">"Expert"</strong> means a registered user who submits quotes and delivers services.</p>
           <p><strong className="text-foreground">"Order"</strong> means a confirmed agreement between a Client and Expert after a quote is accepted.</p>
